@@ -45,4 +45,6 @@ def Yearbatchrun(year,tst=None,ted=None,restart=False):
 if __name__ == "__main__":
     ''' The main code to run time forwarding for a time period
     '''
+    import sys
+    sys.path.insert(1, 'D:/fire_atlas/1_code/fireatlas')
     Yearbatchrun(2014)
