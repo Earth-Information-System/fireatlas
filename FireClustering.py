@@ -44,11 +44,10 @@ def build_rtree(geoms, fids=False):
     
     return idx
 
-def idx_intersection(idx, geom):
+def idx_intersection(idx, bbox):
     ''' 
     Finds all objects in an index whcih bounding boxes intersect with a geometry's bounding box
     '''
-    bbox = geom.bounds
     intersections = list(idx.intersection(bbox, objects = True))
     if len(intersections)>0:
         fids, bbox = zip(*[(item.object, item.bbox) for item in intersections])
@@ -159,24 +158,73 @@ def do_clustering(data, max_thresh_km):
 
     # compute and sort neighbor pixels for each pixel
     neighbor_inds, neighbor_spatial_dists = compute_all_spatial_distances(dfdata, max_thresh_km)
-    neighbor_inds, neighbor_spatial_dists = sort_neighbors(neighbor_inds, neighbor_spatial_dists)
+    # neighbor_inds, neighbor_spatial_dists = sort_neighbors(neighbor_inds, neighbor_spatial_dists)
 
-    # loop over all pixels and do clustering
-    for i in range(num_points):
-        neighbors = neighbor_inds[i]
-        if len(neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
-            point_to_cluster_id[i] = cluster_id_counter
+    # include all possible pixels in cluster
+    to_check = np.full(num_points, fill_value=1, dtype=np.int8)
+    while np.sum(to_check) > 0:
+        start_ind = np.argmax(to_check == 1) # catch first index to check
+        
+        neighbors_to_search = list(neighbor_inds[start_ind])
+        all_neighbors = neighbors_to_search
+        
+        if len(all_neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
+            point_to_cluster_id[start_ind] = cluster_id_counter
             cluster_id_counter += 1
+            to_check[start_ind] = 0
+            
         else:  # if with neighbor, record all neighbors
-            # neighbor_cluster_ids = point_to_cluster_id[neighbors]   #  This won't work sometimes, e.g. 2017-11-20
-            neighbor_cluster_ids = point_to_cluster_id[list(neighbors)]
-            neighbor_cluster_ids = neighbor_cluster_ids[neighbor_cluster_ids != -1]
+            # find all neighbours of neighbours:
+            searched_neighbours = [start_ind]
+            while len(neighbors_to_search) > 0:
+                # take the first of these
+                px = neighbors_to_search[0]
+                searched_neighbours.append(px)
+                px_neighbors = list(neighbor_inds[px])
+                all_neighbors = list(set(all_neighbors + px_neighbors))
+                neighbors_to_search = list(set(all_neighbors).difference(searched_neighbours))
+            # now we have all pixels in this cluster in all_neighbors
+            point_to_cluster_id[all_neighbors] = cluster_id_counter
+            cluster_id_counter += 1
+            to_check[all_neighbors] = 0
+        
+    # # try 1: retroactively change clusters (didnt work )
+    # for i in range(num_points):
+    #     neighbors = neighbor_inds[i]
+    #     if len(neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
+    #         point_to_cluster_id[i] = cluster_id_counter
+    #         cluster_id_counter += 1
+    #     else:  # if with neighbor, record all neighbors
+    #         # neighbor_cluster_ids = point_to_cluster_id[neighbors]   #  This won't work sometimes, e.g. 2017-11-20
+    #         neighbor_cluster_ids = point_to_cluster_id[list(neighbors)]
+    #         neighbor_cluster_ids = neighbor_cluster_ids[neighbor_cluster_ids != -1]
 
-            if len(neighbor_cluster_ids) == 0:   # if no neighbor has been assigned to clusters, record current pixel as a separate cluster
-                point_to_cluster_id[i] = cluster_id_counter
-                cluster_id_counter += 1
-            else:                               # if some neighbors have been assigned to clusters, assign current pixel to the nearest cluster
-                point_to_cluster_id[i] = neighbor_cluster_ids[0]
+    #         if len(neighbor_cluster_ids) == 0:   # if no neighbor has been assigned to clusters, record current pixel as a separate cluster
+    #             point_to_cluster_id[i] = cluster_id_counter
+    #             cluster_id_counter += 1
+    #         else:                               # if some neighbors have been assigned to clusters, assign current pixel to the nearest cluster
+    #             point_to_cluster_id[i] = neighbor_cluster_ids[0]
+    #             if len(neighbor_cluster_ids) > 1: # retroactively merge clusters
+    #                 for clust in range(1, len(neighbor_cluster_ids)):
+    #                     point_to_cluster_id[point_to_cluster_id == clust] = neighbor_cluster_ids[0]
+                
+                
+    # # loop over all pixels and do clustering ORIGINAL
+    # for i in range(num_points):
+    #     neighbors = neighbor_inds[i]
+    #     if len(neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
+    #         point_to_cluster_id[i] = cluster_id_counter
+    #         cluster_id_counter += 1
+    #     else:  # if with neighbor, record all neighbors
+    #         # neighbor_cluster_ids = point_to_cluster_id[neighbors]   #  This won't work sometimes, e.g. 2017-11-20
+    #         neighbor_cluster_ids = point_to_cluster_id[list(neighbors)]
+    #         neighbor_cluster_ids = neighbor_cluster_ids[neighbor_cluster_ids != -1]
+
+    #         if len(neighbor_cluster_ids) == 0:   # if no neighbor has been assigned to clusters, record current pixel as a separate cluster
+    #             point_to_cluster_id[i] = cluster_id_counter
+    #             cluster_id_counter += 1
+    #         else:                               # if some neighbors have been assigned to clusters, assign current pixel to the nearest cluster
+    #             point_to_cluster_id[i] = neighbor_cluster_ids[0]
 
     return point_to_cluster_id.tolist()
 
