@@ -46,7 +46,7 @@ def make_fire_history(fire,op=''):
     endloop = False  # flag to control the ending of the loop
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
-        # print(t)
+        print(t)
         # read daily gdf
         gdf = FireIO.load_gdfobj(t,op=op)
         gdf_1d = gdf[gdf.index == fid]
@@ -144,7 +144,7 @@ def save_gdf_1t(t,op=''):
 
     # create and save gdfs for each large active fire
     if len(fids_laf) > 0:
-        # print(f'{fids_laf} large active fires')
+        print(f'{fids_laf} large active fires')
         for fid in fids_laf:
             fire = allfires.fires[fid]
             # create gdf
@@ -181,7 +181,7 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
     endloop = False  # flag to control the ending of the loop
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
-        # print(t)
+        #print(t)
 
         # create and save gdfs according to input options
         if fperim:
@@ -199,7 +199,7 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
         #  - update t with the next time stamp
         t = FireObj.t_nb(t,nb='next')
 
-def yrend_clean(tyed):
+def yrend_clean(year):
     ''' At the end of a year, extract single fire files at t_ed of the fire
     '''
     import FireIO
@@ -209,8 +209,7 @@ def yrend_clean(tyed):
     import os
 
     # get all single fire ids using the year end data
-    # tyed = (year,12,31,'PM')
-    year = tyed[0]
+    tyed = (year,12,31,'PM')
     gdf = FireIO.load_gdfobj(tyed,op='')
     allfires = FireIO.load_fobj(tyed)
     fid_sfs = gdf[(gdf['farea']>falim) & (gdf.invalid==0)].index.to_list()
@@ -231,7 +230,7 @@ def yrend_clean(tyed):
             # only keeps the latest file for a fire
             for fnm in fnms:
                 if not os.path.samefile(fnm, fnmin):
-                    # print(fnm)
+                    print(fnm)
                     os.remove(fnm)
 
     # also remove individual fire data for invalid fires
