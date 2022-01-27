@@ -58,7 +58,9 @@ def read_VNP14ML04_clip(t, ext = False):
 
             # preliminary spatial filter from shapefile extent and quality filter
             # ext = [-156, 65.5, -152, 66.3] # test area for AK 2015
-            ext = [-119, 60, -110, 64] # test area for slave lake 2014
+            #ext = [-119, 60, -110, 64] # test area for slave lake 2014
+            ext = [106, 55, 163, 72] # test area for yakutia 2020
+            #ext = [147, 65, 154, 70] # test area for large fire in yakutia only
             # shp_name = 'AK.shp'
             # shp = get_any_shp(shp_name) # shapefile of test region
             # ext = list(shp.bounds)
@@ -839,6 +841,33 @@ def load_gdfobj_sf_final(year,fid,op=''):
 
     return gdf_sf
 
+def save_gdfobj_ign(gdf,t):
+    ''' Save daily single fire allfires diagnostic dataframe to a geojson file
+
+    Parameters
+    ----------
+    gdf : geopandas DataFrame
+        daily allfires diagnostic parameters
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM'
+    fid : int
+        fire id
+    '''
+    from datetime import date
+    from FireConsts import dirpjdata
+    d = date(*t[:-1])
+    
+    # get file name
+    fnm = dirpjdata+d.strftime('%Y')+'/Summary/ignitions'+d.strftime('%Y')+'.geojson'
+
+    # check folder
+    check_filefolder(fnm)
+
+    # save data to file
+    gdf.to_file(fnm, driver='GeoJSON')
+
+
+
 def get_summary_fnm(t):
     ''' Return the fire summary file name at year end
     Parameters
@@ -1035,3 +1064,4 @@ def get_lts_serialization(year=None):
         lts = None
 
     return lts
+
