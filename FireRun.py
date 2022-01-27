@@ -4,7 +4,7 @@ Module to control different runs
 def Yearbatchrun(year,tst=None,ted=None,restart=False):
     ''' Run the code for each single year
     '''
-    import FireMain,FireGdf,FireGdf_sfs,FireSummary
+    import FireMain,FireGdf,FireGdf_sfs,FireGdf_ign,FireSummary, FireGdf_sfs_merge
 
     import time
 
@@ -26,8 +26,12 @@ def Yearbatchrun(year,tst=None,ted=None,restart=False):
 
     # Run to save large fire geosjon files for each time step
     FireGdf_sfs.save_gdf_trng(tst=tst,ted=ted,fperim=True)
+    # FireGdf_sfs_merge.save_gdf_trng(ted=ted,fperim=True)
     t4 = time.time()
     print(f'{(t4-t3)/60.} minutes to save large fires')
+    
+    # Run to save ignition point layer for each time step
+    FireGdf_ign.save_gdf_trng(tst,ted)
 
     # Run to save year end summary and file lists
     FireSummary.save_sum_1d(tst,ted)
@@ -37,7 +41,7 @@ def Yearbatchrun(year,tst=None,ted=None,restart=False):
     print(f'{(t5-t4)/60.} minutes to generate summary')
 
     # Run to clean up large fire geojson files not needed
-    FireGdf_sfs.yrend_clean(ted)
+    # FireGdf_sfs.yrend_clean(ted)
 
     t2 = time.time()
     print(f'{(t2-t1)/60.} minutes to run code')
@@ -47,4 +51,4 @@ if __name__ == "__main__":
     '''
     import sys
     sys.path.insert(1, 'D:/fire_atlas/1_code/fireatlas')
-    Yearbatchrun(2014)
+    Yearbatchrun(2020)
