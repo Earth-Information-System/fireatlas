@@ -22,6 +22,32 @@ Modules required
 from FireLog import logger
 
 # Functions
+
+def correct_nested_ids(mergetuple):
+    ''' correct the target fids after nested merging 
+    this is done before the merging happens in cases when several fires merge in one time step
+    and also in the last time step to correct the heritage when several fires merge in different time steps
+    
+    Parameters
+    ----------
+    mergetuple: a list of tuples
+        a list containing source and target ids for merging
+
+    Returns
+    -------
+    mergetuple: a list of tuples
+        a list containing source and corrected target ids for merging
+    '''
+    mergedict = dict(mergetuple)
+    src, tgt = zip(*mergetuple)
+    while any(item in src for item in set(tgt)):
+        for i, tgt0 in enumerate(tgt):
+            if tgt0 in src:
+                mergetuple[i] = (mergetuple[i][0], mergedict[tgt0])
+        src, tgt = zip(*mergetuple)
+    return mergetuple
+
+
 def Fobj_init(tst,restart=False):
     ''' Initialize the fire object for a given time. This can be from the object
     saved at previous time, or can be initialized using Allfires().
@@ -53,129 +79,6 @@ def Fobj_init(tst,restart=False):
 
     return allfires
 
-def Fire_expand(allfires,afp,fids_ea):
-    ''' Use daily new AF pixels to create new Fobj or combine with existing Fobj
-
-    Parameters
-    ----------
-    allfires : Allfires obj
-        the existing Allfires object for the time step
-    afp : 3-element list
-        (lat, lon, FRP) of new active fire pixels
-    fids_ea : list
-        fire ids of existing active fires at previous time step
-
-    Returns
-    -------
-    allfires : Allfires obj
-        updated Allfires object for the day with new formed/expanded fire objects
-    '''
-
-    import FireObj,FireClustering,FireVector
-    from FireConsts import SPATIAL_THRESHOLD_KM,MAX_THRESH_CENT_KM,CONNECTIVITY_THRESHOLD_KM
-
-    # record current time for later use (t in allfires has been updated in the Fire_Forward function)
-    t = allfires.t
-
-    # do some initializations
-    idmax = allfires.number_of_fires-1  # maximum id of existing fires
-    fids_expanded = []      # a list recording Fobj ids which has been expanded
-    fids_new = []           # a list recording ids of new Fobjs
-
-    # extract centroid and expanding ranges of existing active fires (extracted using fids_ea)
-    eafires     = [allfires.fires[fid]  for fid in fids_ea]
-    eafirecents = [f.centroid for f in eafires]
-    eafirerngs  = [FireVector.addbuffer(f.hull,CONNECTIVITY_THRESHOLD_KM[f.ftype]*1000) for f in eafires]
-
-    # do preliminary clustering using new active fire locations (assign cid to each pixel)
-    afp_loc = [(x,y) for x,y,z in afp]
-    cid = FireClustering.do_clustering(afp_loc,SPATIAL_THRESHOLD_KM)  # this is the cluster id (starting from 0)
-    logger.info(f'New fire clusters of {max(cid)} at this time step')
-
-    # loop over each of the new clusters (0:cid-1) and determine its fate
-    FP2expand = {}  # the diction used to record fire pixels assigned to existing active fires {fid:Firepixels}
-    for ic in range(max(cid)+1):
-        # create cluster object using all newly detected active fires within a cluster
-        pixels = [afp[i] for i, v in enumerate(cid) if v==ic]
-        cluster = FireObj.Cluster(ic,pixels,t)  # create a Cluster object using the pixel locations
-        hull = cluster.hull  # the hull of the cluster
-
-        # extract potential neighbors using centroid distance (used for prefilter)
-        # id_cfs is the indices in eafirecents list, not the fire id
-        id_cfs = FireClustering.filter_centroid(cluster.centroid,eafirecents,MAX_THRESH_CENT_KM)
-
-        # now check if the cluster is truely close to an existing active fire object
-        # if yes, record all pixels to be added to the existing object
-        clusterdone = False
-        for id_cf in id_cfs:  # loop over all potential eafires
-            if clusterdone == False:  # one cluster can only be appended to one existing object
-                # if cluster touch the extending range of an existing fire
-                if eafirerngs[id_cf].intersects(hull):
-                    # record existing target fire id in fid_expand list
-                    fmid = fids_ea[id_cf]  # this is the fire id of the existing active fire
-                    # record pixels from target cluster (locs and time) along with the existing active fire object id
-                    newFPs = [FireObj.FirePixel((p[0],p[1]),p[2],t,fmid) for p in pixels] # new FirePixels from the cluster
-                    if fmid in FP2expand.keys():   # for a single existing object, there can be multiple new clusters to append
-                        FP2expand[fmid] = FP2expand[fmid] + newFPs
-                    else:
-                        FP2expand[fmid] = newFPs
-
-                    logger.info(f'Fire {fmid} expanded with pixels from new cluster {ic}')
-
-                    fids_expanded.append(fmid) # record fmid to fid_expanded
-
-                    clusterdone = True   # mark the cluster as done (no need to create new Fobj)
-
-        # if this cluster can't be appended to any existing Fobj, create a new fire object using the new cluster
-        if clusterdone is False:
-            # create a new fire id and add it to the fid_new list
-            id_newfire = idmax + 1
-            logger.info(f'Fire {id_newfire} created with pixels from new cluster {ic}')
-            fids_new.append(id_newfire)  # record id_newfire to fid_new
-
-            # use the fire id and new fire pixels to create a new Fire object
-            newfire = FireObj.Fire(id_newfire,t,pixels)
-
-            # add the new fire object to the fires list in the Allfires object
-            allfires.fires.append(newfire)
-
-            # increase the maximum id
-            idmax += 1
-
-    # update the expanded fire object (do the actual pixel appending)
-    #  - fire attributes to change: end time; pixels; newpixels, hull, extpixels
-    if len(FP2expand) > 0:
-        for fmid, newFPs in FP2expand.items():
-
-            # the target existing fire object
-            f = allfires.fires[fmid]
-
-            # update end time
-            f.t_ed = t
-
-            # update pixels
-            f.pixels = f.pixels + newFPs
-            f.newpixels = newFPs
-
-            # update the hull using previous hull and previous exterior pixels
-            phull = f.hull
-            pextlocs = [p.loc for p in f.extpixels]
-            newlocs = [p.loc for p in newFPs]
-            f.hull = FireVector.update_hull(phull,pextlocs+newlocs)  # use update_hull function to save time
-
-            # use the updated hull to update exterior pixels
-            f.extpixels = FireVector.cal_extpixels(f.extpixels+newFPs,f.hull)
-
-    # remove duplicates and sort the fid_expanded
-    fids_expanded = sorted(set(fids_expanded))
-
-    # record fid change for expanded and new
-    allfires.record_fids_change(fids_expanded=fids_expanded, fids_new=fids_new)
-
-    # logger.info(f'In total, {len(fids_expanded)} fires expanded, and {len(fids_new)} fires created')
-
-    return allfires
-
 def Fire_expand_rtree(allfires,afp,fids_ea):
     ''' Use daily new AF pixels to create new Fobj or combine with existing Fobj
 
@@ -197,7 +100,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
     import FireObj,FireClustering,FireVector
     from FireConsts import SPATIAL_THRESHOLD_KM,CONNECTIVITY_THRESHOLD_KM
 
-    # t0 = time.time()
+    t0 = time.time()
     # record current time for later use (t in allfires has been updated in the Fire_Forward function)
     t = allfires.t
 
@@ -212,15 +115,15 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
     
     # inserting boxes into a spatial index
     ea_idx = FireClustering.build_rtree(eafirerngs)
-    # t1 = time.time()
-    # logger.info(f'Time to build rtree: {t1-t0}')
+    t1 = time.time()
+    logger.info(f'Time to build rtree: {t1-t0}')
 
     # do preliminary clustering using new active fire locations (assign cid to each pixel)
     afp_loc = [(x,y) for x,y,z in afp]
     cid = FireClustering.do_clustering(afp_loc,SPATIAL_THRESHOLD_KM)  # this is the cluster id (starting from 0)
-    # logger.info(f'New fire clusters of {max(cid)} at this time step')
-    # t1 = time.time()
-    # logger.info(f'Time for initial clustering: {t1-t0}')
+    logger.info(f'New fire clusters of {max(cid)} at this time step')
+    t1 = time.time()
+    logger.info(f'Time for initial clustering: {t1-t0}')
 
     # loop over each of the new clusters (0:cid-1) and determine its fate
     FP2expand = {}  # the diction used to record fire pixels assigned to existing active fires {fid:Firepixels}
@@ -230,10 +133,8 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
         cluster = FireObj.Cluster(ic,pixels,t)  # create a Cluster object using the pixel locations
         hull = cluster.hull  # the hull of the cluster
 
-        # extract potential neighbors using centroid distance (used for prefilter)
-        # id_cfs is the indices in eafirecents list, not the fire id
-        # id_cfs = FireClustering.filter_centroid(cluster.centroid,eafirecents,MAX_THRESH_CENT_KM)
-        id_cfs = FireClustering.idx_intersection(ea_idx, hull) # extract potential neighbours using spatial index
+        # extract potential neighbours using spatial index (used for prefilter)
+        id_cfs = FireClustering.idx_intersection(ea_idx, cluster.b_box) 
 
         # now check if the cluster is truely close to an existing active fire object
         # if yes, record all pixels to be added to the existing object
@@ -250,11 +151,11 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
                         FP2expand[fmid] = FP2expand[fmid] + newFPs
                     else:
                         FP2expand[fmid] = newFPs
-
+    
                     # logger.info(f'Fire {fmid} expanded with pixels from new cluster {ic}')
-
+    
                     fids_expanded.append(fmid) # record fmid to fid_expanded
-
+    
                     clusterdone = True   # mark the cluster as done (no need to create new Fobj)
         
         
@@ -273,8 +174,8 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
 
             # increase the maximum id
             idmax += 1
-    # t1 = time.time()
-    # logger.info(f'Time for intersections: {t1-t0}')
+    t1 = time.time()
+    logger.info(f'Time for intersections: {t1-t0}')
     # update the expanded fire object (do the actual pixel appending)
     #  - fire attributes to change: end time; pixels; newpixels, hull, extpixels
     if len(FP2expand) > 0:
@@ -313,7 +214,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
 
     return allfires
 
-def Fire_merge(allfires,fids_ne,fids_ea):
+def Fire_merge_rtree(allfires,fids_ne,fids_ea):
     ''' For newly formed/expanded fire objects close to existing active fires, merge them
 
     Parameters
@@ -331,18 +232,19 @@ def Fire_merge(allfires,fids_ne,fids_ea):
         Allfires obj after fire merging
     '''
 
-    import FireObj,FireClustering,FireVector
-    from FireConsts import MAX_THRESH_CENT_KM,CONNECTIVITY_THRESHOLD_KM
+    import FireObj,FireClustering,FireVector, FireIO
+    from FireConsts import CONNECTIVITY_THRESHOLD_KM
 
     # extract existing active fire data (use extending ranges)
     eafires     = [allfires.fires[fid]  for fid in fids_ea]
-    eafirecents = [f.centroid for f in eafires]
     eafirerngs  = [FireVector.addbuffer(f.hull,CONNECTIVITY_THRESHOLD_KM[f.ftype]*1000) for f in eafires]
 
     # extract existing active fire data (use hulls to avoid duplicate buffers)
     nefires     = [allfires.fires[fid]  for fid in fids_ne]
-    nefirecents = [f.centroid for f in nefires]
     nefirehulls = [f.hull for f in nefires]
+    
+    # inserting boxes into a spatial index
+    ea_idx = FireClustering.build_rtree(eafirerngs)
 
     # loop over all fire objects that have newly expanded or formed, record merging fire id pairs
     fids_merge = []  # initialize the merged fire id pairs {source id:target id}
@@ -351,7 +253,7 @@ def Fire_merge(allfires,fids_ne,fids_ea):
         fid_ne = fids_ne[id_ne]    # newly formed/expanded fire id
         if firedone[fid_ne] == False: # skip objects that have been merged to others in earlier loop
             # potential neighbors
-            id_cfs = FireClustering.filter_centroid(nefirecents[id_ne],eafirecents,MAX_THRESH_CENT_KM)
+            id_cfs = FireClustering.idx_intersection(ea_idx, nefirehulls[id_ne].bounds)
             # loop over all potential neighbor fobj candidiates
             for id_ea in id_cfs:
                 fid_ea = fids_ea[id_ea]  # fire id of existing active fire
@@ -370,16 +272,22 @@ def Fire_merge(allfires,fids_ne,fids_ea):
                             fids_merge.append((fid_ne,fid_ea))
                             # fid_ne is merged to others, so stop it and check the next id_ne
                             ## technically the eafirerngs and nefirehulls have to be updated before the next loop happens
-                            ## else if can happen that intersections are not being detected
+                            ## else it can happen that intersections are not being detected
                             ## if more than two fires grow together!!
-                            break
+                            #break
 
     # loop over each pair in the fids_merge, and do modifications for both target and source objects
     #  - target: t_ed; pixels, newpixels, hull, extpixels
-    #  - source: invalidated
+    #  - source: invalidated 
     if len(fids_merge) > 0:
+        # fids_merge needs to be corrected if several fires merge at once!
+        # i.e. if fire 2 merges into fire 1 and fire 3 merges into fire 2
+        # in this case not correcting fids_merge will lead to invalidation of fire 3!!!
+        fids_merge =  correct_nested_ids(fids_merge)
+        #logger.info(f'IDs to merge: {fids_merge}')
+        
         for fid1,fid2 in fids_merge:
-            # logger.info(f'Fire {fid1} was merged to Fire {fid2}')
+            #logger.info(f'Fire {fid1} was merged to Fire {fid2}')
 
             # update source and target objects
             f_source = allfires.fires[fid1]
@@ -401,8 +309,10 @@ def Fire_merge(allfires,fids_ne,fids_ea):
             # - use the updated hull to update exterior pixels
             f_target.extpixels = FireVector.cal_extpixels(f_target.extpixels+f_source.pixels,f_target.hull)
 
-            # invalidate source object
+            # invalidate and deactivate source object
             f_source.invalid = True
+            f_source.mergeid = f_target.mergeid
+            #logger.info(f'Source id overwritten: {f_source.id} = {f_target.id}')
 
             # record the heritages
             allfires.heritages.append((fid1,fid2))
@@ -414,6 +324,7 @@ def Fire_merge(allfires,fids_ne,fids_ea):
         allfires.record_fids_change(fids_merged = fids_merged, fids_invalid = fids_invalid)
 
     return allfires
+
 
 def Fire_Forward(tst,ted,restart=False):
     ''' The wrapper function to progressively track all fire events for a time period
@@ -491,7 +402,7 @@ def Fire_Forward(tst,ted,restart=False):
             fids_ea = sorted(set(fids_ea+allfires.fids_new))   # existing active fires (new fires included)
             t_merge = time.time()
             if len(fids_ne) > 0:
-                allfires = Fire_merge(allfires,fids_ne,fids_ea)
+                allfires = Fire_merge_rtree(allfires,fids_ne,fids_ea)
             t_merge2 = time.time()
             logger.info(f'merging fires {(t_merge2-t_merge)}')
 
@@ -508,13 +419,16 @@ def Fire_Forward(tst,ted,restart=False):
         logger.info(f'fids_merged: {allfires.fids_merged}')
         logger.info(f'fids_invalid: {allfires.fids_invalid}')
 
-        #  - save updated allfires object to pickle file
-        FireIO.save_fobj(allfires,t)
-
+        
         # 9. loop control
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireObj.t_dif(t,ted)==0:
             endloop = True
+            # correct fire heritage of last time step
+            allfires.heritages = correct_nested_ids(allfires.heritages)
+
+        #  - save updated allfires object to pickle file
+        FireIO.save_fobj(allfires,t)  
 
         #  - record running times for the loop
         t2 = time.time()
