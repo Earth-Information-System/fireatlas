@@ -53,11 +53,13 @@ def make_gdf_fperim(allfires):
 
     # update data for each active fire object
     for fid in (allfires.fids_active):
-        gdf.loc[fid,'clat'] = allfires.fires[fid].centroid[0]
-        gdf.loc[fid,'clon'] = allfires.fires[fid].centroid[1]
+        #gdf.loc[fid,'clat'] = allfires.fires[fid].centroid[0]
+        #gdf.loc[fid,'clon'] = allfires.fires[fid].centroid[1]
+        gdf.loc[fid,'mergid'] = fid
         gdf.loc[fid,'ftype'] = allfires.fires[fid].ftype
         gdf.loc[fid,'isactive'] = 1
         gdf.loc[fid,'invalid'] = 0
+        gdf.loc[fid,'isignition'] = allfires.fires[fid].isignition
         gdf.loc[fid,'n_pixels'] = int(allfires.fires[fid].n_pixels)
         gdf.loc[fid,'n_newpixels'] = int(allfires.fires[fid].n_newpixels)
         gdf.loc[fid,'farea'] = allfires.fires[fid].farea
@@ -74,14 +76,17 @@ def make_gdf_fperim(allfires):
         gdf.loc[fid,'ted_month'] = int(allfires.fires[fid].t_ed[1])
         gdf.loc[fid,'ted_day'] = int(allfires.fires[fid].t_ed[2])
         gdf.loc[fid,'ted_ampm'] = allfires.fires[fid].t_ed[3]
+        gdf.loc[fid,'ted_doy'] = allfires.fires[fid].cdoy
 
     # update data for each newly invalidated object
     for fid in (allfires.fids_invalid):
-        gdf.loc[fid,'clat'] = allfires.fires[fid].centroid[0]
-        gdf.loc[fid,'clon'] = allfires.fires[fid].centroid[1]
+        # gdf.loc[fid,'clat'] = allfires.fires[fid].centroid[0]
+        # gdf.loc[fid,'clon'] = allfires.fires[fid].centroid[1]
+        gdf.loc[fid,'mergid'] = fid
         gdf.loc[fid,'ftype'] = allfires.fires[fid].ftype
         gdf.loc[fid,'isactive'] = 0
         gdf.loc[fid,'invalid'] = 1
+        gdf.loc[fid,'isignition'] = allfires.fires[fid].isignition
         gdf.loc[fid,'n_pixels'] = int(allfires.fires[fid].n_pixels)
         gdf.loc[fid,'n_newpixels'] = int(allfires.fires[fid].n_newpixels)
         gdf.loc[fid,'farea'] = allfires.fires[fid].farea
@@ -98,6 +103,7 @@ def make_gdf_fperim(allfires):
         gdf.loc[fid,'ted_month'] = int(allfires.fires[fid].t_ed[1])
         gdf.loc[fid,'ted_day'] = int(allfires.fires[fid].t_ed[2])
         gdf.loc[fid,'ted_ampm'] = allfires.fires[fid].t_ed[3]
+        gdf.loc[fid,'ted_doy'] = allfires.fires[fid].cdoy
 
     # make sure the attribute data formats follow that defined in dd
     for v,tp in dd.items():
@@ -230,7 +236,7 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
     endloop = False  # flag to control the ending of the loop
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
-        # print(t)
+        #print(t)
 
         # read Allfires object from the saved pkl file
         allfires = FireIO.load_fobj(t)
