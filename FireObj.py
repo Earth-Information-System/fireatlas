@@ -410,6 +410,7 @@ class Fire:
         '''
         # initialize fire id
         self.id = id
+        self.mergeid = id
 
         # initialize current time, fire start time, and fire final time
         tlist = list(t)
@@ -449,6 +450,12 @@ class Fire:
         '''
         from datetime import date
         return date(*self.t[:-1])
+    
+    @property
+    def cdoy(self):
+        ''' Current day (datetime date)
+        '''
+        return self.cday.timetuple().tm_yday
 
     @property
     def ampm(self):
@@ -479,7 +486,14 @@ class Fire:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
         return (self.t_inactive <= maxoffdays)
-
+    
+    @property
+    def isignition(self):
+        ''' Is the current timestep the ignition?
+        '''
+        ign = (t_dif(self.t_st,self.t_ed) == 0)*1
+        return ign
+        
     @property
     def locs(self):
         ''' List of fire pixel locations (lat,lon)
@@ -747,6 +761,13 @@ class Cluster:
         '''
         hull = FireVector.cal_hull(self.locs)
         return hull
+    
+    @property
+    def b_box(self):
+        ''' Bounding box of concave hull
+        '''
+        b_box = self.hull.bounds
+        return b_box
 
 # d. Object - FirePixel
 class FirePixel:
