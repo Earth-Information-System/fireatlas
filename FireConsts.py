@@ -12,7 +12,7 @@ dirextdata = dirhome + '/Data/' # exterior input data directory
 # parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
 SPATIAL_THRESHOLD_KM = 1  # threshold of spatial distance (between pixels, km) used to do fire initial clustering
-MAX_THRESH_CENT_KM = 50   # threshold of spatial distance (between clusters centroid, km) used to filter nearby clusters
+#MAX_THRESH_CENT_KM = 50   # threshold of spatial distance (between clusters centroid, km) used to filter nearby clusters
 
 # fire type and visualization parameters
 FTYP = {0:'Other', 1:'Urban', 2:'Forest wild', 3:'Forest manage', 4:'Shrub wild', 5:'Shrub manage', 6:'Agriculture'}      # fire type names
@@ -38,10 +38,12 @@ falim = 4    # large fire area threshold (in km2)
 
 # diagnostic data name and types saved in geojson files (in addition to geometries)
 dd = {'fid':'int',                  # id
-      'clat':'float',               # centroid latitude   -> centroid[0]
-      'clon':'float',               # centroid longitude  -> centroid[1]
+      'mergid':'int',               # this is the id in the large fire database
+      #'clat':'float',               # centroid latitude   -> centroid[0]
+      #'clon':'float',               # centroid longitude  -> centroid[1]
       'ftype':'int',                # fire type
       'isactive':'int',             # active status
+      'isignition':'int',           # is this a new ignition?
       'invalid':'int',              # invalid status
       'n_pixels':'int',             # number of total pixels
       'n_newpixels':'int',          # number of new pixels
@@ -59,4 +61,29 @@ dd = {'fid':'int',                  # id
       'ted_month':'int',
       'ted_day':'int',
       'ted_ampm':'str',
+      'ted_doy':'int',
       }
+
+# dd = {'fid':'int',                  # id
+#       'clat':'float',               # centroid latitude   -> centroid[0]
+#       'clon':'float',               # centroid longitude  -> centroid[1]
+#       'ftype':'int',                # fire type
+#       'isactive':'int',             # active status
+#       'invalid':'int',              # invalid status
+#       'n_pixels':'int',             # number of total pixels
+#       'n_newpixels':'int',          # number of new pixels
+#       'farea':'float',              # fire size
+#       'fperim':'float',             # fire perimeter length
+#       'flinelen':'float',           # active fire front line length
+#       'duration':'float',           # fire duration
+#       'pixden':'float',             # fire pixel density
+#       'meanFRP':'float',            # mean FRP of the new fire pixels
+#       'tst_year':'int',             # t_st[0]
+#       'tst_month':'int',
+#       'tst_day':'int',
+#       'tst_ampm':'str',
+#       'ted_year':'int',             # t_ed[0]
+#       'ted_month':'int',
+#       'ted_day':'int',
+#       'ted_ampm':'str',
+#       }
