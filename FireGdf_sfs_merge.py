@@ -146,7 +146,7 @@ def save_gdf_1fire(fid, start_end, op=''):
     start_end_fire = start_end[fid]
     gdf_ts = make_fire_history(fid, start_end_fire, op=op)
     t = start_end_fire[1]
-    FireIO.save_gdfobj_sf(gdf_ts,t,fid,op=op)
+    FireIO.save_gdfobj(gdf_ts,t,param='large',fid=fid,op=op)
 
 
 def save_gdf_trng(ted,fperim=False,fline=False,NFP=False,fall=False):

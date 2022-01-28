@@ -75,7 +75,7 @@ def save_gdf_trng(tst,ted):
     '''
     import FireIO
     gdf_ign = find_all_ign(tst, ted)
-    FireIO.save_gdfobj_ign(gdf_ign,tst)
+    FireIO.save_gdfobj(gdf_ign,tst,param='ign')
         
 
 

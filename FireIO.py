@@ -59,8 +59,8 @@ def read_VNP14ML04_clip(t, ext = False):
             # preliminary spatial filter from shapefile extent and quality filter
             # ext = [-156, 65.5, -152, 66.3] # test area for AK 2015
             #ext = [-119, 60, -110, 64] # test area for slave lake 2014
-            ext = [106, 55, 163, 72] # test area for yakutia 2020
-            #ext = [147, 65, 154, 70] # test area for large fire in yakutia only
+            #ext = [106, 55, 163, 72] # test area for yakutia 2020
+            ext = [147, 65, 154, 70] # test area for large fire in yakutia only
             # shp_name = 'AK.shp'
             # shp = get_any_shp(shp_name) # shapefile of test region
             # ext = list(shp.bounds)
@@ -642,9 +642,9 @@ def get_gdfobj_fnm(t,op=''):
 
     d = date(*t[:-1])
     if op == '':
-        fnm = dirpjdata+d.strftime('%Y')+'/Snapshot/'+d.strftime('%Y%m%d')+t[-1]+'.geojson'
+        fnm = dirpjdata+d.strftime('%Y')+'/Snapshot/'+d.strftime('%Y%m%d')+t[-1]+'.gpkg'
     else:
-        fnm = dirpjdata+d.strftime('%Y')+'/Snapshot/'+d.strftime('%Y%m%d')+t[-1]+'_'+op+'.geojson'
+        fnm = dirpjdata+d.strftime('%Y')+'/Snapshot/'+d.strftime('%Y%m%d')+t[-1]+'_'+op+'.gpkg'
 
     return fnm
 
@@ -670,8 +670,8 @@ def check_gdfobj(t,op=''):
 
     return os.path.exists(fnm)
 
-def save_gdfobj(gdf,t,op=''):
-    ''' Save daily allfires diagnostic dataframe to a geojson file
+def save_gdfobj(gdf,t,param='',fid='',op=''):
+    ''' Save geopandas to a gpgk file
 
     Parameters
     ----------
@@ -679,16 +679,37 @@ def save_gdfobj(gdf,t,op=''):
         daily allfires diagnostic parameters
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM'
+    param : string
+        if empty: save daily allfires diagnostic dataframe
+        if 'large': save daily single fire 
+        if 'ign': save ignition layer
+    fid : int,
+        fire id (needed only with param = 'large')
     '''
 
     # get file name
-    fnm = get_gdfobj_fnm(t,op=op)
-
+    if param == '':
+        fnm = get_gdfobj_fnm(t,op=op)
+    elif param == 'large':
+        fnm = get_gdfobj_sf_fnm(t,fid,op=op)
+    elif param == 'ign':
+        from datetime import date
+        from FireConsts import dirpjdata
+        d = date(*t[:-1])
+        
+        # get file name
+        fnm = dirpjdata+d.strftime('%Y')+'/Summary/ignitions'+d.strftime('%Y')+'.gpkg'
+        
     # check folder
     check_filefolder(fnm)
+    
+    # create a new id column used for indexing 
+    #(id column will be dropped when reading gpkg)
+    gdf["id"] = gdf.index 
+    gdf = gdf.set_index('id')
 
     # save file
-    gdf.to_file(fnm, driver='GeoJSON')
+    gdf.to_file(fnm, driver='GPKG')
 
 def load_gdfobj(t,op=''):
     ''' Load daily allfires diagnostic dataframe to a geojson file
@@ -709,6 +730,9 @@ def load_gdfobj(t,op=''):
 
     # read data as gpd DataFrame
     gdf = gpd.read_file(fnm)
+    
+    # with gpkg the id column has to be renamed back to fid
+    gdf = gdf.rename(columns={"id": "fid"})
 
     # correct the datatype
     gdf = correct_dtype(gdf,op=op)
@@ -737,9 +761,9 @@ def get_gdfobj_sf_fnm(t,fid,op=''):
     d = date(*t[:-1])
 
     if op == '':
-        fnm = dirpjdata+d.strftime('%Y')+'/Largefire/F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'.geojson'
+        fnm = dirpjdata+d.strftime('%Y')+'/Largefire/F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'.gpkg'
     else:
-        fnm = dirpjdata+d.strftime('%Y')+'/Largefire/F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'_'+op+'.geojson'
+        fnm = dirpjdata+d.strftime('%Y')+'/Largefire/F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'_'+op+'.gpkg'
 
     return fnm
 
@@ -761,32 +785,11 @@ def get_gdfobj_sf_fnms_year(year,fid,op=''):
     from glob import glob
 
     if op == '':
-        fnms = glob(dirpjdata+str(year)+'/Largefire/F'+str(int(fid))+'_??????????.geojson')
+        fnms = glob(dirpjdata+str(year)+'/Largefire/F'+str(int(fid))+'_??????????.gpkg')
     else:
-        fnms = glob(dirpjdata+str(year)+'/Largefire/F'+str(int(fid))+'_??????????_'+op+'.geojson')
+        fnms = glob(dirpjdata+str(year)+'/Largefire/F'+str(int(fid))+'_??????????_'+op+'.gpkg')
 
     return fnms
-
-def save_gdfobj_sf(gdf,t,fid,op=''):
-    ''' Save daily single fire allfires diagnostic dataframe to a geojson file
-
-    Parameters
-    ----------
-    gdf : geopandas DataFrame
-        daily allfires diagnostic parameters
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM'
-    fid : int
-        fire id
-    '''
-    # get file name
-    fnm = get_gdfobj_sf_fnm(t,fid,op=op)
-
-    # check folder
-    check_filefolder(fnm)
-
-    # save data to file
-    gdf.to_file(fnm, driver='GeoJSON')
 
 
 def load_gdfobj_sf(t,fid,op=''):
@@ -840,33 +843,6 @@ def load_gdfobj_sf_final(year,fid,op=''):
     gdf_sf = load_gdfobj_sf(t, fid, op='')
 
     return gdf_sf
-
-def save_gdfobj_ign(gdf,t):
-    ''' Save daily single fire allfires diagnostic dataframe to a geojson file
-
-    Parameters
-    ----------
-    gdf : geopandas DataFrame
-        daily allfires diagnostic parameters
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM'
-    fid : int
-        fire id
-    '''
-    from datetime import date
-    from FireConsts import dirpjdata
-    d = date(*t[:-1])
-    
-    # get file name
-    fnm = dirpjdata+d.strftime('%Y')+'/Summary/ignitions'+d.strftime('%Y')+'.geojson'
-
-    # check folder
-    check_filefolder(fnm)
-
-    # save data to file
-    gdf.to_file(fnm, driver='GeoJSON')
-
-
 
 def get_summary_fnm(t):
     ''' Return the fire summary file name at year end

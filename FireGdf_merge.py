@@ -190,7 +190,7 @@ def save_gdf_1t(allfires, heritage, op=''):
 
     # save gdf
     if len(gdf) > 0:
-        FireIO.save_gdfobj(gdf,allfires.t,op=op)
+        FireIO.save_gdfobj(gdf,allfires.t,param='',op=op)
 
 def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
     ''' Wrapper to create and save gdf files for a time period
