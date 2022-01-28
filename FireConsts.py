@@ -43,6 +43,7 @@ dd = {'fid':'int',                  # id
       #'clon':'float',               # centroid longitude  -> centroid[1]
       'ftype':'int',                # fire type
       'isactive':'int',             # active status
+      't_inactive':'int',           # how long has it been inactive
       'isignition':'int',           # is this a new ignition?
       'invalid':'int',              # invalid status
       'n_pixels':'int',             # number of total pixels

@@ -62,6 +62,7 @@ def make_gdf_fperim(allfires, heritage):
         gdf.loc[fid,'isactive'] = 1
         gdf.loc[fid,'invalid'] = 0
         gdf.loc[fid,'isignition'] = allfires.fires[fid].isignition
+        gdf.loc[fid,'t_inactive'] = int(allfires.fires[fid].t_inactive)
         gdf.loc[fid,'n_pixels'] = int(allfires.fires[fid].n_pixels)
         gdf.loc[fid,'n_newpixels'] = int(allfires.fires[fid].n_newpixels)
         gdf.loc[fid,'farea'] = allfires.fires[fid].farea
@@ -88,6 +89,9 @@ def make_gdf_fperim(allfires, heritage):
     for fid in (allfires.fids_invalid):
         gdf.loc[fid,'invalid'] = 1
     gdf.drop(gdf.index[gdf['invalid'] == 1], inplace = True)
+    
+    # drop inactive fires
+    gdf.drop(gdf.index[gdf['isactive'] == 0], inplace = True)
 
     # make sure the attribute data formats follow that defined in dd
     for v,tp in dd.items():
