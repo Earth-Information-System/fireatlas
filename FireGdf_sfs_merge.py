@@ -38,44 +38,55 @@ def make_fire_history(fid, start_end,op=''):
     gdf_all : geopandas DataFrame
         the gdf containing half daily fire basic attributes and fire perimeter
     '''
+    import math
     import FireObj,FireIO
 
     #fid = fire.id
     tst,ted = start_end  # start and ending time of the fire
 
     endloop = False  # flag to control the ending of the loop
+    t_inact = 0      # counts the days a fire is inactive before it spreads again
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
         #print(t)
         # read daily gdf
         gdf = FireIO.load_gdfobj(t,op=op)
-        gdf_1d = gdf[gdf.mergid == fid] # here we need to enter merge id instead of index
-
-        # merge if several ids
-        if len(gdf_1d) > 1:
-            gdf_1d = merge_fires(gdf_1d, fid)
+        gdf_fid = gdf[gdf.mergid == fid] # here we need to enter merge id instead of index
         
-        if len(gdf_1d) == 0:
-            gdf_1d.loc[fid] = None
-        else:
-            gdf_1d.index = [FireObj.t2dt(t)]
+        # skip date if now new pixels
+        gdf_fid = gdf_fid[gdf_fid.n_newpixels > 0]
+        if len(gdf_fid) == 0:
+            t = FireObj.t_nb(t,nb='next')
+            t_inact += 0.5 # half-daily time steps
+            continue
+        
+        # merge if several ids
+        if len(gdf_fid) > 1:
+            gdf_fid = merge_fires(gdf_fid, fid, tst, t)
+        
+        # change index to date
+        gdf_fid.index = [FireObj.t2dt(t)]
+        
+        # update t_inactive
+        gdf_fid.t_inactive = math.floor(t_inact) # inactivity is counted in full days
 
         # append daily row to gdf_all
         if FireObj.t_dif(t,tst)==0:
-            gdf_all = gdf_1d
+            gdf_all = gdf_fid
         else:
-            gdf_all = gdf_all.append(gdf_1d)
+            gdf_all = gdf_all.append(gdf_fid)
 
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireObj.t_dif(t,ted)==0:
             endloop = True
 
         #  - update t with the next time stamp
+        t_inact = 0 # reset inactivity counter
         t = FireObj.t_nb(t,nb='next')
 
 
     # use correct time column as index
-    gdf_all.index = FireObj.ftrange(tst,ted)
+    # gdf_all.index = FireObj.ftrange(tst,ted)
 
     # remove fid column to save space
     # gdf_all = gdf_all.drop(columns='fid')
@@ -83,7 +94,7 @@ def make_fire_history(fid, start_end,op=''):
     return gdf_all
 
 
-def merge_fires(gdf, fid):
+def merge_fires(gdf_fid, fid, tst, t):
     ''' merge fire perimeters of all fires with the same merge id
 
     Parameters
@@ -97,36 +108,35 @@ def merge_fires(gdf, fid):
     gdf_diss : geopandas DataFrame
         the gdf containing a merged geometry and summary stats
     '''
+    from datetime import date
+    import FireObj
     
     # dissolve the dataframe
-    gdf_diss = gdf.dissolve(by = 'mergid')
+    gdf_diss = gdf_fid.dissolve(by = 'mergid')
     
     # replace some values with sums
     gdf_diss['mergid'] = fid
-    gdf_diss.loc[fid,'n_pixels'] = sum(gdf.n_pixels)
-    gdf_diss.loc[fid,'n_newpixels'] = sum(gdf.n_newpixels)
-    gdf_diss.loc[fid,'farea'] = sum(gdf.farea)
-    gdf_diss.loc[fid,'fperim'] = sum(gdf.fperim)
-    gdf_diss.loc[fid,'flinelen'] = sum(gdf.flinelen)
-    gdf_diss.loc[fid,'duration'] = gdf.loc[fid,'duration']
-    gdf_diss.loc[fid,'tst_year'] = gdf.loc[fid,'tst_year']
-    gdf_diss.loc[fid,'tst_month'] = gdf.loc[fid,'tst_month']
-    gdf_diss.loc[fid,'tst_day'] = gdf.loc[fid,'tst_day']
-    gdf_diss.loc[fid,'tst_ampm'] = gdf.loc[fid,'tst_ampm']
-    gdf_diss.loc[fid,'ted_year'] = gdf.loc[fid,'ted_year']
-    gdf_diss.loc[fid,'ted_month'] = gdf.loc[fid,'ted_month']
-    gdf_diss.loc[fid,'ted_day'] = gdf.loc[fid,'ted_day']
-    gdf_diss.loc[fid,'ted_ampm'] = gdf.loc[fid,'ted_ampm']
-    gdf_diss.loc[fid,'ted_doy'] = gdf.loc[fid,'ted_doy']
+    gdf_diss.loc[fid,'n_pixels'] = sum(gdf_fid.n_pixels)
+    gdf_diss.loc[fid,'n_newpixels'] = sum(gdf_fid.n_newpixels)
+    gdf_diss.loc[fid,'farea'] = sum(gdf_fid.farea)
+    gdf_diss.loc[fid,'fperim'] = sum(gdf_fid.fperim)
+    gdf_diss.loc[fid,'flinelen'] = sum(gdf_fid.flinelen)
+    gdf_diss.loc[fid,'tst_year'] = int(tst[0])
+    gdf_diss.loc[fid,'tst_month'] = int(tst[1])
+    gdf_diss.loc[fid,'tst_day'] = int(tst[2])
+    gdf_diss.loc[fid,'tst_ampm'] = tst[3]
+    gdf_diss.loc[fid,'ted_year'] = int(t[0])
+    gdf_diss.loc[fid,'ted_month'] = int(t[0])
+    gdf_diss.loc[fid,'ted_day'] = int(t[0])
+    gdf_diss.loc[fid,'ted_ampm'] = t[3]
+    gdf_diss.loc[fid,'ted_doy'] = date(*t[:-1]).timetuple().tm_yday
+    gdf_diss.loc[fid,'duration'] = FireObj.t_dif(tst,t) + 0.5
     
     # weighted average computed for averages
-    gdf = gdf.assign(pixweigh = gdf['pixden']*gdf['farea']) ## IS THIS CORRECT?
-    gdf_diss.loc[fid,'pixden'] = sum(gdf.pixweigh)/sum(gdf.farea)
-    gdf = gdf.assign(FRPweigh = gdf['meanFRP']*gdf['n_newpixels'])
-    if sum(gdf.n_newpixels) > 0:
-        gdf_diss.loc[fid,'meanFRP'] = sum(gdf.FRPweigh)/sum(gdf.n_newpixels)
-    else:
-        gdf_diss.loc[fid,'meanFRP'] = -999
+    gdf_fid = gdf_fid.assign(pixweigh = gdf_fid['pixden']*gdf_fid['farea']) ## IS THIS CORRECT?
+    gdf_diss.loc[fid,'pixden'] = sum(gdf_fid.pixweigh)/sum(gdf_fid.farea)
+    gdf_fid = gdf_fid.assign(FRPweigh = gdf_fid['meanFRP']*gdf_fid['n_newpixels'])
+    gdf_diss.loc[fid,'meanFRP'] = sum(gdf_fid.FRPweigh)/sum(gdf_fid.n_newpixels)
     
     return(gdf_diss)
 
