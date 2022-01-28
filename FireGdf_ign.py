@@ -45,14 +45,15 @@ def find_all_ign(tst, ted):
     while endloop == False:
         #print(t)
         # read daily gdf
-        gdf = FireIO.load_gdfobj(t)
-        gdf_ign = gdf[gdf.isignition == 1] # here we need to enter merge id instead of index
-
-        # append daily row to gdf_all
-        if FireObj.t_dif(t,tst)==0:
-            gdf_all = gdf_ign
-        else:
-            gdf_all = gdf_all.append(gdf_ign)
+        if FireIO.check_gdfobj(t,op=''):
+            gdf = FireIO.load_gdfobj(t)
+            gdf_ign = gdf[gdf.isignition == 1] # here we need to enter merge id instead of index
+    
+            # append daily row to gdf_all
+            if FireObj.t_dif(t,tst)==0:
+                gdf_all = gdf_ign
+            else:
+                gdf_all = gdf_all.append(gdf_ign)
 
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireObj.t_dif(t,ted)==0:
