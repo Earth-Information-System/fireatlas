@@ -649,7 +649,7 @@ def get_gdfobj_fnm(t,op=''):
     return fnm
 
 def check_gdfobj(t,op=''):
-    ''' Check if the geojson file storing a daily allfires attributes exists
+    ''' Check if the gpkg file storing a daily allfires attributes exists
 
     Parameters
     ----------
@@ -683,6 +683,7 @@ def save_gdfobj(gdf,t,param='',fid='',op=''):
         if empty: save daily allfires diagnostic dataframe
         if 'large': save daily single fire 
         if 'ign': save ignition layer
+        if 'final': save final perimeters layer
     fid : int,
         fire id (needed only with param = 'large')
     '''
@@ -692,13 +693,13 @@ def save_gdfobj(gdf,t,param='',fid='',op=''):
         fnm = get_gdfobj_fnm(t,op=op)
     elif param == 'large':
         fnm = get_gdfobj_sf_fnm(t,fid,op=op)
-    elif param == 'ign':
+    else:
         from datetime import date
         from FireConsts import dirpjdata
         d = date(*t[:-1])
         
         # get file name
-        fnm = dirpjdata+d.strftime('%Y')+'/Summary/ignitions'+d.strftime('%Y')+'.gpkg'
+        fnm = dirpjdata+d.strftime('%Y')+'/Summary/'+param+d.strftime('%Y')+'.gpkg'
         
     # check folder
     check_filefolder(fnm)
@@ -820,29 +821,6 @@ def load_gdfobj_sf(t,fid,op=''):
     gdf = gdf.set_index('index')
 
     return gdf
-
-def load_gdfobj_sf_final(year,fid,op=''):
-    ''' Load single fire data at the final day of fire
-
-    Parameters
-    ----------
-    fid : int
-        fire id
-    Returns
-    ----------
-    gdf : geopandas DataFrame
-        time series of daily single fire diagnostic parameters
-    '''
-    import geopandas as gpd
-    import pandas as pd
-
-    # get the final day of fire
-    t = load_fobj((year,12,31,'PM')).fires[fid].t_ed
-
-    # read data for small fire
-    gdf_sf = load_gdfobj_sf(t, fid, op='')
-
-    return gdf_sf
 
 def get_summary_fnm(t):
     ''' Return the fire summary file name at year end
