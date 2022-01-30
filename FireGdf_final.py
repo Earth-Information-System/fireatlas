@@ -56,6 +56,11 @@ def find_all_end(tst, ted):
 
     return gdf_all
 
+
+    
+
+    
+    
 def save_gdf_trng(tst,ted):
     ''' Wrapper to create and save all ignitions as gdf
 
@@ -66,9 +71,16 @@ def save_gdf_trng(tst,ted):
     ted : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' at end time
     '''
-    import FireIO
+    import FireIO, PostProcess
+    
     gdf = find_all_end(tst, ted)
     FireIO.save_gdfobj(gdf,tst,param='final')
+    
+    # find water tiles
+    #tiles = PostProcess.all_water_tiles(gdf)
+    gdf_clip = PostProcess.clip_lakes(gdf, tst)
+
+    FireIO.save_gdfobj(gdf_clip,tst,param='final_lakes')
         
 
 
