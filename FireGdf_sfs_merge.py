@@ -23,77 +23,6 @@ Modules required
 * FireConsts
 """
 
-def make_fire_history(fid, start_end,op=''):
-    ''' derive time series of single fire attributes using the half-daily gdf summary
-
-    Parameters
-    ----------
-    fire : Fire object
-        the fire need to update
-    start_end: tuple
-        start and end date and AM/PM of the fire object
-
-    Returns
-    -------
-    gdf_all : geopandas DataFrame
-        the gdf containing half daily fire basic attributes and fire perimeter
-    '''
-    import math
-    import FireObj,FireIO
-
-    #fid = fire.id
-    tst,ted = start_end  # start and ending time of the fire
-
-    endloop = False  # flag to control the ending of the loop
-    t_inact = 0      # counts the days a fire is inactive before it spreads again
-    t = list(tst)    # t is the time (year,month,day,ampm) for each step
-    while endloop == False:
-        #print(t)
-        # read daily gdf
-        gdf = FireIO.load_gdfobj(t,op=op)
-        gdf_fid = gdf[gdf.mergid == fid] # here we need to enter merge id instead of index
-        
-        # skip date if now new pixels
-        gdf_fid = gdf_fid[gdf_fid.n_newpixels > 0]
-        if len(gdf_fid) == 0:
-            t = FireObj.t_nb(t,nb='next')
-            t_inact += 0.5 # half-daily time steps
-            continue
-        
-        # merge if several ids
-        if len(gdf_fid) > 1:
-            gdf_fid = merge_fires(gdf_fid, fid, tst, t)
-        
-        # change index to date
-        gdf_fid.index = [FireObj.t2dt(t)]
-        
-        # update t_inactive
-        gdf_fid.t_inactive = math.floor(t_inact) # inactivity is counted in full days
-
-        # append daily row to gdf_all
-        if FireObj.t_dif(t,tst)==0:
-            gdf_all = gdf_fid
-        else:
-            gdf_all = gdf_all.append(gdf_fid)
-
-        #  - if t reaches ted, set endloop to True to stop the loop
-        if FireObj.t_dif(t,ted)==0:
-            endloop = True
-
-        #  - update t with the next time stamp
-        t_inact = 0 # reset inactivity counter
-        t = FireObj.t_nb(t,nb='next')
-
-
-    # use correct time column as index
-    # gdf_all.index = FireObj.ftrange(tst,ted)
-
-    # remove fid column to save space
-    # gdf_all = gdf_all.drop(columns='fid')
-
-    return gdf_all
-
-
 def merge_fires(gdf_fid, fid, tst, t):
     ''' merge fire perimeters of all fires with the same merge id
 
@@ -140,6 +69,92 @@ def merge_fires(gdf_fid, fid, tst, t):
     
     return(gdf_diss)
 
+def make_fire_history(fid, start_end,op=''):
+    ''' derive time series of single fire attributes using the half-daily gdf summary
+
+    Parameters
+    ----------
+    fire : Fire object
+        the fire need to update
+    start_end: tuple
+        start and end date and AM/PM of the fire object
+
+    Returns
+    -------
+    gdf_all : geopandas DataFrame
+        the gdf containing half daily fire basic attributes and fire perimeter
+    '''
+    import math
+    import FireObj,FireIO, PostProcess, FireClustering
+    import shapely
+
+    #fid = fire.id
+    tst,ted = start_end  # start and ending time of the fire
+    lake_process = True
+    
+    # load lakes file and enter into index
+    lake_geoms = FireIO.load_lake_geoms(tst, fid)
+    if isinstance(lake_geoms, type(None)): # lake_geoms is None if no lakes are within final perimeter
+        lake_process = False
+    else:
+        # if only one lake is present we put it in a list for the loop
+        if not isinstance(lake_geoms, shapely.geometry.multipolygon.MultiPolygon):
+            lake_geoms = [lake_geoms]
+            # here we could tell it to only build an index when number of features > X
+        lake_idx = FireClustering.build_rtree(lake_geoms)
+
+    endloop = False  # flag to control the ending of the loop
+    t_inact = 0      # counts the days a fire is inactive before it spreads again
+    t = list(tst)    # t is the time (year,month,day,ampm) for each step
+    while endloop == False:
+        #print(t)
+        # read daily gdf
+        gdf = FireIO.load_gdfobj(t,op=op)
+        gdf_1d = gdf[gdf.mergid == fid] # here we need to enter merge id instead of index
+        
+        # skip date if now new pixels
+        gdf_1d = gdf_1d[gdf_1d.n_newpixels > 0]
+        if len(gdf_1d) == 0:
+            t = FireObj.t_nb(t,nb='next')
+            t_inact += 0.5 # half-daily time steps
+            continue
+        
+        # merge if several ids
+        if len(gdf_1d) > 1:
+            gdf_1d = merge_fires(gdf_1d, fid, tst, t)
+        
+        # clip lakes and update attributes
+        if lake_process:
+            gdf_1d = PostProcess.clip_lakes_1fire_outer(gdf_1d, lake_geoms, lake_idx)
+        
+        # change index to date
+        gdf_1d.index = [FireObj.t2dt(t)]
+        
+        # update t_inactive
+        gdf_1d.t_inactive = math.floor(t_inact) # inactivity is counted in full days
+
+        # append daily row to gdf_all
+        if FireObj.t_dif(t,tst)==0:
+            gdf_all = gdf_1d
+        else:
+            gdf_all = gdf_all.append(gdf_1d)
+
+        #  - if t reaches ted, set endloop to True to stop the loop
+        if FireObj.t_dif(t,ted)==0:
+            endloop = True
+
+        #  - update t with the next time stamp
+        t_inact = 0 # reset inactivity counter
+        t = FireObj.t_nb(t,nb='next')
+
+
+    # use correct time column as index
+    # gdf_all.index = FireObj.ftrange(tst,ted)
+
+    # remove fid column to save space
+    # gdf_all = gdf_all.drop(columns='fid')
+
+    return gdf_all
 
 def save_gdf_1fire(fid, start_end, op=''):
     ''' derive and save time series of fire perimeter and fine line
@@ -205,7 +220,8 @@ def save_gdf_trng(ted,fperim=False,fline=False,NFP=False,fall=False):
 if __name__ == "__main__":
     ''' The main code to record time series of geojson data for a fire
     '''
-
+    import sys
+    sys.path.insert(1, 'D:/fire_atlas/1_code/fireatlas')
     import time
     t1 = time.time()
     # set the start and end time
