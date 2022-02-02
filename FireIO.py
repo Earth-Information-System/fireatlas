@@ -708,12 +708,13 @@ def save_gdfobj(gdf,t,param='',fid='',op=''):
     #(id column will be dropped when reading gpkg)
     gdf["id"] = gdf.index 
     gdf = gdf.set_index('id')
+    gdf['fid'] = gdf['fid'].astype(int) # data types are screwed up in fline
 
     # save file
     gdf.to_file(fnm, driver='GPKG')
 
-def load_gdfobj(t,op=''):
-    ''' Load daily allfires diagnostic dataframe to a geojson file
+def load_gdfobj(t='',op=''):
+    ''' Load daily allfires diagnostic dataframe as geopandas gdf
 
     Parameters
     ----------
@@ -742,6 +743,40 @@ def load_gdfobj(t,op=''):
     gdf = gdf.set_index('fid')
 
     return gdf
+
+def load_lake_geoms(t, fid):
+    ''' Load final perimeters as geopandas gdf
+
+    Parameters
+    ----------
+    t: time tuple,
+        needed for the year
+    fid : int, 
+        the fire fid
+    Returns
+    ----------
+    geoms : tuple (geom, geom)
+        geometry of all lake perimeters within the fire
+    '''
+    import geopandas as gpd
+    from datetime import date
+    from FireConsts import dirpjdata
+    
+    d = date(*t[:-1])
+
+    # get file name
+    fnm_lakes = dirpjdata+d.strftime('%Y')+'/Summary/lakes'+d.strftime('%Y')+'.gpkg'
+
+    # read data and extract target geometry
+    gdf = gpd.read_file(fnm_lakes)
+    gdf = gdf.set_index('mergid')
+    if fid in gdf.index:
+        gdf = gdf.loc[fid]
+        geom_lakes = gdf['geometry']
+    else:
+        geom_lakes = None
+
+    return geom_lakes
 
 
 def get_gdfobj_sf_fnm(t,fid,op=''):
