@@ -56,11 +56,6 @@ def find_all_end(tst, ted):
 
     return gdf_all
 
-
-    
-
-    
-    
 def save_gdf_trng(tst,ted):
     ''' Wrapper to create and save all ignitions as gdf
 
@@ -78,10 +73,10 @@ def save_gdf_trng(tst,ted):
     
     # find water tiles
     #tiles = PostProcess.all_water_tiles(gdf)
-    gdf_clip = PostProcess.clip_lakes(gdf, tst)
+    gdf_clip, gdf_lakes = PostProcess.clip_lakes_final(gdf, tst)
 
     FireIO.save_gdfobj(gdf_clip,tst,param='final_lakes')
-        
+    FireIO.save_gdfobj(gdf_lakes,tst,param='lakes')
 
 
 if __name__ == "__main__":
