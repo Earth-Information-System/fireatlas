@@ -109,7 +109,7 @@ def make_gdf_fperim(allfires, heritage):
 
     return gdf
 
-def make_gdf_fline(allfires):
+def make_gdf_fline(allfires, heritage):
     ''' Create geopandas DataFrame for active fire line
 
     Parameters
@@ -123,22 +123,32 @@ def make_gdf_fline(allfires):
         the gdf containing half daily fire line
     '''
     import geopandas as gpd
-    from FireConsts import dd
+    #from FireConsts import dd
 
     # initialize the GeoDataFrame
-    gdf = gpd.GeoDataFrame(columns=['fid'],crs='epsg:4326', geometry=[])
+    gdf = gpd.GeoDataFrame(columns=['fid', 'mergid'],crs='epsg:4326', geometry=[])
 
     # for each active fire, record the fline to the geometry column of gdf
     for fid in allfires.fids_active:
-        gdf.loc[fid,'fid'] = fid
         fline = allfires.fires[fid].fline
         if fline is not None:
+            gdf.loc[fid,'fid'] = fid
+            
+            # add and correct mergid
+            gdf.loc[fid,'mergid'] = fid
+            if fid in heritage.keys():
+                gdf.loc[fid,'mergid'] = heritage[fid]
+                
             # gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fline]).geometry.values
             if fline.geom_type == 'MultiLineString':
                 gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fline]).geometry.values
             else:
                 gdf.loc[fid,'geometry'] = fline
-
+     
+    if len(gdf) > 1:
+        # dissolve by mergid
+        gdf = gdf.dissolve(by = 'mergid')
+            
 
     return gdf
 
@@ -186,7 +196,7 @@ def save_gdf_1t(allfires, heritage, op=''):
     if op == '':
         gdf = make_gdf_fperim(allfires, heritage)
     elif op == 'FL':
-        gdf = make_gdf_fline(allfires)
+        gdf = make_gdf_fline(allfires, heritage)
     elif op == 'NFP':
         gdf = make_gdf_NFP(allfires)
     else:
@@ -225,16 +235,16 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     heritage = dict(FireIO.load_fobj(ted).heritages)
     while endloop == False:
-        # print(t)
+        #print(t)
 
         # read Allfires object from the saved pkl file
         allfires = FireIO.load_fobj(t)
 
         # create and save gdfs according to input options
         if fperim:
-            save_gdf_1t(allfires, heritage)
+            save_gdf_1t(allfires,heritage)
         if fline:
-            save_gdf_1t(allfires,op='FL')
+            save_gdf_1t(allfires,heritage,op='FL')
         if NFP:
             save_gdf_1t(allfires,op='NFP')
 
@@ -253,12 +263,13 @@ if __name__ == "__main__":
     import time
     t1 = time.time()
     # set the start and end time
-    tst=(2019,1,1,'AM')
-    ted=(2019,12,31,'PM')
+    tst=(2020,6,1,'AM')
+    ted=(2020,8,31,'PM')
 
     # for each day during the period, create and save geojson summary file
-    save_gdf_trng(tst=tst,ted=ted,fall=True)
-    # save_gdf_trng(tst=tst,ted=ted,fperim=True)
+    #save_gdf_trng(tst=tst,ted=ted,fall=True)
+    #save_gdf_trng(tst=tst,ted=ted,fperim=True)
+    save_gdf_trng(tst=tst,ted=ted,fline=True)
 
     t2 = time.time()
     print(f'{(t2-t1)/60.} minutes used to run code')
