@@ -152,7 +152,7 @@ def make_gdf_fline(allfires, heritage):
 
     return gdf
 
-def make_gdf_NFP(allfires):
+def make_gdf_NFP(allfires, heritage):
     ''' Create geopandas DataFrame for new fire pixels (detected at this time step)
 
     Parameters
@@ -166,11 +166,11 @@ def make_gdf_NFP(allfires):
         the gdf containing half daily new fire pixels
     '''
     import geopandas as gpd
-    from FireConsts import dd
+    #from FireConsts import dd
     from shapely.geometry import MultiPoint
 
     # initialize the GeoDataFrame
-    gdf = gpd.GeoDataFrame(columns=['fid'],crs='epsg:4326', geometry=[])
+    gdf = gpd.GeoDataFrame(columns=['fid', 'mergid'],crs='epsg:4326', geometry=[])
 
     # for each fire, record the newlocs to the geometry column of gdf
     for fid in allfires.fids_active:
@@ -178,8 +178,54 @@ def make_gdf_NFP(allfires):
         newlocs = allfires.fires[fid].newlocs
         nfp = MultiPoint([(l[1],l[0]) for l in newlocs])
         gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[nfp]).geometry.values
+        # add and correct mergid
+        gdf.loc[fid,'mergid'] = fid
+        if fid in heritage.keys():
+            gdf.loc[fid,'mergid'] = heritage[fid]
+    
+    if len(gdf) > 1:
+        # dissolve by mergid
+        gdf = gdf.dissolve(by = 'mergid')
 
     return gdf
+
+def make_gdf_NFPlist(allfires, heritage):
+    ''' Create geopandas DataFrame for new fire pixels (detected at this time step)
+
+    Parameters
+    ----------
+    allfires : Allfires object
+        the Allfires object to be used to create gdf
+
+    Returns
+    -------
+    gdf : geopandas DataFrame
+        the gdf containing half daily new fire pixels
+    '''
+    import pandas as pd
+
+    # initialize the GeoDataFrame
+    df = pd.DataFrame(columns=['fid', 'mergid','lon','lat','line','sample'])
+    fid_df = 0
+
+    # for each fire, record the newlocs to the geometry column of gdf
+    for fid in allfires.fids_active:
+        mergid = fid
+        if fid in heritage.keys():
+            mergid = heritage[fid]
+        if len(allfires.fires[fid].newlocs)>0:
+            lats, lons = zip(*allfires.fires[fid].newlocs)
+            line, sample, frp = zip(*allfires.fires[fid].newpixelatts)
+            for i,lat in enumerate(lats):
+                df.loc[fid_df,'fid'] = fid_df
+                df.loc[fid_df,'mergid'] = mergid
+                df.loc[fid_df,'lon'] = lons[i]
+                df.loc[fid_df,'lat'] = lat
+                df.loc[fid_df,'line'] = line[i]
+                df.loc[fid_df,'sample'] = sample[i]
+                fid_df += 1
+            
+    return df
 
 def save_gdf_1t(allfires, heritage, op=''):
     ''' Creat gdf using one Allfires object and save it to a geojson file at 1 time step.
@@ -198,15 +244,20 @@ def save_gdf_1t(allfires, heritage, op=''):
     elif op == 'FL':
         gdf = make_gdf_fline(allfires, heritage)
     elif op == 'NFP':
-        gdf = make_gdf_NFP(allfires)
+        gdf = make_gdf_NFP(allfires, heritage)
+    elif op == 'NFP_txt':
+        gdf = make_gdf_NFPlist(allfires, heritage)
     else:
         return
 
     # save gdf
-    if len(gdf) > 0:
-        FireIO.save_gdfobj(gdf,allfires.t,param='',op=op)
+    if op == 'NFP_txt':
+        FireIO.save_FP_txt(gdf, allfires.t)
+    else:
+        if len(gdf) > 0:
+            FireIO.save_gdfobj(gdf,allfires.t,param='',op=op)
 
-def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
+def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False, NFP_txt = False,fall=False):
     ''' Wrapper to create and save gdf files for a time period
 
     Parameters
@@ -228,7 +279,7 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
 
     # if fall is True, set all options True
     if fall:
-        fperim,fline,NFP = True,True,True
+        fperim,fline,NFP, NFP_txt = True,True,True,True
 
     # loop over all days during the period
     endloop = False  # flag to control the ending of the loop
@@ -246,7 +297,9 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,fall=False):
         if fline:
             save_gdf_1t(allfires,heritage,op='FL')
         if NFP:
-            save_gdf_1t(allfires,op='NFP')
+            save_gdf_1t(allfires,heritage,op='NFP')
+        elif NFP_txt:
+            save_gdf_1t(allfires,heritage,op='NFP_txt')
 
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
@@ -269,7 +322,8 @@ if __name__ == "__main__":
     # for each day during the period, create and save geojson summary file
     #save_gdf_trng(tst=tst,ted=ted,fall=True)
     #save_gdf_trng(tst=tst,ted=ted,fperim=True)
-    save_gdf_trng(tst=tst,ted=ted,fline=True)
+    # save_gdf_trng(tst=tst,ted=ted,fline=True)
+    save_gdf_trng(tst=tst,ted=ted,NFP=True)
 
     t2 = time.time()
     print(f'{(t2-t1)/60.} minutes used to run code')
