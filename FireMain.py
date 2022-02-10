@@ -86,8 +86,8 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
     ----------
     allfires : Allfires obj
         the existing Allfires object for the time step
-    afp : 3-element list
-        (lat, lon, FRP) of new active fire pixels
+    afp : 5-element list
+        (lat, lon, line, sample, FRP) of new active fire pixels
     fids_ea : list
         fire ids of existing active fires at previous time step
 
@@ -116,14 +116,14 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
     # inserting boxes into a spatial index
     ea_idx = FireClustering.build_rtree(eafirerngs)
     t1 = time.time()
-    logger.info(f'Time to build rtree: {t1-t0}')
+    # logger.info(f'Time to build rtree: {t1-t0}')
 
     # do preliminary clustering using new active fire locations (assign cid to each pixel)
-    afp_loc = [(x,y) for x,y,z in afp]
+    afp_loc = [(x,y) for x,y,a,b,c in afp]
     cid = FireClustering.do_clustering(afp_loc,SPATIAL_THRESHOLD_KM)  # this is the cluster id (starting from 0)
     logger.info(f'New fire clusters of {max(cid)} at this time step')
     t1 = time.time()
-    logger.info(f'Time for initial clustering: {t1-t0}')
+    # logger.info(f'Time for initial clustering: {t1-t0}')
 
     # loop over each of the new clusters (0:cid-1) and determine its fate
     FP2expand = {}  # the diction used to record fire pixels assigned to existing active fires {fid:Firepixels}
@@ -146,7 +146,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
                     # record existing target fire id in fid_expand list
                     fmid = fids_ea[id_cf]  # this is the fire id of the existing active fire
                     # record pixels from target cluster (locs and time) along with the existing active fire object id
-                    newFPs = [FireObj.FirePixel((p[0],p[1]),p[2],t,fmid) for p in pixels] # new FirePixels from the cluster
+                    newFPs = [FireObj.FirePixel((p[0],p[1]),(p[2],p[3],p[4]),t,fmid) for p in pixels] # new FirePixels from the cluster
                     if fmid in FP2expand.keys():   # for a single existing object, there can be multiple new clusters to append
                         FP2expand[fmid] = FP2expand[fmid] + newFPs
                     else:
@@ -175,7 +175,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea):
             # increase the maximum id
             idmax += 1
     t1 = time.time()
-    logger.info(f'Time for intersections: {t1-t0}')
+    # logger.info(f'Time for intersections: {t1-t0}')
     # update the expanded fire object (do the actual pixel appending)
     #  - fire attributes to change: end time; pixels; newpixels, hull, extpixels
     if len(FP2expand) > 0:
@@ -284,7 +284,7 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea):
         # i.e. if fire 2 merges into fire 1 and fire 3 merges into fire 2
         # in this case not correcting fids_merge will lead to invalidation of fire 3!!!
         fids_merge =  correct_nested_ids(fids_merge)
-        #logger.info(f'IDs to merge: {fids_merge}')
+        # logger.info(f'IDs to merge: {fids_merge}')
         
         for fid1,fid2 in fids_merge:
             #logger.info(f'Fire {fid1} was merged to Fire {fid2}')

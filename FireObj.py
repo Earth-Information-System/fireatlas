@@ -405,8 +405,8 @@ class Fire:
             fire id
         t : tuple, (int,int,int,str)
             the year, month, day and 'AM'|'PM'
-        pixels : list (nx3)
-            latitude, longitude, and FRP values of active fire pixels
+        pixels : list (nx5)
+            latitude, longitude, line, sample, and FRP values of active fire pixels
         '''
         # initialize fire id
         self.id = id
@@ -419,7 +419,7 @@ class Fire:
         self.t_ed = tlist
 
         # initialize pixels
-        fpixels = [FirePixel((p[0],p[1]),p[2],tlist,id) for p in pixels]
+        fpixels = [FirePixel((p[0],p[1]),(p[2],p[3],p[4]),tlist,id) for p in pixels]
         self.pixels = fpixels      # all pixels
         self.newpixels = fpixels   # new detected pixels
         self.ignpixels = fpixels   # pixels at ignition
@@ -512,6 +512,12 @@ class Fire:
         return [p.loc for p in self.newpixels]
 
     @property
+    def newpixelatts(self):
+        ''' List of new fire pixels locations (lat,lon)
+        '''
+        return [p.atts for p in self.newpixels]
+
+    @property
     def n_newpixels(self):
         ''' Total number of new fire pixels
         '''
@@ -570,7 +576,7 @@ class Fire:
     def meanFRP(self):
         ''' Mean FRP of the new fire pixels
         '''
-        frps = [p.frp for p in self.newpixels]
+        frps = [p.atts[2] for p in self.newpixels]
         if len(frps) > 0:
             m = sum(frps)/len(frps)
         else:
@@ -741,7 +747,7 @@ class Cluster:
     def locs(self):
         ''' List of pixel locations (lat,lon)
         '''
-        return [(x,y) for x,y,z in self.pixels]
+        return [(x,y) for x,y,a,b,c in self.pixels]
 
     @property
     def centroid(self):
@@ -773,12 +779,12 @@ class Cluster:
 class FirePixel:
     """ class of an acitve fire pixel, which includes
         loc : location (lat, lon)
-        frp : fire radiative power
+        atts : line & sample or viirs pixel, fire radiative power
         t : time (y,m,d,ampm) of record
         origin : the fire id originally recorded (before merging)
     """
-    def __init__(self,loc,frp,t,origin):
+    def __init__(self,loc,atts,t,origin):
         self.loc = loc        # (lat,lon)
-        self.frp = frp
+        self.atts = atts      # attributes (line, sample, frp)
         self.t = list(t)      # (year,month,day,ampm)
         self.origin = origin  # originate  fire id
