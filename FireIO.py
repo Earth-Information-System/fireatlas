@@ -2,7 +2,7 @@
 This module include functions used to read and save data
 """
 # ------------------------------------------------------------------------------
-# Read active fire data
+#%% Read active fire data
 # ------------------------------------------------------------------------------
 
 
@@ -47,7 +47,7 @@ def read_VNP14ML04_clip(t, ext = False):
         fnmFC = os.path.join(dirFC,'VNP14IMGML.'+d.strftime('%Y%m')+'.C1.05.txt')
 
         # read and extract
-        usecols = ['YYYYMMDD','HHMM','Lat','Lon','Sample','FRP','Confidence','Type','DNFlag']
+        usecols = ['YYYYMMDD','HHMM','Lat','Lon','Line','Sample','FRP','Confidence','Type','DNFlag']
         if os.path.exists(fnmFC):
             # read dataframe
             df = pd.read_csv(fnmFC,parse_dates=['YYYYMMDD'],usecols=usecols,skipinitialspace=True)
@@ -59,7 +59,7 @@ def read_VNP14ML04_clip(t, ext = False):
             # preliminary spatial filter from shapefile extent and quality filter
             # ext = [-156, 65.5, -152, 66.3] # test area for AK 2015
             #ext = [-119, 60, -110, 64] # test area for slave lake 2014
-            #ext = [106, 55, 163, 72] # test area for yakutia 2020
+            # ext = [106, 55, 163, 72] # test area for yakutia 2020
             ext = [147, 65, 154, 70] # test area for large fire in yakutia only
             # shp_name = 'AK.shp'
             # shp = get_any_shp(shp_name) # shapefile of test region
@@ -94,7 +94,7 @@ def read_VNP14ML04_clip(t, ext = False):
         gdf = gdf.loc[tpm]
         
     # convert to list of (lat,lon)
-    vlist = gdf[['Lat','Lon','FRP']].values.tolist()
+    vlist = gdf[['Lat','Lon','Line','Sample','FRP']].values.tolist()
         
     return vlist
         
@@ -310,6 +310,8 @@ def read_FRP_VNP14ML04_box(t,box):
     return read_VNP14ML04_CA(t, calext=[box[0],box[2],box[1],box[3]])
 
 def read_FRPviirs_box(t,box):
+        
+    
     ''' Read and extract daily FRP from monthly or daily VIIRS fire location data
     
     Parameters
@@ -333,9 +335,46 @@ def read_FRPviirs_box(t,box):
     
     return vlist
 
+def read_mcd64_pixels(year,ext=[]):
+    '''reads all active fire and burned area pixels'''
+    from FireConsts import mcd64dir#, dirpjdata
+    # import glob
+    import numpy as np
+    import pandas as pd
+    
+    # filelist_viirs = glob.glob(dirpjdata+str(year)+'/Snapshot/*_NFP.txt')
+    # df = pd.concat([pd.read_csv(i, dtype = {'lat':np.float64, 'lon':np.float64}, 
+    #                             usecols = ['lat', 'lon']) 
+    #                 for i in filelist_viirs], ignore_index=True)
+    # df['sensor'] = 'viirs'
+    
+    filelist_mcd64 = mcd64dir + 'ba_centroids_'+str(year)+'.csv'
+    df = pd.read_csv(filelist_mcd64, dtype = {'lat':np.float64, 'lon':np.float64},
+                     usecols = ['lat', 'lon','doy'])
+    # filter by bounding box
+    if len(ext) == 4:
+        minx, miny, maxx, maxy = ext
+        df = df.loc[(df['lat']>=miny) & (df['lat']<= maxy) & (df['lon']>=minx) & (df['lon']<=maxx)]
+    
+    # df = pd.concat([df, df2])
+    
+    return df
+
+
 # ------------------------------------------------------------------------------
-# Read other datasets
+#%% Read other datasets
 # ------------------------------------------------------------------------------
+def load_mcd64(year,xoff=0,yoff=0,xsize=None,ysize=None):
+    from FireConsts import mcd64dir
+    import gdal
+    
+    fnm = mcd64dir + 'mcd64_' + str(year) + '.tif'
+    ds = gdal.Open(fnm)
+    #arr = ds.ReadAsArray(xsize=xsize, ysize=ysize)
+    arr = ds.ReadAsArray(xoff=xoff, yoff=yoff, xsize=xsize, ysize=ysize)
+    
+    return arr
+
 def get_any_shp(filename):
     ''' get shapefile of California
     '''
@@ -481,7 +520,7 @@ def get_stFM1000(fhull,locs,t):
     return FM1000
 
 # ------------------------------------------------------------------------------
-# read and load object, gdf and summary related files
+#%% read and load object, gdf and summary related files
 # ------------------------------------------------------------------------------
 def check_filefolder(fnm):
     ''' if the folder containing a file does not exist, make it
@@ -708,7 +747,8 @@ def save_gdfobj(gdf,t,param='',fid='',op=''):
     #(id column will be dropped when reading gpkg)
     gdf["id"] = gdf.index 
     gdf = gdf.set_index('id')
-    gdf['fid'] = gdf['fid'].astype(int) # data types are screwed up in fline
+    if op == 'FL':
+        gdf['fid'] = gdf['fid'].astype(int) # data types are screwed up in fline
 
     # save file
     gdf.to_file(fnm, driver='GPKG')
@@ -743,6 +783,19 @@ def load_gdfobj(t='',op=''):
     gdf = gdf.set_index('fid')
 
     return gdf
+
+def save_FP_txt(df, t):
+    
+    # get filename of new fire pixels product
+    fnm = get_gdfobj_fnm(t,op='NFP')
+    fnm = fnm[:-4]+'txt' # change ending to txt
+    
+    # check folder
+    check_filefolder(fnm)
+    
+    # write out
+    if len(df) > 0:
+        df.to_csv(fnm)
 
 def load_lake_geoms(t, fid):
     ''' Load final perimeters as geopandas gdf
@@ -1054,3 +1107,67 @@ def get_lts_serialization(year=None):
 
     return lts
 
+#%% other functions related to read/write
+
+def save2gtif(arr, outfile, cols, rows, geotrans, proj):
+    '''write out a geotiff'''
+    
+    import gdal
+    
+    driver = gdal.GetDriverByName('GTiff')
+    ds = driver.Create(outfile, cols, rows, 1, gdal.GDT_Byte)
+    ds.SetGeoTransform(geotrans)
+    ds.SetProjection(proj)
+    band = ds.GetRasterBand(1)
+    band.WriteArray(arr)
+
+def geo_to_polar(lon_arr, lat_arr):
+    '''transform lists of geographic lat lon coordinates to polar LAEA grid (projected)'''
+    
+    import numpy as np
+    import pyproj
+    
+    proj4str = ("epsg:3571")
+    p_modis_grid = pyproj.Proj(proj4str)
+        
+    x_arr, y_arr = p_modis_grid(lon_arr, lat_arr)
+    x_arr = np.array(x_arr)
+    y_arr = np.array(y_arr)
+    
+    return x_arr, y_arr
+
+def polar_to_geo(x_arr, y_arr):
+    '''transform lists of geographic lat lon coordinates to polar LAEA grid (projected)'''
+    
+    import numpy as np
+    import pyproj
+    
+    proj4str = ("epsg:3571")
+    p_modis_grid = pyproj.Proj(proj4str)
+        
+    lon_arr, lat_arr = p_modis_grid(x_arr, y_arr,inverse=True)
+    lon_arr = np.array(lon_arr)
+    lat_arr = np.array(lat_arr)
+    
+    return lon_arr, lat_arr
+
+def world2Pixel(gt, Xgeo, Ygeo):
+    ''' Uses a geomatrix (gdal.GetGeoTransform()) to calculate the pixel 
+    location of a geospatial coordinate'''
+    
+    import numpy as np
+    
+    gt = list(gt)
+    Xpx = np.rint((Xgeo - gt[0]) / gt[1]).astype(int)
+    Ypx = np.rint((Ygeo - gt[3]) / gt[5]).astype(int)
+    
+    return (Xpx, Ypx)
+
+def pixel2World(gt, Xpixel, Ypixel):
+    '''Uses a gdal geomatrix (gdal.GetGeoTransform()) to calculate the
+    geospatial coordinate of a pixel location'''
+    
+    Xgeo = gt[0] + Xpixel*gt[1] + Ypixel*gt[2]
+    Ygeo = gt[3] + Xpixel*gt[4] + Ypixel*gt[5]
+    
+    return (Xgeo, Ygeo)
