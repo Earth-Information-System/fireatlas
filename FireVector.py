@@ -74,48 +74,48 @@ def alpha_shape(points, alpha):
     # return triangles, edge_points
     return cascaded_union(triangles), edge_points
 
-def ll2utm(geom_ll):
-    ''' convert geometry in geographic projection to geometry in utm projection
+# def ll2utm(geom_ll):
+#     ''' convert geometry in geographic projection to geometry in utm projection
 
-    Parameters
-    ----------
-    geom_ll : geometry
-        the geometry in geographic projection (lat, lon)
+#     Parameters
+#     ----------
+#     geom_ll : geometry
+#         the geometry in geographic projection (lat, lon)
 
-    Returns
-    -------
-    geom_utm : geometry
-        the geometry in utm projection
-    '''
-    import pyproj
-    from shapely.ops import transform
-    wgs84 = pyproj.CRS('EPSG:4326')
-    utm = pyproj.CRS('EPSG:32618')
-    project = pyproj.Transformer.from_crs(wgs84, utm, always_xy=True).transform
-    geom_utm = transform(project,geom_ll)
-    return geom_utm
+#     Returns
+#     -------
+#     geom_utm : geometry
+#         the geometry in utm projection
+#     '''
+#     import pyproj
+#     from shapely.ops import transform
+#     wgs84 = pyproj.CRS('EPSG:4326')
+#     utm = pyproj.CRS('EPSG:32618')
+#     project = pyproj.Transformer.from_crs(wgs84, utm, always_xy=True).transform
+#     geom_utm = transform(project,geom_ll)
+#     return geom_utm
 
-def utm2ll(geom_utm):
-    ''' convert geometry in utm projection to geometry in geographic projection
+# def utm2ll(geom_utm):
+#     ''' convert geometry in utm projection to geometry in geographic projection
 
-    Parameters
-    -------
-    geom_utm : geometry
-        the geometry in utm projection
+#     Parameters
+#     -------
+#     geom_utm : geometry
+#         the geometry in utm projection
 
-    Returns
-    ----------
-    geom_ll : geometry
-        the geometry in geographic projection (lat, lon)
-    '''
-    import pyproj
-    from shapely.ops import transform
+#     Returns
+#     ----------
+#     geom_ll : geometry
+#         the geometry in geographic projection (lat, lon)
+#     '''
+#     import pyproj
+#     from shapely.ops import transform
 
-    wgs84 = pyproj.CRS('EPSG:4326')
-    utm = pyproj.CRS('EPSG:32618')
-    project = pyproj.Transformer.from_crs(utm,wgs84,always_xy=True).transform
-    geom_ll = transform(project,geom_utm)
-    return geom_ll
+#     wgs84 = pyproj.CRS('EPSG:4326')
+#     utm = pyproj.CRS('EPSG:32618')
+#     project = pyproj.Transformer.from_crs(utm,wgs84,always_xy=True).transform
+#     geom_ll = transform(project,geom_utm)
+#     return geom_ll
 
 def addbuffer(geom_ll,vbuf):
     ''' add a geometry in geographic projection with a buffer in meter
@@ -149,8 +149,8 @@ def addbuffer(geom_ll,vbuf):
 
     return geom_ll_buf
 
-def doMultP(locs):
-    ''' deirve a MultipPolygon (bufferred MultiPoint) shape from given fire locations
+def doMultP(locs, buf):
+    ''' deirvve a MultipPolygon (bufferred MultiPoint) shape from given fire locations
 
     Parameters
     ----------
@@ -163,18 +163,17 @@ def doMultP(locs):
         calculated shape
     '''
     from shapely.geometry import MultiPoint
-    from FireConsts import VIIRSbuf
 
     # MultiPoint shape
     multP = MultiPoint([(lon,lat) for lat,lon in locs])
 
     # Add buffer to form MultiPolygon shape
-    # multP = multP.buffer(VIIRSbuf)
-    multP = addbuffer(multP, VIIRSbuf)
+    # multP = multP.buffer(buf)
+    multP = addbuffer(multP, buf)
 
     return multP
 
-def doConvH(locs):
+def doConvH(locs, buf):
     ''' derive the convex hull given fire locations
 
     Parameters
@@ -190,7 +189,6 @@ def doConvH(locs):
 
     from scipy.spatial import ConvexHull
     from shapely.geometry import Polygon
-    from FireConsts import VIIRSbuf
 
     # calculate the convex hull using scipy.spatial.ConvexHull
     try:
@@ -206,10 +204,10 @@ def doConvH(locs):
 
     # Add buffer
     # hull = hull.buffer(VIIRSbuf)
-    hull = addbuffer(hull, VIIRSbuf)
+    hull = addbuffer(hull, buf)
     return hull
 
-def doConcH(locs,alpha=100):
+def doConcH(locs,buf,alpha=100):
     ''' derive the concave hull given fire locations
 
     Parameters
@@ -224,7 +222,6 @@ def doConcH(locs,alpha=100):
     hull : Polygon or MultiPolygon object
         calculated hull shape
     '''
-    from FireConsts import VIIRSbuf
 
     # calcluate alpha shape
     try:
@@ -237,19 +234,19 @@ def doConcH(locs,alpha=100):
         # concave_hull, edge_points = alpha_shape.alpha_shape(locs_lonlat, alpha=alpha)
 
         if concave_hull.area == 0:  # sometimes the concave_hull algorithm returns a empty polygon
-            concave_hull = doConvH(locs)
+            concave_hull = doConvH(locs,buf)
             return concave_hull
         else:
             # Add buffer
             # hull = concave_hull.buffer(VIIRSbuf)
-            hull = addbuffer(concave_hull,VIIRSbuf)
+            hull = addbuffer(concave_hull,buf)
             return hull
 
     except:
         return None
 
 
-def cal_hull(fp_locs):
+def cal_hull(fp_locs,sensor = 'viirs'):
     ''' wrapper to calculate the hull given fire locations.
         the returned hull type depends on the pixel number
 
@@ -263,22 +260,32 @@ def cal_hull(fp_locs):
     hull : object
         calculated hull (a buffer of VIIRS half pixel size included)
     '''
-    from FireConsts import valpha
+    from FireConsts import valpha, lalpha, VIIRSbuf #,MCD64buf
     import numpy as np
-
+    
+    # set buffer according to sensor
+    if sensor == 'viirs':
+        buf = VIIRSbuf
+    elif sensor == 'mcd64':
+        buf = VIIRSbuf
+    else:
+        buf = 30
+        valpha = lalpha
+        # buf = MCD64buf
+    
     # number of points
     nfp = len(fp_locs)
 
     # For cluster with 1-2 pixel, calculate hull using buffered points (MultiPolygon)
     if nfp < 3:
-        hull = doMultP(fp_locs)
+        hull = doMultP(fp_locs,buf)
     # For cluster with 3 pixels, calculate hull using convex hull
     elif nfp == 3: # call doConvH to get the hull
-        hull = doConvH(fp_locs)
+        hull = doConvH(fp_locs,buf)
         if hull == None:  # in case where convex hull can't be determined, call doMultP
-            hull = doMultP(fp_locs)
+            hull = doMultP(fp_locs,buf)
         elif hull.area == 0:  # sometimes the fire pixels are in a traight line, in this case, also call doMultP
-            hull = doMultP(fp_locs)
+            hull = doMultP(fp_locs,buf)
     # For cluster with more than 3 pixels, calculate hull using alpha shape
     else: # call doConcH to get the hull
         # derive the alpha value used in doConcH (in 1/deg)
@@ -287,12 +294,12 @@ def cal_hull(fp_locs):
         km1deg = 6371*np.cos(np.deg2rad(vdeg))*2*np.pi/360
         valphadeg = 1/(valpha/1000/km1deg)   # in 1/deg
 
-        hull = doConcH(fp_locs,alpha=valphadeg)
+        hull = doConcH(fp_locs,buf,alpha=valphadeg)
         # hull = doConcH(fp_locs,alpha=valpha)
         if hull == None: # in case where convex hull can't be determined, call doMultP
-            hull = doMultP(fp_locs)
+            hull = doMultP(fp_locs,buf)
         elif hull.area == 0:
-            hull = doMultP(fp_locs)
+            hull = doMultP(fp_locs,buf)
 
     return hull
 
@@ -330,7 +337,7 @@ def cal_extpixels(fps,hull,alpha=100):
             fps_ext.append(fp)
     return fps_ext
 
-def update_hull(phull,fp_locs,alpha=100):
+def update_hull(phull,fp_locs,sensor='viirs',alpha=100):
     ''' calculate the hull by using the new pixel locations and previous hull vertices only
     (This can be faster when existing fire has many pixels)
 
@@ -366,7 +373,7 @@ def update_hull(phull,fp_locs,alpha=100):
             fp_locs_ext.append((pt.y,pt.x))
 
     # use the exteror points to calculate hull (this can save a lot of time)
-    hull = cal_hull(fp_locs_ext)
+    hull = cal_hull(fp_locs_ext, sensor = sensor)
 
     # use the union to include hull in past time step
     hull_new = phull.union(hull)
