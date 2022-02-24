@@ -8,6 +8,7 @@ dirhome = 'D:/fire_atlas'   # home directory
 dirpjcode = dirhome + '/1_code/'     # project code directory
 dirpjdata = dirhome + '/2_pipeline/'     # output data directory
 dirextdata = dirhome + '/Data/' # exterior input data directory
+mcd64dir = dirextdata + 'burned_grid/'
 
 # parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
@@ -20,10 +21,11 @@ FTYPCLR = {0:'grey', 1:'rosybrown', 2:'darkolivegreen', 3:'olive', 4:'saddlebrow
 
 # temporal and spatial distances for fire object definition
 maxoffdays = 10   # fire becomes inactive after this number of consecutive days without active fire detection
-CONNECTIVITY_THRESHOLD_KM = [1, 1, 5, 5, 5, 5, 1] # km, corresponding to fire type (forest/shrub: 5km; other: 1km)
+CONNECTIVITY_THRESHOLD_KM = [1, 1, 2.5, 5, 5, 5, 1] # km, corresponding to fire type (forest/shrub: 5km; other: 1km)
 
 # alpha parameter
 valpha = 1000      # 1000 m (default)
+lalpha = 100
 stralpha = '1km'   # string of alpha parameter
 
 # lengths and areas related to VIIRS pixl data
@@ -32,6 +34,9 @@ fpbuffer = 200     # buffer use to determine fire line pixels (deg), ~200m
 flbuffer = 500     # buffer for fire line pixels (radius) to intersect fire perimeter (deg), ~500m
 extbuffer = 1000   # buffer to define interior/exterior region, 1000 m
 area_VI = 0.141    # km2, area of each 375m VIIRS pixel
+
+# mcd bffer
+MCD64buf = 231.7   # fire perimeter buffer (deg), corresponding to 463.31271653 m/2
 
 # parameter used for determine large fires
 falim = 4    # large fire area threshold (in km2)
