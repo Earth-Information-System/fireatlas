@@ -396,7 +396,7 @@ class Fire:
     """
 
     # initilization
-    def __init__(self, id, t, pixels):
+    def __init__(self, id, t, pixels, sensor='viirs'):
         ''' Initialize Fire class with active fire pixels locations and t. This
                 is only called when fire clusters forming a new Fire object.
         Parameters
@@ -408,9 +408,10 @@ class Fire:
         pixels : list (nx5)
             latitude, longitude, line, sample, and FRP values of active fire pixels
         '''
-        # initialize fire id
+        # initialize fire id 
         self.id = id
         self.mergeid = id
+        self.sensor = sensor
 
         # initialize current time, fire start time, and fire final time
         tlist = list(t)
@@ -426,7 +427,7 @@ class Fire:
 
         # initialize hull using the pixels
         locs = [p.loc for p in fpixels]  # list of [lat,lon]
-        hull = FireVector.cal_hull(locs) # the hull from all locs
+        hull = FireVector.cal_hull(locs, sensor) # the hull from all locs
         self.hull = hull   # record hull
 
         # initialize the exterior pixels (pixels within the inward extbuffer of
@@ -724,7 +725,7 @@ class Cluster:
     """
 
     # initilization
-    def __init__(self, id, pixels, t):
+    def __init__(self, id, pixels, t, sensor='viirs'):
         ''' initilization
 
         Parameters
@@ -740,6 +741,7 @@ class Cluster:
         self.cday = date(*t[:-1])  # current date
         self.ampm = t[-1]          # current ampm
         self.id = id
+        self.sensor = sensor
         self.pixels = pixels       # (lat,lon, FRP)
 
     # properties
@@ -765,7 +767,7 @@ class Cluster:
     def hull(self):
         ''' Fire concave hull (alpha shape)
         '''
-        hull = FireVector.cal_hull(self.locs)
+        hull = FireVector.cal_hull(self.locs, self.sensor)
         return hull
     
     @property
