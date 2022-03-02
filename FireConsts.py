@@ -3,12 +3,21 @@ This is the module containing all constants used in this project
 """
 
 # project directories
-import os
+#import os
 dirhome = 'D:/fire_atlas'   # home directory
 dirpjcode = dirhome + '/1_code/'     # project code directory
 dirpjdata = dirhome + '/2_pipeline/'     # output data directory
 dirextdata = dirhome + '/Data/' # exterior input data directory
 mcd64dir = dirextdata + 'burned_grid/'
+lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
+
+# extents of test regions
+ext_SL = [-119, 60, -110, 64] # test area for slave lake 2014
+ext_AKsmall = [-156, 65.5, -152, 66.3] # small test area for AK 2015
+ext_AK = [-168, 51, -140, 72] # all of AK
+ext_NY = [147, 65, 154, 70] # test area for Northern Yakutia 2020
+ext_YAK = [106, 55, 163, 72] # test area for yakutia 2020
+ext_all = {'AK2015': ext_AKsmall,'AK': ext_AK,'SL2014':ext_SL,'NY2020':ext_NY, 'YAK2020':ext_YAK}
 
 # parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
@@ -21,10 +30,12 @@ FTYPCLR = {0:'grey', 1:'rosybrown', 2:'darkolivegreen', 3:'olive', 4:'saddlebrow
 
 # temporal and spatial distances for fire object definition
 maxoffdays = 10   # fire becomes inactive after this number of consecutive days without active fire detection
+limoffdays = 20 #this is the additional threshold that involves checking for active fireline
 CONNECTIVITY_THRESHOLD_KM = [1, 1, 2.5, 5, 5, 5, 1] # km, corresponding to fire type (forest/shrub: 5km; other: 1km)
+sleeperthresh = 1 #km, distance a sleeper is allowes to spread since its last active fire detection
 
 # alpha parameter
-valpha = 1000      # 1000 m (default)
+valpha = 800      # 1000 m (default)
 lalpha = 100
 stralpha = '1km'   # string of alpha parameter
 
@@ -35,7 +46,7 @@ flbuffer = 500     # buffer for fire line pixels (radius) to intersect fire peri
 extbuffer = 1000   # buffer to define interior/exterior region, 1000 m
 area_VI = 0.141    # km2, area of each 375m VIIRS pixel
 
-# mcd bffer
+# mcd bffer (not used)
 MCD64buf = 231.7   # fire perimeter buffer (deg), corresponding to 463.31271653 m/2
 
 # parameter used for determine large fires
