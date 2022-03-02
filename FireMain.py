@@ -38,6 +38,23 @@ def correct_nested_ids(mergetuple):
     mergetuple: a list of tuples
         a list containing source and corrected target ids for merging
     '''
+    import collections
+    
+    # 1)check if all keys are unique
+    src, tgt = zip(*mergetuple)
+    tgt = list(tgt)
+    count_keys = collections.Counter(src)
+    not_unique = [key for key in count_keys if count_keys[key] > 1]
+    # if not: replace with smallest tgt number
+    if len(not_unique)>0:
+        for key in not_unique:
+            tgt1 = min([tgt[ind] for ind in range(len(tgt)) if src[ind] == key])
+            indices = [ind for ind in range(len(tgt)) if src[ind] == key]
+            for ind in indices:
+                tgt[ind] = tgt1
+    mergetuple = list(zip(src,tgt))
+    
+    # 2)correct nested ids
     mergedict = dict(mergetuple)
     src, tgt = zip(*mergetuple)
     while any(item in src for item in set(tgt)):
@@ -46,8 +63,8 @@ def correct_nested_ids(mergetuple):
                 mergetuple[i] = (mergetuple[i][0], mergedict[tgt0])
         src, tgt = zip(*mergetuple)
     mergetuple = list(set(mergetuple))
+    
     return mergetuple
-
 
 def Fobj_init(tst,restart=False):
     ''' Initialize the fire object for a given time. This can be from the object
@@ -163,7 +180,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
         
         # if this cluster can't be appended to any existing Fobj, create a new fire object using the new cluster
         if not expand_only:
-            print('creating new fires')
+            #print('creating new fires')
             if clusterdone is False:
                 # create a new fire id and add it to the fid_new list
                 id_newfire = idmax + 1
@@ -194,6 +211,8 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
             # update pixels
             f.pixels = f.pixels + newFPs
             f.newpixels = newFPs
+            if len(newFPs) > 0:
+                f.actpixels = newFPs
 
             # update the hull using previous hull and previous exterior pixels
             phull = f.hull
@@ -218,7 +237,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
 
     return allfires
 
-def Fire_merge_rtree(allfires,fids_ne,fids_ea,sensor ='viirs'):
+def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep,sensor ='viirs'):
     ''' For newly formed/expanded fire objects close to existing active fires, merge them
 
     Parameters
@@ -236,8 +255,8 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,sensor ='viirs'):
         Allfires obj after fire merging
     '''
 
-    import FireObj,FireClustering,FireVector, FireIO
-    from FireConsts import CONNECTIVITY_THRESHOLD_KM
+    import FireClustering,FireVector
+    from FireConsts import CONNECTIVITY_THRESHOLD_KM,sleeperthresh
 
     # extract existing active fire data (use extending ranges)
     eafires     = [allfires.fires[fid]  for fid in fids_ea]
@@ -279,7 +298,38 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,sensor ='viirs'):
                             ## else it can happen that intersections are not being detected
                             ## if more than two fires grow together!!
                             #break
-
+    
+    # now check if any of the sleeper fires may have reactivated based on its fire line
+    if len(fids_sleep) > 0: # check if there are potential sleepers
+        # extract existing sleeping fires and their firelines
+        sleepfires = [allfires.fires[fid]  for fid in fids_sleep]
+        sleepflines = [f.fline for f in sleepfires]
+        
+        # inserting boxes into a spatial index
+        nefirebuf  = [FireVector.addbuffer(hull,sleeperthresh*1000) for hull in nefirehulls]
+        ne_idx = FireClustering.build_rtree(nefirebuf)
+        
+        # do the check analoguous to above
+        firedone = {i:False for i in fids_sleep}  # flag to mark an sleeper fire obj that has been invalidated
+        for id_sleep in range(len(sleepfires)):
+            fid_sleep = fids_sleep[id_sleep]    # sleeper fire id
+            if sleepflines[id_sleep] == None: # if there is no fire line (last active detection within), skip
+                continue
+            if firedone[fid_sleep] == False: # skip objects that have been merged to others in earlier loop
+                # potential neighbors
+                id_cfs = FireClustering.idx_intersection(ne_idx, sleepflines[id_sleep].bounds)
+                # loop over all potential neighbour fobj candidates
+                for id_ne in id_cfs:
+                    fid_ne = fids_ne[id_ne]  
+                    if nefirebuf[id_ne].intersects(sleepflines[id_sleep]):
+                        # depending on which fid is smaller, merge the two fire objects in different directions
+                        if fid_ne > fid_sleep:  # merge new fire to sleeper, reactivate sleeper
+                            fids_merge.append((fid_ne,fid_sleep))
+                            if fid_ne in firedone.keys():
+                                firedone[fid_ne] = True  # remove fid_ne from the newly expanded fire list (since it has been invalidated)
+                        else:            # merge sleeper to new or expanded fire
+                            fids_merge.append((fid_sleep,fid_ne))
+    
     # loop over each pair in the fids_merge, and do modifications for both target and source objects
     #  - target: t_ed; pixels, newpixels, hull, extpixels
     #  - source: invalidated 
@@ -299,6 +349,8 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,sensor ='viirs'):
 
             # - target fire t_ed set to current time
             f_target.t_ed = allfires.t
+            # just in case: set target to valid (is this needed?)
+            f_target.invalid = False
 
             # - target fire add source pixels to pixels and newpixels
             f_target.pixels = f_target.pixels + f_source.pixels
@@ -329,8 +381,7 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,sensor ='viirs'):
 
     return allfires
 
-
-def Fire_Forward(tst,ted,restart=False):
+def Fire_Forward(tst,ted,restart=False,region=None):
     ''' The wrapper function to progressively track all fire events for a time period
            and save fire object to pkl file and gpd to geojson files
            
@@ -392,7 +443,7 @@ def Fire_Forward(tst,ted,restart=False):
         
         # 3. read active fire pixels from VIIRS dataset
         t_read = time.time()
-        afp = FireIO.read_AFP(t,src='viirs')
+        afp = FireIO.read_AFP(t,src='viirs',region=region)
         t_read2 = time.time()
         logger.info(f'reading file {(t_read2-t_read)}')
         if len(afp) > 0:
@@ -404,9 +455,10 @@ def Fire_Forward(tst,ted,restart=False):
             # 5. do fire merging using updated fids_ne and fid_ea
             fids_ne = allfires.fids_ne                         # new or expanded fires id
             fids_ea = sorted(set(fids_ea+allfires.fids_new))   # existing active fires (new fires included)
+            fids_sleep = allfires.fids_sleeper
             t_merge = time.time()
             if len(fids_ne) > 0:
-                allfires = Fire_merge_rtree(allfires,fids_ne,fids_ea)
+                allfires = Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep)
             t_merge2 = time.time()
             logger.info(f'merging fires {(t_merge2-t_merge)}')
             
@@ -436,7 +488,7 @@ def Fire_Forward(tst,ted,restart=False):
         
         #  - record running times for the loop
         t2 = time.time()
-        logger.info(f'{(t2-t1)/60.} minutes used to run coding for {t}')
+        logger.info(f'{(t2-t1)/60.} minutes used to run alg {t}')
         t1 = t2
         
         # 10. update t with the next time stamp
@@ -456,8 +508,8 @@ if __name__ == "__main__":
     t1 = time.time()
 
     # set the start and end time
-    tst=(2015,6,1,'AM')
-    ted=(2015,8,31,'PM')
+    tst=(2020,6,1,'AM')
+    ted=(2020,8,31,'PM')
 
     # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
     Fire_Forward(tst=tst,ted=ted)
