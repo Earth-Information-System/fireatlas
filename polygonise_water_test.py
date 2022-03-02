@@ -14,14 +14,33 @@ if 'GDAL_DATA' not in os.environ:
 
 import glob
 import numpy as np
-import gdal, ogr, osr
+import gdal#, ogr, osr
 import time
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 # functions
 
 def index_from_slice(all_labels, start_end, fid):
+    '''creates indices of pixels with an id using the slices returned by 
+    scipy's find_objects. This allows for fast identification of indices
+    with very large arrays
+    
+    Parameters
+    ----------
+    all_labels : numpy array
+        array containing all labelled objects
+    start_end : slice
+        a slice containing start and end x and y coordinates for the object of interest
+    fid: int,
+        id/label of the object of interest
+
+    Returns
+    -------
+    [ind_x, ind_y] : list of lists
+        x and y pixel coordinates of all pixels labelled with the fid of interest
+        
+    '''
     mask = all_labels[start_end] == fid
     ind_x = np.arange(start_end[1].start,start_end[1].stop)
     ind_y = np.arange(start_end[0].start,start_end[0].stop)
@@ -33,15 +52,37 @@ def index_from_slice(all_labels, start_end, fid):
     return [ind_x, ind_y]
 
 def hull_from_pixels(arr, geoTrans):
-    '''This version uses ndimage.label for seqmentation (more features than measure.label)
+    ''' Computes convex hull from outper pixels of each lake object
+    
+    This version uses ndimage.label for seqmentation (returns more features than measure.label)
     and ndimage.find_objects to extract indices (quite fast)
-    tested: only using outer boundaries of pixels of each lake, this does not
-    work well with calc_hull (creates multipolygons and drops several pixels in calculation)
+    Uses only the outer pixels of each lake to speed up the calculation of the convex hull
+    Processing steps include:
+        1) remove small lakes (< 5 90m pixels)
+        2) fill up islands in the lakes
+        3) label the lakes (give each lake a unique id)
+        4) identify outer pixels of each lake, set inner pixels to zero
+        5) loop through all lake ids, transform pixel coordinates to geographic
+            coordinates and compute the convex hull of the outer lake pixels
+        6) reproject the lakes to a projected coordinate system (North Pole LAEA)
+    
+    Parameters
+    ----------
+    arr : numpy array
+        bool, lake or no lake
+    geoTrans : tuple
+        affine georeferencing transform, used to extract pixel coordinates
+
+    Returns
+    -------
+    gdf : geopandas geodataframe
+        gdf containing convex hulls of all lakes
+    
     '''
     import FireVector, FireIO
     import geopandas as gpd
     from scipy import ndimage#, sparse
-    from skimage import morphology, measure, segmentation
+    from skimage import morphology, segmentation#, measure
     
     # remove small lakes pixels (< 36 30m pixels)
     arr = morphology.remove_small_objects(arr, 5)
@@ -54,6 +95,7 @@ def hull_from_pixels(arr, geoTrans):
     
     # find the boundaries of all lakes to speed up the calculation of hulls!
     inner_edges = segmentation.find_boundaries(arr, mode='inner',background=0)
+    # single layer of pixels is not enough, creates splintered hulls!
     inner_edges = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
     inner_edges2 = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
     inner_edges = np.logical_or(inner_edges, inner_edges2)
@@ -100,7 +142,7 @@ def hull_from_pixels(arr, geoTrans):
     return gdf
 
 def hull_from_pixels1(arr, geoTrans):
-    '''this version uses sklearn measure for labelling (less features than scipy ndimage.label)
+    '''this version uses sklearn measure for labeling (less features than scipy ndimage.label)
     and scipy sparse to compute a sparse matrix in which to search for indices'''
     import FireVector, FireIO
     import geopandas as gpd
@@ -128,7 +170,7 @@ def hull_from_pixels1(arr, geoTrans):
     hulls = {}
     # extract lat/lon coordinates from projected image using geotrans
     t0 = time.time()
-    print(all_labels.max(), 'lakes to be processed. Estimated time:', int(all_labels.max()/1000*110/60)+1, 'min')
+    print(all_labels.max(), 'lakes to be processed. Estimated time:', int(all_labels.max()/1000/30)+1, 'min')
     for fid in range(1,all_labels.max()+1):
         coords = []
         # t0 = time.time()
@@ -157,10 +199,13 @@ def hull_from_pixels1(arr, geoTrans):
     
     return gdf
 
-def save_gdf(gdf, fnm):
+def save_gdf(gdf,year,tilex,tiley):
     ''' Save geopandas to a gpgk file
     '''
+    from FireConsts import lakedir
     
+    path_out = lakedir+str(year)+'/'
+    fnm = path_out+'GSW_300m_'+tilex+'_'+tiley+'.gpkg'
     # create a new id column used for indexing 
     #(id column will be dropped when reading gpkg)
     gdf["id"] = gdf.index 
@@ -170,6 +215,7 @@ def save_gdf(gdf, fnm):
     gdf.to_file(fnm, driver='GPKG')
 
 
+### OLD: functions for polygonising the raster pixels
 # def createProj(projWkt):
 #     '''creates an osr spatial reference from wkt'''
 #     src_srs = osr.SpatialReference()                                    # create the spatial reference
@@ -192,19 +238,16 @@ def save_gdf(gdf, fnm):
 # the minimum output resolution of GSW is 30m,
 # however since it is in 4326 the pixels are smaller in the north
 # longitudinal resolution can easily be 10m
-# we regrid to tenfold resolution and filter by area afterwards
-# (regridding to square pixels would take way too long!)
+# we regrid to square 90m pixels first (North Pole LAEA)
 
 # specs
-year = 2020
+year = 2015
 #coarseness = 5 # has to be multiple of 2 or 5
 path_in = 'D:/fire_atlas/Data/GlobalSurfaceWater/'+str(year)+'/'
-# path_out = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'+str(year)+'/raw'+'_'+str(coarseness)+'/'
-path_out = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'+str(year)+'/raw/'
-tempfile = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/temp.tif'
+tempfile = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/temp1.tif'
 
 files_year = glob.glob(path_in+'*0.tif')
-# files_year = files_year[10:]
+# files_year = files_year[25:]
 
 # loop over files in folder
 for file in files_year:
@@ -215,7 +258,6 @@ for file in files_year:
     tilex,tiley =file.split('-')[1:3]
     tilex = tilex[4:6]
     tiley = tiley[3:6]
-    fileout = path_out+'GSW_300m_'+tilex+'_'+tiley+'.gpkg'
     
     # check if file should be processed (>50N, not in ocean)
     cond1 = int(tilex) > 8 # for now we skip everything <50N
@@ -226,28 +268,33 @@ for file in files_year:
     print('processing tile: '+tilex+tiley)
     # open input tif file
     id_ds = gdal.Open(file)
-    # src1 = id_ds.ReadAsArray()
     
-    # # regrid to coarser resolution (300m)
-    # temp = src1.reshape((src1.shape[0] // coarseness, coarseness,
-    #                      src1.shape[1] // coarseness, coarseness))
-    # src1 = np.median(temp, axis=(1,3)) # median means there is a tendency to underestimate water?
-    
-    # warp to LAEA, 1/2viirs resolution
+    # warp to LAEA, 90m resolution
     if os.path.exists(tempfile):
         os.remove(tempfile)
     warp = gdal.Warp(tempfile,id_ds,dstSRS='EPSG:3571',xRes = 90, yRes = 90)#, options="-overwrite")
     src1 = warp.ReadAsArray()
     
     # compute binary image (value 3 = permanent water)
-    arr = src1 > 2 # since we also include values of 2.5 we counter the underestimations?
+    arr = src1 > 2
+     
+    geoTrans = warp.GetGeoTransform()
+    # proj = warp.GetProjection()
     
-    # remove single pixels
-    #src1 = morphology.remove_small_objects(src1, 1+np.floor(10/coarseness))
-    # src1 = morphology.remove_small_objects(src1, 36)
+    # now we extract the pixel locations using the geotrans
+    gdf = hull_from_pixels(arr, geoTrans)
+    if len(gdf)>0:
+        save_gdf(gdf,year,tilex,tiley)
+    warp = id_ds = None
     
-    # fill holes (will make polygonise faster and less error-prone in case of raster.polygonise)
-    # src1 = ndimage.binary_fill_holes(src1)
+    
+    ### OLD: regrid to coarser resolution using coarseness (no warp)
+    # src1 = id_ds.ReadAsArray()
+    # temp = src1.reshape((src1.shape[0] // coarseness, coarseness,
+    #                      src1.shape[1] // coarseness, coarseness))
+    # src1 = np.median(temp, axis=(1,3)) # median means there is a tendency to underestimate water?
+    
+    ### OLD: polygonise the actual pixels!
     
     # correct resolution of output file geotransform
     # [cols, rows] = src1.shape
@@ -255,14 +302,7 @@ for file in files_year:
     # geoTrans[1] = geoTrans[1]*coarseness
     # geoTrans[5] = geoTrans[5]*coarseness
     # geoTrans = tuple(geoTrans)
-    # proj = id_ds.GetProjection()  
-    geoTrans = warp.GetGeoTransform()
-    # proj = warp.GetProjection()
-    
-    # now we extract the pixel locations using the geotrans
-    gdf = hull_from_pixels(arr, geoTrans)
-    save_gdf(gdf, fileout)
-    warp = id_ds = None
+    # proj = id_ds.GetProjection() 
     
     # # output the labelled tif as well for comparison
     # drv = gdal.GetDriverByName('GTiff')
@@ -292,87 +332,87 @@ for file in files_year:
     
     #print(time.time() - t0)
 
-#%% after correction filter by area
+#%% OLD: after polygonise filter by area
 #from pyproj import Geod
-import os
-import geopandas as gpd
-import pyproj
-import shapely.ops as ops
-from functools import partial
+# import os
+# import geopandas as gpd
+# import pyproj
+# import shapely.ops as ops
+# from functools import partial
 
-def geom_area(geom):
-    project = partial(
-        pyproj.transform,
-        pyproj.Proj('EPSG:4326'),
-        pyproj.Proj(
-            proj='aea',
-            lat_1=geom.bounds[1],
-            lat_2=geom.bounds[3]),
-        always_xy=True) # destination coordinate system
+# def geom_area(geom):
+#     project = partial(
+#         pyproj.transform,
+#         pyproj.Proj('EPSG:4326'),
+#         pyproj.Proj(
+#             proj='aea',
+#             lat_1=geom.bounds[1],
+#             lat_2=geom.bounds[3]),
+#         always_xy=True) # destination coordinate system
 
-    geom_aea = ops.transform(project, geom)
-    area = geom_aea.area
-    return area
+#     geom_aea = ops.transform(project, geom)
+#     area = geom_aea.area
+#     return area
 
-# specify a named ellipsoid
-# geod = Geod(ellps="WGS84")
+# # specify a named ellipsoid
+# # geod = Geod(ellps="WGS84")
 
-year = 2020
-path_in = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'+str(year)+'/fixed/'
-path_out = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'+str(year)+'/area/'
+# year = 2020
+# path_in = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'+str(year)+'/fixed/'
+# path_out = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'+str(year)+'/area/'
 
-# loop over files in folder
-for filename in os.listdir(path_in)[40:45]:
+# # loop over files in folder
+# for filename in os.listdir(path_in)[40:45]:
     
-    if filename == 'GSW_300m_00_128.gpkg':
-        continue
-    file = path_in + "/" + filename
-    outname = path_out + '/' + filename
-    t0 = time.time()
+#     if filename == 'GSW_300m_00_128.gpkg':
+#         continue
+#     file = path_in + "/" + filename
+#     outname = path_out + '/' + filename
+#     t0 = time.time()
 
-    # read file
-    gdf = gpd.read_file(file)
-    if len(gdf)==0:
-        continue
-    gdf = gdf.reset_index()
+#     # read file
+#     gdf = gpd.read_file(file)
+#     if len(gdf)==0:
+#         continue
+#     gdf = gdf.reset_index()
     
-    #gdf2 = gdf.iloc[0:10000]
-    # compute all areas
-    # takes about 30 secs per 1000 features (15 min for 28000)
-    t0 = time.time()
-    areas = gdf['geometry'].apply(geom_area)
-    print('Computed area for '+str(len(gdf))+' geometries in '+str((time.time()-t0)/60)+' min')
+#     #gdf2 = gdf.iloc[0:10000]
+#     # compute all areas
+#     # takes about 30 secs per 1000 features (15 min for 28000)
+#     t0 = time.time()
+#     areas = gdf['geometry'].apply(geom_area)
+#     print('Computed area for '+str(len(gdf))+' geometries in '+str((time.time()-t0)/60)+' min')
     
-    gdf['area'] = areas
-    #gdf = gdf.assign(area = lambda x: geom_area(x['geometry']))
-    #gdf = gdf.assign(area = lambda x: geod.geometry_area_perimeter(x.geometry)[0]) # in geodesic area (only simple polygons)
+#     gdf['area'] = areas
+#     #gdf = gdf.assign(area = lambda x: geom_area(x['geometry']))
+#     #gdf = gdf.assign(area = lambda x: geod.geometry_area_perimeter(x.geometry)[0]) # in geodesic area (only simple polygons)
     
     
-    # filter out small polygons
-    gdf = gdf.loc[gdf['area'] > 140625]
+#     # filter out small polygons
+#     gdf = gdf.loc[gdf['area'] > 140625]
     
-    # write out
-    gdf.to_file(outname, driver='GPKG')
+#     # write out
+#     gdf.to_file(outname, driver='GPKG')
 
 
 
 
-#%% rasterio version
-import rasterio
-from rasterio.features import shapes
-from shapely.geometry import shape
-import geopandas as gp
+#%% OLD rasterio version of polygonise
+# import rasterio
+# from rasterio.features import shapes
+# from shapely.geometry import shape
+# import geopandas as gp
 
-file = path_in+'yearlyClassification2020-0000040000-0001320000.tif'
-mask = None
-with rasterio.Env():
-    with rasterio.open(file) as src:
-        image = src.read(1) # first band
-        results = ({'properties': {'raster_val': v}, 'geometry': s}
-                   for i, (s, v) in enumerate(shapes(image, mask=mask, transform=src.transform)))
+# file = path_in+'yearlyClassification2020-0000040000-0001320000.tif'
+# mask = None
+# with rasterio.Env():
+#     with rasterio.open(file) as src:
+#         image = src.read(1) # first band
+#         results = ({'properties': {'raster_val': v}, 'geometry': s}
+#                    for i, (s, v) in enumerate(shapes(image, mask=mask, transform=src.transform)))
 
-geoms = list(results)
-gpd_polygonized_raster  = gp.GeoDataFrame.from_features(geoms)
+# geoms = list(results)
+# gpd_polygonized_raster  = gp.GeoDataFrame.from_features(geoms)
 
 
 
