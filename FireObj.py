@@ -20,7 +20,7 @@ This module include:
 import FireIO
 import FireVector
 import FireClustering
-from FireConsts import maxoffdays,area_VI,fpbuffer,flbuffer
+from FireConsts import maxoffdays,limoffdays,area_VI,fpbuffer,flbuffer
 
 # b. Object-realted utility functions
 # The time step in the module is now defined as a list (year, month, day, ampm).
@@ -259,6 +259,12 @@ class Allfires:
         ''' List of active fire ids
         '''
         return [f.id for f in self.fires if f.isactive is True]
+    
+    @property
+    def fids_sleeper(self):
+        ''' List of fire ids that may reactivate
+        '''
+        return [f.id for f in self.fires if f.mayreactivate is True]
 
     @property
     def number_of_activefires(self):
@@ -423,6 +429,7 @@ class Fire:
         fpixels = [FirePixel((p[0],p[1]),(p[2],p[3],p[4]),tlist,id) for p in pixels]
         self.pixels = fpixels      # all pixels
         self.newpixels = fpixels   # new detected pixels
+        self.actpixels = fpixels   # new detected pixels of last active fire detection
         self.ignpixels = fpixels   # pixels at ignition
 
         # initialize hull using the pixels
@@ -487,6 +494,16 @@ class Fire:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
         return (self.t_inactive <= maxoffdays)
+    
+    @property
+    def mayreactivate(self):
+        ''' Fire active status
+        '''
+        # invalidated fires are always inactive
+        if self.invalid:
+            return False
+        # otherwise, set to True if no new pixels detected for 5 consecutive days
+        return (maxoffdays < self.t_inactive <= limoffdays)
     
     @property
     def isignition(self):
@@ -650,7 +667,10 @@ class Fire:
         ''' List of all fire pixels near the fire perimeter (fine line pixels)
         '''
         from shapely.geometry import Point, MultiLineString
-
+        
+        # get pixels of last active fire detection
+        nps = self.actpixels
+        
         # get hull
         fhull = self.hull
 
@@ -661,12 +681,10 @@ class Fire:
             if fhull.type == 'Polygon':
                 # lr = fhull.exterior.buffer(fpbuffer)
                 lr = FireVector.addbuffer(fhull.exterior, fpbuffer)
-                nps = self.newpixels
                 return [p for p in nps if lr.contains(Point(p.loc[1],p.loc[0]))]
 
             # if hull is a multipolygon, return new pixels near the hull
             elif fhull.type == 'MultiPolygon':
-                nps = self.newpixels
                 # mlr = MultiLineString([x.exterior for x in fhull]).buffer(fpbuffer)
                 mlr = MultiLineString([x.exterior for x in fhull])
                 mlr = FireVector.addbuffer(mlr,fpbuffer)
@@ -676,14 +694,15 @@ class Fire:
     def fline(self):
         ''' Active fire line MultiLineString shape (segment of fire perimeter with active fires nearby)
         '''
-        from shapely.geometry import Polygon,Point,MultiPoint,MultiLineString
+        from shapely.geometry import MultiLineString#,Polygon,Point,MultiPoint
+        from FireConsts import valpha
 
-        if len(self.flinepixels)==0:
+        if len(self.flinepixels)==0: # this happens is last active pixels are within the fire scar
             return None
 
         # get fireline pixel locations
         flinelocs = [p.loc for p in self.flinepixels]
-        flinelocsMP = FireVector.doMultP(flinelocs)
+        flinelocsMP = FireVector.doMultP(flinelocs,valpha)
 
         # get the hull
         fhull = self.hull
