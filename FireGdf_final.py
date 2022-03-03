@@ -60,6 +60,20 @@ def find_all_end(tst, ted):
     return id_ted_dict, gdf_all
 
 def create_final_allfires(id_ted_dict):
+    '''Loop through the end-dates of all fires and extract the fire objects
+    at their last active fire detection from the according allfires object
+    
+    Parameters
+    ----------
+    id_ted_dict : dictionary
+        dictionary containing the end date of each fire (value), accessed by fire id (key)
+    
+    Returns
+    -------
+    allfires_final : Allfires obj
+        Allfires obj containing all final fires at their last active time step
+    '''
+    
     import FireIO, FireObj
     
     # initialise new allfire object
@@ -104,6 +118,7 @@ def make_gdf_fperim_simple(allfires):
     # update the hull of each active fire as the geometry column
     for fire_no in range(allfires.number_of_activefires):
         fid = allfires.fires[fire_no].id
+        print(fid)
         gdf.loc[fid,'fid'] = fid
         if fid in heritage.keys():
             gdf.loc[fid,'mergid'] = heritage[fid]
@@ -115,17 +130,129 @@ def make_gdf_fperim_simple(allfires):
                 gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fhull]).geometry.values
             else:
                 gdf.loc[fid,'geometry'] = fhull
+    gdf = gdf.dissolve(by = 'mergid')
     # make sure the data types are correct
-    gdf['fid'] = gdf['fid'].astype(int)
-    gdf['mergid'] = gdf['mergid'].astype(int)
+    gdf['fid'] = gdf.index
 
     return gdf
 
+def Fire_merge_final(allfires):
+    ''' For final fire objects that overlap in time and space, merge them
+    
+    Parameters
+    ----------
+    allfires : Allfires obj
+        the existing Allfires object for the time step
+    
+    Returns
+    -------
+    allfires : Allfires obj
+        Allfires obj after fire merging
+    '''
+
+    import FireClustering,FireVector,FireMain
+    from FireConsts import CONNECTIVITY_THRESHOLD_KM
+    
+    # extract existing active fire data (use extending ranges)
+    fids_active = range(len(allfires.fids_active))
+    fires     = [allfires.fires[fid] for fid in fids_active]
+    firehulls = [f.hull for f in fires]
+    firerngs  = [FireVector.addbuffer(f.hull,CONNECTIVITY_THRESHOLD_KM[f.ftype]*1000) for f in fires]
+    
+    # inserting boxes into a spatial index
+    idx = FireClustering.build_rtree(firerngs)
+
+    # loop over all fire objects that have newly expanded or formed, record merging fire id pairs
+    fids_merge = []  # initialize the merged fire id pairs {source id:target id}
+    firedone = {i:False for i in fids_active}  # flag to mark an newly expanded fire obj that has been invalidated
+    for id_a in range(len(fids_active)):
+        fid_a = fids_active[id_a]
+        if firedone[fid_a] == False: # skip objects that have been merged to others in earlier loop
+            # potential neighbors
+            id_cfs = FireClustering.idx_intersection(idx, firerngs[id_a].bounds)
+            # loop over all potential neighbor fobj candidates
+            for id_b in id_cfs:
+                fid_b = fids_active[id_b]
+                if (fid_a != fid_b):
+                    cond1 = fires[fid_a].t_st <= fires[fid_b].t_ed
+                    cond2 = fires[fid_a].t_ed >= fires[fid_b].t_st
+                    if cond1 and cond2:
+                        if firehulls[id_b].intersects(firerngs[id_a]):
+                            true_a = fires[fid_a].id
+                            true_b = fires[fid_b].id
+                            if true_b > true_a:  # merge fid_ea to fid_ne
+                                fids_merge.append((fid_b,fid_a))
+                                if fid_b in firedone.keys():
+                                    firedone[fid_b] = True  # remove fid_ea from the newly expanded fire list (since it has been invalidated)
+                            else:
+                                fids_merge.append((fid_a,fid_b))
+       
+    # loop over each pair in the fids_merge, and do modifications for both target and source objects
+    #  - target: t_ed; pixels, newpixels, hull, extpixels
+    #  - source: invalidated 
+    if len(fids_merge) > 0:
+        fids_merge =  FireMain.correct_nested_ids(fids_merge)
+        
+        for fid1,fid2 in fids_merge:
+            # update source and target objects
+            f_source = allfires.fires[fid1]
+            f_target = allfires.fires[fid2]
+
+            # - target fire t_ed set to current time
+            f_target.t_ed = allfires.t
+
+            # - target fire add source pixels to pixels and newpixels
+            f_target.pixels = f_target.pixels + f_source.pixels
+            f_target.newpixels = f_target.newpixels + f_source.newpixels
+
+            # - update the hull using previous hull and previous exterior pixels
+            phull = f_target.hull
+            pextlocs = [p.loc for p in f_target.extpixels]
+            newlocs = [p.loc for p in f_source.pixels]
+            f_target.hull = FireVector.update_hull(phull,pextlocs+newlocs, sensor='viirs')
+
+            # - use the updated hull to update exterior pixels
+            f_target.extpixels = FireVector.cal_extpixels(f_target.extpixels+f_source.pixels,f_target.hull)
+
+            # invalidate and deactivate source object
+            f_source.mergeid = f_target.mergeid
+
+            # record the heritages
+            allfires.heritages.append((fires[fid1].id,fires[fid2].id))
+
+        # remove duplicates and record fid change for merged and invalidated
+        fids_invalid,fids_merged = zip(*fids_merge)
+        fids_merged = sorted(set(fids_merged))
+        fids_invalid = sorted(set(fids_invalid))
+        allfires.record_fids_change(fids_merged = fids_merged, fids_invalid = fids_invalid)
+
+    return allfires
+
 def add_mcd64(id_ted_dict,ext):
+    '''Retrieve final fire objects and add MCD64 pixels
+    this works analoguous to the fire tracking algorithm:
+        mcd64 pixels are clustered and used to extend existing viirs fire objects
+        burned area pixels that are not close to a viirs fire are ignored
+        fires that are close or overlapping after adding burned area data are merged
+    
+    Parameters
+    ----------
+    id_ted_dict : dict
+        dictionary containing the end date of each fire (value), accessed by fire id (key)
+    ext: list
+        extent (geometry.bounds) of the output gdf
+    
+    Returns
+    -------
+    gdf : geopandas geodataframe
+        geodataframe containing the updated fire perimeters based on viirs AF and mcd64
+    
+    '''
     
     import FireIO, FireMain
     import datetime
-    # load viirs fireobjects
+    
+    # load fire objects based on VIIRS only
     allfires = create_final_allfires(id_ted_dict)
     
     year = allfires.t[0]
@@ -145,28 +272,20 @@ def add_mcd64(id_ted_dict,ext):
         if len(afp_fire) > 0:
             afp_fire = [(row['lat'],row['lon'],0,0,0) for idx,row in afp_fire.iterrows()]
             
-            # 4. rxpand that fire using afp
+            # 4. expand that fire using afp
             allfires_new = FireMain.Fire_expand_rtree(allfires,afp_fire,[fid],sensor='mcd64',expand_only=True,log=False)
             #print(fire.id, allfires_new.fires[fid].id)
             
             # replace the old allfire with the new one
             allfires.fires[fid] = allfires_new.fires[fid]
-        
-    # # 5. do fire merging using updated fids_ne and fid_ea
-    # fids_ne = allfires.fids_ne                         # new or expanded fires id
-    # fids_ea = sorted(set(fids_ea+allfires.fids_new))   # existing active fires (new fires included)
-    # allfires = FireMain.Fire_merge_rtree(allfires,fids_ne,fids_ea,sensor='mcd64')
-    
-    # # 6. correct heritages in case additional merges have happened
-    # allfires.heritages = FireMain.correct_nested_ids(allfires.heritages)
-    # # heritages have to me translated back to actual ids!!!
-    # herit_corr = []
-    # for tup in allfires.heritages:
-    #     herit_corr.append((allfires.fires[tup[0]].id, allfires.fires[tup[1]].id))
-    # allfires.heritages = herit_corr
+            
+    # next we merge fires with spatial and temporal overlap
+    allfires = Fire_merge_final(allfires)     
     
     # 7. make fire perimeters
     gdf = make_gdf_fperim_simple(allfires)
+    gdf = gdf.set_index('fid')
+    gdf['mergid'] = gdf.index
     
     # 8. save
     FireIO.save_gdfobj(gdf,allfires.t,param='final_mcd64')
@@ -175,6 +294,9 @@ def add_mcd64(id_ted_dict,ext):
     
 def save_gdf_trng(tst,ted):
     ''' Wrapper to create and save all ignitions as gdf
+        1) final perimeters from VIIRS only
+        2) final perimeters combining VIIRS and MCD64
+        3) final perimeters with clipped lakes
 
     Parameters
     ----------
@@ -193,10 +315,8 @@ def save_gdf_trng(tst,ted):
     ext = gdf.geometry.total_bounds
     gdf_mcd = add_mcd64(id_ted_dict, ext)
     
-    # find water tiles
-    #tiles = PostProcess.all_water_tiles(gdf)
-    gdf_clip, gdf_lakes = PostProcess.clip_lakes_final(gdf, tst)
-
+    # clip lakes
+    gdf_clip, gdf_lakes = PostProcess.clip_lakes_final(gdf_mcd, tst)
     FireIO.save_gdfobj(gdf_clip,tst,param='final_lakes')
     FireIO.save_gdfobj(gdf_lakes,tst,param='lakes')
 
