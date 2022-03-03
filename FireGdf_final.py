@@ -254,6 +254,7 @@ def add_mcd64(id_ted_dict,ext):
     
     # load fire objects based on VIIRS only
     allfires = create_final_allfires(id_ted_dict)
+    # ids_test = [allfires.fires[i].id for i in range(allfires.number_of_activefires)]
     
     year = allfires.t[0]
     
@@ -262,19 +263,25 @@ def add_mcd64(id_ted_dict,ext):
     
     # now we need to loop through fires to make sure only pixels from that timestep are added
     for fid in range(allfires.number_of_activefires):
+        # print(fid)
         fire = allfires.fires[fid]
         ted_fire = datetime.datetime(*id_ted_dict[fire.id][:3]).timetuple().tm_yday
         tst_fire = datetime.datetime(*fire.t_st[:3]).timetuple().tm_yday
+        ext_fire = fire.hull.buffer(1).bounds # extent of fire with 0.1 degree buffer
         # print(fid, fire.id)
         
         # filter active fire points
-        afp_fire = afp.loc[(afp['doy'] > (tst_fire - 5)) & (afp['doy'] < (ted_fire + 5))]
+        afp_fire = afp.loc[(afp['doy'] > (tst_fire - 5)) & (afp['doy'] < (ted_fire + 5))] # by time
+        afp_fire = afp_fire.loc[(afp_fire['lat'] > ext_fire[1]) & (afp_fire['lat'] < ext_fire[3]) & # by extent
+                                (afp_fire['lon'] > ext_fire[0]) & (afp_fire['lon'] < ext_fire[2])]
+        
         if len(afp_fire) > 0:
+            # print(fid, fire.id)
             afp_fire = [(row['lat'],row['lon'],0,0,0) for idx,row in afp_fire.iterrows()]
             
             # 4. expand that fire using afp
             allfires_new = FireMain.Fire_expand_rtree(allfires,afp_fire,[fid],sensor='mcd64',expand_only=True,log=False)
-            #print(fire.id, allfires_new.fires[fid].id)
+            # print(fire.id, allfires_new.fires[fid].id)
             
             # replace the old allfire with the new one
             allfires.fires[fid] = allfires_new.fires[fid]
