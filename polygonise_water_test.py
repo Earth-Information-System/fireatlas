@@ -34,7 +34,7 @@ def index_from_slice(all_labels, start_end, fid):
         a slice containing start and end x and y coordinates for the object of interest
     fid: int,
         id/label of the object of interest
-
+    
     Returns
     -------
     [ind_x, ind_y] : list of lists
@@ -143,7 +143,9 @@ def hull_from_pixels(arr, geoTrans):
 
 def hull_from_pixels1(arr, geoTrans):
     '''this version uses sklearn measure for labeling (less features than scipy ndimage.label)
-    and scipy sparse to compute a sparse matrix in which to search for indices'''
+    and scipy sparse to compute a sparse matrix in which to search for indices
+    *** not in use ***
+    '''
     import FireVector, FireIO
     import geopandas as gpd
     from scipy import ndimage, sparse
@@ -201,6 +203,19 @@ def hull_from_pixels1(arr, geoTrans):
 
 def save_gdf(gdf,year,tilex,tiley):
     ''' Save geopandas to a gpgk file
+    year, tilex and tiley are used for the filename and directory
+    
+    Parameters
+    ----------
+    gdf : geopandas geodataframe
+        geodataframe to write to file
+    year : int
+        year used for lake data
+    tilex: int,
+        water tile number in x direction
+    tiley: int,
+        water tile number in y direction
+        
     '''
     from FireConsts import lakedir
     
