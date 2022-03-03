@@ -5,17 +5,19 @@ Created on Wed Jan 19 14:14:52 2022
 
 @author: rebec
 """
-# def createProj(projWkt):
-#     '''creates an osr spatial reference from wkt'''
-#     import osr
+def createProj(projWkt):
+    '''creates an osr spatial reference from wkt
+    *** not in use ***'''
+    import osr
     
-#     src_srs = osr.SpatialReference()                                    # create the spatial reference
-#     src_srs.ImportFromWkt(projWkt)
+    src_srs = osr.SpatialReference()                                    # create the spatial reference
+    src_srs.ImportFromWkt(projWkt)
     
-#     return src_srs
+    return src_srs
 
-# def polygonise_tif(fileout, proj, outband, outmask):
-    '''polygonise a raster'''
+def polygonise_tif(fileout, proj, outband, outmask):
+    '''polygonises a raster
+    *** not in use ***'''
     
     import ogr, gdal
     # create output vector datasource in memory
@@ -29,17 +31,32 @@ Created on Wed Jan 19 14:14:52 2022
     gdal.Polygonize(outband, outmask, temp_layer, 0, [], callback=None )
 
 def grid_viirs(year, geotrans, out_arr, clip=True):
-    '''grid VIIRS pixels into polar LAEA
-    inputs:
-        year: int,
-            year of processing
-        geotrans: tuple (6 x float)
-            geotransformation tuple our output array from gdal
-        out_arr: np.array
-            circumpolar LAEA grid in 500m resolution
-        clip: bool,
-            should the output array and geotrans be clipped to the extent of 
-            the available VIIRS pixels? default is True'''
+    '''grid VIIRS pixels into polar LAEA:
+        1) reads viirs burned area coordinates of a year
+        2) transforms lat lon viirs coordinates to NP LAEA
+        3) transforms NP LAEA to pixel coordinates of out_arr using geotransform
+        4) adds burn pixels to the given numpy array
+        optionally: clips the array to the extent of the viirs coordinates
+    
+    Parameters
+    ----------
+    year: int,
+        year of processing
+    geotrans: tuple (6 x float)
+        geotransformation tuple of out_arr array from gdal
+    out_arr: np.array
+        circumpolar LAEA grid in 500m resolution
+    clip: bool,
+        should the output array and geotrans be clipped to the extent of 
+        the available VIIRS pixels? default is True
+
+    Returns
+    -------
+    geotrans : tuple (6 x float)
+        geotransformation tuple of the returned array
+    out_arr: numpy array,
+        updated numpy array containing viirs active fire detections
+    '''
     
     from FireConsts import dirpjdata
     import FireIO
@@ -81,18 +98,28 @@ def grid_viirs(year, geotrans, out_arr, clip=True):
 def create_burnraster(year,reload_mcd64=True,fill_npixel=1,write=True):
     '''creates a binary burned/unburned raster in 500m resolution by merging
     mcd64 burned area and VIIRS active fires
-    inputs:
-        year: int,
-            processing year to take mcd64 and viirs data from
-        reload_mcd64: bool,
-            should mcd64 data be included in raster
-        fill_npixel: int,
-            for holefilling, what number of pixels should be considered'''
+    
+    Parameters
+    ----------
+    year: int,
+        processing year to take mcd64 and viirs data from
+    reload_mcd64: bool,
+        should mcd64 data be included in raster
+    fill_npixel: int,
+        for holefilling, what number of pixels should be considered
+    
+    Returns
+    -------
+    geotrans_out : geopandas geodataframe
+        geotransformation tuple of the returned array
+    arr_year: numpy array,
+        500m-array containing viirs active fire and modis burned area
+    '''
+    
     from FireConsts import mcd64dir
     import FireIO
     import numpy as np
     import gdal
-    import copy
     from skimage import morphology
 
     # read example grid for mapping
@@ -102,10 +129,7 @@ def create_burnraster(year,reload_mcd64=True,fill_npixel=1,write=True):
     proj = sample_ds.GetProjection()
     cols = sample_ds.RasterXSize
     rows = sample_ds.RasterYSize
-    arr = np.zeros((cols, rows)).astype(int)
-
-    # create new array from sample
-    arr_year = copy.deepcopy(arr)
+    arr_year = np.zeros((cols, rows)).astype(int)
 
     # grid viirs pixels
     geotrans_new, arr_year = grid_viirs(year, geotrans, arr_year)
@@ -132,6 +156,21 @@ def create_burnraster(year,reload_mcd64=True,fill_npixel=1,write=True):
     return geotrans_out, arr_year
 
 def hull_from_pixels(coords_geo):
+    '''
+    Clusters a list of geographic coordinates and computes the convex hull
+    of each cluster
+    
+    Parameters
+    ----------
+    coords_geo: list of tuples,
+        geographic coordinates
+    
+    Returns
+    -------
+    gdf : geopandas geodataframe
+        contains a convex hull for each cluster
+    '''
+    
     import FireClustering, FireVector
     import geopandas as gpd
     
@@ -152,6 +191,22 @@ def hull_from_pixels(coords_geo):
     return gdf
 
 def create_burnpoly(t):
+    '''
+    Creates polygons of unburned islands using VIIRS AF and MCD64
+    1) create a burned/unburned raster for the year
+    2) identify unburned islands using hole-filling
+    3) clean data (remove holes in holes, remove small objects)
+    4) extract pixel locations of the unburned islands and transform to geographic coordinates
+    5) cluster and compute convex hull
+    6) save as geopackage
+    
+    Parameters
+    ----------
+    t: tuple,
+        time tuple
+    
+    '''
+    
     import FireIO
     import numpy as np
     from scipy import ndimage
@@ -246,6 +301,7 @@ def tile_2_fnm(tiles, year):
     fnms : list of strings
         lists containing paths of all overlapping tile files
     '''
+    from FireConsts import lakedir
     import itertools, os
     
     tilex, tiley = tiles
@@ -254,17 +310,15 @@ def tile_2_fnm(tiles, year):
     all_combinations = [list(zip(each_permutation, tiley)) for each_permutation in itertools.permutations(tilex, len(tiley))]
     
     fnms = []
-    basepath = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'+str(year)+'/raw/GSW_300m_'
+    basepath = lakedir+str(year)+'/GSW_300m_'
     for tile in all_combinations:
         
         fnm = basepath+str(tile[0][1])+'_'+str(tile[0][0])+'.gpkg'
         # check if path exists
         if os.path.exists(fnm):
             fnms.append(fnm)
-        else:
-           fnms = False
-           # this means the tile does not contain any lakes
-           # (or has not been processed for years < 2020)
+        # missing file means the tile does not contain any lakes
+        # (or has not been processed! make sure to run poygonise_water_test on the year before)
     
     return fnms
 
@@ -434,7 +488,24 @@ def clip_lakes_1fire(geom, lakediss):
     return out
 
 def clip_lakes_final(gdf, t):
-    '''Wrapper to clip the lakes form final polygons'''
+    '''Wrapper to clip the lakes from final polygons
+    
+    Parameters
+    ----------
+    gdf : pandas geodataframe
+        geodataframe of final fire perimeters
+    t : tuple
+        time tuple
+
+    Returns
+    -------
+    gdf_new : geopandas geodataframe
+        geodataframe containing final fire perimeters without lakes
+    gdf_lakes: geopandas geodataframe
+        geodataframe containing only the lakes fore each fire perimeter id
+        (this is used for clipping daily large fire perimeters)
+    '''
+    
     import geopandas as gpd
     
     # extract year
@@ -484,20 +555,20 @@ def clip_lakes_final(gdf, t):
     #gdf_new = gpd.GeoDataFrame(gdf_new, crs='epsg:4326', geometry=clipped_geoms)
     return gdf_new, gdf_lakes
 
-
-
 def sort_by_tile():
-    """ sort the Fire perimeters of an Allfires object by tile number"""
-    pass
-
-
-def process_1t():
+    """ sort the Fire perimeters of an Allfires object by tile number
+    *** for circumpolar processing, currently not in use """
     pass
 
 if __name__ == "__main__":
     ''' The main code to record daily geojson data for a time period
     '''
-
+    import sys
+    sys.path.insert(1, 'D:/fire_atlas/1_code/fireatlas')
+    import os
+    if 'GDAL_DATA' not in os.environ:
+        os.environ['GDAL_DATA'] = r'C:/Users/rebec/anaconda3/envs/py3work/Library/share/gdal' 
+        os.environ['PROJ_LIB'] = r'C:/Users/rebec/anaconda3/envs/fireatlas/Library/share/proj' 
     import time
     t1 = time.time()
     # set the start and end time
