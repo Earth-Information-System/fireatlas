@@ -361,16 +361,17 @@ def dissolve_lake_geoms(geom, ext, year):
         
         # at the edges of files we can have artificial holes in the lakes due to mosaicking
         if len(fnm_lakes) > 1:
-            geom_orig = lakediss.loc[1].geometry
-            # cnt = 0
-            # for p in geom_orig:
-            #     if len(p.interiors)>0:
-            #         print(cnt)
-            #         print(p)
-            #     cnt+=1
-            geom_fix = MultiPolygon(Polygon(p.exterior) for p in geom_orig)
-            lakediss.set_geometry([geom_fix], inplace = True)
-        
+            if len(lakediss) > 0:
+                geom_orig = lakediss.loc[1].geometry
+                # cnt = 0
+                # for p in geom_orig:
+                #     if len(p.interiors)>0:
+                #         print(cnt)
+                #         print(p)
+                #     cnt+=1
+                geom_fix = MultiPolygon(Polygon(p.exterior) for p in geom_orig)
+                lakediss.set_geometry([geom_fix], inplace = True)
+            
     else:
         lakediss = None
     
@@ -519,7 +520,7 @@ def clip_lakes_final(gdf, t):
     # loop over all final perimeters
     for row in gdf_3571.itertuples():
         fid = row.mergid
-        print(fid)
+        # print(fid)
         geom = row.geometry
         
         # fetch bounding box in lat lon
