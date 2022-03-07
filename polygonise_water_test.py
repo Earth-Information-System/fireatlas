@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+Transform JRC Global Surface Water tiles to geopackage
+
 Created on Wed Jan 19 13:42:05 2022
 
 @author: rebec
@@ -83,36 +85,53 @@ def hull_from_pixels(arr, geoTrans):
     import geopandas as gpd
     from scipy import ndimage#, sparse
     from skimage import morphology, segmentation#, measure
+    from shapely.geometry import MultiPolygon
     
     # remove small lakes pixels (< 36 30m pixels)
     arr = morphology.remove_small_objects(arr, 5)
     # fill holes (lake islands) --> helps with segementation and boundary extraction
-    arr = ndimage.binary_fill_holes(arr)
+    arr_lakes = ndimage.binary_fill_holes(arr)
+    
+    # we keep large islands since they can also burn (see NWT slave lake 2014)
+    islands = arr_lakes.astype(int) - arr.astype(int)
+    islands = morphology.remove_small_objects(islands == 1, 1001)
+    # we also keep lakes on islands if they fit the size requirements
+    island_lakes = ndimage.binary_fill_holes(islands)
+    island_lakes = island_lakes.astype(int) - islands.astype(int)
+    island_lakes = morphology.remove_small_objects(island_lakes == 1, 5)
     
     # cluster the pixels: all neighbouring pixel receive one id
     # all_labels = measure.label(arr,background=0) # or ndimage.label
-    all_labels, maxlab = ndimage.label(arr)
+    all_labels, maxlab = ndimage.label(arr_lakes)
+    
+    # extract the lake labels of lakes containing islands
+    island_labels = np.unique(all_labels[islands])
+    
+    # label the islands and island-lakes
+    islands_labels, maxlab_islands = ndimage.label(islands)
+    island_lakes_labels, maxlab_island_lakes = ndimage.label(island_lakes)
     
     # find the boundaries of all lakes to speed up the calculation of hulls!
-    inner_edges = segmentation.find_boundaries(arr, mode='inner',background=0)
+    inner_edges = segmentation.find_boundaries(arr_lakes, mode='inner',background=0)
     # single layer of pixels is not enough, creates splintered hulls!
     inner_edges = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
     inner_edges2 = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
     inner_edges = np.logical_or(inner_edges, inner_edges2)
-    inner_edges = np.logical_and(arr, inner_edges)
+    inner_edges = np.logical_and(arr_lakes, inner_edges)
 
     all_labels = np.ma.masked_where(~inner_edges, all_labels)
     all_labels = np.ma.filled(all_labels, fill_value = 0)
     
     # use scipy find_objects!
-    start_end_idx = ndimage.find_objects(all_labels, max_label=maxlab)
+    start_end_idx = ndimage.find_objects(all_labels, max_label=maxlab) # index for lakes
+    start_end_idx_il = ndimage.find_objects(island_lakes_labels, max_label=maxlab_island_lakes) # index for lakes on islands
     
     # loop through clusters and extract hulls
     hulls = {}
     # extract lat/lon coordinates from projected image using geotrans
     t0 = time.time()
-    print(all_labels.max(), 'lakes to be processed. Estimated time:', int(all_labels.max()/1000*110/60)+1, 'min')
-    for fid in range(1,all_labels.max()+1):
+    print(maxlab, 'lakes to be processed. Estimated time:', int(all_labels.max()/1000*110/60)+1, 'min')
+    for fid in range(1,maxlab+1):
         coords = []
         start_end = start_end_idx[fid-1]
         index = index_from_slice(all_labels, start_end, fid)
@@ -127,8 +146,48 @@ def hull_from_pixels(arr, geoTrans):
         coords_geo = list(zip(coords_geo[1], coords_geo[0])) # careful! this is lat,lon!!
         
         # compute the hull of each cluster
-        #locs = [coords_geo[i] for i,x in enumerate(cid) if x == fid]
         hulls[fid] = FireVector.cal_hull(coords_geo, 'none')
+        
+        # include islands in lakes if there are any
+        if fid in island_labels:
+            coords = []
+            index = index_from_slice(islands.astype(int), start_end, 1) # technically there could be islands here that are not in the lake!
+            for xpx, ypx in zip(index[0], index[1]): 
+                x, y = FireIO.pixel2World(geoTrans, ypx+0.5, xpx+0.5)# add 0.5 for center of pixel
+                coords.append((x,y,islands_labels[xpx,ypx]))
+            x, y, isl_lab = zip(*coords)
+            coords_geo = FireIO.polar_to_geo(x,y)
+            coords_geo = list(zip(coords_geo[1], coords_geo[0])) # careful! this is lat,lon!!
+            
+            # compute the hull of each island
+            island_hulls = []
+            for island_id in np.unique(isl_lab):
+                coords_island = [coord for i,coord in enumerate(coords_geo) if isl_lab[i] == island_id]
+                island_hulls.append(FireVector.cal_hull(coords_island, 'none'))
+                
+            # grab the lake geometry and clip the islands
+            if len(island_hulls) > 1:
+                island_hulls = MultiPolygon(island_hulls).buffer(0) # buffer to make the polygon valid
+            else:
+                island_hulls = island_hulls[0]
+            hulls[fid] = hulls[fid].difference(island_hulls)
+        
+    # finally: include lakes on islands
+    print(maxlab_island_lakes, 'lakes on islands.')
+    for il_fid in range(1,maxlab_island_lakes+1):
+        coords = []
+        start_end = start_end_idx_il[il_fid-1]
+        index = index_from_slice(island_lakes_labels, start_end, il_fid) # technically there could be islands here that are not in the lake!
+        for xpx, ypx in zip(index[0], index[1]): 
+            x, y = FireIO.pixel2World(geoTrans, ypx+0.5, xpx+0.5)# add 0.5 for center of pixel
+            coords.append((x,y,islands_labels[xpx,ypx]))
+        x, y, isl_lab = zip(*coords)
+        coords_geo = FireIO.polar_to_geo(x,y)
+        coords_geo = list(zip(coords_geo[1], coords_geo[0])) # careful! this is lat,lon!!
+        
+        # compute the hull of each cluster
+        hulls[fid+il_fid] = FireVector.cal_hull(coords_geo, 'none')
+        
         # if fid in np.arange(100,np.max(all_labels),100):
         #     print(fid, 'processed in', time.time()-t0)
         #     t0 = time.time()
@@ -259,10 +318,10 @@ def save_gdf(gdf,year,tilex,tiley):
 year = 2015
 #coarseness = 5 # has to be multiple of 2 or 5
 path_in = 'D:/fire_atlas/Data/GlobalSurfaceWater/'+str(year)+'/'
-tempfile = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/temp1.tif'
+tempfile = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/temp15.tif'
 
 files_year = glob.glob(path_in+'*0.tif')
-# files_year = files_year[25:]
+# files_year = files_year[3:]
 
 # loop over files in folder
 for file in files_year:
@@ -276,7 +335,7 @@ for file in files_year:
     
     # check if file should be processed (>50N, not in ocean)
     cond1 = int(tilex) > 8 # for now we skip everything <50N
-    cond2 = 52 <= int(tiley) <=64 # skip Atlantic
+    cond2 = 52 <= int(tiley) <= 64 # skip Atlantic
     if cond1 or cond2:
         continue
     
@@ -287,7 +346,7 @@ for file in files_year:
     # warp to LAEA, 90m resolution
     if os.path.exists(tempfile):
         os.remove(tempfile)
-    warp = gdal.Warp(tempfile,id_ds,dstSRS='EPSG:3571',xRes = 90, yRes = 90)#, options="-overwrite")
+    warp = gdal.Warp(tempfile,id_ds,dstSRS='EPSG:3571',xRes=90,yRes=90)#, options="-overwrite")
     src1 = warp.ReadAsArray()
     
     # compute binary image (value 3 = permanent water)
