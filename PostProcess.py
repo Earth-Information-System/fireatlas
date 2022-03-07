@@ -369,6 +369,8 @@ def dissolve_lake_geoms(geom, ext, year):
                 #         print(cnt)
                 #         print(p)
                 #     cnt+=1
+                if type(geom_orig) == 'Polygon':
+                    geom_orig = [geom_orig]
                 geom_fix = MultiPolygon(Polygon(p.exterior) for p in geom_orig)
                 lakediss.set_geometry([geom_fix], inplace = True)
             
