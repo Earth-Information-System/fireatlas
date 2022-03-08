@@ -53,6 +53,26 @@ def index_from_slice(all_labels, start_end, fid):
     #     print(arr[ind_x[i], ind_y[i]])
     return [ind_x, ind_y]
 
+def find_edges(arr):
+    '''find the boundaries of all features to speed up the calculation of hulls'''
+    
+    from skimage import segmentation
+    
+    arr_bin = arr > 0 # create a binary array for the edge detection
+    
+    inner_edges = segmentation.find_boundaries(arr_bin, mode='inner',background=0)
+    # single layer of pixels is not enough, creates splintered hulls!
+    inner_edges = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
+    inner_edges2 = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
+    inner_edges = np.logical_or(inner_edges, inner_edges2)
+    inner_edges = np.logical_and(arr_bin, inner_edges)
+    
+    # fill non-edges with zeros in original array
+    arr = np.ma.masked_where(~inner_edges, arr)
+    arr = np.ma.filled(arr, fill_value = 0)
+    
+    return arr
+
 def hull_from_pixels(arr, geoTrans):
     ''' Computes convex hull from outper pixels of each lake object
     
@@ -84,9 +104,11 @@ def hull_from_pixels(arr, geoTrans):
     import FireVector, FireIO
     import geopandas as gpd
     from scipy import ndimage#, sparse
-    from skimage import morphology, segmentation#, measure
-    from shapely.geometry import MultiPolygon
+    from skimage import morphology#, measure
+    # from shapely.geometry import MultiPolygon
+    from shapely.ops import unary_union
     
+    t01 = time.time()
     # remove small lakes pixels (< 36 30m pixels)
     arr = morphology.remove_small_objects(arr, 5)
     # fill holes (lake islands) --> helps with segementation and boundary extraction
@@ -101,36 +123,27 @@ def hull_from_pixels(arr, geoTrans):
     island_lakes = morphology.remove_small_objects(island_lakes == 1, 5)
     
     # cluster the pixels: all neighbouring pixel receive one id
-    # all_labels = measure.label(arr,background=0) # or ndimage.label
     all_labels, maxlab = ndimage.label(arr_lakes)
+    all_labels = find_edges(all_labels) # reduce to edges only for speed
     
     # extract the lake labels of lakes containing islands
     island_labels = np.unique(all_labels[islands])
     
     # label the islands and island-lakes
     islands_labels, maxlab_islands = ndimage.label(islands)
+    islands_labels = find_edges(islands_labels) # reduce to edges only for speed
     island_lakes_labels, maxlab_island_lakes = ndimage.label(island_lakes)
-    
-    # find the boundaries of all lakes to speed up the calculation of hulls!
-    inner_edges = segmentation.find_boundaries(arr_lakes, mode='inner',background=0)
-    # single layer of pixels is not enough, creates splintered hulls!
-    inner_edges = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
-    inner_edges2 = segmentation.find_boundaries(inner_edges, mode='thick',background=0)
-    inner_edges = np.logical_or(inner_edges, inner_edges2)
-    inner_edges = np.logical_and(arr_lakes, inner_edges)
-
-    all_labels = np.ma.masked_where(~inner_edges, all_labels)
-    all_labels = np.ma.filled(all_labels, fill_value = 0)
     
     # use scipy find_objects!
     start_end_idx = ndimage.find_objects(all_labels, max_label=maxlab) # index for lakes
     start_end_idx_il = ndimage.find_objects(island_lakes_labels, max_label=maxlab_island_lakes) # index for lakes on islands
+    t0 = time.time()
+    print('Finished raster operations.', round((t0-t01)/60, 2))
+    print(maxlab, 'lakes to be processed. Estimated time:', int(all_labels.max()/1000*110/60)+1, 'min')
     
     # loop through clusters and extract hulls
     hulls = {}
     # extract lat/lon coordinates from projected image using geotrans
-    t0 = time.time()
-    print(maxlab, 'lakes to be processed. Estimated time:', int(all_labels.max()/1000*110/60)+1, 'min')
     for fid in range(1,maxlab+1):
         coords = []
         start_end = start_end_idx[fid-1]
@@ -167,7 +180,7 @@ def hull_from_pixels(arr, geoTrans):
                 
             # grab the lake geometry and clip the islands
             if len(island_hulls) > 1:
-                island_hulls = MultiPolygon(island_hulls).buffer(0) # buffer to make the polygon valid
+                island_hulls = unary_union(island_hulls) # buffer to make the polygon valid
             else:
                 island_hulls = island_hulls[0]
             hulls[fid] = hulls[fid].difference(island_hulls)
@@ -321,7 +334,7 @@ path_in = 'D:/fire_atlas/Data/GlobalSurfaceWater/'+str(year)+'/'
 tempfile = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/temp15.tif'
 
 files_year = glob.glob(path_in+'*0.tif')
-# files_year = files_year[3:]
+# files_year = files_year[61:]
 
 # loop over files in folder
 for file in files_year:
