@@ -30,14 +30,14 @@ def remove_self(inds, dist):
 
     return np.array(new_inds,dtype=object), np.array(new_dist,dtype=object)
 
-def build_rtree(geoms, fids=False):
+def build_rtree(geoms, fids=[]):
     '''Builds Rtree from a shapely multipolygon shape
     and optionally uses list of fids as identifier'''
     import rtree
     
     idx = rtree.index.Index() # create new index
     for ind, geom in enumerate(geoms):
-        if fids:
+        if len(fids) > 0:
             idx.insert(ind, geom.bounds, fids[ind])
         else:
             idx.insert(ind, geom.bounds, ind)
