@@ -184,13 +184,13 @@ def hull_from_pixels(coords_geo):
         hulls[fid] = FireVector.cal_hull(locs, 'none')
     
     # write out as geopandas and to file
-    gdf = gpd.GeoDataFrame({'fid': list(hulls.keys()), 'geometry': list(hulls.values())}, 
+    gdf = gpd.GeoDataFrame({'fireid': list(hulls.keys()), 'geometry': list(hulls.values())}, 
                            crs="EPSG:4326")
     gdf = gdf.to_crs('EPSG:3571')
     
     return gdf
 
-def create_burnpoly(t):
+def create_burnpoly(t, method='hull'):
     '''
     Creates polygons of unburned islands using VIIRS AF and MCD64
     1) create a burned/unburned raster for the year
@@ -204,6 +204,9 @@ def create_burnpoly(t):
     ----------
     t: tuple,
         time tuple
+    method: string,
+        method for polygonisation, either hull (convex hull, default)
+        or pixelwise (all pixels are being polygonised)
     
     '''
     
@@ -233,8 +236,11 @@ def create_burnpoly(t):
     coords_geo = FireIO.polar_to_geo(x,y)
     coords_geo = list(zip(coords_geo[1], coords_geo[0])) # careful! this is lat,lon!!
     
-    # do clustering and computation of hull
-    gdf = hull_from_pixels(coords_geo)
+    if method == 'pixelwise':
+        pass
+    else:
+        # do clustering and computation of hull
+        gdf = hull_from_pixels(coords_geo)
     
     # write to file
     FireIO.save_gdfobj(gdf,t,param='unburned')
@@ -303,6 +309,10 @@ def tile_2_fnm(tiles, year):
     '''
     from FireConsts import lakedir
     import itertools, os
+    
+    # there is no surface water informaion for 2021, so we replace that with 2020
+    if year == 2021:
+        year = 2020
     
     tilex, tiley = tiles
     tilex = [str(tile*4).zfill(3) for tile in tilex]
@@ -404,7 +414,7 @@ def clip_lakes_1fire_outer(gdf_1d, lakediss, lake_idx):
     
     # initialise
     #geom_nolakes = copy.deepcopy(geom) # geometry without lakes
-    geod = pyproj.Geod(ellps='WGS84') # geoid used for computing distances in m
+    # geod = pyproj.Geod(ellps='WGS84') # geoid used for computing distances in m
     intsct_length = 0 # length of perimeter bordering lake
     lake_area = 0 # total lake area within the fire
     
@@ -420,14 +430,12 @@ def clip_lakes_1fire_outer(gdf_1d, lakediss, lake_idx):
         if lake.intersects(geom):
             # if lakes are within fire scar we just compute lake statistics
             if lake.within(geom):
-                temp = geod.geometry_area_perimeter(lake)
-                lake_area += abs(temp[0])
-                intsct_length += temp[1] # should this be included?
+                lake_area += lake.area
             # if lakes are intersecting fire scar we clip
             else:
                 geom = geom.difference(lake)
                 true_intsct = lake.intersection(geom)
-                intsct_length += geod.geometry_area_perimeter(true_intsct)[1]
+                intsct_length += true_intsct.length
     
     # update gdf
     gdf_1d = gdf_1d.assign(lake_area = lake_area)
@@ -522,7 +530,7 @@ def clip_lakes_final(gdf, t):
     
     # loop over all final perimeters
     for row in gdf_3571.itertuples():
-        fid = row.mergid
+        fireid = row.mergid
         # print(fid)
         geom = row.geometry
         
@@ -534,25 +542,25 @@ def clip_lakes_final(gdf, t):
 
         if isinstance(lakediss, type(None)):
             #print('GSW tile missing or does not contain lakes!')
-            gdf_new.append((fid, geom, 0, 0))
+            gdf_new.append((fireid, geom, 0, 0))
         else:
             if len(lakediss) > 0:
                 clipped_geoms,lake_geom,lake_area,intsct_length = clip_lakes_1fire(geom, lakediss)
-                gdf_new.append((fid, clipped_geoms, lake_area, intsct_length))
-                lake_list.append((fid, lake_geom))
+                gdf_new.append((fireid, clipped_geoms, lake_area, intsct_length))
+                lake_list.append((fireid, lake_geom))
             else:
                 #print('fire '+str(fid)+' does not contain lakes.')
-                gdf_new.append((fid, geom, 0, 0))
+                gdf_new.append((fireid, geom, 0, 0))
     
     # turn fire geom and attributes into geopandas dataframe
     fids, geoms, lake_areas, lake_intscts = zip(*gdf_new)
-    d = {'fid': fids, 'geometry': geoms, 'lake_area': lake_areas, 'lake_border': lake_intscts}
+    d = {'fireid': fids, 'geometry': geoms, 'lake_area': lake_areas, 'lake_border': lake_intscts}
     gdf_new = gpd.GeoDataFrame(d, crs="EPSG:3571")
-    gdf_new = gdf_new.assign(mergid = gdf_new['fid'])
+    gdf_new = gdf_new.assign(mergid = gdf_new['fireid'])
     
     # same for lake geometries
     fids, geoms = zip(*lake_list)
-    d = {'fid': fids, 'geometry': geoms, 'mergid': fids}
+    d = {'fireid': fids, 'geometry': geoms, 'mergid': fids}
     gdf_lakes = gpd.GeoDataFrame(d, crs="EPSG:3571")
     
     #gdf_new = pd.DataFrame(gdf_new, columns=[fid,clipped_geoms])
