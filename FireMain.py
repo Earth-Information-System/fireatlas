@@ -381,7 +381,7 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep,sensor ='viirs'):
 
     return allfires
 
-def Fire_Forward(tst,ted,restart=False,region=None):
+def Fire_Forward(tst,ted,restart=False,region=''):
     ''' The wrapper function to progressively track all fire events for a time period
            and save fire object to pkl file and gpd to geojson files
            
@@ -418,7 +418,7 @@ def Fire_Forward(tst,ted,restart=False,region=None):
     allfires = Fobj_init(tst,restart=restart)
     
     # clean temp folder (used for faster loading of active fire data)
-    temp_files = os.path.join(dirpjdata,'temp') + '/*'
+    temp_files = os.path.join(dirpjdata,'temp/') + str(tst[0]) + '/*'
     files = glob.glob(temp_files)
     for f in files:
         os.remove(f)
@@ -484,7 +484,7 @@ def Fire_Forward(tst,ted,restart=False,region=None):
             allfires.heritages = correct_nested_ids(allfires.heritages)
             
         #  - save updated allfires object to pickle file
-        FireIO.save_fobj(allfires,t)  
+        FireIO.save_fobj(allfires,t,region)  
         
         #  - record running times for the loop
         t2 = time.time()
