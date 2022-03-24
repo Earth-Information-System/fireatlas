@@ -227,8 +227,6 @@ def make_gdf_NFPlist(allfires, heritage):
             
     return df
 
-def
-
 def save_gdf_1t(allfires,heritage,fperim=False,fline=False,NFP=False,NFP_txt=False,region=''):
     ''' Creat gdf using one Allfires object and save it to a geojson file at 1 time step.
             This can be used  for fperim, fline, and NFP files.
