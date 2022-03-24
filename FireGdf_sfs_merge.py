@@ -23,7 +23,7 @@ Modules required
 * FireConsts
 """
 
-def merge_fires(gdf_fid, fid, tst, t):
+def merge_fires(gdf_fid,fid,tst,t):
     ''' merge fire perimeters of all fires with the same merge id
 
     Parameters
@@ -69,7 +69,7 @@ def merge_fires(gdf_fid, fid, tst, t):
     
     return(gdf_diss)
 
-def make_fire_history(fid, start_end,op=''):
+def make_fire_history(fid,start_end_fire,op='',region=''):
     ''' derive time series of single fire attributes using the half-daily gdf summary
 
     Parameters
@@ -89,11 +89,11 @@ def make_fire_history(fid, start_end,op=''):
     import shapely
 
     #fid = fire.id
-    tst,ted = start_end  # start and ending time of the fire
+    tst_fire,ted_fire = start_end_fire  # start and ending time of the fire
     lake_process = True
     
     # load lakes file and enter into index
-    lake_geoms = FireIO.load_lake_geoms(tst, fid)
+    lake_geoms = FireIO.load_lake_geoms(tst_fire,fid,region=region)
     if isinstance(lake_geoms, type(None)): # lake_geoms is None if no lakes are within final perimeter
         lake_process = False
     else:
@@ -105,58 +105,52 @@ def make_fire_history(fid, start_end,op=''):
 
     endloop = False  # flag to control the ending of the loop
     t_inact = 0      # counts the days a fire is inactive before it spreads again
-    t = list(tst)    # t is the time (year,month,day,ampm) for each step
+    t = list(tst_fire)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
-        #print(t)
+        # print(t)
         # read daily gdf
-        gdf = FireIO.load_gdfobj(t,op=op)
+        gdf = FireIO.load_gdfobj(t,op=op,region=region)
         gdf_1d = gdf[gdf.mergid == fid] # here we need to enter merge id instead of index
+        
+        # transform to lake crs
+        gdf_1d = gdf_1d.to_crs('EPSG:3571')
         
         # skip date if now new pixels
         gdf_1d = gdf_1d[gdf_1d.n_newpixels > 0]
         if len(gdf_1d) == 0:
-            t = FireObj.t_nb(t,nb='next')
             t_inact += 0.5 # half-daily time steps
-            continue
-        
-        # merge if several ids
-        if len(gdf_1d) > 1:
-            gdf_1d = merge_fires(gdf_1d, fid, tst, t)
-        
-        # clip lakes and update attributes
-        if lake_process:
-            gdf_1d = PostProcess.clip_lakes_1fire_outer(gdf_1d, lake_geoms, lake_idx)
-        
-        # change index to date
-        gdf_1d.index = [FireObj.t2dt(t)]
-        
-        # update t_inactive
-        gdf_1d.t_inactive = math.floor(t_inact) # inactivity is counted in full days
-
-        # append daily row to gdf_all
-        if FireObj.t_dif(t,tst)==0:
-            gdf_all = gdf_1d
         else:
-            gdf_all = gdf_all.append(gdf_1d)
+            t_inact = 0 # reset inactivity counter
+            # merge if several ids
+            if len(gdf_1d) > 1:
+                gdf_1d = merge_fires(gdf_1d, fid, tst_fire, t)
+            
+            # clip lakes and update attributes
+            if lake_process:
+                gdf_1d = PostProcess.clip_lakes_1fire_outer(gdf_1d, lake_geoms, lake_idx)
+            
+            # change index to date
+            gdf_1d.index = [FireObj.t2dt(t)]
+            
+            # update t_inactive
+            gdf_1d.t_inactive = math.floor(t_inact) # inactivity is counted in full days
+    
+            # append daily row to gdf_all
+            if FireObj.t_dif(t,tst_fire)==0:
+                gdf_all = gdf_1d
+            else:
+                gdf_all = gdf_all.append(gdf_1d)
 
         #  - if t reaches ted, set endloop to True to stop the loop
-        if FireObj.t_dif(t,ted)==0:
+        if FireObj.t_dif(t,ted_fire)==0:
             endloop = True
 
         #  - update t with the next time stamp
-        t_inact = 0 # reset inactivity counter
         t = FireObj.t_nb(t,nb='next')
-
-
-    # use correct time column as index
-    # gdf_all.index = FireObj.ftrange(tst,ted)
-
-    # remove fid column to save space
-    # gdf_all = gdf_all.drop(columns='fid')
-
+    
     return gdf_all
 
-def save_gdf_1fire(fid, start_end, op=''):
+def save_gdf_1fire(fid,start_end,op='',region=''):
     ''' derive and save time series of fire perimeter and fine line
         for each large active fire at a time step
 
@@ -169,12 +163,12 @@ def save_gdf_1fire(fid, start_end, op=''):
     '''
     import FireIO
     start_end_fire = start_end[fid]
-    gdf_ts = make_fire_history(fid, start_end_fire, op=op)
+    gdf_ts = make_fire_history(fid,start_end_fire,op=op,region=region)
     t = start_end_fire[1]
-    FireIO.save_gdfobj(gdf_ts,t,param='large',fid=fid,op=op)
+    FireIO.save_gdfobj(gdf_ts,t,param='large',fid=fid,op=op,region=region)
 
 
-def save_gdf_trng(ted,fperim=False,fline=False,NFP=False,fall=False):
+def save_gdf_trng(ted,fperim=False,fline=False,NFP=False,fall=False,region=''):
     ''' Wrapper to create and save gdf files for a time period
 
     Parameters
@@ -198,8 +192,8 @@ def save_gdf_trng(ted,fperim=False,fline=False,NFP=False,fall=False):
         fperim,fline,NFP = True,True,True
 
     # select all large fires (only merge ids)
-    skip,merge_ids = zip(*FireIO.load_fobj(ted).heritages)
-    allfires = FireIO.load_fobj(ted)
+    allfires = FireIO.load_fobj(ted,region=region)
+    skip,merge_ids = zip(*allfires.heritages)
     large_ids = [allfires.fires[i].id for i in range(allfires.number_of_fires) if allfires.fires[i].farea > falim]
     large_ids = [fire for fire in large_ids if fire not in skip]
     start_end = {i:(allfires.fires[i].t_st, allfires.fires[i].t_ed) for i in large_ids}
@@ -210,11 +204,11 @@ def save_gdf_trng(ted,fperim=False,fline=False,NFP=False,fall=False):
         #print(fid)
         # create and save gdfs according to input options
         if fperim:
-            save_gdf_1fire(fid = fid, start_end = start_end)
+            save_gdf_1fire(fid=fid,start_end=start_end,region=region)
         if fline:
-            save_gdf_1fire(fid = fid, start_end = start_end,op='FL')
+            save_gdf_1fire(fid=fid,start_end=start_end,op='FL',region=region)
         if NFP:
-            save_gdf_1fire(fid = fid, start_end = start_end,op='NFP')
+            save_gdf_1fire(fid=fid,start_end=start_end,op='NFP',region=region)
 
 
 if __name__ == "__main__":
