@@ -509,7 +509,11 @@ class Fire:
     def isignition(self):
         ''' Is the current timestep the ignition?
         '''
-        ign = (t_dif(self.t_st,self.t_ed) == 0)*1
+        if len(self.newpixels) == 0: # in this case t_st = t_ed because fire is inactive
+            ign = 0
+        else:
+            ign = (t_dif(self.t_st,self.t_ed) == 0)*1
+        
         return ign
         
     @property
