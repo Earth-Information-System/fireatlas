@@ -13,11 +13,14 @@ lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 
 # extents of test regions
 ext_SL = [-119, 60, -110, 64] # test area for slave lake 2014
+ext_NT = [-136, 60, -102, 79] # Northwest territories
 ext_AKsmall = [-156, 65.5, -152, 66.3] # small test area for AK 2015
 ext_AK = [-168, 51, -140, 72] # all of AK
 ext_NY = [147, 65, 154, 70] # test area for Northern Yakutia 2020
 ext_YAK = [106, 55, 163, 72] # test area for yakutia 2020
-ext_all = {'AK2015': ext_AKsmall,'AK': ext_AK,'SL2014':ext_SL,'NY2020':ext_NY, 'YAK2020':ext_YAK}
+ext_ssib = [89, 48, 132.1, 67] # test area southern siberia 2018 reference data
+ext_all = {'AK2015':ext_AKsmall, 'AK':ext_AK, 'SL2014':ext_SL, 'NT':ext_NT,
+           'NY2020':ext_NY, 'YAK2020':ext_YAK, 'Sib2018':ext_ssib}
 
 # parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
@@ -53,7 +56,7 @@ MCD64buf = 231.7   # fire perimeter buffer (deg), corresponding to 463.31271653 
 falim = 4    # large fire area threshold (in km2)
 
 # diagnostic data name and types saved in geojson files (in addition to geometries)
-dd = {'fid':'int',                  # id
+dd = {'fireid':'int',                  # id
       'mergid':'int',               # this is the id in the large fire database
       #'clat':'float',               # centroid latitude   -> centroid[0]
       #'clon':'float',               # centroid longitude  -> centroid[1]
