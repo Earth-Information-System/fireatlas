@@ -5,7 +5,7 @@ Created on Fri Jan 28 10:52:41 2022
 @author: rebec
 """
 
-def find_all_end(tst, ted):
+def find_all_end(tst, ted,region=''):
     ''' find all final perimeters points in the half-daily snapshots and
     save them to one gdf
 
@@ -31,8 +31,8 @@ def find_all_end(tst, ted):
     while endloop == False:
         #print(t)
         # read daily gdf
-        if FireIO.check_gdfobj(t,op=''):
-            gdf = FireIO.load_gdfobj(t)
+        if FireIO.check_gdfobj(t,op='',region=region):
+            gdf = FireIO.load_gdfobj(t,region=region)
             gdf_active = gdf[gdf.isactive == 1]
     
             # append daily row to gdf_all
@@ -59,7 +59,7 @@ def find_all_end(tst, ted):
 
     return id_ted_dict, gdf_all
 
-def create_final_allfires(id_ted_dict):
+def create_final_allfires(id_ted_dict,region=''):
     '''Loop through the end-dates of all fires and extract the fire objects
     at their last active fire detection from the according allfires object
     
@@ -81,10 +81,10 @@ def create_final_allfires(id_ted_dict):
     allfires_final = FireObj.Allfires(ted)
     
     # find all dates for loop
-    dates = list(set(id_ted_dict.values()))
+    dates = sorted(list(set(id_ted_dict.values())))
     
     for t in dates:
-        allfires = FireIO.load_fobj(t)
+        allfires = FireIO.load_fobj(t,region=region)
         
         # find all fires that end on that date
         fireids = [key for key in id_ted_dict if id_ted_dict[key] == t]
@@ -112,14 +112,14 @@ def make_gdf_fperim_simple(allfires):
     import geopandas as gpd
 
     # initialize the GeoDataFrame with fire attribute names (in dd) as columns
-    gdf = gpd.GeoDataFrame(columns=['fid','mergid'],crs='epsg:4326', geometry=[])
+    gdf = gpd.GeoDataFrame(columns=['fireid','mergid'],crs='epsg:4326', geometry=[])
     heritage = dict(allfires.heritages)
 
     # update the hull of each active fire as the geometry column
     for fire_no in range(allfires.number_of_activefires):
         fid = allfires.fires[fire_no].id
         print(fid)
-        gdf.loc[fid,'fid'] = fid
+        gdf.loc[fid,'fireid'] = fid
         if fid in heritage.keys():
             gdf.loc[fid,'mergid'] = heritage[fid]
         else:
@@ -132,7 +132,7 @@ def make_gdf_fperim_simple(allfires):
                 gdf.loc[fid,'geometry'] = fhull
     gdf = gdf.dissolve(by = 'mergid')
     # make sure the data types are correct
-    gdf['fid'] = gdf.index
+    gdf['fireid'] = gdf.index
 
     return gdf
 
@@ -228,7 +228,7 @@ def Fire_merge_final(allfires):
 
     return allfires
 
-def add_mcd64(id_ted_dict,ext):
+def add_mcd64(id_ted_dict,ext,region=''):
     '''Retrieve final fire objects and add MCD64 pixels
     this works analoguous to the fire tracking algorithm:
         mcd64 pixels are clustered and used to extend existing viirs fire objects
@@ -253,7 +253,7 @@ def add_mcd64(id_ted_dict,ext):
     import datetime
     
     # load fire objects based on VIIRS only
-    allfires = create_final_allfires(id_ted_dict)
+    allfires = create_final_allfires(id_ted_dict,region=region)
     # ids_test = [allfires.fires[i].id for i in range(allfires.number_of_activefires)]
     
     year = allfires.t[0]
@@ -291,15 +291,15 @@ def add_mcd64(id_ted_dict,ext):
     
     # 7. make fire perimeters
     gdf = make_gdf_fperim_simple(allfires)
-    gdf = gdf.set_index('fid')
+    gdf = gdf.set_index('fireid')
     gdf['mergid'] = gdf.index
     
     # 8. save
-    FireIO.save_gdfobj(gdf,allfires.t,param='final_mcd64')
+    FireIO.save_gdfobj(gdf,allfires.t,param='final_mcd64',region=region)
     
     return gdf
     
-def save_gdf_trng(tst,ted):
+def save_gdf_trng(tst,ted,region=''):
     ''' Wrapper to create and save all ignitions as gdf
         1) final perimeters from VIIRS only
         2) final perimeters combining VIIRS and MCD64
@@ -315,17 +315,17 @@ def save_gdf_trng(tst,ted):
     import FireIO, PostProcess
     
     # find all final perimeters and write out to gdf
-    id_ted_dict,gdf = find_all_end(tst, ted)
-    FireIO.save_gdfobj(gdf,tst,param='final')
+    id_ted_dict,gdf = find_all_end(tst, ted,region=region)
+    FireIO.save_gdfobj(gdf,tst,param='final',region=region)
     
     # add mcd64 data to the final perimeters
     ext = gdf.geometry.total_bounds
-    gdf_mcd = add_mcd64(id_ted_dict, ext)
+    gdf_mcd = add_mcd64(id_ted_dict,ext,region=region)
     
     # clip lakes
     gdf_clip, gdf_lakes = PostProcess.clip_lakes_final(gdf_mcd, tst)
-    FireIO.save_gdfobj(gdf_clip,tst,param='final_lakes')
-    FireIO.save_gdfobj(gdf_lakes,tst,param='lakes')
+    FireIO.save_gdfobj(gdf_clip,tst,param='final_lakes',region=region)
+    FireIO.save_gdfobj(gdf_lakes,tst,param='lakes',region=region)
 
 
 if __name__ == "__main__":
