@@ -388,10 +388,11 @@ class Allfires:
                 fires that is small in size (<1000 pixels)
         '''
         import FireIO
+        year = self.t[0]
         for f in self.activefires:
             if (f.n_pixels < 1000):
                 # get all LCT for the fire pixels
-                vLCT = FireIO.get_LCT(f.locs)
+                vLCT = FireIO.get_LCT(f.locs,year)
                 # extract the LCT with most pixel counts
                 LCTmax = max(set(vLCT), key = vLCT.count)
                 f.LCTmax = LCTmax
@@ -448,8 +449,12 @@ class Fire:
         # self.stFM1000 = FireIO.get_stFM1000(hull,locs,tlist)
 
         # LCTmax
-        # vLCT = FireIO.get_LCT(locs)
-        # self.LCTmax = max(set(vLCT), key = vLCT.count)
+        vLCT = FireIO.get_LCT(locs, self.t[0])
+        self.LCTmax = max(set(vLCT), key = vLCT.count)
+        
+        # peat status
+        vPEAT = FireIO.get_peatstatus(locs)
+        self.peat = 1 if 1 in vPEAT else 0 # if fire is intersecting at least 1 10x10km2 peat tile
 
     # properties
     @property
@@ -493,7 +498,7 @@ class Fire:
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return (self.t_inactive <= maxoffdays)
+        return (self.t_inactive <= maxoffdays[self.ftype])
     
     @property
     def mayreactivate(self):
@@ -503,7 +508,7 @@ class Fire:
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return (maxoffdays < self.t_inactive <= limoffdays)
+        return (maxoffdays[self.ftype] < self.t_inactive <= limoffdays)
     
     @property
     def isignition(self):
@@ -622,9 +627,18 @@ class Fire:
     def ftype(self):
         ''' Fire type (as defined in FireConsts) derived using LCTmax and stFM1000
         '''
-        return 2 # set to wild forest type, we'll deal with fire type later
         # get the dominant land cover type
-        # LCTmax = self.LCTmax
+        LCTmax = self.LCTmax
+        
+        # determine fire type using land cover and peatland status
+        peatstatus = self.peat
+        
+        if peatstatus == 1:
+            peat_dict = {0:0,1:1,2:2,3:2,4:2,5:2,6:2,7:4,8:6,9:4,10:4,11:2,12:4,13:8}
+        else:
+            peat_dict = {0:0,1:1,2:3,3:3,4:3,5:3,6:3,7:5,8:7,9:5,10:5,11:3,12:5,13:8}
+        
+        return peat_dict[LCTmax]
 
         # determine the fire type using the land cover type and stFM1000
         # if LCTmax in [11,31]:   # 'Water', 'Barren' -> 'Other'
