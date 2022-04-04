@@ -407,7 +407,7 @@ def clip_lakes_1fire_outer(gdf_1d, lakediss, lake_idx):
         lists containing all overlapping x and y tiles
     '''
     
-    import pyproj
+    # import pyproj
     import FireClustering
     #import copy
     
@@ -491,11 +491,9 @@ def clip_lakes_1fire(geom, lakediss):
             true_intsct = lake.intersection(geom)
             intsct_length += true_intsct.length
             # intsct_length += geod.geometry_area_perimeter(true_intsct)[1]
-    # else:
-    #     print("surprise! this also doesn't contain lakes")
 
-    lakes = lakediss.loc[1]['geometry'].difference(geom).intersection(geom_nolakes.buffer(0.0001))
-    out = (geom, lakes, lake_area, intsct_length)
+    # lakes = lakediss.loc[1]['geometry'].difference(geom).intersection(geom_nolakes.buffer(0.1))
+    out = (geom, lakediss.loc[1].geometry, lake_area, intsct_length)
 
     return out
 
