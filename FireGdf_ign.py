@@ -24,6 +24,47 @@ Modules required
 * FireConsts
 """
 
+def clip_lakes(gdf,t,region):
+    import shapely
+    import FireIO,FireClustering,PostProcess
+    
+    # transform to lake crs
+    gdf = gdf.to_crs('EPSG:3571')
+    createds = True
+    
+    # loop through ignition points and clip
+    for mergid in set(gdf.mergid):
+        print('merge id:',mergid)
+        lake_geoms = FireIO.load_lake_geoms(t,mergid,region=region) # load lake file
+        if not isinstance(lake_geoms, type(None)): 
+            # print(mergid)
+            # lake_geoms is None if no lakes are within final perimeter
+            if not isinstance(lake_geoms, shapely.geometry.multipolygon.MultiPolygon):
+                # if only one lake is present we put it in a list for the loop
+                lake_geoms = [lake_geoms]
+            lake_idx = FireClustering.build_rtree(lake_geoms) # build index
+            # loop through ips of that fire and clip lakes
+            gdf_1f = gdf.loc[gdf.mergid == mergid] # single out the ignition points of that fire
+            # print(len(gdf_1f))
+            for fid in gdf_1f.index:
+                gdf_1ip = gdf.loc[[fid]]
+                gdf_1ip = PostProcess.clip_lakes_1fire_outer(gdf_1ip,lake_geoms,lake_idx)
+                # append daily row to gdf_all
+                if createds:
+                    gdf_clip = gdf_1ip
+                    createds = False
+                else:
+                    gdf_clip = gdf_clip.append(gdf_1ip)
+        else:
+            if createds:
+                gdf_clip = gdf.loc[gdf.mergid == mergid]
+                createds = False
+            else:
+                gdf_clip = gdf_clip.append(gdf.loc[gdf.mergid == mergid])
+        print(len(gdf_clip))
+    
+    return gdf_clip
+
 def find_all_ign(tst, ted,region=''):
     ''' find all ignition points in the half-daily snapshots and
     save them to one gdf
@@ -49,7 +90,7 @@ def find_all_ign(tst, ted,region=''):
         if FireIO.check_gdfobj(t,op='',region=region):
             gdf = FireIO.load_gdfobj(t,region=region)
             gdf_ign = gdf[(gdf.isignition == 1)] # filter for ignitions
-    
+            
             # append daily row to gdf_all
             if creategdf:
                 gdf_all = gdf_ign
@@ -63,7 +104,10 @@ def find_all_ign(tst, ted,region=''):
 
         #  - update t with the next time stamp
         t = FireObj.t_nb(t,nb='next')
-
+    
+    # clip lakes
+    gdf_all = clip_lakes(gdf_all,tst,region)
+    
     return gdf_all
 
 def save_gdf_trng(tst,ted,region=''):
