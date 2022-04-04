@@ -267,7 +267,7 @@ def get_any_shp(filename):
     
     return shp
 
-def get_LCT(locs):
+def get_LCT(locs,year):
     ''' Get land cover type for active fires
     
     Parameters
@@ -280,29 +280,82 @@ def get_LCT(locs):
     vLCT : list of ints
         land cover types for all input active fires
     '''
-    from FireConsts import dirextdata
+    from FireConsts import dirextdata, lc_dict
     
     from osgeo import gdal
-    import pyproj
     import os
+    gdal.UseExceptions()
     
-    # read NLCD 500m data
-    fnmLCT = os.path.join(dirextdata,'nlcd_510m.tif')
-    dataset = gdal.Open(fnmLCT, gdal.GA_ReadOnly)
+    # read ESA CCI LC 300m data
+    if year == 2021: year -=1 # no land cover data available for 2021
+    if year in range(2016,2021): # years 2016-2020
+        fnmLCT = os.path.join(dirextdata,'esa_cci_lc_300m/C3S-LC-L4-LCCS-Map-300m-P1Y-'+str(year)+'-v2.1.1.nc')
+    else: # years 2012-2015
+        fnmLCT = os.path.join(dirextdata,'esa_cci_lc_300m/ESACCI-LC-L4-LCCS-Map-300m-P1Y-'+str(year)+'-v2.0.7cds.nc')
+    
+    # read dataset
+    sds = 'NETCDF:"'+fnmLCT+'":lccs_class'
+    dataset = gdal.Open(sds, gdal.GA_ReadOnly)
     band = dataset.GetRasterBand(1)
-    data = band.ReadAsArray()
-    gt = dataset.GetGeoTransform()
-    srs = dataset.GetSpatialRef()
-    pfunc = pyproj.Proj(srs.ExportToProj4())
+    gt = list(dataset.GetGeoTransform())
+    
+    # use hull of the pixels for faster reading
+    lats,lons = zip(*locs)
+    ulx, uly = world2Pixel(gt, min(lons), max(lats)) # ul corner
+    brx, bry = world2Pixel(gt, max(lons), min(lats)) # br corner
+    xcnt = brx-ulx+1
+    ycnt = bry-uly+1
+    data = band.ReadAsArray(int(ulx),int(uly),int(xcnt),int(ycnt))
     
     # extract LCTs for each points
     vLCT = []
     for lat,lon in locs:
-        x,y = pfunc(lon,lat)
-        i,j = int((x-gt[0])/gt[1]),int((y-gt[3])/gt[5])
-        vLCT.append(data[j,i])
-        
+        x, y = world2Pixel(gt, lon, lat)
+        lc_l1 = int(data[(y-uly),(x-ulx)]/10) # divide by ten to turn into level 1 class
+        lc = lc_dict[lc_l1]# simplify original classes
+        vLCT.append(lc)
+    
     return vLCT
+
+def get_peatstatus(locs):
+    ''' Check if fire burns in peatland
+    
+    Parameters
+    ----------
+    locs : list of lists (nx2)
+        lat and lon values for each active fire detection
+        
+    Returns
+    -------
+    vPEAT : list of ints
+        peatland y/n for all fire pixels
+    '''
+    from FireConsts import dirextdata
+    from osgeo import gdal
+    import warnings
+    warnings.simplefilter("ignore")
+    
+    # read dataset
+    fnm = dirextdata + 'peat/Hugelius_etal_2020_PNAS_grids/Grids_TIFF_WGS84/peat_greater_10.tif'
+    dataset = gdal.Open(fnm, gdal.GA_ReadOnly)
+    band = dataset.GetRasterBand(1)
+    gt = list(dataset.GetGeoTransform())
+    
+    # use hull of the pixels for faster reading
+    lats,lons = zip(*locs)
+    ulx, uly = world2Pixel(gt, min(lons), max(lats)) # ul corner
+    brx, bry = world2Pixel(gt, max(lons), min(lats)) # br corner
+    xcnt = brx-ulx+1
+    ycnt = bry-uly+1
+    data = band.ReadAsArray(int(ulx),int(uly),int(xcnt),int(ycnt))
+    
+    # extract LCTs for each points
+    vPEAT = []
+    for lat,lon in locs:
+        x, y = world2Pixel(gt, lon, lat)
+        vPEAT.append(data[(y-uly),(x-ulx)]) # data.shape = (ycnt,xcnt)
+    
+    return vPEAT
 
 def get_FM1000(t,loc):
     ''' Get fm1000 for a point at t
@@ -674,13 +727,12 @@ def load_lake_geoms(t,fid,region=''):
         geometry of all lake perimeters within the fire
     '''
     import geopandas as gpd
-    from datetime import date
     
-    d = date(*t[:-1])
-    path = get_path(d.strftime('%Y'),region)
+    year = str(t[0])
+    path = get_path(year,region)
     
     # get file name
-    fnm_lakes = path+'/Summary/lakes'+d.strftime('%Y')+'.gpkg'
+    fnm_lakes = path+'/Summary/lakes'+year+'.gpkg'
     
     # read data and extract target geometry
     gdf = gpd.read_file(fnm_lakes)
