@@ -502,12 +502,13 @@ class Fire:
     
     @property
     def mayreactivate(self):
-        ''' Fire active status
+        ''' Fire sleeper status
         '''
-        # invalidated fires are always inactive
-        if self.invalid:
+        if self.invalid: # invalidated fires are always inactive
             return False
-        # otherwise, set to True if no new pixels detected for 5 consecutive days
+        if self.ftype in [0,1,5,7,8]: # fires in non-peat and non-forest areas can't sleep
+            return False
+        # otherwise, set to True if inactive time shorter than limoffdays (20 days)
         return (maxoffdays[self.ftype] < self.t_inactive <= limoffdays)
     
     @property
