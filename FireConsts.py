@@ -20,7 +20,7 @@ ext_NY = [147, 65, 154, 70] # test area for Northern Yakutia 2020
 ext_YAK = [106, 55, 163, 72] # test area for yakutia 2020
 ext_ssib = [89, 48, 132.1, 67] # test area southern siberia 2018 reference data
 ext_all = {'AK2015':ext_AKsmall, 'AK':ext_AK, 'SL2014':ext_SL, 'NT':ext_NT,
-           'NY2020':ext_NY, 'YAK2020':ext_YAK, 'Sib2018':ext_ssib}
+           'NY2020':ext_NY, 'YAK':ext_YAK, 'Sib2018':ext_ssib}
 
 # parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
@@ -28,13 +28,26 @@ SPATIAL_THRESHOLD_KM = 1  # threshold of spatial distance (between pixels, km) u
 #MAX_THRESH_CENT_KM = 50   # threshold of spatial distance (between clusters centroid, km) used to filter nearby clusters
 
 # fire type and visualization parameters
-FTYP = {0:'Other', 1:'Urban', 2:'Forest wild', 3:'Forest manage', 4:'Shrub wild', 5:'Shrub manage', 6:'Agriculture'}      # fire type names
-FTYPCLR = {0:'grey', 1:'rosybrown', 2:'darkolivegreen', 3:'olive', 4:'saddlebrown', 5:'sandybrown', 6:'darkviolet'}        # colors used for each fire type
+lc_dict = { # dictionary for simplifying ESA CCI land cover types
+           0:0, 20:0, 21:0, 22:0, # no data, water, ice, bare
+           1:1, 2:1, 3:1, 4:1, # cropland
+           5:2, 6:3, 7:4, 8:5, 9:6, # forest
+           10:7, 11:7, 12:7, # shrubs & mosaic landscape
+           13:8, 14:9, 15:10, # grassland, lichen, sparse vegetation
+           16:11, 17:11, 18:12, # flooded forests and shrubs
+           19:13} # urban
+# FTYP = {0:'Other', 1:'Crop', 2:'broad-evergreen', 3:'broad-deciduous', 4:'needle-evergreen', 5:'needle-deciduous', 
+#         6:'mixed forest', 7:'shrubs/mosaic', 8:'grassland', 9:'lichen/moss', 10:'sparse vegetation',
+#         11:'flood-forest', 12:'flood-shrubs',13:'urban'} 
+FTYP = {0:'Other', 1:'Crop', 2:'forest-peat', 3:'forest-no peat', 4:'shrubs/mosaic/open-peat', 
+        5:'shrubs/mosaic/open-no peat', 6:'grassland:peat', 7:'grassland-no peat', 8:'urban'} 
+# FTYP = {0:'Other', 1:'Urban', 2:'Forest wild', 3:'Forest manage', 4:'Shrub wild', 5:'Shrub manage', 6:'Agriculture'}      # fire type names
+# FTYPCLR = {0:'grey', 1:'rosybrown', 2:'darkolivegreen', 3:'olive', 4:'saddlebrown', 5:'sandybrown', 6:'darkviolet'}        # colors used for each fire type
 
 # temporal and spatial distances for fire object definition
-maxoffdays = 10   # fire becomes inactive after this number of consecutive days without active fire detection
-limoffdays = 20 #this is the additional threshold that involves checking for active fireline
-CONNECTIVITY_THRESHOLD_KM = [1, 1, 2.5, 5, 5, 5, 1] # km, corresponding to fire type (forest/shrub: 5km; other: 1km)
+maxoffdays = {0:4, 1:5, 2:10, 3:10, 4:10, 5:5, 6:10, 7:3, 8:5}   # fire becomes inactive after this number of consecutive days without active fire detection
+limoffdays = 20 # this is the additional threshold that involves checking for active fireline
+CONNECTIVITY_THRESHOLD_KM = {0:1, 1:1, 2:2.5, 3:2.5, 4:2.5, 5:2.5, 6:1, 7:1, 8:1} # km, corresponding to fire type (forest/shrub: 5km; other: 1km)
 sleeperthresh = 1 #km, distance a sleeper is allowes to spread since its last active fire detection
 
 # alpha parameter
