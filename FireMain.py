@@ -462,11 +462,11 @@ def Fire_Forward(tst,ted,restart=False,region=''):
             t_merge2 = time.time()
             logger.info(f'merging fires {(t_merge2-t_merge)}')
             
-        # 6. update dominant LCT (LCTmax)
-        # allfires.updateLCTmax()
+            # 6. update dominant LCT (LCTmax)
+            allfires.updateLCTmax()
         
-        # 7. manualy invalidate static fires (with exceptionally large fire density)
-        allfires.invalidate_statfires()
+            # 7. manualy invalidate static fires (with exceptionally large fire density)
+            allfires.invalidate_statfires()
         
         # 8. log and save
         #  - record fid_updated (the fid of fires that change in the time step) to allfires object and logger
