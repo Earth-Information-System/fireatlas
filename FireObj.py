@@ -229,6 +229,8 @@ class Allfires:
 
         # cumulative recordings
         self.heritages = []       # a list of fire heritage relationships (source, target)
+        self.id_dict = []         # this list relates the list position of the fire in the allfires object to the fire id
+                                  # (list_index, fireid) (list position can be variable when writing out only active fires)
 
     # properties
     @property
@@ -372,11 +374,13 @@ class Allfires:
             self.fids_invalid = fids_invalid       # fires invalidated due to merging with other fires
 
     def invalidate_statfires(self):
-        ''' If pixel density of an active fire is too large, assume it's static
+        ''' Original: If pixel density of an active fire is too large, assume it's static
                 fires and invalidate it.
+            Now: invalidate fires that only burn one pixel at a single time step
         '''
-        for f in self.activefires:
-            if (f.pixden > 20) & (f.farea < 20):
+        for f in self.validfires:
+            if (not f.isactive) & (f.duration < 1) & (f.n_pixels == 1):
+            # if (f.pixden > 20) & (f.farea < 20):
                 # invalidate the fire
                 f.invalid = True
 
@@ -384,18 +388,30 @@ class Allfires:
                 self.fids_invalid.append(f.id)
 
     def updateLCTmax(self):
-        ''' update Land cover type (dominant LCT for all fire pixels) for active
-                fires that is small in size (<1000 pixels)
+        ''' update Land cover type (dominant LCT for the new fire pixels)
         '''
         import FireIO
+        import random
         year = self.t[0]
         for f in self.activefires:
-            if (f.n_pixels < 1000):
-                # get all LCT for the fire pixels
-                vLCT = FireIO.get_LCT(f.locs,year)
+            if f.n_newpixels > 0: # only update if there are new pixels
+                if (f.n_newpixels < 1000):
+                    uselocs = f.newlocs
+                else:
+                    # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+                    uselocs = random.sample(f.newlocs, 1000)
+                
+                # get all LCT/peat for the fire pixels
+                vLCT = FireIO.get_LCT(uselocs,year)
+                vPEAT = FireIO.get_peatstatus(uselocs)
+                
                 # extract the LCT with most pixel counts
-                LCTmax = max(set(vLCT), key = vLCT.count)
-                f.LCTmax = LCTmax
+                f.LCTmax = max(set(vLCT), key = vLCT.count)
+                
+                # check if at leat one peat pixel is intersecting the new fire loctions
+                f.peat = 1 if 1 in vPEAT else 0
+            
+            
 
 # b. Object - Fire
 class Fire:
