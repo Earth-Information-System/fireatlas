@@ -21,6 +21,10 @@ ext_YAK = [106, 55, 163, 72] # test area for yakutia 2020
 ext_ssib = [89, 48, 132.1, 67] # test area southern siberia 2018 reference data
 ext_all = {'AK2015':ext_AKsmall, 'AK':ext_AK, 'SL2014':ext_SL, 'NT':ext_NT,
            'NY2020':ext_NY, 'YAK':ext_YAK, 'Sib2018':ext_ssib}
+# shapefiles for regional clipping
+shp_all = {'AK':dirextdata+'shapefiles/Alaska.gpkg', 'NT':dirextdata+'shapefiles/nwt.gpkg',
+           'CA':dirextdata+'shapefiles/canada.gpkg', 'YAK':dirextdata+'shapefiles/yakutia.gpkg',
+           'RU':dirextdata+'shapefiles/russia.gpkg', 'full':dirextdata+'shapefiles/wwf_borealarctic_diss_1deg.gpkg'}
 
 # parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
@@ -51,7 +55,7 @@ CONNECTIVITY_THRESHOLD_KM = {0:1, 1:1, 2:2.5, 3:2.5, 4:2.5, 5:2.5, 6:1, 7:1, 8:1
 sleeperthresh = 1 #km, distance a sleeper is allowes to spread since its last active fire detection
 
 # alpha parameter
-valpha = 800      # 1000 m (default)
+valpha = 1000      # 1000 m (default)
 lalpha = 100
 stralpha = '1km'   # string of alpha parameter
 
@@ -73,7 +77,7 @@ dd = {'fireid':'int',                  # id
       'mergid':'int',               # this is the id in the large fire database
       #'clat':'float',               # centroid latitude   -> centroid[0]
       #'clon':'float',               # centroid longitude  -> centroid[1]
-      'ftype':'int',                # fire type
+      'ftype':'str',                # fire type
       'isactive':'int',             # active status
       't_inactive':'int',           # how long has it been inactive
       'isignition':'int',           # is this a new ignition?
@@ -95,6 +99,10 @@ dd = {'fireid':'int',                  # id
       'ted_day':'int',
       'ted_ampm':'str',
       'ted_doy':'int',
+      'lake_area':'float',          # area within fire perimeter covered by lakes
+      'lake_no':'int',
+      'lake_border':'float',        # fire perimeter length that ends at lake
+      'lake_border_tot':'float'
       }
 
 # dd = {'fid':'int',                  # id
