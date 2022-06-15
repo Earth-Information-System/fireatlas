@@ -9,36 +9,82 @@ def correct_final_ftype(gdf):
     '''correct the final fire type using the complete perimeter
     and supplementing the ESA-CCI land cover with CAVM for tundra regions'''
     
-    import FireIO, FireClustering
-    from FireConsts import dirextdata
-    from osgeo import gdal
+    import FireIO
+    from FireConsts import lc_dict, dirextdata
+    import numpy as np
     import rasterio
-    import geopandas as gpd
+    import rasterio.mask
     
     # grab year from the gdf
     year = gdf.iloc[0].tst_year
     
     # read CCI LC dataset
     fnmLCT = FireIO.get_LCT_fnm(year)
-    dataset = gdal.Open('NETCDF:"'+fnmLCT+'":lccs_class', gdal.GA_ReadOnly)
-    band = dataset.GetRasterBand(1)
-    gt = list(dataset.GetGeoTransform())
+    ds = rasterio.open('NETCDF:"'+fnmLCT+'":lccs_class')
     
     # read tundra dataset
     ds_tundra = rasterio.open(dirextdata+'cavm/cavm_coarse.tif')
     proj_tundra = ds_tundra.crs
+    tundra_dict = { # dictionary for naming of tundra classes
+               1:'barren tundra', 
+               2:'graminoid tundra', 
+               3:'shrub tundra', 
+               4:'wetland tundra'}
+    boreal_dict = { # dictionary for naming of boreal classes
+               0:'other',
+               1:'cropland', 
+               2:'forest', 
+               3:'shrub/mosiac', 
+               4:'grassland',
+               5:'sparse',
+               6:'urban'}
+    lc_dict = { # dictionary for simplifying ESA CCI land cover types
+               0:0, 20:0, 21:0, 22:0, # no data, water, ice, bare
+               1:1, 2:1, 3:1, 4:1, # cropland
+               5:2, 6:2, 7:2, 8:2, 9:2, # forest
+               10:3, 11:3, 12:3, # shrubs & mosaic landscape
+               13:4,  # grassland
+               14:5, 15:5, # lichen, sparse vegetation
+               16:2, 17:2, 18:3, # flooded forests and shrubs
+               19:6} # urban
+
     
     # reproject gdf to cavm for clipping
     gdf_reproj_tundra = gdf.to_crs(proj_tundra)
     
+    # add a new column for writeput to the dataframe
+    gdf['lcc_final'] = None
+    
     for fire in gdf.index:
-        perim_tundra = gdf_reproj_tundra.geometry[fire]
-        bds = perim_tundra.bounds
-        
-        # read tundra dataset
+        tundra = False
+        perim_tundra = gdf_reproj_tundra.geometry[fire]        
+        # check if the fire is a tundra fire
         try:
-            tundra_arr = ds_tundra.read()
-        
+            tundra_arr, trans_tundra = rasterio.mask.mask(ds_tundra, [perim_tundra], crop=True)
+            if np.sum(tundra_arr) > 0:
+                # we have a tundra fire
+                values, counts = np.unique(tundra_arr, return_counts=True)
+                lcc = values[np.argmax(counts)]
+                if lcc > 0:
+                    tundra = True
+                else:
+                    lcc = tundra_dict[lcc]
+        except:
+            pass
+        # if the fire is not in tundra, we take the ESA CCI lc class
+        if not tundra:
+            geom = gdf.geometry[fire]
+            arr, trans = rasterio.mask.mask(ds, [geom], crop=True)
+            arr = (arr/10).astype(int)
+            values, counts = np.unique(arr, return_counts=True)
+            lcc = values[np.argmax(counts)]
+            lcc = lc_dict[lcc]
+            lcc = boreal_dict[lcc]
+            
+        # assign land cover class to datbase entry
+        gdf['lcc_final'] = lcc
+    
+    return gdf
         
 
 def find_all_end(tst,ted,region=''):
