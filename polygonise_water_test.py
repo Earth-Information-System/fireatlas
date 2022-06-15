@@ -18,6 +18,7 @@ import glob
 import numpy as np
 import gdal#, ogr, osr
 import time
+import gc
 #import matplotlib.pyplot as plt
 
 
@@ -116,7 +117,7 @@ def hull_from_pixels(arr, geoTrans):
     
     # we keep large islands since they can also burn (see NWT slave lake 2014)
     islands = arr_lakes.astype(int) - arr.astype(int)
-    islands = morphology.remove_small_objects(islands == 1, 1001)
+    islands = morphology.remove_small_objects(islands == 1, 251)
     # we also keep lakes on islands if they fit the size requirements
     island_lakes = ndimage.binary_fill_holes(islands)
     island_lakes = island_lakes.astype(int) - islands.astype(int)
@@ -180,7 +181,7 @@ def hull_from_pixels(arr, geoTrans):
                 
             # grab the lake geometry and clip the islands
             if len(island_hulls) > 1:
-                island_hulls = unary_union(island_hulls) # buffer to make the polygon valid
+                island_hulls = unary_union(island_hulls)
             else:
                 island_hulls = island_hulls[0]
             hulls[fid] = hulls[fid].difference(island_hulls)
@@ -320,6 +321,23 @@ def save_gdf(gdf,year,tilex,tiley):
 #     # store pixel value in first field (right now in int, could be changed to dbl) 
 #     gdal.Polygonize(outband, outmask, temp_layer, 0, [], callback=None )
 
+
+#%% check if all geometries of end product are valid
+import geopandas as gpd
+from FireConsts import lakedir
+
+year = 2012
+path_out = lakedir+str(year)+'/'
+files_year = glob.glob(path_out+'*.gpkg')
+
+for file in files_year:
+    gdf = gpd.read_file(file)
+    if all(gdf.is_valid):
+        continue
+    else:
+        print(file)
+        break
+
 #%%
 
 # the minimum output resolution of GSW is 30m,
@@ -328,13 +346,13 @@ def save_gdf(gdf,year,tilex,tiley):
 # we regrid to square 90m pixels first (North Pole LAEA)
 
 # specs
-year = 2015
+year = 2018
 #coarseness = 5 # has to be multiple of 2 or 5
 path_in = 'D:/fire_atlas/Data/GlobalSurfaceWater/'+str(year)+'/'
-tempfile = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/temp15.tif'
+tempfile = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/temp18.tif'
 
 files_year = glob.glob(path_in+'*0.tif')
-# files_year = files_year[61:]
+# files_year = files_year[:42]
 
 # loop over files in folder
 for file in files_year:
@@ -373,6 +391,7 @@ for file in files_year:
     if len(gdf)>0:
         save_gdf(gdf,year,tilex,tiley)
     warp = id_ds = None
+    gc.collect()
     
     
     ### OLD: regrid to coarser resolution using coarseness (no warp)
