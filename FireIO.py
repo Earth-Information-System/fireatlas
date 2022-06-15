@@ -53,10 +53,11 @@ def read_VNP14ML04_clip(t,region,ext=False):
     vlist : list
         (lat,lon) tuple of all daily active fires
     '''
-    from FireConsts import dirextdata, dirpjdata, ext_all
+    from FireConsts import dirextdata, dirpjdata, ext_all, shp_all
 
     from datetime import date
     import os
+    import numpy as np
     import pandas as pd
     from shapely.geometry import Point
     import geopandas as gpd
@@ -90,7 +91,7 @@ def read_VNP14ML04_clip(t,region,ext=False):
         usecols = ['YYYYMMDD','HHMM','Lat','Lon','Line','Sample','FRP','Confidence','Type','DNFlag']
         if os.path.exists(fnmFC):
             # read dataframe
-            df = pd.read_csv(fnmFC,parse_dates=['YYYYMMDD'],usecols=usecols,skipinitialspace=True)
+            df = pd.read_csv(fnmFC,parse_dates=[['YYYYMMDD','HHMM']],usecols=usecols,skipinitialspace=True)
     
             # in Collection 04, some FRP values are '*******', causing problems
             if df.dtypes.FRP.name == 'object':
@@ -99,8 +100,11 @@ def read_VNP14ML04_clip(t,region,ext=False):
             # set extent from region
             if region in ext_all:
                 ext = ext_all[region]
+                if region in shp_all:
+                    shp_fname = shp_all[region]
             else: # use circumpolar boreal-arctic (>50N)
                 ext = [-168, 50, 180, 80]
+                shp_fname = shp_all['full']
 
             newfirepixels = df.loc[(df['Lat'] > ext[1]) & (df['Lat'] < ext[3]) &
                                   (df['Lon'] > ext[0]) & (df['Lon'] < ext[2]) &
@@ -108,15 +112,24 @@ def read_VNP14ML04_clip(t,region,ext=False):
                                   ((df['Confidence'] == 'nominal') | (df['Confidence'] == 'high'))]   # use type==0 (vf) nd 3 (offshore)
             
             # there is spurious data on June 24, 2020, 11:06
-            if t[0] == 2020:
-                newfirepixels = newfirepixels.loc[~((newfirepixels['YYYYMMDD'] == pd.Timestamp(date(2020,6,24))) & 
-                                                    (newfirepixels['HHMM'] == 1106))]
+            if (t[0] == 2020) and (t[1] == 6):
+                newfirepixels = newfirepixels.loc[~(newfirepixels['YYYYMMDD_HHMM'] == '2020-06-24 11:06:00')]
             # spatial filter
             point_data = [Point(xy) for xy in zip(newfirepixels['Lon'], newfirepixels['Lat'])]
             gdf = gpd.GeoDataFrame(newfirepixels, geometry=point_data)
+            try:
+                shp = get_any_shp(shp_fname)
+                gdf = gdf[gdf['geometry'].within(shp)]
+            except:
+                pass
             
-                
-            
+            # convert utc time to local solar time (rough estimate, can be 15 mins off)
+            gdf['diff_lst'] = pd.to_timedelta(gdf.Lon /15, unit = 'hours')
+            gdf['datetime_lst'] = gdf['YYYYMMDD_HHMM']+gdf['diff_lst']
+            gdf['date_lst'] = gdf.datetime_lst.dt.date
+            gdf['time_lst'] = gdf.datetime_lst.dt.time
+            gdf['hour_lst'] = gdf.datetime_lst.dt.hour
+            gdf = gdf.assign(ampm = np.where(((gdf.hour_lst > 6) & (gdf.hour_lst < 18)), 'pm','am'))
             # save to pickle
             save_af(gdf,d)
         else:
@@ -124,13 +137,13 @@ def read_VNP14ML04_clip(t,region,ext=False):
             
     ## for all options: apply temporal filters
     # temporal (daily) filter
-    gdf = gdf.loc[(gdf['YYYYMMDD']==d.strftime('%Y-%m-%d'))]
+    gdf = gdf.loc[(gdf['date_lst']==d)] #.strftime('%Y-%m-%d')
 
     # overpass time filter (AM or PM)
     # DNFlag - 0: night; 1: day
     # vlh = (df['HHMM']*0.01+df['lon']/15.)  # local time
     # tpm = (vlh > 7) & (vlh < 19)           # if local time in [7,19], set as PM overpass
-    tpm = (gdf['DNFlag'] == 'night')
+    tpm = (gdf['ampm'] == 'pm')
     if t[-1] == 'AM':
         gdf = gdf.loc[~tpm]
     elif t[-1] == 'PM':
@@ -227,13 +240,14 @@ def read_mcd64_pixels(year,ext=[]):
 # ------------------------------------------------------------------------------
 #%% Read other datasets
 # ------------------------------------------------------------------------------
-def load_mcd64(year,xoff=0,yoff=0,xsize=None,ysize=None):
-    '''get annual circumpolar modis burned/unburned tif
+def load_burnraster(year,region,sensor,xoff=0,yoff=0,xsize=None,ysize=None):
+    '''get annual circumpolar modis or viirs burned/unburned tif
     optional: clip using UL pixel and pixel dimensions
     
     Parameters
     ----------
     year: int
+    sensor: str, mcd64 for burned area only, viirs for burned area + active fires
     xoff, yoff: int, UL pixel coordinates for clipping
     xsize,ysize: int, pixels in x and y direction for clipping
         
@@ -241,14 +255,18 @@ def load_mcd64(year,xoff=0,yoff=0,xsize=None,ysize=None):
     -------
     arr: np.array, clipped image'''
     
-    from FireConsts import mcd64dir
-    import gdal
-    
-    fnm = mcd64dir + 'mcd64_' + str(year) + '.tif'
-    ds = gdal.Open(fnm)
-    #arr = ds.ReadAsArray(xsize=xsize, ysize=ysize)
-    arr = ds.ReadAsArray(xoff=xoff, yoff=yoff, xsize=xsize, ysize=ysize)
-    
+    if sensor == 'mcd64':
+        import gdal
+        from FireConsts import mcd64dir
+        fnm = mcd64dir + 'mcd64_' + str(year) + '.tif'
+        ds = gdal.Open(fnm)
+        #arr = ds.ReadAsArray(xsize=xsize, ysize=ysize)
+        arr = ds.ReadAsArray(xoff=xoff, yoff=yoff, xsize=xsize, ysize=ysize)
+    else:
+        path = get_path(str(year),region)
+        fnm = path + '/Summary/viirs_' + str(year) + '.tif'
+        arr = fnm
+        
     return arr
 
 def get_any_shp(filename):
@@ -267,6 +285,21 @@ def get_any_shp(filename):
     
     return shp
 
+def get_LCT_fnm(year):
+    '''get land cover filename from year'''
+    
+    import os
+    from FireConsts import dirextdata
+    
+    # read ESA CCI LC 300m data
+    if year == 2021: year -=1 # no land cover data available for 2021, take 2020
+    if year in range(2016,2021): # years 2016-2020
+        fnmLCT = os.path.join(dirextdata,'esa_cci_lc_300m/C3S-LC-L4-LCCS-Map-300m-P1Y-'+str(year)+'-v2.1.1.nc')
+    else: # years 2012-2015
+        fnmLCT = os.path.join(dirextdata,'esa_cci_lc_300m/ESACCI-LC-L4-LCCS-Map-300m-P1Y-'+str(year)+'-v2.0.7cds.nc')
+    
+    return fnmLCT
+
 def get_LCT(locs,year):
     ''' Get land cover type for active fires
     
@@ -280,18 +313,12 @@ def get_LCT(locs,year):
     vLCT : list of ints
         land cover types for all input active fires
     '''
-    from FireConsts import dirextdata, lc_dict
-    
+    from FireConsts import lc_dict
     from osgeo import gdal
-    import os
     gdal.UseExceptions()
     
-    # read ESA CCI LC 300m data
-    if year == 2021: year -=1 # no land cover data available for 2021
-    if year in range(2016,2021): # years 2016-2020
-        fnmLCT = os.path.join(dirextdata,'esa_cci_lc_300m/C3S-LC-L4-LCCS-Map-300m-P1Y-'+str(year)+'-v2.1.1.nc')
-    else: # years 2012-2015
-        fnmLCT = os.path.join(dirextdata,'esa_cci_lc_300m/ESACCI-LC-L4-LCCS-Map-300m-P1Y-'+str(year)+'-v2.0.7cds.nc')
+    # get filename for lc dataset of the year
+    fnmLCT = get_LCT_fnm(year)
     
     # read dataset
     sds = 'NETCDF:"'+fnmLCT+'":lccs_class'
@@ -475,7 +502,7 @@ def get_path(year,region):
         path = dirpjdata+year
     return path
 
-def correct_dtype(gdf,op=''):
+def correct_dtype(gdf,op='',geom=True):
     ''' correct the datatype for gdfs loaded from geojson files
 
     Parameters
@@ -498,6 +525,8 @@ def correct_dtype(gdf,op=''):
     # explicitly set the attributes data types
     if op == '':
         for v,tp in dd.items():
+            if v == 'geometry' and not geom:
+                continue
             gdf[v] = gdf[v].astype(tp)
     else:
         gdf['fid'] = gdf['fid'].astype('int')
@@ -671,7 +700,7 @@ def save_gdfobj(gdf,t,param='',fid='',op='',region=''):
     # save file
     gdf.to_file(fnm, driver='GPKG')
 
-def load_gdfobj(t='',op='',region=''):
+def load_gdfobj(t='',op='',region='',geom=True):
     ''' Load daily allfires diagnostic dataframe as geopandas gdf
 
     Parameters
@@ -692,7 +721,10 @@ def load_gdfobj(t='',op='',region=''):
     gdf = gpd.read_file(fnm)
 
     # correct the datatype
-    gdf = correct_dtype(gdf,op=op)
+    gdf = correct_dtype(gdf,op=op,geom=geom)
+    
+    if not geom:
+        gdf.drop(columns='geometry', inplace=True)
 
     # set fireid as the index
     gdf = gdf.set_index('fireid')
@@ -745,6 +777,45 @@ def load_lake_geoms(t,fid,region=''):
         
     return geom_lakes
 
+def save_id_ted_dict(id_ted_dict,t,region=''):
+    
+    import pandas as pd
+    
+    year = str(t[0])
+    path = get_path(year,region)
+    
+    # get file name
+    fnm = path+'/Summary/id_ted_dict.csv'
+    
+    # check folder
+    check_filefolder(fnm)
+    
+    # write out
+    df = pd.DataFrame.from_dict(id_ted_dict, orient = 'index', 
+                                columns = ['ted_year','ted_month','ted_day','ted_ampm'])
+    df.index.names = ['fireid']
+    df.to_csv(fnm)
+    
+def load_id_ted_dict(t,region=''):
+    
+    import pandas as pd
+    
+    year = str(t[0])
+    path = get_path(year,region)
+    
+    # get file name
+    fnm = path+'/Summary/id_ted_dict.csv'
+    
+    # read csv
+    df = pd.read_csv(fnm)
+    
+    # combine the date and time columns to one attribute
+    df['ted'] = df['ted_year'].astype(str) + df['ted_month'].astype(str).str.zfill(2) + df['ted_day'].astype(str).str.zfill(2) + df['ted_ampm']
+    
+    # turn back into dictionary
+    id_ted_dict = dict(zip(df.fireid,df.ted))
+    
+    return id_ted_dict
 
 def get_gdfobj_sf_fnm(t,fid,op='',region=''):
     ''' Return the single fire fire object pickle file name at a time step
@@ -825,6 +896,46 @@ def load_gdfobj_sf(t,fid,op='',region=''):
 
     return gdf
 
+def get_summary_sf_fnm(t,region=''):
+    ''' Return the fire summary file name at year end
+    Parameters
+    ----------
+    t : tuple, (year,month,day,str)
+        the day and 'AM'|'PM' during the intialization
+    Returns
+    ----------
+    fnm : str
+        summary netcdf file name
+    '''
+    import os
+
+    path = get_path(str(t[0]),region)
+    fnm = os.path.join(path,'Summary','fsummary_sf.csv')
+
+    # check folder
+    check_filefolder(fnm)
+
+    return fnm
+
+def save_summary_sf(ds,t,region=''):
+    ''' Save summary info as of t a netcdf file
+
+    Parameters
+    ----------
+    ds : xarray dataset
+        year end summary dataset
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM'
+    '''
+    # get file name
+    fnm = get_summary_sf_fnm(t,region)
+
+    # check folder
+    check_filefolder(fnm)
+
+    # save netcdf file
+    ds.to_csv(fnm)
+
 def get_summary_fnm(t,region=''):
     ''' Return the fire summary file name at year end
     Parameters
@@ -840,7 +951,7 @@ def get_summary_fnm(t,region=''):
     import os
 
     d = date(*t[:-1])
-    path = get_path(t[0],region)
+    path = get_path(str(t[0]),region)
     fnm = os.path.join(path,'Summary','fsummary_'+d.strftime('%Y%m%d')+t[-1]+'.nc')
 
     # check folder
@@ -864,7 +975,7 @@ def get_summary_fnm_lt(t,region=''):
     from glob import glob
     import FireObj
     
-    path = get_path(t[0],region)
+    path = get_path(str(t[0]),region)
     
     # if there's no summary file for this year, return the first time step of the year
     fnms = glob(os.path.join(path,'Summary','fsummary_*.nc'))
@@ -954,7 +1065,7 @@ def save_summarycsv(df,year,op='heritage',region=''):
     '''
     import os
     
-    path = get_path(year,region)
+    path = get_path(str(year),region)
     
     fnm = os.path.join(path,'Summary','Flist_'+op+'_'+str(year)+'.csv')
     check_filefolder(fnm)
@@ -979,7 +1090,7 @@ def read_summarycsv(year,op='heritage',region=''):
     import pandas as pd
     import os
     
-    path = get_path(year,region)
+    path = get_path(str(year),region)
     
     fnm = os.path.join(path,'Summary','Flist_'+op+'_'+str(year)+'.csv')
     df = pd.read_csv(fnm,index_col=0)
