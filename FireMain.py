@@ -381,6 +381,26 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep,sensor ='viirs'):
 
     return allfires
 
+def Fire_clean_save(allfires, t, region):
+    import FireObj, FireIO
+    # we only want to save active and sleeper fires
+    allfires_out = FireObj.Allfires(t)
+    allfires_out.update_t(t)
+    fids_out = allfires.fids_active + allfires.fids_sleeper
+    id_dict = []
+    allfires_index = 0
+    for fid in fids_out:
+        allfires_out.fires.append(allfires.fires[fid])
+        id_dict.append((allfires_index, fid))
+        allfires_index += 1
+    
+    # copy the heritage from the original allfires object
+    allfires_out.heritages = allfires.heritages
+    allfires_out.id_dict = id_dict
+    
+    #  - save updated allfires object to pickle file
+    FireIO.save_fobj(allfires_out,t,region) 
+
 def Fire_Forward(tst,ted,restart=False,region=''):
     ''' The wrapper function to progressively track all fire events for a time period
            and save fire object to pkl file and gpd to geojson files
@@ -465,8 +485,8 @@ def Fire_Forward(tst,ted,restart=False,region=''):
             # 6. update dominant LCT (LCTmax)
             allfires.updateLCTmax()
         
-            # 7. manualy invalidate static fires (with exceptionally large fire density)
-            allfires.invalidate_statfires()
+        # 7. manualy invalidate fires that only burn one pixel at a single time step (likely false detections)
+        allfires.invalidate_statfires()
         
         # 8. log and save
         #  - record fid_updated (the fid of fires that change in the time step) to allfires object and logger
@@ -482,9 +502,9 @@ def Fire_Forward(tst,ted,restart=False,region=''):
             endloop = True
             # correct fire heritage of last time step
             allfires.heritages = correct_nested_ids(allfires.heritages)
-            
-        #  - save updated allfires object to pickle file
-        FireIO.save_fobj(allfires,t,region)  
+            FireIO.save_fobj(allfires,t,region) # in the last time step we save the complete fire history including deactivated fires
+        else:
+            Fire_clean_save(allfires, t, region)
         
         #  - record running times for the loop
         t2 = time.time()
