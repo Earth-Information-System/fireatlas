@@ -258,13 +258,13 @@ class Allfires:
     def fids_active(self):
         ''' List of active fire ids
         '''
-        return [f.id for f in self.fires if f.isactive is True]
-    
+        return [f.fireID for f in self.fires if f.isactive is True]
+
     @property
     def fids_sleeper(self):
         ''' List of fire ids that may reactivate
         '''
-        return [f.id for f in self.fires if f.mayreactivate is True]
+        return [f.fireID for f in self.fires if f.mayreactivate is True]
 
     @property
     def number_of_activefires(self):
@@ -282,7 +282,7 @@ class Allfires:
     def fids_valid(self):
         ''' List of valid (non-invalid) fire ids
         '''
-        return [f.id for f in self.fires if f.invalid is False]
+        return [f.fireID for f in self.fires if f.invalid is False]
 
     @property
     def number_of_validfires(self):
@@ -347,6 +347,27 @@ class Allfires:
         self.fids_merged = []     # a list of ids for fires with merging at current time step
         self.fids_invalid = []    # a list of ids for fires invalidated at current time step
 
+    def newyear_reset(self):
+        ''' reset fire ids at the start of a new year
+        '''
+        # re-id all active fires
+        lastyearfires = []
+        fidmapping = []
+        nfid = 0
+        for f in self.activefires:
+            ofid = f.fireID
+            f.fireID = nfid
+            lastyearfires.append(f)
+            fidmapping.append((ofid,nfid))
+            nfid += 1
+        self.fires = lastyearfires
+
+        # clean heritages
+        self.heritages = []
+
+        # save the mapping table
+        FireIO.save_newyearfidmapping(fidmapping,self.t[0])
+
     # functions to be run after tracking VIIRS active fire pixels at each time step
     def record_fids_change(self,
          fids_expanded=None, fids_new=None, fids_merged=None, fids_invalid=None):
@@ -381,20 +402,26 @@ class Allfires:
                 f.invalid = True
 
                 # add the fire id into the fids_invalid list
-                self.fids_invalid.append(f.id)
+                self.fids_invalid.append(f.fireID)
 
-    def updateLCTmax(self):
-        ''' update Land cover type (dominant LCT for all fire pixels) for active
-                fires that is small in size (<1000 pixels)
+    # def updateLCTmax(self):
+    #     ''' update Land cover type (dominant LCT for all fire pixels) for active
+    #             fires that is small in size (<1000 pixels)
+    #     '''
+    #     import FireIO
+    #     for f in self.activefires:
+    #         if (f.n_pixels < 1000):
+    #             # get all LCT for the fire pixels
+    #             vLCT = FireIO.get_LCT(f.locs)
+    #             # extract the LCT with most pixel counts
+    #             LCTmax = max(set(vLCT), key = vLCT.count)
+    #             f.LCTmax = LCTmax
+
+    def updateftypes(self):
+        ''' update fire type and dominant LCT for active fires
         '''
-        import FireIO
         for f in self.activefires:
-            if (f.n_pixels < 1000):
-                # get all LCT for the fire pixels
-                vLCT = FireIO.get_LCT(f.locs)
-                # extract the LCT with most pixel counts
-                LCTmax = max(set(vLCT), key = vLCT.count)
-                f.LCTmax = LCTmax
+            f.set_ftype()
 
 # b. Object - Fire
 class Fire:
@@ -414,8 +441,8 @@ class Fire:
         pixels : list (nx5)
             latitude, longitude, line, sample, and FRP values of active fire pixels
         '''
-        # initialize fire id 
-        self.id = id
+        # initialize fire id
+        self.fireID = id
         self.mergeid = id
         self.sensor = sensor
 
@@ -426,7 +453,8 @@ class Fire:
         self.t_ed = tlist
 
         # initialize pixels
-        fpixels = [FirePixel((p[0],p[1]),(p[2],p[3],p[4]),tlist,id) for p in pixels]
+        # fpixels = [FirePixel((p[0],p[1]),(p[2],p[3],p[4]),tlist,id) for p in pixels]
+        fpixels = pixels
         self.pixels = fpixels      # all pixels
         self.newpixels = fpixels   # new detected pixels
         self.actpixels = fpixels   # new detected pixels of last active fire detection
@@ -458,7 +486,7 @@ class Fire:
         '''
         from datetime import date
         return date(*self.t[:-1])
-    
+
     @property
     def cdoy(self):
         ''' Current day (datetime date)
@@ -494,7 +522,7 @@ class Fire:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
         return (self.t_inactive <= maxoffdays)
-    
+
     @property
     def mayreactivate(self):
         ''' Fire active status
@@ -504,14 +532,14 @@ class Fire:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
         return (maxoffdays < self.t_inactive <= limoffdays)
-    
+
     @property
     def isignition(self):
         ''' Is the current timestep the ignition?
         '''
         ign = (t_dif(self.t_st,self.t_ed) == 0)*1
         return ign
-        
+
     @property
     def locs(self):
         ''' List of fire pixel locations (lat,lon)
@@ -530,10 +558,19 @@ class Fire:
         return [p.loc for p in self.newpixels]
 
     @property
+    def newlocsMP(self):
+        ''' MultiPoint shape of newlocs
+        '''
+        from shapely.geometry import Point
+        import geopandas as gpd
+        mp = [Point(p[1],p[0]) for p in self.newlocs]
+        return gpd.GeoSeries(mp)
+
+    @property
     def newpixelatts(self):
         ''' List of new fire pixels locations (lat,lon)
         '''
-        return [p.atts for p in self.newpixels]
+        return [(p.frp, p.origin) for p in self.newpixels]
 
     @property
     def n_newpixels(self):
@@ -594,7 +631,7 @@ class Fire:
     def meanFRP(self):
         ''' Mean FRP of the new fire pixels
         '''
-        frps = [p.atts[2] for p in self.newpixels]
+        frps = [p.frp for p in self.newpixels]
         if len(frps) > 0:
             m = sum(frps)/len(frps)
         else:
@@ -614,11 +651,11 @@ class Fire:
             cent = FireClustering.cal_centroid(self.locs)
         return cent
 
-    @property
-    def ftype(self):
-        ''' Fire type (as defined in FireConsts) derived using LCTmax and stFM1000
-        '''
-        return 2 # set to wild forest type, we'll deal with fire type later
+    # @property
+    # def ftype(self):
+    #     ''' Fire type (as defined in FireConsts) derived using LCTmax and stFM1000
+    #     '''
+    #     return 2 # set to wild forest type, we'll deal with fire type later
         # get the dominant land cover type
         # LCTmax = self.LCTmax
 
@@ -641,6 +678,51 @@ class Fire:
         #         return 5
         #     else:                  # 'Shrub wild'
         #         return 4
+
+    def set_ftype(self):
+        ''' set fire type and dominant LCT for newly activated fires
+        '''
+        from FireConsts import FTYP_opt
+        # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
+        # 1 - use the CA type classification (dtermined using LCTmax)
+        # 2 - use the global type classfication (need more work...)
+
+        if FTYP_opt == 0: # use preset ftype for all fires
+            from FireConsts import FTYP_preset
+            self.ftype = FTYP_preset
+        elif FTYP_opt == 1: # use CA type classifications (determined using LCTmax)
+            # update or read LCTmax
+            # call get_LCT to get all LCT for the fire pixels
+            vLCT = FireIO.get_LCT(self.locs)
+            # extract the LCT with most pixel counts
+            LCTmax = max(set(vLCT), key = vLCT.count)
+            self.LCTmax = LCTmax
+
+            # get and record fm1000 value at ignition (at the time of initilization)
+            self.stFM1000 = FireIO.get_stFM1000(self.hull,self.locs,self.t_st)
+
+            # determine the fire type using the land cover type and stFM1000
+            if LCTmax in [11,31]:   # 'Water', 'Barren' -> 'Other'
+                self.ftype = 0
+            elif LCTmax in [23]:    # 'Urban' -> 'Urban'
+                self.ftype = 1
+            elif LCTmax in [82]:    # 'Agriculture' -> 'Agriculture'
+                self.ftype = 6
+            elif LCTmax in [42]:    # 'Forest' ->
+                stFM1000 = self.stFM1000
+                if stFM1000 > 12:        # 'Forest manage'
+                    self.ftype = 3
+                else:                  # 'Forest wild'
+                    self.ftype = 2
+            elif LCTmax in [52,71]:    # 'Shurb', 'Grassland' ->
+                stFM1000 = self.stFM1000
+                if stFM1000 > 12:        # 'Shrub manage'
+                    self.ftype = 5
+                else:                  # 'Shrub wild'
+                    self.ftype = 4
+        elif FTYP_opt == 2:  # global type classification
+            self.ftype = 1  # need more work here...
+
 
     @property
     def ftypename(self):
@@ -667,10 +749,10 @@ class Fire:
         ''' List of all fire pixels near the fire perimeter (fine line pixels)
         '''
         from shapely.geometry import Point, MultiLineString
-        
+
         # get pixels of last active fire detection
         nps = self.actpixels
-        
+
         # get hull
         fhull = self.hull
 
@@ -768,7 +850,7 @@ class Cluster:
     def locs(self):
         ''' List of pixel locations (lat,lon)
         '''
-        return [(x,y) for x,y,a,b,c in self.pixels]
+        return [(p.lat,p.lon) for p in self.pixels]
 
     @property
     def centroid(self):
@@ -788,7 +870,7 @@ class Cluster:
         '''
         hull = FireVector.cal_hull(self.locs, self.sensor)
         return hull
-    
+
     @property
     def b_box(self):
         ''' Bounding box of concave hull
@@ -804,8 +886,13 @@ class FirePixel:
         t : time (y,m,d,ampm) of record
         origin : the fire id originally recorded (before merging)
     """
-    def __init__(self,loc,atts,t,origin):
-        self.loc = loc        # (lat,lon)
-        self.atts = atts      # attributes (line, sample, frp)
+    def __init__(self,lat,lon,frp,t,origin):
+        self.lat = lat
+        self.lon = lon
+        self.frp = frp        # frp
         self.t = list(t)      # (year,month,day,ampm)
         self.origin = origin  # originate  fire id
+
+    @property
+    def loc(self):
+        return (self.lat,self.lon)

@@ -2,9 +2,13 @@
 
 [NAME]: Fire object tracking system using VIIRS active fires
 
-[VERSION]: 1.0
+[VERSION]: 2.0
 
-[AUTHORS]: Yang Chen (yang.chen@uci.edu), Casey Graff, and Shane Coffield
+[AUTHORS]: Yang Chen (yang.chen@uci.edu)
+           Rebecca Scholten
+           Stijn Hantson
+           Casey Graff
+           Shane Coffield
 
 [LANGUAGE]: Python 3.0 with external packages of
   * Numpy (1.17.5)
@@ -18,20 +22,37 @@
   * sklearn
 
 [LIST OF FILES]:
-* FireConsts.py:     constants used for the project
-* FireIO.py:         functions used to read and save data
-* FireVector.py:     functions used for vector related calculations
-* FireClustering.py: functions used for doing fire clustering
-* FireLog.py:        module containing all logging info
-* FireObj.py:        module containing the object definitions
-* FireMain.py:       main module for running the fire object tracking along time
-* FireGdf.py:        module for creating regional geojson summary at each time
-                       step
-* FireGdf_sfs.py:    module for creating geojson summary for temporal evolution
-                       of each single fire
-* FireSummary.py:    module for creating a summary of all valid fires up to a
-                       time step (usually at year end)
-* FireRun.py:        module to control different runs
+- Data package
+  * DataCheckUpdate.py: check and update the input data
+- Main package (Fire tracking)
+  * FireConsts.py:     constants used for the project
+  * FireIO.py:         functions used to read and save data
+  * FireVector.py:     functions used for vector related calculations
+  * FireClustering.py: functions used for doing fire clustering
+  * FireLog.py:        module containing all logging info
+  * FireObj.py:        module containing the object definitions
+  * FireMain.py:       main module for running the fire object tracking along time
+
+- Diagnostic package (output, expandable)
+  * FireGdf.py:        module for creating regional geojson summary at each time
+                         step
+  * FireGdf_sfs.py:    module for creating geojson summary for temporal evolution
+                         of each single fire
+  * FireGdf_ign.py:    module for creating geojson summary for ignition points
+                        of each single fire
+  * FireSummary.py:    module for creating a summary of all valid fires up to a
+                         time step (usually at year end)
+
+- Post-processing package (for individual large fires)
+  * Postprocess.py: lake removing; unburnable area removing; ...
+  * Convert2geojson.py: convert geopackage to geojson for better web usage
+
+- Webpage package (use output to create webpage)
+  * AT_NRTweb.py: NRT fire webpage creation
+
+- Run package (run fire tracking, diagnostic ouput, or webpage creation)
+  * FireRun.py
+  * FireRunNRT.py
 
 [COPYRIGHT]: This code is open-source and can be free used for research purposes
 

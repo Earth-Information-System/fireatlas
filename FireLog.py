@@ -4,7 +4,7 @@ Module containing all logging info used in this project
 Usage: from FireLog import logger
 
 """
-from FireConsts import dirpjdata
+from FireConsts import dirdata
 import logging
 
 # get logger
@@ -18,7 +18,7 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 
 # define the file handler
-fh = logging.FileHandler(dirpjdata+'running.log')  # the logfile is stored in the dirpjdata directory
+fh = logging.FileHandler(dirdata+'running.log')  # the logfile is stored in the dirpjdata directory
 fh.setLevel(logging.INFO)
 
 # format the console and file handlers
