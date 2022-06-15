@@ -39,6 +39,31 @@ sum_items = {'Number of fires':'int',
              'Active fire mean duration':'float',
              }
 
+def cal_sumfires_1t(gdf):
+    ''' calculate summary attributes separately for all fires
+
+    Parameters
+    ----------
+    gdf : gpd DataFrame
+        the gdf file with daily fire attributes
+    t : datetime date
+        date of this day
+
+    Returns
+    -------
+    summary : pandas Series
+        updated summary file
+    '''
+    
+    # create new date columns
+    gdf['tst'] = gdf['tst_year'].astype(str) + gdf['tst_month'].astype(str).str.zfill(2) + gdf['tst_day'].astype(str).str.zfill(2) + gdf['tst_ampm']
+    gdf['datetime'] = gdf['ted_year'].astype(str) + gdf['ted_month'].astype(str).str.zfill(2) + gdf['ted_day'].astype(str).str.zfill(2) + gdf['ted_ampm']
+    gdf.drop(columns = ['isactive','t_inactive','isignition','invalid','n_pixels','tst_year','tst_month',
+                        'tst_day','tst_ampm','ted_year','ted_month','ted_day','ted_ampm','ted_doy','lake_border_tot'],
+             inplace=True)
+    
+    return gdf
+
 def cal_summean_1t(gdf,name='All'):
     ''' calculate summary attributes for all or all veg-type
 
@@ -118,7 +143,7 @@ def makesummary_1d(gdf):
 
     return df_summary
 
-def makesummary_ts(dst,ded):
+def makesummary_ts(dst,ded,region=''):
     ''' calculate daily summary and update the summary to a given date
 
     Parameters
@@ -138,29 +163,34 @@ def makesummary_ts(dst,ded):
 
     # loop over all days during the period
     new_summary = None
+    gdf_sf = []
     endloop = False  # flag to control the ending of the loop
     t = list(dst)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
         # print(t)
 
         # Load daily fire data from geopandas file
-        gdf = FireIO.load_gdfobj(t)
+        if FireIO.check_gdfobj(t,op='',region=region):
+            gdf = FireIO.load_gdfobj(t,region=region,geom=False)
 
-        # call makesummary_1d to get daily summary dataframe
-        df_summary_1d = makesummary_1d(gdf)
-
-        # convert dataframe to xarray dataset
-        xr_sum_1d = df_summary_1d.to_xarray().rename({'index':'Veg'})
-
-        # add time coordinate
-        dt = FireObj.t2dt(t)
-        xr_t = xr_sum_1d.assign_coords(time=dt).expand_dims('time')
-
-        # record to new_summary dataset
-        if new_summary is None:
-            new_summary = xr_t
-        else:
-            new_summary = xr.concat([new_summary,xr_t],dim='time')
+            # call makesummary_1d to get daily summary dataframe
+            df_summary_1d = makesummary_1d(gdf)
+    
+            # convert dataframe to xarray dataset
+            xr_sum_1d = df_summary_1d.to_xarray().rename({'index':'Veg'})
+    
+            # add time coordinate
+            dt = FireObj.t2dt(t)
+            xr_t = xr_sum_1d.assign_coords(time=dt).expand_dims('time')
+    
+            # record to new_summary dataset
+            if new_summary is None:
+                new_summary = xr_t
+            else:
+                new_summary = xr.concat([new_summary,xr_t],dim='time')
+            
+            # summary of single fires
+            gdf_sf.append(cal_sumfires_1t(gdf)) 
 
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
@@ -170,7 +200,7 @@ def makesummary_ts(dst,ded):
         #  - update t with the next time stamp
         t = FireObj.t_nb(t,nb='next')
 
-    return new_summary
+    return new_summary, gdf_sf
 
 def updatesummary_ts(pt,ded):
     ''' update the summary by adding summary info to all time steps since dst
@@ -229,7 +259,7 @@ def updatesummary_ts(pt,ded):
     return new_summary
 
 
-def save_sum_1d(tst,ted):
+def save_sum_1d(tst,ted,region=''):
     ''' Calculate summary file at a time step (starting from the year start)
 
     Parameters
@@ -238,14 +268,18 @@ def save_sum_1d(tst,ted):
         the year, month, day and 'AM'|'PM' at current time
     '''
     import FireIO, FireObj
+    import pandas as pd
 
     # pt is the previous time step when the summary file is present
-    pt = FireIO.get_summary_fnm_lt(ted)
+    pt = FireIO.get_summary_fnm_lt(ted,region=region)
 
     # if no summary file is present in this year, create one by recording
     if pt is None:
         # tst = (ted[0],1,1,'AM')
-        ds_summary = makesummary_ts(tst,ted)
+        ds_summary, df_sf = makesummary_ts(tst,ted,region)
+        
+        df_sf = pd.concat(df_sf)
+        FireIO.save_summary_sf(df_sf, ted, region=region)
     # if early summary file is present, update based on that file
     else:
         ds_summary = updatesummary_ts(pt,ted)
@@ -257,7 +291,7 @@ def save_sum_1d(tst,ted):
     # ds_summary = add_largefirelist(ds_summary,ted)
 
     # save the summary file
-    FireIO.save_summary(ds_summary,ted)
+    FireIO.save_summary(ds_summary,ted,region=region)
 
 def save_sum_trng(tst,ted):
     ''' Wrapper to create and save summary files for a time period
