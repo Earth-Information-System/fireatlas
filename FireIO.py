@@ -314,33 +314,37 @@ def get_LCT(locs,year):
         land cover types for all input active fires
     '''
     from FireConsts import lc_dict
-    from osgeo import gdal
-    gdal.UseExceptions()
+    import rasterio
+    # from osgeo import gdal
     
     # get filename for lc dataset of the year
     fnmLCT = get_LCT_fnm(year)
     
     # read dataset
     sds = 'NETCDF:"'+fnmLCT+'":lccs_class'
-    dataset = gdal.Open(sds, gdal.GA_ReadOnly)
-    band = dataset.GetRasterBand(1)
-    gt = list(dataset.GetGeoTransform())
+    dataset = rasterio.open(sds) # rasterio version
+    locs = [(x,y) for (y,x) in locs]
+    vLCT = dataset.sample(locs, indexes = 1)
+    vLCT = [lc_dict[int(lc[0]/10)] for lc in vLCT] # simplify classes
+    # dataset = gdal.Open(sds, gdal.GA_ReadOnly)
+    # band = dataset.GetRasterBand(1)
+    # gt = list(dataset.GetGeoTransform())
     
-    # use hull of the pixels for faster reading
-    lats,lons = zip(*locs)
-    ulx, uly = world2Pixel(gt, min(lons), max(lats)) # ul corner
-    brx, bry = world2Pixel(gt, max(lons), min(lats)) # br corner
-    xcnt = brx-ulx+1
-    ycnt = bry-uly+1
-    data = band.ReadAsArray(int(ulx),int(uly),int(xcnt),int(ycnt))
+    # # use hull of the pixels for faster reading
+    # lats,lons = zip(*locs)
+    # ulx, uly = world2Pixel(gt, min(lons), max(lats)) # ul corner
+    # brx, bry = world2Pixel(gt, max(lons), min(lats)) # br corner
+    # xcnt = brx-ulx+1
+    # ycnt = bry-uly+1
+    # data = band.ReadAsArray(int(ulx),int(uly),int(xcnt),int(ycnt))
     
-    # extract LCTs for each points
-    vLCT = []
-    for lat,lon in locs:
-        x, y = world2Pixel(gt, lon, lat)
-        lc_l1 = int(data[(y-uly),(x-ulx)]/10) # divide by ten to turn into level 1 class
-        lc = lc_dict[lc_l1]# simplify original classes
-        vLCT.append(lc)
+    # # extract LCTs for each points
+    # vLCT = []
+    # for lat,lon in locs:
+    #     x, y = world2Pixel(gt, lon, lat)
+    #     lc_l1 = int(data[(y-uly),(x-ulx)]/10) # divide by ten to turn into level 1 class
+    #     lc = lc_dict[lc_l1]# simplify original classes
+    #     vLCT.append(lc)
     
     return vLCT
 
