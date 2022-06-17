@@ -10,7 +10,7 @@ def correct_final_ftype(gdf):
     and supplementing the ESA-CCI land cover with CAVM for tundra regions'''
     
     import FireIO
-    from FireConsts import lc_dict, dirextdata
+    from FireConsts import dirextdata
     import numpy as np
     import rasterio
     import rasterio.mask
@@ -25,6 +25,8 @@ def correct_final_ftype(gdf):
     # read tundra dataset
     ds_tundra = rasterio.open(dirextdata+'cavm/cavm_coarse.tif')
     proj_tundra = ds_tundra.crs
+    
+    # dictionaries for reclassifying
     tundra_dict = { # dictionary for naming of tundra classes
                1:'barren tundra', 
                2:'graminoid tundra', 
@@ -34,7 +36,7 @@ def correct_final_ftype(gdf):
                0:'other',
                1:'cropland', 
                2:'forest', 
-               3:'shrub/mosiac', 
+               3:'shrub/mosaic', 
                4:'grassland',
                5:'sparse',
                6:'urban'}
@@ -56,33 +58,37 @@ def correct_final_ftype(gdf):
     gdf['lcc_final'] = None
     
     for fire in gdf.index:
-        tundra = False
+        boreal = True
         perim_tundra = gdf_reproj_tundra.geometry[fire]        
         # check if the fire is a tundra fire
         try:
-            tundra_arr, trans_tundra = rasterio.mask.mask(ds_tundra, [perim_tundra], crop=True)
+            tundra_arr, trans_tundra = rasterio.mask.mask(ds_tundra, [perim_tundra], 
+                                                          all_touched = True, crop=True, nodata=0)
             if np.sum(tundra_arr) > 0:
                 # we have a tundra fire
                 values, counts = np.unique(tundra_arr, return_counts=True)
                 lcc = values[np.argmax(counts)]
                 if lcc > 0:
-                    tundra = True
-                else:
+                    boreal = False
                     lcc = tundra_dict[lcc]
         except:
             pass
         # if the fire is not in tundra, we take the ESA CCI lc class
-        if not tundra:
+        if boreal:
             geom = gdf.geometry[fire]
-            arr, trans = rasterio.mask.mask(ds, [geom], crop=True)
+            arr, trans = rasterio.mask.mask(ds, [geom], 
+                                            all_touched = True, crop=True, nodata=255)
             arr = (arr/10).astype(int)
-            values, counts = np.unique(arr, return_counts=True)
+            values, counts = np.unique(arr[~(arr==25)], return_counts=True)
             lcc = values[np.argmax(counts)]
             lcc = lc_dict[lcc]
             lcc = boreal_dict[lcc]
             
         # assign land cover class to datbase entry
-        gdf['lcc_final'] = lcc
+        gdf.loc[fire,'lcc_final'] = lcc
+    
+    # check
+    # gdf.lcc_final.unique()
     
     return gdf
         
@@ -444,6 +450,7 @@ def save_gdf_trng(tst,ted,region=''):
     
     # find all final perimeters and write out to gdf
     id_ted_dict,gdf = find_all_end(tst, ted,region=region)
+    gdf = correct_final_ftype(gdf)
     FireIO.save_gdfobj(gdf,tst,param='final_viirs',region=region)
     
     
