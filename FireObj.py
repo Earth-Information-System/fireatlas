@@ -16,13 +16,6 @@ This module include:
 # 1. MODULES AND UTILITY FUNCTIONS
 # ------------------------------------------------------------------------------
 
-# a. Project modules used
-import FireIO
-import FireVector
-import FireClustering
-from FireConsts import maxoffdays,limoffdays,area_VI,fpbuffer,flbuffer
-
-# b. Object-realted utility functions
 # The time step in the module is now defined as a list (year, month, day, ampm).
 #   The following functions are used to convert times between different formats.
 #   t : time steps, tuple (year,month,day,ampm)
@@ -229,6 +222,8 @@ class Allfires:
 
         # cumulative recordings
         self.heritages = []       # a list of fire heritage relationships (source, target)
+        self.id_dict = []         # this list relates the list position of the fire in the allfires object to the fire id
+                                  # (list_index, fireid) (list position can be variable when writing out only active fires)
 
     # properties
     @property
@@ -350,6 +345,8 @@ class Allfires:
     def newyear_reset(self):
         ''' reset fire ids at the start of a new year
         '''
+        import FireIO
+
         # re-id all active fires
         lastyearfires = []
         fidmapping = []
@@ -441,6 +438,8 @@ class Fire:
         pixels : list (nx5)
             latitude, longitude, line, sample, and FRP values of active fire pixels
         '''
+        import FireVector
+
         # initialize fire id
         self.fireID = id
         self.mergeid = id
@@ -517,6 +516,8 @@ class Fire:
     def isactive(self):
         ''' Fire active status
         '''
+        from FireConsts import maxoffdays
+
         # invalidated fires are always inactive
         if self.invalid:
             return False
@@ -527,6 +528,8 @@ class Fire:
     def mayreactivate(self):
         ''' Fire active status
         '''
+        from FireConsts import maxoffdays,limoffdays
+
         # invalidated fires are always inactive
         if self.invalid:
             return False
@@ -606,6 +609,9 @@ class Fire:
     def farea(self):
         ''' Fire spatail size of the fire event (km2)
         '''
+        import FireVector
+        from FireConsts import area_VI
+
         # get hull
         fhull = self.hull
 
@@ -642,6 +648,8 @@ class Fire:
     def centroid(self):
         ''' Centroid of fire object (lat,lon)
         '''
+        import FireClustering
+
         # get hull
         fhull = self.hull
 
@@ -683,6 +691,8 @@ class Fire:
         ''' set fire type and dominant LCT for newly activated fires
         '''
         from FireConsts import FTYP_opt
+        import FireIO
+
         # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
         # 1 - use the CA type classification (dtermined using LCTmax)
         # 2 - use the global type classfication (need more work...)
@@ -749,6 +759,8 @@ class Fire:
         ''' List of all fire pixels near the fire perimeter (fine line pixels)
         '''
         from shapely.geometry import Point, MultiLineString
+        import FireVector
+        from FireConsts import fpbuffer
 
         # get pixels of last active fire detection
         nps = self.actpixels
@@ -777,7 +789,8 @@ class Fire:
         ''' Active fire line MultiLineString shape (segment of fire perimeter with active fires nearby)
         '''
         from shapely.geometry import MultiLineString#,Polygon,Point,MultiPoint
-        from FireConsts import valpha
+        from FireConsts import valpha,flbuffer
+        import FireVector
 
         if len(self.flinepixels)==0: # this happens is last active pixels are within the fire scar
             return None
@@ -856,6 +869,7 @@ class Cluster:
     def centroid(self):
         ''' Centroid of the cluster (lat, lon)
         '''
+        import FireClustering
         return FireClustering.cal_centroid(self.locs)
 
     @property
@@ -868,6 +882,8 @@ class Cluster:
     def hull(self):
         ''' Fire concave hull (alpha shape)
         '''
+        import FireVector
+
         hull = FireVector.cal_hull(self.locs, self.sensor)
         return hull
 

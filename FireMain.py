@@ -119,7 +119,7 @@ def Fobj_init(tst,regnm,restart=False):
         # if restart==False, and previous time step data are available, read from file
         pst = FireObj.t_nb(tst,nb='previous') # previous time step
         if FireIO.check_fobj(pst,regnm):
-            allfires = FireIO.load_fobj(pst,regnm)
+            allfires = FireIO.load_fobj(pst,regnm,activeonly=False)
             # if it's the first time step of a calendar year, reset all fires id
             if (tst[1]==1 & tst[2]==1 & tst[3]=='AM'):
                 # allfires = NewYearReset(allfires)
@@ -540,7 +540,7 @@ def Fire_Forward(tst,ted,restart=False,region=None,src='SNPP',nrt=False):
 
 
         # 9. loop control
-        #  - if t reaches ted, set endloop to True to stop the loop
+        #  - if t reaches ted, set endloop to True to stop the next loop
         if FireObj.t_dif(t,ted)==0:
             endloop = True
             # correct fire heritage of last time step
@@ -548,17 +548,9 @@ def Fire_Forward(tst,ted,restart=False,region=None,src='SNPP',nrt=False):
                 allfires.heritages = correct_nested_ids(allfires.heritages)
 
         # 10. fire object save
-        # - separate nonactive (including not mayreactivate) fires
-        allfires_discard = copy.deepcopy(allfires)
-        allfires_discard.fires = [f for f in allfires_discard.fires if (f.isactive==False and f.mayreactivate==False)]
-        allfires_active = copy.deepcopy(allfires)
-        allfires_active.fires = [f for f in allfires_active.fires if (f.isactive or f.mayreactivate)]
-
-        # - update inactive fobj pickle file
-        FireIO.update_fobj_ia(allfires_discard,t,region[0])
-
-        #  - save actve/mayreactivate allfires object to pickle file
-        FireIO.save_fobj(allfires_active,t,region[0])
+        FireIO.save_fobj(allfires,t,region[0],activeonly=True)
+        if FireObj.t_dif(t,ted)==0:
+            FireIO.save_fobj(allfires,t,region[0],activeonly=False)
 
         # 11. update t with the next time stamp
         #  - record running times for the loop
