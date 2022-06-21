@@ -220,6 +220,7 @@ def hull_from_pixels1(arr, geoTrans):
     *** not in use ***
     '''
     import FireVector, FireIO
+    from FireConsts import lalpha
     import geopandas as gpd
     from scipy import ndimage, sparse
     from skimage import morphology, measure#, segmentation
@@ -261,7 +262,7 @@ def hull_from_pixels1(arr, geoTrans):
         
         # compute the hull of each cluster
         #locs = [coords_geo[i] for i,x in enumerate(cid) if x == fid]
-        hulls[fid] = FireVector.cal_hull(coords_geo, 'none')
+        hulls[fid] = FireVector.cal_hull(coords_geo, 'none',buf=30,alpha=lalpha)
         # if fid in np.arange(100,np.max(all_labels),100):
         #     print(fid, 'processed in', time.time()-t0)
         #     t0 = time.time()
