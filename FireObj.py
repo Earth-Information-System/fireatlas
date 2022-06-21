@@ -419,7 +419,7 @@ class Fire:
     """
 
     # initilization
-    def __init__(self, id, t, pixels, sensor='viirs'):
+    def __init__(self, id, t, pixels):
         ''' Initialize Fire class with active fire pixels locations and t. This
                 is only called when fire clusters forming a new Fire object.
         Parameters
@@ -434,7 +434,6 @@ class Fire:
         # initialize fire id 
         self.id = id
         self.mergeid = id
-        self.sensor = sensor
 
         # initialize current time, fire start time, and fire final time
         tlist = list(t)
@@ -443,7 +442,7 @@ class Fire:
         self.t_ed = tlist
 
         # initialize pixels
-        fpixels = [FirePixel((p[0],p[1]),(p[2],p[3],p[4]),tlist,id) for p in pixels]
+        fpixels = pixels
         self.pixels = fpixels      # all pixels
         self.newpixels = fpixels   # new detected pixels
         self.actpixels = fpixels   # new detected pixels of last active fire detection
@@ -451,7 +450,7 @@ class Fire:
 
         # initialize hull using the pixels
         locs = [p.loc for p in fpixels]  # list of [lat,lon]
-        hull = FireVector.cal_hull(locs, sensor) # the hull from all locs
+        hull = FireVector.cal_hull(locs) # the hull from all locs
         self.hull = hull   # record hull
 
         # initialize the exterior pixels (pixels within the inward extbuffer of
@@ -557,9 +556,9 @@ class Fire:
 
     @property
     def newpixelatts(self):
-        ''' List of new fire pixels locations (lat,lon)
+        ''' List of new fire pixels attriputes (frp, (DS))
         '''
-        return [p.atts for p in self.newpixels]
+        return [(p.frp, p.DS, p.DT, p.datetime, p.sat) for p in self.newpixels]
 
     @property
     def n_newpixels(self):
@@ -620,7 +619,7 @@ class Fire:
     def meanFRP(self):
         ''' Mean FRP of the new fire pixels
         '''
-        frps = [p.atts[2] for p in self.newpixels]
+        frps = [p.frp for p in self.newpixels]
         if len(frps) > 0:
             m = sum(frps)/len(frps)
         else:
@@ -656,26 +655,6 @@ class Fire:
             peat_dict = {0:0,1:1,2:3,3:3,4:3,5:3,6:3,7:5,8:7,9:5,10:5,11:3,12:5,13:8}
         
         return peat_dict[LCTmax]
-
-        # determine the fire type using the land cover type and stFM1000
-        # if LCTmax in [11,31]:   # 'Water', 'Barren' -> 'Other'
-        #     return 0
-        # elif LCTmax in [23]:    # 'Urban' -> 'Urban'
-        #     return 1
-        # elif LCTmax in [82]:    # 'Agriculture' -> 'Agriculture'
-        #     return 6
-        # elif LCTmax in [42]:    # 'Forest' ->
-        #     stFM1000 = self.stFM1000
-        #     if stFM1000 > 12:        # 'Forest manage'
-        #         return 3
-        #     else:                  # 'Forest wild'
-        #         return 2
-        # elif LCTmax in [52,71]:    # 'Shurb', 'Grassland' ->
-        #     stFM1000 = self.stFM1000
-        #     if stFM1000 > 12:        # 'Shrub manage'
-        #         return 5
-        #     else:                  # 'Shrub wild'
-        #         return 4
 
     @property
     def ftypename(self):
@@ -779,7 +758,7 @@ class Cluster:
     """
 
     # initilization
-    def __init__(self, id, pixels, t, sensor='viirs'):
+    def __init__(self, id, pixels, t):
         ''' initilization
 
         Parameters
@@ -795,7 +774,6 @@ class Cluster:
         self.cday = date(*t[:-1])  # current date
         self.ampm = t[-1]          # current ampm
         self.id = id
-        self.sensor = sensor
         self.pixels = pixels       # (lat,lon, FRP)
 
     # properties
@@ -803,7 +781,7 @@ class Cluster:
     def locs(self):
         ''' List of pixel locations (lat,lon)
         '''
-        return [(x,y) for x,y,a,b,c in self.pixels]
+        return [(p.lat,p.lon) for p in self.pixels]
 
     @property
     def centroid(self):
@@ -821,7 +799,7 @@ class Cluster:
     def hull(self):
         ''' Fire concave hull (alpha shape)
         '''
-        hull = FireVector.cal_hull(self.locs, self.sensor)
+        hull = FireVector.cal_hull(self.locs)
         return hull
     
     @property
@@ -839,8 +817,16 @@ class FirePixel:
         t : time (y,m,d,ampm) of record
         origin : the fire id originally recorded (before merging)
     """
-    def __init__(self,loc,atts,t,origin):
-        self.loc = loc        # (lat,lon)
-        self.atts = atts      # attributes (line, sample, frp)
-        self.t = list(t)      # (year,month,day,ampm)
-        self.origin = origin  # originate  fire id
+    def __init__(self,lat,lon,frp,DS,DT,dt,Sat,origin):
+        self.lat = lat
+        self.lon = lon
+        self.frp = frp          # frp
+        self.DS = DS
+        self.DT = DT
+        self.sat = Sat          # satellite
+        self.datetime = dt      # YYYYMMDD_HHMM
+        self.origin = origin    # originate fire id
+    
+    @property
+    def loc(self):
+        return (self.lat,self.lon)
