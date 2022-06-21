@@ -24,7 +24,7 @@ Modules required
 
 
 
-def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted,region=''):
+def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
     ''' Create geopandas DataFrame for fire basic attributes and fire perimeter (hull).
             Use saved gdf files for previous time step and update active fires only.
 
@@ -44,9 +44,9 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted,region=''):
 
     # initialize the gdf
     t_pt = FireObj.t_nb(allfires.t,nb='previous')
-    if FireIO.check_gdfobj(t_pt,region=region) & (allfires.t[0]==t_pt[0]):
+    if FireIO.check_gdfobj(t_pt) & (allfires.t[0]==t_pt[0]):
         # read gdf at previous day as initial gdf values if data file at same year exists
-        gdf = FireIO.load_gdfobj(t_pt,region=region)
+        gdf = FireIO.load_gdfobj(t_pt)
         gdf['isactive'] = 0   # pre-set all fires to inactive and update true status below
     else:
         # initialize the GeoDataFrame with fire attribute names (in dd) as columns
@@ -253,7 +253,7 @@ def make_gdf_NFPlist(allfires, heritage,ted):
     import FireObj
 
     # initialize the GeoDataFrame
-    df = pd.DataFrame(columns=['fireid', 'mergid','lon','lat','line','sample'])
+    df = pd.DataFrame(columns=['fireid', 'mergid','lon','lat','DS','DT','frp','sat','datetime'])
     fid_df = 0
 
     # for each fire, record the newlocs to the geometry column of gdf
@@ -268,32 +268,35 @@ def make_gdf_NFPlist(allfires, heritage,ted):
             mergid = heritage[fid]
         if len(allfires.fires[fid_idx].newlocs)>0:
             lats, lons = zip(*allfires.fires[fid_idx].newlocs)
-            line, sample, frp = zip(*allfires.fires[fid_idx].newpixelatts)
+            frp, DS, DT, datetime, sat = zip(*allfires.fires[fid_idx].newpixelatts)
             for i,lat in enumerate(lats):
                 df.loc[fid_df,'fireid'] = fid_df
                 df.loc[fid_df,'mergid'] = mergid
                 df.loc[fid_df,'lon'] = lons[i]
                 df.loc[fid_df,'lat'] = lat
-                df.loc[fid_df,'line'] = line[i]
-                df.loc[fid_df,'sample'] = sample[i]
+                df.loc[fid_df,'DS'] = DS[i]
+                df.loc[fid_df,'DT'] = DT[i]
+                df.loc[fid_df,'frp'] = frp[i]
+                df.loc[fid_df,'sat'] = sat[i]
+                df.loc[fid_df,'datetime'] = datetime[i]
                 fid_df += 1
             
     return df
 
-def make_gdf_lakes(ted, region):
+def make_gdf_lakes(ted):
     '''create and write out a geodataframe containing all lakes 
-    within final fire perimeters of the year and region
+    within final fire perimeters of the year
     '''
     import FireIO, FireGdf_final, PostProcess
     
-    allfires = FireIO.load_fobj(ted,region=region)
+    allfires = FireIO.load_fobj(ted)
     gdf = FireGdf_final.make_gdf_fperim_simple(allfires, active_only=False)
     gdf = gdf.reset_index() # we need the mergid column in final_lakes
-    gdf_lakes = PostProcess.final_lakes(gdf, ted, region)
+    gdf_lakes = PostProcess.final_lakes(gdf, ted)
     
     return gdf_lakes
     
-def save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=False,fline=False,NFP=False,NFP_txt=False,region=''):
+def save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=False,fline=False,NFP=False,NFP_txt=False):
     ''' Creat gdf using one Allfires object and save it to a geojson file at 1 time step.
             This can be used  for fperim, fline, and NFP files.
 
@@ -306,22 +309,22 @@ def save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=False,fline=Fal
 
     # create gdf using previous time step gdf values and new allfires object
     if fperim:
-        gdf = make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted,region=region)
+        gdf = make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted)
         if len(gdf) > 0:
-            FireIO.save_gdfobj(gdf,allfires.t,param='',op='',region=region)
+            FireIO.save_gdfobj(gdf,allfires.t,param='',op='')
     if fline:
         gdf = make_gdf_fline(allfires, heritage,ted,valid_ids)
         if len(gdf) > 0:
-            FireIO.save_gdfobj(gdf,allfires.t,param='',op='FL',region=region)
+            FireIO.save_gdfobj(gdf,allfires.t,param='',op='FL')
     if NFP:
         gdf = make_gdf_NFP(allfires, heritage,ted)
         if len(gdf) > 0:
-            FireIO.save_gdfobj(gdf,allfires.t,param='',op='NFP',region=region)
+            FireIO.save_gdfobj(gdf,allfires.t,param='',op='NFP')
     if NFP_txt:
         gdf = make_gdf_NFPlist(allfires, heritage,ted)
-        FireIO.save_FP_txt(gdf, allfires.t,region=region)
+        FireIO.save_FP_txt(gdf, allfires.t)
 
-def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,NFP_txt=False,fall=False,region=''):
+def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,NFP_txt=False,fall=False):
     ''' Wrapper to create and save gdf files for a time period
 
     Parameters
@@ -349,7 +352,7 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,NFP_txt=False,fall=
     
     # empty the output folder
     # clean temp folder (used for faster loading of active fire data)
-    temp_files = FireIO.get_path(str(tst[0]),region)+'/Snapshot/*'
+    temp_files = FireIO.get_path(str(tst[0]))+'/Snapshot/*'
     files = glob.glob(temp_files)
     for f in files:
         os.remove(f)
@@ -357,19 +360,19 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,NFP_txt=False,fall=
     # loop over all days during the period
     endloop = False  # flag to control the ending of the loop
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
-    final_allfires = FireIO.load_fobj(ted,region=region)
+    final_allfires = FireIO.load_fobj(ted)
     heritage = dict(final_allfires.heritages)
     valid_ids = [fire.id for fire in final_allfires.validfires] # list of valid ids at the end
     valid_ids = list(set(valid_ids + list(heritage))) # add valid ids that later merge and change id
-    gdf_lakes = make_gdf_lakes(ted,region)
+    gdf_lakes = make_gdf_lakes(ted)
     while endloop == False:
         #print(t)
 
         # read Allfires object from the saved pkl file
-        allfires = FireIO.load_fobj(t,region=region)
+        allfires = FireIO.load_fobj(t)
 
         # create and save gdfs according to input options
-        save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=fperim,fline=fline,NFP=NFP,NFP_txt=NFP_txt,region=region)
+        save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=fperim,fline=fline,NFP=NFP,NFP_txt=NFP_txt)
 
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
