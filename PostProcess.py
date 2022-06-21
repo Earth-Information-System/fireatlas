@@ -65,7 +65,7 @@ def hull_from_pixels(coords_geo):
     
     return gdf
 
-def grid_viirs(year, region, geotrans, out_arr, clip=True):
+def grid_viirs(year, geotrans, out_arr, clip=True):
     '''grid VIIRS pixels into polar LAEA:
         1) reads viirs burned area coordinates of a year
         2) transforms lat lon viirs coordinates to NP LAEA
@@ -98,7 +98,7 @@ def grid_viirs(year, region, geotrans, out_arr, clip=True):
     import numpy as np
     import pandas as pd
     
-    path = FireIO.get_path(str(year), region)
+    path = FireIO.get_path(str(year))
     filelist_viirs = glob.glob(path+'/Snapshot/*_NFP.txt')
     df = pd.concat([pd.read_csv(i, dtype = {'lat':np.float64, 'lon':np.float64}) 
                     for i in filelist_viirs], ignore_index=True)
@@ -130,7 +130,7 @@ def grid_viirs(year, region, geotrans, out_arr, clip=True):
      
     return geotrans, out_arr
 
-def create_burnraster(year,region,reload_mcd64=True,fill_npixel=1,write=True):
+def create_burnraster(year,reload_mcd64=True,fill_npixel=1,write=True):
     '''creates a binary burned/unburned raster in 500m resolution by merging
     mcd64 burned area and VIIRS active fires
     
@@ -167,12 +167,12 @@ def create_burnraster(year,region,reload_mcd64=True,fill_npixel=1,write=True):
     arr_year = np.zeros((cols, rows)).astype(int)
 
     # grid viirs pixels
-    geotrans_new, arr_year = grid_viirs(year, region, geotrans, arr_year)
+    geotrans_new, arr_year = grid_viirs(year, geotrans, arr_year)
     
     # add mcd64 burn pixels to clipped grid
     if reload_mcd64:
         xoff, yoff = FireIO.world2Pixel(geotrans, geotrans_new[0], geotrans_new[3])
-        mcd64_arr = FireIO.load_burnraster(year,region,'mcd64',int(xoff),int(yoff),
+        mcd64_arr = FireIO.load_burnraster(year,'mcd64',int(xoff),int(yoff),
                                xsize=arr_year.shape[1],ysize=arr_year.shape[0])
         arr_year = ((arr_year + mcd64_arr) > 0)*1
     geotrans_out = geotrans_new
@@ -184,14 +184,14 @@ def create_burnraster(year,region,reload_mcd64=True,fill_npixel=1,write=True):
         arr_year = 1-arr_rev
     
     if write:
-        outpath = FireIO.get_path(str(year),region)
+        outpath = FireIO.get_path(str(year))
         # save to file 
         filename_year = outpath + '/Summary/viirs_' + str(year) + '.tif'
         FireIO.save2gtif(arr_year, filename_year, arr_year.shape[1], arr_year.shape[0], geotrans_out, proj)
     
     return geotrans_out, arr_year
 
-def compute_unburned_area(year, region, gdf):
+def compute_unburned_area(year, gdf):
     '''Computes the unburned island from a fire scar'''
     
     import numpy as np
@@ -204,8 +204,8 @@ def compute_unburned_area(year, region, gdf):
     
     # create or load the burn raster
     # if t == tst:
-    geotrans, arr_year = create_burnraster(year,region,reload_mcd64=True,fill_npixel=2,write=True)
-    burnfile = FireIO.load_burnraster(year,region,sensor='viirs')
+    geotrans, arr_year = create_burnraster(year,reload_mcd64=True,fill_npixel=2,write=True)
+    burnfile = FireIO.load_burnraster(year,sensor='viirs')
     
     # loop through perimeters and clip
     for fid in gdf.index:
@@ -220,7 +220,7 @@ def compute_unburned_area(year, region, gdf):
         
     
 
-def create_burnpoly(t, region,method='hull'):
+def create_burnpoly(t,method='hull'):
     '''
     Creates polygons of unburned islands using VIIRS AF and MCD64
     1) create a burned/unburned raster for the year
@@ -248,7 +248,7 @@ def create_burnpoly(t, region,method='hull'):
     year = t[0]
     
     # create the burn raster
-    geotrans, arr_year = create_burnraster(year,region,reload_mcd64=True,fill_npixel=2,write=True)
+    geotrans, arr_year = create_burnraster(year,reload_mcd64=True,fill_npixel=2,write=True)
     
     # extract unburned islands
     arr_noholes = ndimage.binary_fill_holes(arr_year == 1).astype(int)  # fill all holes in burns
@@ -422,7 +422,7 @@ def dissolve_lake_geoms(geom, ext, year):
     
     return lakediss
    
-def final_lakes(gdf, t, region):
+def final_lakes(gdf, t):
     '''Wrapper to creade a gdf of final lakes
     
     Parameters
@@ -473,7 +473,7 @@ def final_lakes(gdf, t, region):
     gdf_lakes = gpd.GeoDataFrame(d, crs="EPSG:3571")
     
     # save to file
-    FireIO.save_gdfobj(gdf_lakes,t,param='lakes',region=region)
+    FireIO.save_gdfobj(gdf_lakes,t,param='lakes')
     
     return gdf_lakes
 
