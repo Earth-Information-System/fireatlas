@@ -246,7 +246,7 @@ def doConcH(locs,buf,alpha=100):
         return None
 
 
-def cal_hull(fp_locs,sensor = 'viirs'):
+def cal_hull(fp_locs,buf=None,alpha=None):
     ''' wrapper to calculate the hull given fire locations.
         the returned hull type depends on the pixel number
 
@@ -260,18 +260,15 @@ def cal_hull(fp_locs,sensor = 'viirs'):
     hull : object
         calculated hull (a buffer of VIIRS half pixel size included)
     '''
-    from FireConsts import valpha, lalpha, VIIRSbuf #,MCD64buf
     import numpy as np
     
-    # set buffer according to sensor
-    if sensor == 'viirs':
+    # if not args are given we assume viirs buffer and alpha
+    if not alpha:
+        from FireConsts import valpha
+        alpha = valpha
+    if not buf:
+        from FireConsts import VIIRSbuf
         buf = VIIRSbuf
-    elif sensor == 'mcd64':
-        buf = VIIRSbuf
-    else:
-        buf = 30
-        valpha = lalpha
-        # buf = MCD64buf
     
     # number of points
     nfp = len(fp_locs)
@@ -292,10 +289,10 @@ def cal_hull(fp_locs,sensor = 'viirs'):
         x,y = zip(*fp_locs)
         vdeg = sum(x)/len(x)
         km1deg = 6371*np.cos(np.deg2rad(vdeg))*2*np.pi/360
-        valphadeg = 1/(valpha/1000/km1deg)   # in 1/deg
+        valphadeg = 1/(alpha/1000/km1deg)   # in 1/deg
 
         hull = doConcH(fp_locs,buf,alpha=valphadeg)
-        # hull = doConcH(fp_locs,alpha=valpha)
+        # hull = doConcH(fp_locs,alpha=alpha)
         if hull == None: # in case where convex hull can't be determined, call doMultP
             hull = doMultP(fp_locs,buf)
         elif hull.area == 0:
@@ -337,7 +334,7 @@ def cal_extpixels(fps,hull,alpha=100):
             fps_ext.append(fp)
     return fps_ext
 
-def update_hull(phull,fp_locs,sensor='viirs',alpha=100):
+def update_hull(phull,fp_locs):
     ''' calculate the hull by using the new pixel locations and previous hull vertices only
     (This can be faster when existing fire has many pixels)
 
@@ -371,9 +368,12 @@ def update_hull(phull,fp_locs,sensor='viirs',alpha=100):
         # record only those not in the interior part of the existing hull
         if not hts_buf.contains(pt):
             fp_locs_ext.append((pt.y,pt.x))
-
+    
+    # # take difference instead of loop? need to benchmark
+    # fp_locs_ext = [(pt.y,pt.x) for pt in pts.difference(hts_buf)]
+    
     # use the exteror points to calculate hull (this can save a lot of time)
-    hull = cal_hull(fp_locs_ext, sensor = sensor)
+    hull = cal_hull(fp_locs_ext)
 
     # use the union to include hull in past time step
     hull_new = phull.union(hull)
