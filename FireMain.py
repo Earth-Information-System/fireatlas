@@ -97,7 +97,7 @@ def Fobj_init(tst,restart=False):
 
     return allfires
 
-def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, log=True):
+def Fire_expand_rtree(allfires,afp,fids_ea,expand_only = False, log=True):
     ''' Use daily new AF pixels to create new Fobj or combine with existing Fobj
 
     Parameters
@@ -137,7 +137,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
     # logger.info(f'Time to build rtree: {t1-t0}')
 
     # do preliminary clustering using new active fire locations (assign cid to each pixel)
-    afp_loc = [(x,y) for x,y,a,b,c in afp]
+    afp_loc = list(zip(afp.Lat, afp.Lon))
     cid = FireClustering.do_clustering(afp_loc,SPATIAL_THRESHOLD_KM)  # this is the cluster id (starting from 0)
     if log:
         logger.info(f'New fire clusters of {max(cid)} at this time step')
@@ -148,8 +148,9 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
     FP2expand = {}  # the diction used to record fire pixels assigned to existing active fires {fid:Firepixels}
     for ic in range(max(cid)+1):
         # create cluster object using all newly detected active fires within a cluster
-        pixels = [afp[i] for i, v in enumerate(cid) if v==ic]
-        cluster = FireObj.Cluster(ic,pixels,t,sensor=sensor)  # create a Cluster object using the pixel locations
+        pixels = [FireObj.FirePixel(afp.iloc[i].Lat,afp.iloc[i].Lon,afp.iloc[i].FRP,
+                                    afp.iloc[i].DS,afp.iloc[i].DT,afp.iloc[i].YYYYMMDD_HHMM,afp.iloc[i].Sat,-1) for i, v in enumerate(cid) if v==ic]
+        cluster = FireObj.Cluster(ic,pixels,t)  # create a Cluster object using the pixel locations
         hull = cluster.hull  # the hull of the cluster
 
         # extract potential neighbours using spatial index (used for prefilter)
@@ -165,7 +166,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
                     # record existing target fire id in fid_expand list
                     fmid = fids_ea[id_cf]  # this is the fire id of the existing active fire
                     # record pixels from target cluster (locs and time) along with the existing active fire object id
-                    newFPs = [FireObj.FirePixel((p[0],p[1]),(p[2],p[3],p[4]),t,fmid) for p in pixels] # new FirePixels from the cluster
+                    newFPs = [FireObj.FirePixel(p.lat,p.lon,p.frp,p.DS,p.DT,p.datetime,p.sat,fmid) for p in pixels] # new FirePixels from the cluster
                     if fmid in FP2expand.keys():   # for a single existing object, there can be multiple new clusters to append
                         FP2expand[fmid] = FP2expand[fmid] + newFPs
                     else:
@@ -188,7 +189,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
                 fids_new.append(id_newfire)  # record id_newfire to fid_new
     
                 # use the fire id and new fire pixels to create a new Fire object
-                newfire = FireObj.Fire(id_newfire,t,pixels,sensor=sensor)
+                newfire = FireObj.Fire(id_newfire,t,pixels)
     
                 # add the new fire object to the fires list in the Allfires object
                 allfires.fires.append(newfire)
@@ -237,7 +238,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',expand_only = False, l
 
     return allfires
 
-def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep,sensor ='viirs'):
+def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep):
     ''' For newly formed/expanded fire objects close to existing active fires, merge them
 
     Parameters
@@ -360,7 +361,7 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep,sensor ='viirs'):
             phull = f_target.hull
             pextlocs = [p.loc for p in f_target.extpixels]
             newlocs = [p.loc for p in f_source.pixels]
-            f_target.hull = FireVector.update_hull(phull,pextlocs+newlocs, sensor=sensor)
+            f_target.hull = FireVector.update_hull(phull,pextlocs+newlocs)
 
             # - use the updated hull to update exterior pixels
             f_target.extpixels = FireVector.cal_extpixels(f_target.extpixels+f_source.pixels,f_target.hull)
@@ -381,7 +382,7 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep,sensor ='viirs'):
 
     return allfires
 
-def Fire_clean_save(allfires, t, region):
+def Fire_clean_save(allfires, t):
     import FireObj, FireIO
     # we only want to save active and sleeper fires
     allfires_out = FireObj.Allfires(t)
@@ -399,9 +400,9 @@ def Fire_clean_save(allfires, t, region):
     allfires_out.id_dict = id_dict
     
     #  - save updated allfires object to pickle file
-    FireIO.save_fobj(allfires_out,t,region) 
+    FireIO.save_fobj(allfires_out,t) 
 
-def Fire_Forward(tst,ted,restart=False,region=''):
+def Fire_Forward(tst,ted,restart=False,sat='SNPP'):
     ''' The wrapper function to progressively track all fire events for a time period
            and save fire object to pkl file and gpd to geojson files
            
@@ -463,7 +464,7 @@ def Fire_Forward(tst,ted,restart=False,region=''):
         
         # 3. read active fire pixels from VIIRS dataset
         t_read = time.time()
-        afp = FireIO.read_AFP(t,src='viirs',region=region)
+        afp = FireIO.read_AFP(t,src=sat)
         t_read2 = time.time()
         logger.info(f'reading file {(t_read2-t_read)}')
         if len(afp) > 0:
@@ -502,9 +503,9 @@ def Fire_Forward(tst,ted,restart=False,region=''):
             endloop = True
             # correct fire heritage of last time step
             allfires.heritages = correct_nested_ids(allfires.heritages)
-            FireIO.save_fobj(allfires,t,region) # in the last time step we save the complete fire history including deactivated fires
+            FireIO.save_fobj(allfires,t) # in the last time step we save the complete fire history including deactivated fires
         else:
-            Fire_clean_save(allfires, t, region)
+            Fire_clean_save(allfires, t)
         
         #  - record running times for the loop
         t2 = time.time()
