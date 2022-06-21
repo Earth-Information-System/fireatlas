@@ -1,35 +1,38 @@
 """ FireConsts
 This is the module containing all constants used in this project
+Also used for run control: which region is being used?
 """
 
-# project directories
-#import os
-dirhome = 'D:/fire_atlas'   # home directory
-dirpjcode = dirhome + '/1_code/'     # project code directory
-dirpjdata = dirhome + '/2_pipeline/'     # output data directory
-dirextdata = dirhome + '/Data/' # exterior input data directory
-mcd64dir = dirextdata + 'burned_grid/'
-lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
+# region
+region = ''
 
-# extents of test regions
-ext_SL = [-119, 60, -110, 64] # test area for slave lake 2014
-ext_NT = [-136, 60, -102, 79] # Northwest territories
-ext_AKsmall = [-156, 65.5, -152, 66.3] # small test area for AK 2015
-ext_AK = [-168, 51, -140, 72] # all of AK
-ext_NY = [147, 65, 154, 70] # test area for Northern Yakutia 2020
-ext_YAK = [106, 55, 163, 72] # test area for yakutia 2020
-ext_ssib = [89, 48, 132.1, 67] # test area southern siberia 2018 reference data
-ext_all = {'AK2015':ext_AKsmall, 'AK':ext_AK, 'SL2014':ext_SL, 'NT':ext_NT,
-           'NY2020':ext_NY, 'YAK':ext_YAK, 'Sib2018':ext_ssib}
+# project directories
+dirhome = 'D:/fire_atlas'               # home directory
+dirpjcode = dirhome + '/1_code/'        # project code directory
+dirextdata = dirhome + '/Data/'         # input data directory
+dirNOAA20 = 'D:/shared_data/VIIRS_375m_NOAA20/monthly'
+mcd64dir = dirextdata + 'burned_grid/'
+lakedir = dirextdata + 'GlobalSurfaceWater/vector/'
+if region:                              # output data directory
+    dirpjdata = dirhome + '/2_pipeline/' + region + '/'
+else:
+    dirpjdata = dirhome + '/2_pipeline/'
+dir_temp = dirpjdata + 'temp/'          # directory for temporary file
+
+
 # shapefiles for regional clipping
 shp_all = {'AK':dirextdata+'shapefiles/Alaska.gpkg', 'NT':dirextdata+'shapefiles/nwt.gpkg',
            'CA':dirextdata+'shapefiles/canada.gpkg', 'YAK':dirextdata+'shapefiles/yakutia.gpkg',
            'RU':dirextdata+'shapefiles/russia.gpkg', 'full':dirextdata+'shapefiles/wwf_borealarctic_diss_1deg.gpkg'}
+if region:
+    shp_fnm = shp_all[region]
+else:
+    shp_fnm = shp_all['full']
+
 
 # parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
 SPATIAL_THRESHOLD_KM = 1  # threshold of spatial distance (between pixels, km) used to do fire initial clustering
-#MAX_THRESH_CENT_KM = 50   # threshold of spatial distance (between clusters centroid, km) used to filter nearby clusters
 
 # fire type and visualization parameters
 lc_dict = { # dictionary for simplifying ESA CCI land cover types
@@ -104,27 +107,3 @@ dd = {'fireid':'int',                  # id
       'lake_border':'float',        # fire perimeter length that ends at lake
       'lake_border_tot':'float'
       }
-
-# dd = {'fid':'int',                  # id
-#       'clat':'float',               # centroid latitude   -> centroid[0]
-#       'clon':'float',               # centroid longitude  -> centroid[1]
-#       'ftype':'int',                # fire type
-#       'isactive':'int',             # active status
-#       'invalid':'int',              # invalid status
-#       'n_pixels':'int',             # number of total pixels
-#       'n_newpixels':'int',          # number of new pixels
-#       'farea':'float',              # fire size
-#       'fperim':'float',             # fire perimeter length
-#       'flinelen':'float',           # active fire front line length
-#       'duration':'float',           # fire duration
-#       'pixden':'float',             # fire pixel density
-#       'meanFRP':'float',            # mean FRP of the new fire pixels
-#       'tst_year':'int',             # t_st[0]
-#       'tst_month':'int',
-#       'tst_day':'int',
-#       'tst_ampm':'str',
-#       'ted_year':'int',             # t_ed[0]
-#       'ted_month':'int',
-#       'ted_day':'int',
-#       'ted_ampm':'str',
-#       }
