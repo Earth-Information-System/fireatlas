@@ -26,6 +26,10 @@ def correct_final_ftype(gdf):
     ds_tundra = rasterio.open(dirextdata+'cavm/cavm_coarse.tif')
     proj_tundra = ds_tundra.crs
     
+    # read peat dataset
+    fnm_peat = dirextdata + 'peat/Hugelius_etal_2020_PNAS_grids/Grids_TIFF_WGS84/peat_greater_10.tif'
+    ds_peat = rasterio.open(fnm_peat)
+    
     # dictionaries for reclassifying
     tundra_dict = { # dictionary for naming of tundra classes
                1:'barren tundra', 
@@ -58,8 +62,19 @@ def correct_final_ftype(gdf):
     gdf['lcc_final'] = None
     
     for fire in gdf.index:
+        
+        # get geom in wgs84
+        geom = gdf.geometry[fire]
+        
+        # check for peat percentage
+        peat_arr, peat_trans = rasterio.mask.mask(ds_peat, [geom],
+                                                  all_touched = True, crop=True, nodata=255)
+        peat_arr = peat_arr.astype(float)
+        peat_arr[peat_arr == 255] = np.nan
+        gdf.loc[fire,'peat'] = np.nanmean(peat_arr)
+        
         boreal = True
-        perim_tundra = gdf_reproj_tundra.geometry[fire]        
+        perim_tundra = gdf_reproj_tundra.geometry[fire]      
         # check if the fire is a tundra fire
         try:
             tundra_arr, trans_tundra = rasterio.mask.mask(ds_tundra, [perim_tundra], 
@@ -75,7 +90,6 @@ def correct_final_ftype(gdf):
             pass
         # if the fire is not in tundra, we take the ESA CCI lc class
         if boreal:
-            geom = gdf.geometry[fire]
             arr, trans = rasterio.mask.mask(ds, [geom], 
                                             all_touched = True, crop=True, nodata=255)
             arr = (arr/10).astype(int)
@@ -93,7 +107,7 @@ def correct_final_ftype(gdf):
     return gdf
         
 
-def find_all_end(tst,ted,region=''):
+def find_all_end(tst,ted):
     ''' find all final perimeters points in the half-daily snapshots and
     save them to one gdf
     
@@ -120,8 +134,8 @@ def find_all_end(tst,ted,region=''):
     while endloop == False:
         #print(t)
         # read daily gdf
-        if FireIO.check_gdfobj(t,op='',region=region):
-            gdf = FireIO.load_gdfobj(t,region=region)
+        if FireIO.check_gdfobj(t,op=''):
+            gdf = FireIO.load_gdfobj(t)
             gdf_active = gdf[gdf.isactive == 1]
             
             # append daily row to gdf_all
@@ -150,17 +164,17 @@ def find_all_end(tst,ted,region=''):
     for fid in gdf_all.index:
         if gdf_all.loc[fid].lake_area > 0: # check if there are lakes within before loading lake file
             mergid = gdf_all.loc[fid].mergid
-            lakediss = FireIO.load_lake_geoms(tst,mergid,region=region)
+            lakediss = FireIO.load_lake_geoms(tst,mergid)
             geom = gdf_all.loc[[fid]].to_crs(3571).iloc[0].geometry
             geom = geom.difference(lakediss)
             gdf_all.loc[[fid],'geometry'] = gpd.GeoSeries([geom],crs=3571).to_crs(4326).values
     
     # lastly we also save the id_dict for the summary file later
-    FireIO.save_id_ted_dict(id_ted_dict,ted,region=region)
+    FireIO.save_id_ted_dict(id_ted_dict,ted)
     
     return id_ted_dict, gdf_all
 
-def create_final_allfires(id_ted_dict,ted, region=''):
+def create_final_allfires(id_ted_dict,ted):
     '''Loop through the end-dates of all fires and extract the fire objects
     at their last active fire detection from the according allfires object
     
@@ -185,7 +199,7 @@ def create_final_allfires(id_ted_dict,ted, region=''):
     dates = sorted(list(set(id_ted_dict.values())))
     
     for t in dates:
-        allfires = FireIO.load_fobj(t,region=region)
+        allfires = FireIO.load_fobj(t)
         
         # find all fires that end on that date
         fireids = [key for key in id_ted_dict if id_ted_dict[key] == t]
@@ -336,7 +350,7 @@ def Fire_merge_final(allfires):
         
     return allfires
 
-def add_mcd64(id_ted_dict,ted,ext,region=''):
+def add_mcd64(id_ted_dict,ted,ext):
     '''Retrieve final fire objects and add MCD64 pixels
     this works analoguous to the fire tracking algorithm:
         mcd64 pixels are clustered and used to extend existing viirs fire objects
@@ -362,7 +376,7 @@ def add_mcd64(id_ted_dict,ted,ext,region=''):
     import datetime
     
     # load fire objects based on VIIRS only
-    allfires = create_final_allfires(id_ted_dict,ted,region=region)
+    allfires = create_final_allfires(id_ted_dict,ted)
     # ids_test = [allfires.fires[i].id for i in range(allfires.number_of_activefires)]
     
     year = allfires.t[0]
@@ -389,7 +403,7 @@ def add_mcd64(id_ted_dict,ted,ext,region=''):
             afp_fire = [(row['lat'],row['lon'],0,0,0) for idx,row in afp_fire.iterrows()]
             
             # 4. expand that fire using afp
-            allfires_new = FireMain.Fire_expand_rtree(allfires,afp_fire,[fid],sensor='mcd64',expand_only=True,log=False)
+            allfires_new = FireMain.Fire_expand_rtree(allfires,afp_fire,[fid],expand_only=True,log=False)
             # print(fire.id, allfires_new.fires[fid].id)
             
             # replace the old allfire with the new one
@@ -412,7 +426,7 @@ def add_mcd64(id_ted_dict,ted,ext,region=''):
             mergid = gdf.loc[src[fid]].mergid
         else:
             mergid = gdf.loc[fid].mergid
-        lakediss = FireIO.load_lake_geoms(allfires.t,mergid,region=region) # read lakes for the geom
+        lakediss = FireIO.load_lake_geoms(allfires.t,mergid) # read lakes for the geom
         
         if (not isinstance(lakediss, type(None))):
             geom, lake_area, lake_border = PostProcess.clip_lakes_1fire(geom, lakediss)
@@ -429,11 +443,11 @@ def add_mcd64(id_ted_dict,ted,ext,region=''):
     gdf = PostProcess.compute_unburned_area(year, region, gdf)
     
     # 10. save
-    FireIO.save_gdfobj(gdf,allfires.t,param='final_mcd64',region=region)
+    FireIO.save_gdfobj(gdf,allfires.t,param='final_mcd64')
     
     return gdf
     
-def save_gdf_trng(tst,ted,region=''):
+def save_gdf_trng(tst,ted):
     ''' Wrapper to create and save all ignitions as gdf
         1) final perimeters from VIIRS only
         2) final perimeters combining VIIRS and MCD64
@@ -449,9 +463,9 @@ def save_gdf_trng(tst,ted,region=''):
     import FireIO
     
     # find all final perimeters and write out to gdf
-    id_ted_dict,gdf = find_all_end(tst, ted,region=region)
+    id_ted_dict,gdf = find_all_end(tst,ted)
     gdf = correct_final_ftype(gdf)
-    FireIO.save_gdfobj(gdf,tst,param='final_viirs',region=region)
+    FireIO.save_gdfobj(gdf,tst,param='final_viirs')
     
     
     # add mcd64 data to the final perimeters
