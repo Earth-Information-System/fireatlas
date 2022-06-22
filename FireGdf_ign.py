@@ -24,7 +24,7 @@ Modules required
 * FireConsts
 """
 
-def find_all_ign(tst, ted,region=''):
+def find_all_ign(tst, ted):
     ''' find all ignition points in the half-daily snapshots and
     save them to one gdf
 
@@ -46,8 +46,8 @@ def find_all_ign(tst, ted,region=''):
     while endloop == False:
         #print(t)
         # read daily gdf
-        if FireIO.check_gdfobj(t,op='',region=region):
-            gdf = FireIO.load_gdfobj(t,region=region)
+        if FireIO.check_gdfobj(t,op=''):
+            gdf = FireIO.load_gdfobj(t)
             gdf_ign = gdf[(gdf.isignition == 1)] # filter for ignitions
             
             # append daily row to gdf_all
@@ -69,7 +69,7 @@ def find_all_ign(tst, ted,region=''):
     
     return gdf_all
 
-def save_gdf_trng(tst,ted,region=''):
+def save_gdf_trng(tst,ted):
     ''' Wrapper to create and save all ignitions as gdf
 
     Parameters
@@ -80,8 +80,8 @@ def save_gdf_trng(tst,ted,region=''):
         the year, month, day and 'AM'|'PM' at end time
     '''
     import FireIO
-    gdf_ign = find_all_ign(tst,ted,region=region)
-    FireIO.save_gdfobj(gdf_ign,tst,param='ign',region=region)
+    gdf_ign = find_all_ign(tst,ted)
+    FireIO.save_gdfobj(gdf_ign,tst,param='ign')
         
 
 
