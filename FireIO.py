@@ -172,6 +172,8 @@ def read_VNP14IMGML(d):
         # filter for type and quality (use types 0 (vf) and 3 (offshore))
         df = df.loc[((df['Type'] == 0) | (df['Type'] == 3)) &
                     ((df['Confidence'] == 'nominal') | (df['Confidence'] == 'high'))]
+        # add the satellite information
+        df = df.assign(Sat = 'SNPP')
         return df
     else:
         return None
@@ -215,6 +217,8 @@ def read_VJ114IMGML(yr,mo):
         df['DT'],df['DS'] = viirs_pixel_size(df['Sample'].values)
         # filter for confidence
         df = df.loc[df['mask'] > 7] # 7:low conf., 8:nominal, 9:high
+        # add the satellite information
+        df = df.assign(Sat = 'NOAA20')
         return df
     else:
         return None
@@ -342,32 +346,31 @@ def read_AFPVIIRS(t, sat='SNPP',cols=['Lat','Lon','FRP','Sat','DT','DS','YYYYMMD
         else:
             print('please set SNPP or NOAA20 for sat')
         
-        # filter for known spurious pixels
-        df = AFP_spurfilter(df, t)
+        if df is not None: # NOAA data can be empty
+            # filter for known spurious pixels
+            df = AFP_spurfilter(df, t)
+            
+            # do regional filtering
+            df = AFP_regfilter(df)
+            
+            # set ampm
+            df = AFP_setDN(df)
         
-        # do regional filtering
-        df = AFP_regfilter(df)
-        
-        # set ampm
-        df = AFP_setDN(df)
-        
-        # save to temporary file
-        save_af(df,d,sensor=sat)
+            # save to temporary file
+            save_af(df,d,sensor=sat)
+    
+    if df is not None:
+        # extract active pixels at current time step  (day and ampm filter)
+        df = df.loc[(df['date_lst']==d)]
+        if t[-1] == 'PM':   # pm corresponds to daytime (~1.30pm) detections
+            df = df.loc[df['DN'] == 'day']
+        else:
+            df = df.loc[df['DN'] == 'night']
+    
+        # return selected columns; need to change column names first
+        df = df[cols]
 
-    # extract active pixels at current time step  (day and ampm filter)
-    df = df.loc[(df['YYYYMMDD_HHMM'].dt.day == t[2])]
-    if t[-1] == 'pm':   # pm corresponds to daytime (~1.30pm) detections
-        df = df.loc[df['DN'] == 'day']
-    else:
-        df = df.loc[df['DN'] == 'night']
-
-    # add the satellite information
-    df['Sat'] = sat
-
-    # return selected columns; need to change column names first
-    df_AFP = df[cols]
-
-    return df_AFP
+    return df
 
 def read_AFP(t,src='SNPP'):
     ''' The wrapper function used to read and extract half-daily active fire
@@ -393,7 +396,10 @@ def read_AFP(t,src='SNPP'):
     if src == 'VIIRS':
         import pandas as pd
         vlist_SNPP = read_AFPVIIRS(t,sat='SNPP')
-        vlist_NOAA20 = read_AFPVIIRS(t,sat='NOAA20')
+        if t[0] > 2017: # NOAA data is only availbale form 2018 onwards
+            vlist_NOAA20 = read_AFPVIIRS(t,sat='NOAA20')
+        else:
+            vlist_NOAA20 = None
         if vlist_NOAA20 is None: # NOAA20 data is missing for some years and months
             vlist = vlist_SNPP
         else:
@@ -877,7 +883,7 @@ def load_id_ted_dict(t):
     df = pd.read_csv(fnm)
     
     # combine the date and time columns to one attribute
-    df['ted'] = df['ted_year'].astype(str) + df['ted_month'].astype(str).str.zfill(2) + df['ted_day'].astype(str).str.zfill(2) + df['ted_ampm']
+    df['ted'] = df['ted_year'].astype(str)+df['ted_month'].astype(str).str.zfill(2)+df['ted_day'].astype(str).str.zfill(2)+df['ted_ampm']
     
     # turn back into dictionary
     id_ted_dict = dict(zip(df.fireid,df.ted))
