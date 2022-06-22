@@ -74,6 +74,8 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
         gdf.loc[fid,'farea'] = allfires.fires[fid_idx].farea
         gdf.loc[fid,'fperim'] = allfires.fires[fid_idx].fperim
         gdf.loc[fid,'flinelen'] = allfires.fires[fid_idx].flinelen
+        gdf.loc[fid,'avgspread'] = allfires.fires[fid_idx].spreadavg
+        gdf.loc[fid,'spread95'] = allfires.fires[fid_idx].spread95
         gdf.loc[fid,'duration'] = allfires.fires[fid_idx].duration
         gdf.loc[fid,'pixden'] = allfires.fires[fid_idx].pixden
         gdf.loc[fid,'meanFRP'] = allfires.fires[fid_idx].meanFRP
