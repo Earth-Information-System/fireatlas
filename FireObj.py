@@ -17,10 +17,11 @@ This module include:
 # ------------------------------------------------------------------------------
 
 # a. Project modules used
+import numpy as np
 import FireIO
 import FireVector
 import FireClustering
-from FireConsts import maxoffdays,limoffdays,area_VI,fpbuffer,flbuffer
+from FireConsts import maxoffdays,limoffdays,area_VI,fpbuffer,flbuffer,EARTH_RADIUS_KM
 
 # b. Object-realted utility functions
 # The time step in the module is now defined as a list (year, month, day, ampm).
@@ -410,7 +411,13 @@ class Allfires:
                 
                 # check if at leat one peat pixel is intersecting the new fire loctions
                 f.peat = 1 if 1 in vPEAT else 0
-            
+                
+    def record_spreadrates(self):
+        '''records average spread rate of each fire for each time step
+        ----- this is not currently in use -----
+        '''
+        for f in self.activefires:
+            f.spreadrate_ts.append(f.spreadavg)
             
 
 # b. Object - Fire
@@ -445,13 +452,15 @@ class Fire:
         fpixels = pixels
         self.pixels = fpixels      # all pixels
         self.newpixels = fpixels   # new detected pixels
-        self.actpixels = fpixels   # new detected pixels of last active fire detection
         self.ignpixels = fpixels   # pixels at ignition
 
         # initialize hull using the pixels
         locs = [p.loc for p in fpixels]  # list of [lat,lon]
         hull = FireVector.cal_hull(locs) # the hull from all locs
         self.hull = hull   # record hull
+        self.fline_prior = None # fline of latest active timestep, used for sleeper threshold
+        self.prior_hull = None # hull of prior time step, used for spread rate computation
+        self.spreadrate_ts = [] # time series of average spread rates for the fire
 
         # initialize the exterior pixels (pixels within the inward extbuffer of
         #    the hull; used for saving time for hull calculation of large fires)
@@ -459,7 +468,7 @@ class Fire:
 
         # always set validate at initialization
         self.invalid = False
-
+        
         # get and record fm1000 value at ignition (at the time of initilization)
         # self.stFM1000 = FireIO.get_stFM1000(hull,locs,tlist)
 
@@ -481,7 +490,7 @@ class Fire:
     
     @property
     def cdoy(self):
-        ''' Current day (datetime date)
+        ''' Current day of year (Julian day, int)
         '''
         return self.cday.timetuple().tm_yday
 
@@ -683,7 +692,7 @@ class Fire:
         from shapely.geometry import Point, MultiLineString
         
         # get pixels of last active fire detection
-        nps = self.actpixels
+        nps = self.newpixels
         
         # get hull
         fhull = self.hull
@@ -711,7 +720,7 @@ class Fire:
         from shapely.geometry import MultiLineString#,Polygon,Point,MultiPoint
         from FireConsts import valpha
 
-        if len(self.flinepixels)==0: # this happens is last active pixels are within the fire scar
+        if len(self.flinepixels)==0: # if for whatever reason we don't have an active fire line
             return None
 
         # get fireline pixel locations
@@ -731,15 +740,20 @@ class Fire:
                 # return the part which intersects with  bufferred flinelocsMP
                 # return mls.intersection(flinelocsMP.buffer(flbuffer))
                 flinelocsMP_buf = FireVector.addbuffer(flinelocsMP,flbuffer)
-                return mls.intersection(flinelocsMP_buf)
+                fline = mls.intersection(flinelocsMP_buf)
 
             elif fhull.type == 'Polygon':
                 mls = fhull.exterior
                 # return mls.intersection(flinelocsMP.buffer(flbuffer))
                 flinelocsMP_buf = FireVector.addbuffer(flinelocsMP,flbuffer)
-                return mls.intersection(flinelocsMP_buf)
+                fline = mls.intersection(flinelocsMP_buf)
             else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
-                return flinelocsMP
+                fline = flinelocsMP
+            
+            # we save the fire line to a new property (this is only updated when fline not None)
+            self.fline_prior = fline 
+            
+            return fline
 
     @property
     def flinelen(self):
@@ -751,6 +765,55 @@ class Fire:
             flinelen = 0
 
         return flinelen
+    
+    @property
+    def spreadrate(self):
+        from shapely.geometry import Point
+        
+        if self.prior_hull:
+            # get new fire line pixels
+            nps = self.flinepixels
+            
+            # compute all distances
+            dist = [self.prior_hull.distance(Point(p.loc[1],p.loc[0])) for p in nps]
+            
+            # compute distance in m (this should probably go in a separate function)
+            lats = [p.loc[0] for p in nps]
+            ldeg = (EARTH_RADIUS_KM*np.cos(np.deg2rad(lats))*1000*2*np.pi/360)
+            dist_m = np.array(dist)*np.array(ldeg)    # convert dist in m to degs
+            
+            return dist_m
+        else: # this is the ignition time step
+            return None
+    
+    @property
+    def spreadavg(self):
+        '''Average spread rate
+        '''
+        spread = self.spreadrate
+        if spread is not None:
+            if len(spread) > 0:
+                spread = sum(spread)/len(spread)
+            else:
+                spread = 0
+            return spread
+        else: # this is the ignition time step
+            return np.nan
+    
+    @property
+    def spread95(self):
+        ''' 95th percentile of spread rate
+        '''
+        spread = self.spreadrate
+        if spread is not None:
+            if len(spread) > 0:
+                spread = np.percentile(np.array(self.spreadrate), 95)
+            else:
+                spread = 0
+            return spread
+        else: # this is the ignition time step
+            return np.nan
+        
 
 # c. Object - Cluster
 class Cluster:

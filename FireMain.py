@@ -143,6 +143,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,expand_only = False, log=True):
         logger.info(f'New fire clusters of {max(cid)} at this time step')
     # t1 = time.time()
     # logger.info(f'Time for initial clustering: {t1-t0}')
+    # print('New fire clusters:'+str(max(cid)))
 
     # loop over each of the new clusters (0:cid-1) and determine its fate
     FP2expand = {}  # the diction used to record fire pixels assigned to existing active fires {fid:Firepixels}
@@ -220,6 +221,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,expand_only = False, log=True):
             pextlocs = [p.loc for p in f.extpixels]
             newlocs = [p.loc for p in newFPs]
             # t2 = time.time()
+            f.prior_hull = f.hull # we save the old hull (used for fire spread calculation)
             f.hull = FireVector.update_hull(phull,pextlocs+newlocs)  # use update_hull function to save time
             # t1 = time.time()
             # logger.info(f'Updated hull: {t1-t2}')
@@ -304,7 +306,8 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep):
     if len(fids_sleep) > 0: # check if there are potential sleepers
         # extract existing sleeping fires and their firelines
         sleepfires = [allfires.fires[fid]  for fid in fids_sleep]
-        sleepflines = [f.fline for f in sleepfires]
+        sleepflines = [f.fline if f.fline is not None else f.fline_prior for f in sleepfires]
+        
         
         # inserting boxes into a spatial index
         nefirebuf  = [FireVector.addbuffer(hull,sleeperthresh*1000) for hull in nefirehulls]
@@ -485,6 +488,9 @@ def Fire_Forward(tst,ted,restart=False,sat='SNPP'):
             
             # 6. update dominant LCT (LCTmax)
             allfires.updateLCTmax()
+            
+            # record average spread rate of all fires
+            allfires.record_spreadrates()
         
         # 7. manualy invalidate fires that only burn one pixel at a single time step (likely false detections)
         allfires.invalidate_statfires()
