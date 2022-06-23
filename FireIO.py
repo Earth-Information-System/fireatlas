@@ -39,7 +39,7 @@ def viirs_pixel_size(sample,band='i',rtSCAN_ANGLE=False):
     ps_const = 0.128  # constant to convert zone number to along-scan deg for 1 pixel
 
     # adjust constants for m band
-    if band is 'm':
+    if band == 'm':
         pt *= 2
         scan_rate *= 2
         st1 /= 2
@@ -734,6 +734,35 @@ def get_LCT(locs):
 
     return vLCT
 
+def get_LCT_NLCD(locs):
+    ''' Get land cover type from NCLD for multiple locations
+
+    Parameters
+    ----------
+    locs : list of lists (nx2)
+        lat and lon values for each active fire detection
+
+    Returns
+    -------
+    vLCT : list of ints
+        land cover types for all input active fires
+    '''
+    from FireConsts import dirextdata
+    import rasterio
+
+    # from osgeo import gdal
+    # import pyproj
+    import os
+
+    # read NLCD 500m data
+    fnmLCT = os.path.join(dirextdata,'CA','nlcd_510m_latlon.tif')
+    dataset = rasterio.open(fnmLCT)
+    locs = [(x,y) for (y,x) in locs]
+    vLCT = dataset.sample(locs, indexes = 1)
+    vLCT = [lc[0] for lc in vLCT] # list values
+
+    return vLCT
+
 def get_FM1000(t,loc):
     ''' Get fm1000 for a point at t
 
@@ -1094,11 +1123,8 @@ def check_gpkgobj(t,regnm):
     ----------
     t : tuple, (year,month,day,str)
         the day and 'AM'|'PM' during the intialization
-    op : str
-        the option for the geojson data -
-        '': fire perimeter and attributes
-        'FL': active fire line
-        'NFP': new fire pixels
+    regnm : str
+        the name of the region
     '''
     from datetime import date
     import os

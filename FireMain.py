@@ -196,7 +196,9 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',log=True):
     for ic in range(max(cid)+1):
         # create cluster object using all newly detected active fires within a cluster
         # pixels = [afp[i] for i, v in enumerate(cid) if v==ic]
-        pixels = [FireObj.FirePixel(afp.iloc[i].Lat,afp.iloc[i].Lon,afp.iloc[i].FRP,t,-1) for i, v in enumerate(cid) if v==ic]
+        # pixels = [FireObj.FirePixel(afp.iloc[i].Lat,afp.iloc[i].Lon,afp.iloc[i].FRP,t,-1) for i, v in enumerate(cid) if v==ic]
+        pixels = [FireObj.FirePixel(afp.iloc[i].Lat,afp.iloc[i].Lon,afp.iloc[i].FRP,
+                                    afp.iloc[i].DS,afp.iloc[i].DT,afp.iloc[i].YYYYMMDD_HHMM,afp.iloc[i].Sat,-1) for i, v in enumerate(cid) if v==ic]
         cluster = FireObj.Cluster(ic,pixels,t,sensor=sensor)  # create a Cluster object using the pixel locations
         hull = cluster.hull  # the hull of the cluster
 
@@ -213,7 +215,8 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',log=True):
                     # record existing target fire id in fid_expand list
                     fmid = fids_ea[id_cf]  # this is the fire id of the existing active fire
                     # record pixels from target cluster (locs and time) along with the existing active fire object id
-                    newFPs = [FireObj.FirePixel(p.lat,p.lon,p.frp,t,fmid) for p in pixels] # new FirePixels from the cluster
+                    # newFPs = [FireObj.FirePixel(p.lat,p.lon,p.frp,t,fmid) for p in pixels] # new FirePixels from the cluster
+                    newFPs = [FireObj.FirePixel(p.lat,p.lon,p.frp,p.DS,p.DT,p.datetime,p.sat,fmid) for p in pixels] # new FirePixels from the cluster
                     if fmid in FP2expand.keys():   # for a single existing object, there can be multiple new clusters to append
                         FP2expand[fmid] = FP2expand[fmid] + newFPs
                     else:
@@ -460,7 +463,6 @@ def Fire_Forward(tst,ted,restart=False,region=None,src='SNPP',nrt=False):
     import FireIO
     import os
     import glob
-    import copy
 
     if src in ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
         sensor = 'viirs'
@@ -575,10 +577,14 @@ if __name__ == "__main__":
     t1 = time.time()
 
     # set the start and end time
-    tst=(2021,7,13,'AM')
-    ted=(2021,9,15,'PM')
+    # tst=(2021,7,13,'AM')
+    # ted=(2021,9,15,'PM')
+    # region = ('Dixie',[-121.6,39.8,-120.5,40.6])
 
-    region = ('Dixie',[-121.6,39.8,-120.5,40.6])
+    tst=(2020,9,5,'AM')
+    ted=(2020,11,5,'PM')
+    region = ('Creek',[-119.5,36.8,-118.9,37.7])
+
     # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
     Fire_Forward(tst=tst,ted=ted,restart=True,region=region,src='VIIRS',nrt=False)
 

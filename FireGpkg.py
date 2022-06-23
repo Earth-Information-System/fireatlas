@@ -78,14 +78,14 @@ def make_gdf_fperim(allfires, heritage, regnm):
 
     # read or initialize the gdf
     t_pt = FireObj.t_nb(allfires.t,nb='previous')
-    gdf = FireIO.load_gpkgobj(t_pt,regnm,layer='perimeter')
-    # when no previous time step data, initialize the GeoDataFrame
-    if gdf is None:
+    gdf = None
+    if allfires.t[0] == t_pt[0]: # don't read at year start
+        gdf = FireIO.load_gpkgobj(t_pt,regnm,layer='perimeter')
+    if gdf is None: # when no previous time step data, initialize the GeoDataFrame
         gdf = gpd.GeoDataFrame(columns=list(dd.keys()),crs='epsg:4326', geometry=[])
         gdf = gdf.set_index('fireID')   # set fid column as the index column
-    # pre-set all fires to inactive and update true status below
     else:
-        gdf['isactive'] = 0
+        gdf['isactive'] = 0  # pre-set all fires to inactive and update true status below
 
     # update data for each active fire using the allfires object
     for fid in (allfires.fids_active):

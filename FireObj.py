@@ -418,7 +418,8 @@ class Allfires:
         ''' update fire type and dominant LCT for active fires
         '''
         for f in self.activefires:
-            f.set_ftype()
+            if f.n_newpixels > 0:
+                f.set_ftype()
 
 # b. Object - Fire
 class Fire:
@@ -699,16 +700,19 @@ class Fire:
 
         if FTYP_opt == 0: # use preset ftype for all fires
             from FireConsts import FTYP_preset
-            self.ftype = FTYP_preset
+            self.ftype = FTYP_preset[0]
         elif FTYP_opt == 1: # use CA type classifications (determined using LCTmax)
             # update or read LCTmax
             # call get_LCT to get all LCT for the fire pixels
-            vLCT = FireIO.get_LCT(self.locs)
+            # vLCT = FireIO.get_LCT(self.locs)
+            vLCT = FireIO.get_LCT_NLCD(self.newlocs)
+
             # extract the LCT with most pixel counts
             LCTmax = max(set(vLCT), key = vLCT.count)
             self.LCTmax = LCTmax
 
-            # get and record fm1000 value at ignition (at the time of initilization)
+            # get and record fm1000 value at ignition
+            # !!!This needs to be change to use hull at the time of initilization!!!
             self.stFM1000 = FireIO.get_stFM1000(self.hull,self.locs,self.t_st)
 
             # determine the fire type using the land cover type and stFM1000
@@ -733,13 +737,21 @@ class Fire:
         elif FTYP_opt == 2:  # global type classification
             self.ftype = 1  # need more work here...
 
-
     @property
     def ftypename(self):
         ''' Fire type name
         '''
-        from FireConsts import FTYP
-        return FTYP[self.ftype]
+        from FireConsts import FTYP_opt
+        if FTYP_opt == 0: # use preset ftype for all fires
+            from FireConsts import FTYP_preset
+            ftname = FTYP_preset[0]
+        elif FTYP_opt == 1: # use CA type classifications (determined using LCTmax)
+            from FireConsts import FTYP_CA
+            ftname = FTYP_CA[self.ftype]
+        elif FTYP_opt == 2:  # global type classification
+            from FireConsts import FTYP_Glb
+            ftname = FTYP_Glb[self.ftype]
+        return ftname
 
     @property
     def fperim(self):
@@ -902,11 +914,15 @@ class FirePixel:
         t : time (y,m,d,ampm) of record
         origin : the fire id originally recorded (before merging)
     """
-    def __init__(self,lat,lon,frp,t,origin):
+    def __init__(self,lat,lon,frp,DS,DT,dt,Sat,origin):
         self.lat = lat
         self.lon = lon
         self.frp = frp        # frp
-        self.t = list(t)      # (year,month,day,ampm)
+        # self.t = list(t)      # (year,month,day,ampm)
+        self.DS = DS
+        self.DT = DT
+        self.sat = Sat          # satellite
+        self.datetime = dt      # YYYYMMDD_HHMM
         self.origin = origin  # originate  fire id
 
     @property

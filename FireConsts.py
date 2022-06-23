@@ -11,7 +11,12 @@ import os
 
 projnm = 'FEDStest'
 dirhome = os.environ.get('HOME')  # home directory
+
+# run at iMac
 dirdata = os.path.join(dirhome, 'Jacaranda', 'ProjectData', projnm)  # project directory
+# run at MacBook
+# dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
+
 dirextdata = os.path.join(dirdata, 'ExtData')  # exterior input data directory
 dirtmpdata = os.path.join(dirdata, 'Temp')     # temporary data directory
 diroutdata = os.path.join(dirdata, 'Output')   # output data directory
@@ -69,7 +74,7 @@ CONT_opt = 1      # 0: preset continuity threshold for all fires;
                   # 2: use global fire types and size dependent values
 
 # For FTYP_opt = 0, use 'forest' for all fires
-FTYP_preset = 2   # the default ftype
+FTYP_preset = [2,'Forest']  # the default ftype
 CONT_preset = 1   # km, default continuity threshold
 
 # For FTYP_opt = 1, use algorithm in CAFEDS
