@@ -5,6 +5,56 @@ Created on Fri Jan 28 10:52:41 2022
 @author: rebec
 """
 
+def final_ftype_coarse(gdf):
+    '''correct the final fire type using the complete perimeter
+    using Dave's coarse-resolution land cover data'''
+    
+    from FireConsts import dirextdata
+    import numpy as np
+    import rasterio
+    import rasterio.mask
+    
+    # grab year from the gdf
+    year = gdf.iloc[0].tst_year
+    if year == 2021:
+        year -= 1
+    
+    # read coarse LC dataset (mosaicked)
+    pathLCT = dirextdata + 'modis_lc_dave/' + str(year) + '_LCT/' + str(year) + '/merged.tif'
+    ds = rasterio.open(pathLCT)
+    
+    # reproject gdf to sinusoidal for clipping
+    gdf = gdf.to_crs(ds.crs)
+    
+    # dict for translating classes
+    lc_dict = {0:'Water',1:'Forest boreal',2:'Forest tropical',3:'Forest temperate',
+               4:'Temperate mosaic',5:'Shrublands tropical',6:'Shrublands temperate',7:'Grasslands temperate',
+               8:'Savanna woody',9:'Savanna open',10:'Grasslands tropical',
+               11:'Wetlands',12:'Croplands tropical',13:'Urban',14:'Croplands temperate',
+               15:'Snow/Ice',16:'Barren',17:'Sparse boreal forest',18:'Tundra',19:'Croplands boreal'}
+    
+    # add a new column for writeput to the dataframe
+    gdf['lcc_coarse'] = None
+    
+    for fire in gdf.index:
+        
+        # get geom in wgs84
+        geom = gdf.geometry[fire]
+        
+        arr, trans = rasterio.mask.mask(ds, [geom], 
+                                        all_touched = True, crop=True, nodata=255)
+        values, counts = np.unique(arr[~(arr==255)], return_counts=True)
+        lcc = values[np.argmax(counts)]
+        lcc = lc_dict[lcc]
+            
+        # assign land cover class to datbase entry
+        gdf.loc[fire,'lcc_coarse'] = lcc
+    
+    # reproject back to wgs84 geographic
+    gdf = gdf.to_crs(4326)
+    
+    return gdf
+
 def correct_final_ftype(gdf):
     '''correct the final fire type using the complete perimeter
     and supplementing the ESA-CCI land cover with CAVM for tundra regions'''
@@ -104,8 +154,9 @@ def correct_final_ftype(gdf):
     # check
     # gdf.lcc_final.unique()
     
+    gdf = final_ftype_coarse(gdf)
+    
     return gdf
-        
 
 def find_all_end(tst,ted):
     ''' find all final perimeters points in the half-daily snapshots and
