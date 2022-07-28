@@ -24,7 +24,7 @@ Modules required
 
 
 
-def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
+def make_gdf_fperim(allfires,heritage,enddates,valid_ids,gdf_lakes,ted):
     ''' Create geopandas DataFrame for fire basic attributes and fire perimeter (hull).
             Use saved gdf files for previous time step and update active fires only.
 
@@ -39,8 +39,13 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
         the gdf containing half daily fire basic attributes and fire perimeter
     '''
     import geopandas as gpd
+    import pyproj
+    from shapely.ops import transform
     from FireConsts import dd,FTYP
     import FireIO, FireObj, PostProcess
+    
+    # create a shapely transformer to transform from projected back to geographic
+    project = pyproj.Transformer.from_proj(pyproj.Proj('epsg:3571'), pyproj.Proj('epsg:4326')) # src,tgt
 
     # initialize the gdf
     t_pt = FireObj.t_nb(allfires.t,nb='previous')
@@ -73,7 +78,7 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
         gdf.loc[fid,'n_newpixels'] = int(allfires.fires[fid_idx].n_newpixels)
         gdf.loc[fid,'farea'] = allfires.fires[fid_idx].farea
         gdf.loc[fid,'fperim'] = allfires.fires[fid_idx].fperim
-        gdf.loc[fid,'flinelen'] = allfires.fires[fid_idx].flinelen
+        gdf.loc[fid,'flinelen'] = allfires.fires[fid_idx].flinelen # we don't update this after lake clipping since fire line at lake can't spread
         gdf.loc[fid,'avgspread'] = allfires.fires[fid_idx].spreadavg
         gdf.loc[fid,'spread95'] = allfires.fires[fid_idx].spread95
         gdf.loc[fid,'duration'] = allfires.fires[fid_idx].duration
@@ -88,6 +93,7 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
         gdf.loc[fid,'ted_day'] = int(allfires.fires[fid_idx].t_ed[2])
         gdf.loc[fid,'ted_ampm'] = allfires.fires[fid_idx].t_ed[3]
         gdf.loc[fid,'ted_doy'] = allfires.fires[fid_idx].cdoy
+        gdf.loc[fid,'mergedate'] = None
         gdf.loc[fid,'lake_area'] = 0
         gdf.loc[fid,'lake_no'] = 0
         gdf.loc[fid,'lake_border'] = 0
@@ -98,6 +104,8 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
             gdf.loc[fid,'mergid'] = heritage[fid]
         if not fid in valid_ids: # drop all truly invalidated fires from their beginning (statfires)
             gdf.loc[fid,'invalid'] = 1
+        if fid in enddates.keys():
+            gdf.loc[fid,'mergedate'] = "-".join(str(x) for x in enddates[fid])
     
     # drop entries for newly invalidated fire objects (fires that merge)
     # this is now only needed for the last time step b/c intermediate invalid is dropped in pickle write
@@ -108,7 +116,7 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
     # drop inactive fires
     gdf.drop(gdf.index[gdf['isactive'] == 0], inplace = True)
     # gdf = gdf.dropna() # sometimes gdf.drop creates NA records
-
+    
     # make sure the attribute data formats follow that defined in dd
     for v,tp in dd.items():
         if v != 'fireid':
@@ -140,10 +148,17 @@ def make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted):
                 if not geom.is_empty:
                     # update gdf with lake parameters and geometry
                     gdf.loc[[fid],'geometry'] = gpd.GeoSeries([geom],crs=3571).to_crs(4326).values
-                    gdf.loc[fid,'lake_area'] = lake_area
+                    gdf.loc[fid,'lake_area'] = lake_area/1000000
                     gdf.loc[fid,'lake_no'] = lake_no
-                    gdf.loc[fid,'lake_border'] = lake_border
-                    gdf.loc[fid,'lake_border_tot'] = lake_border_tot
+                    gdf.loc[fid,'lake_border'] = lake_border/1000
+                    gdf.loc[fid,'lake_border_tot'] = lake_border_tot/1000
+                    
+                    # recompute area and perimeter after lake clipping
+                    gdf.loc[fid,'farea'] = geom.area/1000000
+                    gdf.loc[fid,'fperim'] = geom.length/1000
+                    
+                # we also overwrite the hull in allfires for the fireline computation
+                allfires.fires[fid_idx].hull = transform(project.transform, geom)  # transform back to geographic
     
     return gdf
 
@@ -196,7 +211,7 @@ def make_gdf_fline(allfires,heritage,ted,valid_ids):
 
     return gdf
 
-def make_gdf_NFP(allfires, heritage,ted):
+def make_gdf_NFP(allfires,heritage,ted):
     ''' Create geopandas DataFrame for new fire pixels (detected at this time step)
 
     Parameters
@@ -225,6 +240,7 @@ def make_gdf_NFP(allfires, heritage,ted):
             fid_idx = id_dict[fid]
         gdf.loc[fid,'fireid'] = fid
         newlocs = allfires.fires[fid_idx].newlocs
+        # newlocs = [p.loc for p in allfires.fires[fid_idx].flinepixels]
         nfp = MultiPoint([(l[1],l[0]) for l in newlocs])
         gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[nfp]).geometry.values
         # add and correct mergid
@@ -298,7 +314,7 @@ def make_gdf_lakes(ted):
     
     return gdf_lakes
     
-def save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=False,fline=False,NFP=False,NFP_txt=False):
+def save_gdf_1t(allfires,heritage,enddates,valid_ids,gdf_lakes,ted,fperim=False,fline=False,NFP=False,NFP_txt=False):
     ''' Creat gdf using one Allfires object and save it to a geojson file at 1 time step.
             This can be used  for fperim, fline, and NFP files.
 
@@ -311,7 +327,7 @@ def save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=False,fline=Fal
 
     # create gdf using previous time step gdf values and new allfires object
     if fperim:
-        gdf = make_gdf_fperim(allfires,heritage,valid_ids,gdf_lakes,ted)
+        gdf = make_gdf_fperim(allfires,heritage,enddates,valid_ids,gdf_lakes,ted)
         if len(gdf) > 0:
             FireIO.save_gdfobj(gdf,allfires.t,param='',op='')
     if fline:
@@ -364,6 +380,7 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,NFP_txt=False,fall=
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     final_allfires = FireIO.load_fobj(ted)
     heritage = dict(final_allfires.heritages)
+    enddates = dict(final_allfires.mergedates)
     valid_ids = [fire.id for fire in final_allfires.validfires] # list of valid ids at the end
     valid_ids = list(set(valid_ids + list(heritage))) # add valid ids that later merge and change id
     gdf_lakes = make_gdf_lakes(ted)
@@ -374,7 +391,7 @@ def save_gdf_trng(tst,ted,fperim=False,fline=False,NFP=False,NFP_txt=False,fall=
         allfires = FireIO.load_fobj(t)
 
         # create and save gdfs according to input options
-        save_gdf_1t(allfires,heritage,valid_ids,gdf_lakes,ted,fperim=fperim,fline=fline,NFP=NFP,NFP_txt=NFP_txt)
+        save_gdf_1t(allfires,heritage,enddates,valid_ids,gdf_lakes,ted,fperim=fperim,fline=fline,NFP=NFP,NFP_txt=NFP_txt)
 
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
