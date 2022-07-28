@@ -165,6 +165,10 @@ def read_VNP14IMGML(d):
     if os.path.exists(fnmFC):
         df = pd.read_csv(fnmFC,parse_dates=[['YYYYMMDD','HHMM']],usecols=usecols,skipinitialspace=True)
         
+        # in Collection 04, some FRP values are '*******', causing problems
+        if df.dtypes.FRP.name == 'object':
+            df.FRP = df.FRP.replace('*******',0).astype('float')
+        
         # compute pixel dimensions form sample and line
         df['DT'],df['DS'] = viirs_pixel_size(df['Sample'].values)
         df = df.drop(columns=['Sample','Line'])
@@ -355,7 +359,7 @@ def read_AFPVIIRS(t, sat='SNPP',cols=['Lat','Lon','FRP','Sat','DT','DS','YYYYMMD
             
             # set ampm
             df = AFP_setDN(df)
-        
+            
             # save to temporary file
             save_af(df,d,sensor=sat)
     
