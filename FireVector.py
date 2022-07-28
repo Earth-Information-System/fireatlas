@@ -2,6 +2,8 @@
 This is the module used for vector related calculations
 """
 
+
+
 def alpha_shape(points, alpha):
     """
     Compute the alpha shape (concave hull) of a set
@@ -74,48 +76,6 @@ def alpha_shape(points, alpha):
     # return triangles, edge_points
     return cascaded_union(triangles), edge_points
 
-# def ll2utm(geom_ll):
-#     ''' convert geometry in geographic projection to geometry in utm projection
-
-#     Parameters
-#     ----------
-#     geom_ll : geometry
-#         the geometry in geographic projection (lat, lon)
-
-#     Returns
-#     -------
-#     geom_utm : geometry
-#         the geometry in utm projection
-#     '''
-#     import pyproj
-#     from shapely.ops import transform
-#     wgs84 = pyproj.CRS('EPSG:4326')
-#     utm = pyproj.CRS('EPSG:32618')
-#     project = pyproj.Transformer.from_crs(wgs84, utm, always_xy=True).transform
-#     geom_utm = transform(project,geom_ll)
-#     return geom_utm
-
-# def utm2ll(geom_utm):
-#     ''' convert geometry in utm projection to geometry in geographic projection
-
-#     Parameters
-#     -------
-#     geom_utm : geometry
-#         the geometry in utm projection
-
-#     Returns
-#     ----------
-#     geom_ll : geometry
-#         the geometry in geographic projection (lat, lon)
-#     '''
-#     import pyproj
-#     from shapely.ops import transform
-
-#     wgs84 = pyproj.CRS('EPSG:4326')
-#     utm = pyproj.CRS('EPSG:32618')
-#     project = pyproj.Transformer.from_crs(utm,wgs84,always_xy=True).transform
-#     geom_ll = transform(project,geom_utm)
-#     return geom_ll
 
 def addbuffer(geom_ll,vbuf):
     ''' add a geometry in geographic projection with a buffer in meter
@@ -127,16 +87,14 @@ def addbuffer(geom_ll,vbuf):
     vbuf : float
         the buffer value (in meter)
     '''
-    # The following approach is more accurate and takes long running time
-    # # convert geometry to utm projection
-    # geom_utm = ll2utm(geom_ll)
-    #
-    # # do the buffering
-    # geom_utm_buf = geom_utm.buffer(vbuf)
-    #
-    # # convert the geometry back to WGS84
-    # geom_ll_buf = utm2ll(geom_utm_buf)
-    # geom_ll_buf = geom_ll_buf.buffer(0)
+    # import pyproj
+    # from shapely.ops import transform
+    # prj_proj = pyproj.Transformer.from_proj(pyproj.Proj('epsg:4326'), pyproj.Proj('epsg:3571'),always_xy=True) # geo-->prj
+    # prj_geo = pyproj.Transformer.from_proj(pyproj.Proj('epsg:3571'), pyproj.Proj('epsg:4326'),always_xy=True) # prj-->geo
+    
+    # geom_ll = transform(prj_proj.transform, geom_ll)  # convert geometry to ea prjection
+    # geom_ll = geom_ll.buffer(vbuf)                    # do the buffering
+    # geom_ll = transform(prj_geo.transform, geom_ll)   # convert the geometry back to WGS84
 
     # to speed up the calculation, use the following approach
     # the buffer in geographic projection is calculated using the centroid lat value
@@ -145,12 +103,12 @@ def addbuffer(geom_ll,vbuf):
     lat = geom_ll.centroid.y
     ldeg = (EARTH_RADIUS_KM*np.cos(np.deg2rad(lat))*1000*2*np.pi/360)
     vbufdeg = vbuf/ldeg    # convert vbuf in m to degs
-    geom_ll_buf = geom_ll.buffer(vbufdeg)
+    geom_ll = geom_ll.buffer(vbufdeg)
 
-    return geom_ll_buf
+    return geom_ll
 
 def doMultP(locs, buf):
-    ''' deirvve a MultipPolygon (bufferred MultiPoint) shape from given fire locations
+    ''' derive a MultipPolygon (buffered MultiPoint) shape from given fire locations
 
     Parameters
     ----------
@@ -162,16 +120,19 @@ def doMultP(locs, buf):
     multP : MultiPolygon object
         calculated shape
     '''
-    from shapely.geometry import MultiPoint
-
-    # MultiPoint shape
-    multP = MultiPoint([(lon,lat) for lat,lon in locs])
+    from shapely.geometry import Point, MultiPoint
+    
+    if len(locs) > 1:
+        # MultiPoint shape
+        geom = MultiPoint([(lon,lat) for lat,lon in locs])
+    else:
+        geom = Point(locs[0][1],locs[0][0])
 
     # Add buffer to form MultiPolygon shape
     # multP = multP.buffer(buf)
-    multP = addbuffer(multP, buf)
+    geom = addbuffer(geom, buf)
 
-    return multP
+    return geom
 
 def doConvH(locs, buf):
     ''' derive the convex hull given fire locations
