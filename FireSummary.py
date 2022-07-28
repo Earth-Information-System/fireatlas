@@ -62,6 +62,9 @@ def cal_sumfires_1t(gdf):
                         'tst_day','tst_ampm','ted_year','ted_month','ted_day','ted_ampm','ted_doy','lake_border_tot'],
              inplace=True)
     
+    # filter out rows without new fire pixels
+    gdf = gdf[gdf.n_newpixels > 0]
+    
     return gdf
 
 def cal_summean_1t(gdf,name='All'):
