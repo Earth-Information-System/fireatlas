@@ -4,7 +4,7 @@ Also used for run control: which region is being used?
 """
 
 # region
-region = ''
+region = 'NT'
 
 # project directories
 dirhome = 'D:/fire_atlas'               # home directory
@@ -64,9 +64,9 @@ stralpha = '1km'   # string of alpha parameter
 
 # lengths and areas related to VIIRS pixl data
 VIIRSbuf = 187.5   # fire perimeter buffer (deg), corresponding to 375m/2 at lat=30
-fpbuffer = 200     # buffer use to determine fire line pixels (deg), ~200m
-flbuffer = 500     # buffer for fire line pixels (radius) to intersect fire perimeter (deg), ~500m
-extbuffer = 1000   # buffer to define interior/exterior region, 1000 m
+fpbuffer = 200     # buffer use to determine fire line pixels (deg), ~500m 
+flbuffer = 200     # buffer for fire line pixels (radius) to intersect fire perimeter (deg), ~500m (does not include viirs buffer)
+extbuffer = 500   # buffer to define interior/exterior region, 1000 m
 area_VI = 0.141    # km2, area of each 375m VIIRS pixel
 
 # mcd bffer (not used)
