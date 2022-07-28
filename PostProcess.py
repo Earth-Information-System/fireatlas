@@ -217,8 +217,6 @@ def compute_unburned_area(year, gdf):
             gdf.loc[fid,'unburn_px'] = np.sum(out_image == 0)
     
     return gdf
-        
-    
 
 def create_burnpoly(t,method='hull'):
     '''
@@ -275,6 +273,8 @@ def create_burnpoly(t,method='hull'):
     # write to file
     FireIO.save_gdfobj(gdf,t,param='unburned')        
 
+
+
 def retrieve_water_tile(ext, year):
     '''retrieve the Global Surface Water tile number
     from the bounding box of a geometry (in lat lon!)
@@ -315,9 +315,13 @@ def retrieve_water_tile(ext, year):
     if maxy - miny > 0:
         tiley.append(np.where(tilesy == maxy)[0].tolist()[0])
     
-    tiles = (tilex, tiley)
+    if len(tilex) > 0 and len(tiley) > 0:
+        # some fires extrend outside of the water dataset (north of 80N in Greenland)
+        tiles = (tilex, tiley)
     
-    lake_files = tile_2_fnm(tiles, year)
+        lake_files = tile_2_fnm(tiles, year)
+    else:
+        lake_files = None
     
     return lake_files
 
@@ -343,8 +347,6 @@ def tile_2_fnm(tiles, year):
     # there is no surface water informaion for 2021, so we replace that with 2020
     if year == 2021:
         year = 2020
-    if year == 2012:
-        year = 2013
     
     tilex, tiley = tiles
     tilex = [str(tile*4).zfill(3) for tile in tilex]
