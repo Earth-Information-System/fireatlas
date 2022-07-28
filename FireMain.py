@@ -257,7 +257,6 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep):
     allfires : Allfires obj
         Allfires obj after fire merging
     '''
-
     import FireClustering,FireVector
     from FireConsts import CONNECTIVITY_THRESHOLD_KM,sleeperthresh
 
@@ -368,7 +367,10 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep):
 
             # - use the updated hull to update exterior pixels
             f_target.extpixels = FireVector.cal_extpixels(f_target.extpixels+f_source.pixels,f_target.hull)
-
+            
+            # merge the two prior hulls for spread rate calculation
+            f_target.add_prior_hull(f_source.prior_hull)
+            
             # invalidate and deactivate source object
             f_source.invalid = True
             f_source.mergeid = f_target.mergeid
@@ -376,6 +378,7 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep):
 
             # record the heritages
             allfires.heritages.append((fid1,fid2))
+            allfires.mergedates.append((fid1, allfires.t))
 
         # remove duplicates and record fid change for merged and invalidated
         fids_invalid,fids_merged = zip(*fids_merge)
@@ -400,6 +403,7 @@ def Fire_clean_save(allfires, t):
     
     # copy the heritage from the original allfires object
     allfires_out.heritages = allfires.heritages
+    allfires_out.mergedates = allfires.mergedates
     allfires_out.id_dict = id_dict
     
     #  - save updated allfires object to pickle file
@@ -491,6 +495,9 @@ def Fire_Forward(tst,ted,restart=False,sat='SNPP'):
             
             # record average spread rate of all fires
             allfires.record_spreadrates()
+            
+            # recompute the area and perimeter length
+            allfires.compute_geom_stats()
         
         # 7. manualy invalidate fires that only burn one pixel at a single time step (likely false detections)
         allfires.invalidate_statfires()
