@@ -18,6 +18,7 @@ This module include:
 
 # a. Project modules used
 import numpy as np
+from pyproj import Geod
 import FireIO
 import FireVector
 import FireClustering
@@ -230,6 +231,7 @@ class Allfires:
 
         # cumulative recordings
         self.heritages = []       # a list of fire heritage relationships (source, target)
+        self.mergedates = []      # a list of merge dates
         self.id_dict = []         # this list relates the list position of the fire in the allfires object to the fire id
                                   # (list_index, fireid) (list position can be variable when writing out only active fires)
 
@@ -418,7 +420,22 @@ class Allfires:
         '''
         for f in self.activefires:
             f.spreadrate_ts.append(f.spreadavg)
-            
+        
+    def compute_geom_stats(self):
+        '''this computes and sets the geod version of farea and perim
+        for each active fire'''
+        for f in self.activefires:    
+            # get hull
+            fhull = f.hull
+
+            if fhull is None:  # if no hull, return zero
+                f.perim = 0
+                self.farea = f.n_pixels * area_VI
+            else:  # otherwise, use the hull length
+                geod = Geod(ellps="WGS84")
+                farea, perim = geod.geometry_area_perimeter(fhull)
+                f.farea = max(abs(farea)/1000000,area_VI) # geod.geometry_area_perimeter returns signed area
+                f.fperim = perim/1000
 
 # b. Object - Fire
 class Fire:
@@ -461,7 +478,9 @@ class Fire:
         self.fline_prior = None # fline of latest active timestep, used for sleeper threshold
         self.prior_hull = None # hull of prior time step, used for spread rate computation
         self.spreadrate_ts = [] # time series of average spread rates for the fire
-
+        self.farea = 0
+        self.fperim = 0
+        
         # initialize the exterior pixels (pixels within the inward extbuffer of
         #    the hull; used for saving time for hull calculation of large fires)
         self.extpixels = FireVector.cal_extpixels(fpixels,hull)
@@ -600,21 +619,6 @@ class Fire:
         return len(self.ignpixels)
 
     @property
-    def farea(self):
-        ''' Fire spatail size of the fire event (km2)
-        '''
-        # get hull
-        fhull = self.hull
-
-        # If no hull, return area calculated from number of pixels
-        if fhull is None:
-            return self.n_pixels * area_VI
-        # otherwise, use calConcHarea to calculate area,
-        #   but no smaller than area_VI (sometimes calculated hull area is very mall)
-        else:
-            return max(FireVector.calConcHarea(fhull),area_VI)
-
-    @property
     def pixden(self):
         ''' Fire pixel density (number of pixels per km2 fire area)
         '''
@@ -641,7 +645,7 @@ class Fire:
         '''
         # get hull
         fhull = self.hull
-
+        
         if fhull is not None: # centroid of the hull
             cent = (fhull.centroid.y,fhull.centroid.x)
         else: # when no hull, use the centroid of all pixels
@@ -673,45 +677,43 @@ class Fire:
         return FTYP[self.ftype]
 
     @property
-    def fperim(self):
-        ''' Perimeter length of fire hull
-        '''
-        # get hull
-        fhull = self.hull
-
-        if fhull is None:  # if no hull, return zero
-            perim = 0
-        else:  # otherwise, use the hull length
-            perim = fhull.length
-        return perim
-
-    @property
     def flinepixels(self):
         ''' List of all fire pixels near the fire perimeter (fine line pixels)
         '''
         from shapely.geometry import Point, MultiLineString
+        from FireConsts import valpha
         
         # get pixels of last active fire detection
         nps = self.newpixels
         
         # get hull
         fhull = self.hull
-
+        
         if fhull is None: # if no hull, return empty list
             return []
         else:  # otherwise, extract the pixels nearl the hull
+            # nps_buf = [FireVector.addbuffer(Point(p.lon,p.lat), valpha+fpbuffer) for p in nps]
             # if hull is a polygon, return new pixels near the hull
             if fhull.type == 'Polygon':
-                # lr = fhull.exterior.buffer(fpbuffer)
-                lr = FireVector.addbuffer(fhull.exterior, fpbuffer)
-                return [p for p in nps if lr.contains(Point(p.loc[1],p.loc[0]))]
-
+                lr = fhull.exterior
+                # return [p for i,p in enumerate(nps) if lr.intersects(nps_buf[i])]
+            
             # if hull is a multipolygon, return new pixels near the hull
             elif fhull.type == 'MultiPolygon':
-                # mlr = MultiLineString([x.exterior for x in fhull]).buffer(fpbuffer)
-                mlr = MultiLineString([x.exterior for x in fhull])
-                mlr = FireVector.addbuffer(mlr,fpbuffer)
-                return [p for p in nps if mlr.contains(Point(p.loc[1],p.loc[0]))]
+                lr = MultiLineString([x.exterior for x in fhull])
+                # mlr = FireVector.addbuffer(mlr,fpbuffer)
+                # return [p for i,p in enumerate(nps) if lr.intersects(nps_buf[i])]
+            
+            # instead of buffer: compute all distances
+            dist = [lr.distance(Point(p.lat,p.lon)) for p in nps]
+        
+            # compute distance in m (this should probably go in a separate function)
+            lats = [p.loc[0] for p in nps]
+            ldeg = (EARTH_RADIUS_KM*np.cos(np.deg2rad(lats))*1000*2*np.pi/360)
+            dist_m = np.array(dist)*np.array(ldeg)    # convert dist in deg to m
+            return [p for i,p in enumerate(nps) if dist_m[i] <= fpbuffer+valpha]
+        
+        
 
     @property
     def fline(self):
@@ -719,17 +721,17 @@ class Fire:
         '''
         from shapely.geometry import MultiLineString#,Polygon,Point,MultiPoint
         from FireConsts import valpha
-
+        
         if len(self.flinepixels)==0: # if for whatever reason we don't have an active fire line
             return None
-
+        
         # get fireline pixel locations
         flinelocs = [p.loc for p in self.flinepixels]
-        flinelocsMP = FireVector.doMultP(flinelocs,valpha)
-
+        flinelocsMP = FireVector.doMultP(flinelocs,valpha+flbuffer)
+        
         # get the hull
         fhull = self.hull
-
+        
         # calculate the fire line
         if fhull is None: # if no hull, return None
             return None
@@ -739,17 +741,17 @@ class Fire:
                 mls = MultiLineString([plg.exterior for plg in fhull])
                 # return the part which intersects with  bufferred flinelocsMP
                 # return mls.intersection(flinelocsMP.buffer(flbuffer))
-                flinelocsMP_buf = FireVector.addbuffer(flinelocsMP,flbuffer)
-                fline = mls.intersection(flinelocsMP_buf)
-
+                # flinelocsMP_buf = FireVector.addbuffer(flinelocsMP,flbuffer)
+                fline = mls.intersection(flinelocsMP)
+            
             elif fhull.type == 'Polygon':
                 mls = fhull.exterior
                 # return mls.intersection(flinelocsMP.buffer(flbuffer))
-                flinelocsMP_buf = FireVector.addbuffer(flinelocsMP,flbuffer)
-                fline = mls.intersection(flinelocsMP_buf)
+                # flinelocsMP_buf = FireVector.addbuffer(flinelocsMP,flbuffer)
+                fline = mls.intersection(flinelocsMP)
             else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
                 fline = flinelocsMP
-            
+                
             # we save the fire line to a new property (this is only updated when fline not None)
             self.fline_prior = fline 
             
@@ -760,10 +762,11 @@ class Fire:
         ''' The length of active fire line
         '''
         try:
-            flinelen = self.fline.length
+            geod = Geod(ellps="WGS84")
+            flinelen = geod.geometry_length(self.fline)/1000 # in km
         except:
             flinelen = 0
-
+        
         return flinelen
     
     @property
@@ -780,7 +783,7 @@ class Fire:
             # compute distance in m (this should probably go in a separate function)
             lats = [p.loc[0] for p in nps]
             ldeg = (EARTH_RADIUS_KM*np.cos(np.deg2rad(lats))*1000*2*np.pi/360)
-            dist_m = np.array(dist)*np.array(ldeg)    # convert dist in m to degs
+            dist_m = np.array(dist)*np.array(ldeg)    # convert dist in deg to m
             
             return dist_m
         else: # this is the ignition time step
@@ -813,6 +816,21 @@ class Fire:
             return spread
         else: # this is the ignition time step
             return np.nan
+    
+    def add_prior_hull(self,src_hull):
+        '''Adds a prior_hull of a merged fire 
+        for accurate spread rate calculation'''
+        
+        from shapely.ops import unary_union
+        
+        tgt_hull = self.prior_hull
+        if src_hull is None:
+            self.prior_hull = tgt_hull
+        elif tgt_hull is None:
+            self.prior_hull = src_hull
+        else:
+            self.prior_hull = unary_union([tgt_hull, src_hull])
+        
         
 
 # c. Object - Cluster
