@@ -1,7 +1,7 @@
 """ FireRun
 Module to control different runs
 """
-def Yearbatchrun(year,tst=None,ted=None,restart=False):
+def Yearbatchrun(year,tst=None,ted=None,restart=False, final_only=False):
     ''' Run the code for each single year
     '''
     import FireMain,FireSummary,FireGdf_merge,FireGdf_sfs_merge,FireGdf_ign,FireGdf_final
@@ -9,23 +9,24 @@ def Yearbatchrun(year,tst=None,ted=None,restart=False):
 
     t1 = time.time()
     # set the start and end time
-    if tst is None: tst = (year,1,1,'AM')
+    if tst is None: tst = (year,3,1,'AM')
     if ted is None: ted = (year,12,31,'PM')
     # if year == 2012: tst = (year,1,20,'AM')
-
-    # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
-    FireMain.Fire_Forward(tst=tst,ted=ted,restart=True,sat='VIIRS')
-    t2 = time.time()
-    print(f'{(t2-t1)/60.} minutes to run algorithm')
-
-    # Run to save geojson files for each time step
-    FireGdf_merge.save_gdf_trng(tst=tst,ted=ted,fperim=True,fline=True,NFP_txt=True)
-    #FireGdf_merge.save_gdf_trng(tst=tst,ted=ted,fperim=True,region=region)
-    t3 = time.time()
-    print(f'{(t3-t2)/60.} minutes to save gpkg files')
     
-    # Run to save ignition point layer for each time step
-    FireGdf_ign.save_gdf_trng(tst,ted)
+    if not final_only:
+        # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
+        FireMain.Fire_Forward(tst=tst,ted=ted,restart=True,sat='VIIRS')
+        t2 = time.time()
+        print(f'{(t2-t1)/60.} minutes to run algorithm')
+    
+        # Run to save geojson files for each time step
+        FireGdf_merge.save_gdf_trng(tst=tst,ted=ted,fperim=True,fline=True,NFP_txt=True)
+        #FireGdf_merge.save_gdf_trng(tst=tst,ted=ted,fperim=True,region=region)
+        t3 = time.time()
+        print(f'{(t3-t2)/60.} minutes to save gpkg files')
+    
+        # Run to save ignition point layer for each time step
+        FireGdf_ign.save_gdf_trng(tst,ted)
     FireGdf_final.save_gdf_trng(tst,ted)
     t31 = time.time()
     print(f'{(t31-t3)/60.} minutes to save ignitions and final perimeters')
@@ -61,6 +62,6 @@ if __name__ == "__main__":
         os.environ['GDAL_DATA'] = r'C:/Users/rebec/anaconda3/envs/py3work/Library/share/gdal' 
         os.environ['PROJ_LIB'] = r'C:/Users/rebec/anaconda3/envs/fireatlas/Library/share/proj' 
     
-    year = 2021
+    year = 2013
     
-    Yearbatchrun(year, region)
+    Yearbatchrun(year)
