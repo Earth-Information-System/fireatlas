@@ -115,7 +115,7 @@ def merge_fires(gdf_fid, fid, tst, t):
 
     return(gdf_diss)
 
-def make_fire_history(fid, start_end, fh, regnm):
+def make_fire_history(fid, start_end, regnm, layer='perimeter'):
     ''' derive time series of single fire attributes using the half-daily gdf summary
 
     Parameters
@@ -131,7 +131,7 @@ def make_fire_history(fid, start_end, fh, regnm):
         the gdf containing half daily fire basic attributes and fire perimeter
     '''
     import math
-    import FireObj,FireIO, PostProcess, FireClustering
+    import FireObj,FireIO, PostProcess, FireClustering,FireGpkg
     import shapely
 
     #fid = fire.id
@@ -149,23 +149,38 @@ def make_fire_history(fid, start_end, fh, regnm):
     #         # here we could tell it to only build an index when number of features > X
     #     lake_idx = FireClustering.build_rtree(lake_geoms)
 
+    # heritages for all fires; used for creating snapshot gpkg files using FireGpkg.save_gdf_1t()
+    allfires_full = FireIO.load_fobj(ted,regnm,activeonly=False)
+    heritage = dict(allfires_full.heritages)
+
+    # loop over all time steps
     endloop = False  # flag to control the ending of the loop
     t_inact = 0      # counts the days a fire is inactive before it spreads again
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
-        #print(t)
-        # read daily gdf
-        gdf_perim = FireIO.load_gpkgobj(t, regnm,layer='perimeter')
+        print(t)
+        # read half-daily snapshot gdf
+        gdf_perim = FireIO.load_gpkgobj(t, regnm,layer=layer)
 
+        # if half-daily snapshot is not present, create one
+        if gdf_perim is None:
+            allfires = FireIO.load_fobj(t,regnm,activeonly=True)
+            FireGpkg.save_gdf_1t(allfires, heritage, regnm)
+            gdf_perim = FireIO.load_gpkgobj(t, regnm,layer=layer)
+
+        # if gdf_perim is still not None (maybe due to no active fire detection), skip this time step
         if gdf_perim is None:
             t = FireObj.t_nb(t,nb='next')
             t_inact += 0.5 # half-daily time steps
             continue
 
-        gdf_1d = gdf_perim[gdf_perim.mergid.isin(fh)] # here we need to enter merge id instead of index
+        # extract all
+        gdf_1d = gdf_perim[gdf_perim.mergid==fid]
+        # gdf_1d = gdf_perim[gdf_perim.mergid.isin(fh)] # here we need to enter merge id instead of index
 
         # skip date if no new pixels
-        gdf_1d = gdf_1d[gdf_1d.n_newpixels > 0]
+        # gdf_1d = gdf_1d[gdf_1d.n_newpixels > 0]
+        gdf_1d = gdf_1d[gdf_1d.geometry != None]
         if len(gdf_1d) == 0:
             t = FireObj.t_nb(t,nb='next')
             t_inact += 0.5 # half-daily time steps
@@ -208,66 +223,115 @@ def make_fire_history(fid, start_end, fh, regnm):
 
     return gdf_all
 
-def make_fire_history_fline_NFP(fid, start_end,fh, regnm,layer='fireline'):
-    ''' derive time series of single fire fireline or NFP using the half-daily gdf summary
-
-    Parameters
-    ----------
-    fire : Fire object
-        the fire need to update
-    start_end: tuple
-        start and end date and AM/PM of the fire object
-
-    Returns
-    -------
-    gdf_all : geopandas DataFrame
-        the gdf containing half daily fire basic attributes and fire perimeter
+def make_fire_history_NFPlist(fid, start_end, regnm):
+    ''' similar to make_fire_history, but for extract NFPlist during start_end
     '''
-    import math
-    import FireObj,FireIO, PostProcess, FireClustering
-    import shapely
-
     tst,ted = start_end  # start and ending time of the fire
 
+    # heritages for all fires; used for creating snapshot gpkg files using FireGpkg.save_gdf_1t()
+    allfires_full = FireIO.load_fobj(ted,regnm,activeonly=False)
+    heritage = dict(allfires_full.heritages)
+
+    # loop over all time steps
     endloop = False  # flag to control the ending of the loop
+    t_inact = 0      # counts the days a fire is inactive before it spreads again
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
     while endloop == False:
-        #print(t)
-        # read daily gdf
-        gdf_perim = FireIO.load_gpkgobj(t, regnm,layer=layer)
-        if gdf_perim is not None:
-            # gdf_1d = gdf_perim[gdf_perim.mergid == fid] # here we need to enter merge id instead of index
-            gdf_1d = gdf_perim[gdf_perim.mergid.isin(fh)]
+        print(t)
+        # read half-daily snapshot gdf
+        gdf_NFPlist = load_FP_txt(t,regnm)
 
-            # skip date if no geometry is None
-            gdf_1d = gdf_1d[gdf_1d.geometry != None]
-            if len(gdf_1d) > 0:
+        # if half-daily snapshot is not present, create one
+        if gdf_NFPlist is None:
+            allfires = FireIO.load_fobj(t,regnm,activeonly=True)
+            FireGpkg.save_gdf_1t(allfires, heritage, regnm)
+            gdf_NFPlist = load_FP_txt(t,regnm)
 
+        # if gdf_perim is still not None (maybe due to no active fire detection), skip this time step
+        if gdf_NFPlist is None:
+            t = FireObj.t_nb(t,nb='next')
+            t_inact += 0.5 # half-daily time steps
+            continue
 
-                # # merge if several ids
-                # if len(gdf_1d) > 1:
-                #     gdf_1d = merge_fires(gdf_1d, fid, tst, t)
+        # extract all
+        gdf_1d = gdf_NFPlist[gdf_NFPlist.mergid==fid]
 
-                # change index to date
-                gdf_1d.index = [FireObj.t2dt(t)]
-
-
-                # append daily row to gdf_all
-                if FireObj.t_dif(t,tst)==0:
-                    gdf_all = gdf_1d
-                else:
-                    gdf_all = gdf_all.append(gdf_1d)
+        # append daily row to gdf_all
+        if FireObj.t_dif(t,tst)==0:
+            gdf_all = gdf_1d
+        else:
+            gdf_all = gdf_all.append(gdf_1d)
 
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireObj.t_dif(t,ted)==0:
             endloop = True
 
         #  - update t with the next time stamp
+        t_inact = 0 # reset inactivity counter
         t = FireObj.t_nb(t,nb='next')
 
     return gdf_all
 
-def save_gdf_1fire(fid, start_end, fh, regnm):
+# def make_fire_history_fline_NFP(fid, start_end,fh, regnm,layer='fireline'):
+#     ''' derive time series of single fire fireline or NFP using the half-daily gdf summary
+#
+#     Parameters
+#     ----------
+#     fire : Fire object
+#         the fire need to update
+#     start_end: tuple
+#         start and end date and AM/PM of the fire object
+#
+#     Returns
+#     -------
+#     gdf_all : geopandas DataFrame
+#         the gdf containing half daily fire basic attributes and fire perimeter
+#     '''
+#     import math
+#     import FireObj,FireIO, PostProcess, FireClustering
+#     import shapely
+#
+#     tst,ted = start_end  # start and ending time of the fire
+#
+#     endloop = False  # flag to control the ending of the loop
+#     t = list(tst)    # t is the time (year,month,day,ampm) for each step
+#     while endloop == False:
+#         #print(t)
+#         # read daily gdf
+#         gdf_perim = FireIO.load_gpkgobj(t, regnm,layer=layer)
+#         if gdf_perim is not None:
+#             # gdf_1d = gdf_perim[gdf_perim.mergid == fid] # here we need to enter merge id instead of index
+#             gdf_1d = gdf_perim[gdf_perim.mergid.isin(fh)]
+#
+#             # skip date if no geometry is None
+#             gdf_1d = gdf_1d[gdf_1d.geometry != None]
+#             if len(gdf_1d) > 0:
+#
+#
+#                 # # merge if several ids
+#                 # if len(gdf_1d) > 1:
+#                 #     gdf_1d = merge_fires(gdf_1d, fid, tst, t)
+#
+#                 # change index to date
+#                 gdf_1d.index = [FireObj.t2dt(t)]
+#
+#
+#                 # append daily row to gdf_all
+#                 if FireObj.t_dif(t,tst)==0:
+#                     gdf_all = gdf_1d
+#                 else:
+#                     gdf_all = gdf_all.append(gdf_1d)
+#
+#         #  - if t reaches ted, set endloop to True to stop the loop
+#         if FireObj.t_dif(t,ted)==0:
+#             endloop = True
+#
+#         #  - update t with the next time stamp
+#         t = FireObj.t_nb(t,nb='next')
+#
+#     return gdf_all
+
+def save_gdf_1fire(fid, start_end, regnm):
     ''' derive and save time series of fire perimeter and fine line
         for each large active fire at a time step
 
@@ -280,11 +344,16 @@ def save_gdf_1fire(fid, start_end, fh, regnm):
     '''
     import FireIO
 
-    gdf_sf = make_fire_history(fid, start_end, fh, regnm)
-    gdf_sf_fline = make_fire_history_fline_NFP(fid, start_end,fh, regnm,layer='fireline')
-    gdf_sf_NFP = make_fire_history_fline_NFP(fid, start_end,fh, regnm,layer='newfirepix')
+    gdf_sf = make_fire_history(fid, start_end, regnm)
+    gdf_sf_fline = make_fire_history(fid, start_end,regnm,layer='fireline')
+    gdf_sf_NFP = make_fire_history(fid, start_end,regnm,layer='newfirepix')
+    # gdf_sf_fline = make_fire_history_fline_NFP(fid, start_end,fh, regnm,layer='fireline')
+    # gdf_sf_NFP = make_fire_history_fline_NFP(fid, start_end,fh, regnm,layer='newfirepix')
     FireIO.save_gpkgsfs(gdf_sf,start_end[1],fid,regnm,
                         gdf_fline=gdf_sf_fline,gdf_NFP=gdf_sf_NFP)
+
+    gdf_sf_NFPlist = make_fire_history_NFPlist(fid, start_end, regnm)
+    FireIO.save_FPsfs_txt(gdf_sf_NFPlist, start_end[1], fid, regnm)
 
 def save_gdf_trng(ted,regnm,falim=4):
     ''' Wrapper to create and save gpkg files for all single large fires up to ted
@@ -316,13 +385,14 @@ def save_gdf_trng(ted,regnm,falim=4):
         # start_end = start_ends[fid]
         f = allfires.fires[fid]
 
-        fh = [fid]
-        for h in allfires.heritages:
-            if h[1] == fid:
-                fh.append(h[0])
+        # fh is a list of fire id for current fire and all fires merged to this fire
+        # fh = [fid]
+        # for h in allfires.heritages:
+        #     if h[1] == fid:
+        #         fh.append(h[0])
 
         start_end = (f.t_st,f.t_ed)
-        save_gdf_1fire(fid, start_end, fh, regnm)
+        save_gdf_1fire(fid, start_end, regnm)
 
 
 if __name__ == "__main__":

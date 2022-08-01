@@ -1,7 +1,7 @@
 """ FireObj
-This is the module containing the object definitions used in the system
+This is the module defining fire objects used for fire tracking, as well as
+    several utility functions used for time .
 
-This module include:
 1. MODULES AND UTILITY FUNCTIONS
     a. Other project modules used in this module
     b. Object related utility functions (related to time step)
@@ -211,8 +211,8 @@ class Allfires:
         # time
         self.t = t_nb(t,nb='previous') # itialize the object with previous time step
 
-        # a list of Fire objects
-        self.fires = []
+        # a dict of Fire objects
+        self.fires = {}
 
         # list of fire ids which has changes at the current time step
         self.fids_expanded = []   # a list of ids for fires with expansion at current time step
@@ -253,13 +253,13 @@ class Allfires:
     def fids_active(self):
         ''' List of active fire ids
         '''
-        return [f.fireID for f in self.fires if f.isactive is True]
+        return [i for i,f in self.fires.items() if f.isactive]
 
     @property
     def fids_sleeper(self):
         ''' List of fire ids that may reactivate
         '''
-        return [f.fireID for f in self.fires if f.mayreactivate is True]
+        return [i for i,f in self.fires.items() if f.mayreactivate]
 
     @property
     def number_of_activefires(self):
@@ -277,7 +277,8 @@ class Allfires:
     def fids_valid(self):
         ''' List of valid (non-invalid) fire ids
         '''
-        return [f.fireID for f in self.fires if f.invalid is False]
+        # return [self.fires[f].fireID for f in self.fires if self.fires[f].invalid is False]
+        return [i for i,f in self.fires.items() if (f.invalid == False)]
 
     @property
     def number_of_validfires(self):
@@ -325,13 +326,13 @@ class Allfires:
         t : tuple, (int,int,int,str)
             the year, month, day and 'AM'|'PM'
         '''
-        for f in self.fires:
+        for i,f in self.fires.items():
             f.t = list(t)
 
     def reset_newpixels(self):
         ''' Reset newpixels to [] for each fire.
         '''
-        for f in self.fires:
+        for i,f in self.fires.items():
             f.newpixels = []
 
     def reset_fids_updated(self):
@@ -348,13 +349,14 @@ class Allfires:
         import FireIO
 
         # re-id all active fires
-        lastyearfires = []
+        lastyearfires = {}
         fidmapping = []
         nfid = 0
         for f in self.activefires:
             ofid = f.fireID
             f.fireID = nfid
-            lastyearfires.append(f)
+            # lastyearfires.append(f)
+            lastyearfires[nfid] = f
             fidmapping.append((ofid,nfid))
             nfid += 1
         self.fires = lastyearfires
@@ -574,7 +576,7 @@ class Fire:
     def newpixelatts(self):
         ''' List of new fire pixels locations (lat,lon)
         '''
-        return [(p.frp, p.origin) for p in self.newpixels]
+        return [(p.frp, p.DS, p.DT, p.datetime, p.sat) for p in self.newpixels]
 
     @property
     def n_newpixels(self):

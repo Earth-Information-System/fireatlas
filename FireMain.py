@@ -245,7 +245,8 @@ def Fire_expand_rtree(allfires,afp,fids_ea,sensor='viirs',log=True):
                 newfire.set_ftype()
 
                 # add the new fire object to the fires list in the Allfires object
-                allfires.fires.append(newfire)
+                # allfires.fires.append(newfire)
+                allfires.fires[id_newfire] = newfire
 
                 # increase the maximum id
                 idmax += 1
@@ -361,7 +362,8 @@ def Fire_merge_rtree(allfires,fids_ne,fids_ea,fids_sleep,sensor ='viirs'):
     if len(fids_sleep) > 0: # check if there are potential sleepers
         # extract existing sleeping fires and their firelines
         sleepfires = [allfires.fires[fid]  for fid in fids_sleep]
-        sleepflines = [f.fline for f in sleepfires]
+        # sleepflines = [f.fline for f in sleepfires]
+        sleepflines = [f.fline if f.fline is not None else f.fline_prior for f in sleepfires]
 
         # inserting boxes into a spatial index
         nefirebuf  = [FireVector.addbuffer(hull,sleeperthresh*1000) for hull in nefirehulls]

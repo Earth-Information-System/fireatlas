@@ -963,7 +963,8 @@ def save_fobj(allfires,t,regnm,activeonly=False):
         id_dict = []
         allfires_index = 0
         for fid in fids_out:
-            allfires_out.fires.append(allfires.fires[fid])
+            # allfires_out.fires.append(allfires.fires[fid])
+            allfires_out.fires[fid] = allfires.fires[fid]
             id_dict.append((allfires_index, fid))
             allfires_index += 1
 
@@ -1038,7 +1039,7 @@ def load_fobj(t,regnm,activeonly=False):
 
 
 def get_gdfobj_fnm(t,regnm,op=''):
-    ''' Return the fire object pickle file name at a time step
+    ''' Return the fire object gpkg file name at a time step
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1115,6 +1116,30 @@ def get_gpkgsfs_fnm(t,fid,regnm):
 
     return fnm
 
+def get_NFPlistsfs_fnm(t,fid,regnm):
+    ''' Return the gpkg snapshot file name at a time step
+    Parameters
+    ----------
+    t : tuple, (year,month,day,str)
+        the day and 'AM'|'PM' during the intialization
+    Returns
+    ----------
+    fnm : str
+        gpkg file name
+    '''
+    from FireConsts import diroutdata
+    from datetime import date
+    import FireIO
+    import os
+
+    # determine output dir
+    d = date(*t[:-1])
+    strdir = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Largefire')
+
+    # get the output file name
+    fnm = os.path.join(strdir,'F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'_NFP.txt')
+
+    return fnm
 
 def check_gpkgobj(t,regnm):
     ''' Check if the gpkg file storing a daily allfires attributes exists
@@ -1400,6 +1425,30 @@ def save_FP_txt(df, t, regnm):
     # write out
     if len(df) > 0:
         df.to_csv(fnm)
+
+def save_FPsfs_txt(df, t, fid, regnm):
+
+    # get filename of new fire pixels product
+    fnm = get_NFPlistsfs_fnm(t,fid,regnm)
+
+    # check folder
+    check_filefolder(fnm)
+
+    # write out
+    if len(df) > 0:
+        df.to_csv(fnm)
+
+
+def load_FP_txt(t,regnm):
+    import os
+    import pandas as pd
+    # get filename of new fire pixels product
+    fnm = get_gdfobj_fnm(t,regnm,op='NFP')
+    fnm = fnm[:-4]+'txt' # change ending to txt
+
+    if os.path.exists(fnm):
+        df = pd.read_csv(fnm,parse_dates=['datetime'],index_col=0)
+        return df
 
 def load_lake_geoms(t, fid, regnm):
     ''' Load final perimeters as geopandas gdf

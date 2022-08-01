@@ -267,34 +267,40 @@ def make_gdf_NFPlist(allfires, heritage):
     -------
     gdf : geopandas DataFrame
         the gdf containing half daily new fire pixels
+
+    Read file: dfread = pd.read_csv(fnm,parse_dates=['datetime'],index_col=0)
     '''
     import pandas as pd
 
     # initialize the GeoDataFrame
-    # columns=['fireID', 'mergid','lon','lat','line','sample']
-    columns=['fireID', 'mergid','lon','lat','frp','origin']
+    columns=['fireID', 'mergid','lon','lat','DS','DT','frp','sat','datetime']
     df = pd.DataFrame(columns=columns)
-    fid_df = 0
+    # fid_df = 0
 
-    # for each fire, record the newlocs to the geometry column of gdf
+    # for each active fire, record the newlocs to the geometry column of gdf
     for fid in allfires.fids_active:
+        f = allfires.fires[fid]
         mergid = fid
         if fid in heritage.keys():
             mergid = heritage[fid]
-        if len(allfires.fires[fid].newlocs)>0:
-            lats, lons = zip(*allfires.fires[fid].newlocs)
-            # line, sample, frp = zip(*allfires.fires[fid].newpixelatts)
-            frp, origin = zip(*allfires.fires[fid].newpixelatts)
-            for i,lat in enumerate(lats):
-                df.loc[fid_df,'fireID'] = fid_df
-                df.loc[fid_df,'mergid'] = mergid
-                df.loc[fid_df,'lon'] = lons[i]
-                df.loc[fid_df,'lat'] = lat
-                # df.loc[fid_df,'line'] = line[i]
-                # df.loc[fid_df,'sample'] = sample[i]
-                df.loc[fid_df,'frp'] = frp[i]
-                df.loc[fid_df,'origin'] = origin[i]
-                fid_df += 1
+        if len(f.newlocs)>0:
+            for p in f.newpixels:
+                df = df.append({'fireID':f.fireID,'mergid':mergid,'lon':p.lon,'lat':p.lat,
+                                'DS':p.DS,'DT':p.DT,'frp':p.frp,'sat':p.sat,'datetime':p.datetime},
+                               ignore_index=True)
+            # lats, lons = zip(*allfires.fires[fid].newlocs)
+            # # line, sample, frp = zip(*allfires.fires[fid].newpixelatts)
+            # frp, origin = zip(*allfires.fires[fid].newpixelatts)
+            # for i,lat in enumerate(lats):
+            #     df.loc[fid_df,'fireID'] = fid_df
+            #     df.loc[fid_df,'mergid'] = mergid
+            #     df.loc[fid_df,'lon'] = lons[i]
+            #     df.loc[fid_df,'lat'] = lat
+            #     # df.loc[fid_df,'line'] = line[i]
+            #     # df.loc[fid_df,'sample'] = sample[i]
+            #     df.loc[fid_df,'frp'] = frp[i]
+            #     df.loc[fid_df,'origin'] = origin[i]
+            #     fid_df += 1
 
     return df
 
@@ -313,13 +319,12 @@ def save_gdf_1t(allfires, heritage,regnm):
     gdf_fperim = make_gdf_fperim(allfires, heritage,regnm)
     gdf_fline = make_gdf_fline(allfires, heritage)
     gdf_NFP = make_gdf_NFP(allfires, heritage)
+    gdf_NFPlist = make_gdf_NFPlist(allfires,heritage)
     if len(gdf_fperim) > 0:
         FireIO.save_gpkgobj(gdf_fperim,gdf_fline,gdf_NFP,allfires.t,regnm)
 
-
-    # gdf_NFPlist = make_gdf_NFPlist(allfires, heritage)
-    # if len(gdf_NFPlist) > 0:
-    #     FireIO.save_FP_txt(gdf, allfires.t)
+    if len(gdf_NFPlist) > 0:
+        FireIO.save_FP_txt(gdf_NFPlist, allfires.t, regnm)
 
 def save_gdf_trng(tst,ted,regnm):
     ''' Wrapper to create and save gpkg files for a time period
