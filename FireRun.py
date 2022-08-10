@@ -25,20 +25,18 @@ def Yearbatchrun(year,tst=None,ted=None,restart=False):
     FireGdf_merge.save_gdf_trng(tst=tst,ted=ted,NFP_txt=True)
     t3 = time.time()
     print(f'{(t3-t2)/60.} minutes to save gpkg files')
-    
+
     # Run to save ignition point layer for each time step
     FireGdf_ign.save_gdf_trng(tst,ted)
     FireGdf_final.save_gdf_trng(tst,ted)
     t31 = time.time()
     print(f'{(t31-t3)/60.} minutes to save ognitions and final perimeters')
-    
+
     # Run to save large fire geosjon files for each time step
     #FireGdf_sfs.save_gdf_trng(tst=tst,ted=ted,fperim=True)
     FireGdf_sfs_merge.save_gdf_trng(ted=ted,fperim=True)
     t4 = time.time()
     print(f'{(t4-t31)/60.} minutes to save large fires')
-    
-    
 
     # Run to save year end summary and file lists
     FireSummary.save_sum_1d(tst,ted)
@@ -53,14 +51,107 @@ def Yearbatchrun(year,tst=None,ted=None,restart=False):
     t2 = time.time()
     print(f'{(t2-t1)/60.} minutes to run code')
 
+def CreekSamplerun():
+    ''' ~ 16 minutes
+    '''
+    import FireMain,FireGpkg,FireGpkg_sfs
+
+    tst=(2020,9,5,'AM')
+    ted=(2020,11,5,'PM')
+    region = ('Creek',[-119.5,36.8,-118.9,37.7])
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst,ted=ted,restart=True,region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst,ted=ted,regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst,ted,regnm=region[0])
+
+def CreekSamplerunNOAA20():
+    ''' ~ 16 minutes
+    '''
+    import FireMain,FireGpkg,FireGpkg_sfs
+
+    tst=(2020,9,5,'AM')
+    ted=(2020,11,5,'PM')
+    region = ('CreekNOAA20',[-119.5,36.8,-118.9,37.7])
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst,ted=ted,restart=True,region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst,ted=ted,regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst,ted,regnm=region[0])
+
+def CreekSamplerunVIIRS():
+    ''' ~ 16 minutes
+    '''
+    import FireMain,FireGpkg,FireGpkg_sfs
+
+    tst=(2020,9,5,'AM')
+    ted=(2020,11,5,'PM')
+    region = ('CreekVIIRS',[-119.5,36.8,-118.9,37.7])
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst,ted=ted,restart=True,region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst,ted=ted,regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst,ted,regnm=region[0])
+
+def CreekRegionSamplerun():
+    import FireMain,FireGpkg,FireGpkg_sfs
+
+    tst=(2020,9,1,'AM')
+    ted=(2020,9,30,'PM')
+    region = ('CreekRegion',[-120,36,-118,38])
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst,ted=ted,restart=True,region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst,ted=ted,regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst,ted,regnm=region[0])
+
+def CArun():
+    import FireIO,FireMain,FireGpkg,FireGpkg_sfs
+
+    CAshp = FireIO.get_Cal_shp()
+    region = ('California',CAshp)
+
+    tst=(2020,9,1,'AM')
+    ted=(2020,9,30,'PM')
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst,ted=ted,restart=True,region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst,ted=ted,regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst,ted,regnm=region[0])
+
 if __name__ == "__main__":
     ''' The main code to run time forwarding for a time period
     '''
     import sys
-    sys.path.insert(1, 'D:/fire_atlas/1_code/fireatlas')
-    import os
-    if 'GDAL_DATA' not in os.environ:
-        os.environ['GDAL_DATA'] = r'C:/Users/rebec/anaconda3/envs/py3work/Library/share/gdal' 
-        os.environ['PROJ_LIB'] = r'C:/Users/rebec/anaconda3/envs/fireatlas/Library/share/proj' 
-    
-    Yearbatchrun(2020)
+    sys.path.insert(1, '/Users/yangchen/GoogleDrive/My/My.Research/UCI/ProjectsFull/California.fire/Code/fireatlas')
+
+    # Yearbatchrun(2020)
+    import time
+    t1 = time.time()
+    # CreekSamplerunNOAA20()
+    CreekSamplerunVIIRS()    
+    # CreekSamplerun()
+    # CreekRegionSamplerun()
+    # CArun()
+    t2 = time.time()
+    print(f'{(t2-t1)/60.} minutes used to run the whole code code')

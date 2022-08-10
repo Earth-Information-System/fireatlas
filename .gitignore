@@ -1,11 +1,17 @@
 # Created by https://www.gitignore.io/api/r,python,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=r,python,visualstudiocode
 
+# Backup directory 
+bk/
+AT/
+Web/
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+.ipynb_checkpoints
 
 # C extensions
 *.so

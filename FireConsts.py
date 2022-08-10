@@ -9,8 +9,8 @@ import os
 # project directories
 # ------------------------------------------------------------------------------
 
-projnm = 'FEDStest'
-dirhome = os.environ.get('HOME')  # home directory
+projnm = 'FEDStest'               # project name
+dirhome = os.environ.get('HOME')  # get system home directory
 
 # run at iMac
 dirdata = os.path.join(dirhome, 'Jacaranda', 'ProjectData', projnm)  # project directory
@@ -29,19 +29,14 @@ diroutdata = os.path.join(dirdata, 'Output')   # output data directory
 
 # spatial parameters used for fire pixel clustering
 EARTH_RADIUS_KM = 6371.0  # earth radius, km
-SPATIAL_THRESHOLD_KM = 1  # threshold of spatial distance (between pixels, km)
-                          # used to do fire initial clustering
-MAX_THRESH_CENT_KM = 50   # threshold of spatial distance (between clusters centroid, km) used to filter nearby clusters
 
 # temporal parameters for fire object definition
 maxoffdays = 5            # fire becomes inactive after this number of consecutive days without active fire detection
-limoffdays = 20           # this is the additional threshold that involves checking for active fireline
-
-# sleep fire related parameters
-sleeperthresh = 1   # km, distance a sleeper is allowes to spread since its last active fire detection
+limoffdays = 20           # fire keeps sleeper status even at inactive but with inactive dates smaller than this value
 
 # fire tracking options
-expand_only = False  # if set to true, only expand existing fires (no new fire objects created)
+expand_only = False       # if set to true, only expand existing fires (no new fire objects created)
+
 # ------------------------------------------------------------------------------
 # shape parameters
 # ------------------------------------------------------------------------------
@@ -60,6 +55,11 @@ area_VI = 0.141    # km2, area of each 375m VIIRS pixel
 
 # MODIS pixel size
 MCD64buf = 231.7   # MODIS fire perimeter buffer (deg), corresponding to 463.31271653 m/2
+
+# fire source data
+firesrc = 'VIIRS'   # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
+firenrt = False    # NRT - True, False
+firessr = 'viirs'  # sensor - 'mcd64'
 
 # ------------------------------------------------------------------------------
 # fire type related parameters
@@ -107,3 +107,9 @@ FTYP_Glb = {
          4:'Savana',
          5:'Agriculture',
          6:'Deforestation'}           # fire type names
+
+# ------------------------------------------------------------------------------
+# other options
+# ------------------------------------------------------------------------------
+
+opt_rmstatfire = False  # do the removal of small fires with high pixel density

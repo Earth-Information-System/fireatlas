@@ -228,10 +228,6 @@ def doConcH(locs,buf,alpha=100):
         # switch lats and lons to use the alpha_shape
         locs_lonlat = [(v[1],v[0]) for v in locs]
         concave_hull, edge_points = alpha_shape(locs_lonlat,alpha=alpha)
-        # import alphashape
-        # concave_hull = alphashape.alphashape(locs_lonlat, alpha)
-        # import alpha_shape
-        # concave_hull, edge_points = alpha_shape.alpha_shape(locs_lonlat, alpha=alpha)
 
         if concave_hull.area == 0:  # sometimes the concave_hull algorithm returns a empty polygon
             concave_hull = doConvH(locs,buf)
@@ -262,17 +258,17 @@ def cal_hull(fp_locs,sensor = 'viirs'):
     '''
     from FireConsts import valpha, lalpha, VIIRSbuf #,MCD64buf
     import numpy as np
-    
+
     # set buffer according to sensor
     if sensor == 'viirs':
         buf = VIIRSbuf
     elif sensor == 'mcd64':
-        buf = VIIRSbuf
+        buf = MCD64buf
     else:
         buf = 30
         valpha = lalpha
         # buf = MCD64buf
-    
+
     # number of points
     nfp = len(fp_locs)
 
@@ -336,49 +332,6 @@ def cal_extpixels(fps,hull,alpha=100):
         if not hts_buf.contains(pt):
             fps_ext.append(fp)
     return fps_ext
-
-def update_hull(phull,fp_locs,sensor='viirs',alpha=100):
-    ''' calculate the hull by using the new pixel locations and previous hull vertices only
-    (This can be faster when existing fire has many pixels)
-
-    Parameters
-    ----------
-    phull : geometry, 'Polygon' | 'MultiPoint'
-        the existing hull for the fire
-    fp_locs : list (nx2)
-        latitude and longitude values of all new fire pixels, this usually
-            include newly detected fire pixels at the current time step +
-            exterior fire pixels at the previous time step
-
-    Returns
-    -------
-    hull_new : object
-        the updated hull for the fire
-    '''
-    from shapely.geometry import MultiPoint
-    from FireConsts import extbuffer
-
-    # MultiPoint geometry with all pixels
-    pts = MultiPoint([(l[1],l[0]) for l in fp_locs])
-
-    # use an inward buffer defined by alpha to create interior part of the existing hull
-    # hts_buf = phull.buffer(-1/alpha)
-    hts_buf = addbuffer(phull, -extbuffer)
-
-    # loop over all points (including newly recorded pixels)
-    fp_locs_ext = []
-    for pt in pts:
-        # record only those not in the interior part of the existing hull
-        if not hts_buf.contains(pt):
-            fp_locs_ext.append((pt.y,pt.x))
-
-    # use the exteror points to calculate hull (this can save a lot of time)
-    hull = cal_hull(fp_locs_ext, sensor = sensor)
-
-    # use the union to include hull in past time step
-    hull_new = phull.union(hull)
-
-    return hull_new
 
 def calConcHarea(hull):
     ''' calculate area given the concave hull (km2)

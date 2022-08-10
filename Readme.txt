@@ -25,13 +25,15 @@
 - Data package
   * DataCheckUpdate.py: check and update the input data
 - Main package (Fire tracking)
-  * FireConsts.py:     constants used for the project
+  * FireObj.py:        module containing the object definitions
+  * FireMain.py:       main module for running the fire object tracking along time
+  * FireConsts.py:     constants and options used for the project
+  * FireFuncs.py:      functions used to handle optional calculations
   * FireIO.py:         functions used to read and save data
+  * FireTime.py:       functions used to handle times
   * FireVector.py:     functions used for vector related calculations
   * FireClustering.py: functions used for doing fire clustering
   * FireLog.py:        module containing all logging info
-  * FireObj.py:        module containing the object definitions
-  * FireMain.py:       main module for running the fire object tracking along time
 
 - Diagnostic package (output, expandable)
   * FireGdf.py:        module for creating regional geojson summary at each time

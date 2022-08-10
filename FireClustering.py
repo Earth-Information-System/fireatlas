@@ -34,18 +34,18 @@ def build_rtree(geoms, fids=False):
     '''Builds Rtree from a shapely multipolygon shape
     and optionally uses list of fids as identifier'''
     import rtree
-    
+
     idx = rtree.index.Index() # create new index
     for ind, geom in enumerate(geoms):
         if fids:
             idx.insert(ind, geom.bounds, fids[ind])
         else:
             idx.insert(ind, geom.bounds, ind)
-    
+
     return idx
 
 def idx_intersection(idx, bbox):
-    ''' 
+    '''
     Finds all objects in an index whcih bounding boxes intersect with a geometry's bounding box
     '''
     intersections = list(idx.intersection(bbox, objects = True))
@@ -164,15 +164,15 @@ def do_clustering(data, max_thresh_km):
     to_check = np.full(num_points, fill_value=1, dtype=np.int8)
     while np.sum(to_check) > 0:
         start_ind = np.argmax(to_check == 1) # catch first index to check
-        
+
         neighbors_to_search = list(neighbor_inds[start_ind])
         all_neighbors = neighbors_to_search
-        
+
         if len(all_neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
             point_to_cluster_id[start_ind] = cluster_id_counter
             cluster_id_counter += 1
             to_check[start_ind] = 0
-            
+
         else:  # if with neighbor, record all neighbors
             # find all neighbours of neighbours:
             searched_neighbours = [start_ind]
@@ -187,7 +187,7 @@ def do_clustering(data, max_thresh_km):
             point_to_cluster_id[all_neighbors] = cluster_id_counter
             cluster_id_counter += 1
             to_check[all_neighbors] = 0
-        
+
     # # try 1: retroactively change clusters (didnt work )
     # for i in range(num_points):
     #     neighbors = neighbor_inds[i]
@@ -207,8 +207,8 @@ def do_clustering(data, max_thresh_km):
     #             if len(neighbor_cluster_ids) > 1: # retroactively merge clusters
     #                 for clust in range(1, len(neighbor_cluster_ids)):
     #                     point_to_cluster_id[point_to_cluster_id == clust] = neighbor_cluster_ids[0]
-                
-                
+
+
     # # loop over all pixels and do clustering ORIGINAL
     # for i in range(num_points):
     #     neighbors = neighbor_inds[i]
@@ -282,7 +282,7 @@ def cal_mindist(c1,c2):
 
     return mindist
 
-def filter_centroid(loc_tgt,locs,MAX_THRESH_CENT_KM):
+def filter_centroid(loc_tgt,locs,MAX_THRESH_CENT_KM=50):
     ''' Get cluster ids if centroid is close to the target cluster centroid
 
     Parameters

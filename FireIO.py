@@ -803,40 +803,40 @@ def get_FM1000(t,loc):
 
     return FM1000_loc
 
-def get_stFM1000(fhull,locs,t):
-    ''' get FM1000 for a fire at a time
-
-    Parameters
-    ----------
-    fhull : geometry
-        the hull of the fire
-    locs : list of lists (nx2)
-        lat and lon values for each active fire detection
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM'
-
-    Returns
-    -------
-    FM1000 : list of floats
-        fm1000 value for all input active fires
-    '''
-    import FireClustering
-
-    from datetime import date
-
-    # centroid (lat,lon) is defined as that of hull (faster) or locs
-    if fhull is not None:
-        cent = (fhull.centroid.y,fhull.centroid.x)
-    else:
-        cent = FireClustering.cal_centroid(locs)
-
-    # datetime date of the time tuple
-    d_st = date(*t[:-1])
-
-    # call get_FM1000 function to extract fm1000 for the centroid at a time
-    FM1000 = get_FM1000(d_st, cent)
-
-    return FM1000
+# def get_stFM1000(fhull,locs,t):
+#     ''' get FM1000 for a fire at a time
+#
+#     Parameters
+#     ----------
+#     fhull : geometry
+#         the hull of the fire
+#     locs : list of lists (nx2)
+#         lat and lon values for each active fire detection
+#     t : tuple, (int,int,int,str)
+#         the year, month, day and 'AM'|'PM'
+#
+#     Returns
+#     -------
+#     FM1000 : list of floats
+#         fm1000 value for all input active fires
+#     '''
+#     import FireClustering
+#
+#     from datetime import date
+#
+#     # centroid (lat,lon) is defined as that of hull (faster) or locs
+#     if fhull is not None:
+#         cent = (fhull.centroid.y,fhull.centroid.x)
+#     else:
+#         cent = FireClustering.cal_centroid(locs)
+#
+#     # datetime date of the time tuple
+#     d_st = date(*t[:-1])
+#
+#     # call get_FM1000 function to extract fm1000 for the centroid at a time
+#     FM1000 = get_FM1000(d_st, cent)
+#
+#     return FM1000
 
 # ------------------------------------------------------------------------------
 #%% read and load object, gdf and summary related files
@@ -925,7 +925,7 @@ def get_fobj_fnm(t,regnm,activeonly=False):
         fnm = os.path.join(diroutdata, regnm, d.strftime('%Y'),'Serialization', d.strftime('%Y%m%d')+t[-1]+'_full.pkl')
     return fnm
 
-def check_fobj(t,regnm):
+def check_fobj(t,regnm,activeonly=False):
     ''' Check if the pickle file storing a daily allfires object exists
 
     Parameters
@@ -935,7 +935,7 @@ def check_fobj(t,regnm):
     '''
     import os
 
-    fnm = get_fobj_fnm(t,regnm)
+    fnm = get_fobj_fnm(t,regnm,activeonly=activeonly)
     return os.path.exists(fnm)
 
 def save_fobj(allfires,t,regnm,activeonly=False):
@@ -958,7 +958,7 @@ def save_fobj(allfires,t,regnm,activeonly=False):
     if activeonly:
         # we only want to save active and sleeper fires
         allfires_out = Allfires(t) # create a new allfires object
-        allfires_out.update_t(t)  # correct the time (previous time step was used in the intialization)
+        # allfires_out.update_t(t)  # correct the time (previous time step was used in the intialization)
         fids_out = allfires.fids_active + allfires.fids_sleeper # active fire or sleeper
         id_dict = []
         allfires_index = 0
@@ -1141,6 +1141,7 @@ def get_NFPlistsfs_fnm(t,fid,regnm):
 
     return fnm
 
+
 def check_gpkgobj(t,regnm):
     ''' Check if the gpkg file storing a daily allfires attributes exists
 
@@ -1225,7 +1226,7 @@ def save_gdfobj(gdf,t,regnm,param='',fid='',op=''):
     # save file
     gdf.to_file(fnm, driver='GPKG')
 
-def save_gpkgobj(gdf_fperim,gdf_fline,gdf_NFP,t,regnm):
+def save_gpkgobj(t,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_uptonow=None):
     ''' Save geopandas to a gpkg fire object file
 
     Parameters
@@ -1254,14 +1255,19 @@ def save_gpkgobj(gdf_fperim,gdf_fline,gdf_NFP,t,regnm):
     #     gdf['fid'] = gdf['fid'].astype(int) # data types are screwed up in fline
 
     # save file
-    gdf_fperim.to_file(fnm, driver='GPKG',layer='perimeter')
+    if gdf_fperim is not None:
+        gdf_fperim.to_file(fnm, driver='GPKG',layer='perimeter')
 
-    if len(gdf_fline) > 0:
+    if gdf_fline is not None:
         gdf_fline.to_file(fnm, driver='GPKG',layer='fireline')
-    if len(gdf_NFP) > 0:
-        gdf_NFP.to_file(fnm, driver='GPKG',layer='newfirepix')
 
-def save_gpkgsfs(gdf_fperim,t,fid,regnm,gdf_fline=None,gdf_NFP=None):
+    if gdf_nfp is not None:
+        gdf_nfp.to_file(fnm, driver='GPKG',layer='newfirepix')
+
+    if gdf_uptonow is not None:
+        gdf_uptonow.to_file(fnm, driver='GPKG',layer='uptonow')
+
+def save_gpkgsfs(t,fid,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_nfplist=None):
     ''' Save geopandas to a gpkg fire object file
 
     Parameters
@@ -1290,15 +1296,20 @@ def save_gpkgsfs(gdf_fperim,t,fid,regnm,gdf_fline=None,gdf_NFP=None):
     #     gdf['fid'] = gdf['fid'].astype(int) # data types are screwed up in fline
 
     # save file
-    gdf_fperim.to_file(fnm, driver='GPKG',layer='perimeter')
+    if gdf_fperim is not None:
+        gdf_fperim.to_file(fnm, driver='GPKG',layer='perimeter')
 
     # if len(gdf_fline) > 0:
     if gdf_fline is not None:
         gdf_fline.to_file(fnm, driver='GPKG',layer='fireline')
 
     # if len(gdf_NFP) > 0:
-    if gdf_NFP is not None:
-        gdf_NFP.to_file(fnm, driver='GPKG',layer='newfirepix')
+    if gdf_nfp is not None:
+        gdf_nfp.to_file(fnm, driver='GPKG',layer='newfirepix')
+
+    if gdf_nfplist is not None:
+        gdf_nfplist.to_file(fnm, driver='GPKG',layer='nfplist')
+
 
 def load_gpkgobj(t,regnm,layer='perimeter'):
     ''' Load geopandas from a gpkg fire object file
@@ -1315,6 +1326,7 @@ def load_gpkgobj(t,regnm,layer='perimeter'):
         daily allfires diagnostic parameters
     '''
     import os
+    import pandas as pd
 
     # get file name
     fnm = get_gpkgobj_fnm(t,regnm)
@@ -1324,6 +1336,11 @@ def load_gpkgobj(t,regnm,layer='perimeter'):
             gdf = read_gpkg(fnm,layer=layer)
 
             # set fireID as index column (force to be int type)
+            if 't' in gdf.columns: gdf['t'] = pd.to_datetime(gdf.t)
+            if 't_st' in gdf.columns: gdf['t_st'] = pd.to_datetime(gdf.t_st)
+            if 't_ed' in gdf.columns: gdf['t_ed'] = pd.to_datetime(gdf.t_ed)
+
+
             gdf.fireID = gdf.fireID.astype('int')
             gdf = gdf.set_index('fireID')
         except:
@@ -1356,12 +1373,15 @@ def load_gpkgsfs(t,fid,regnm,layer='perimeter'):
     if os.path.exists(fnm):
         gdf = read_gpkg(fnm,layer=layer)
 
+        if gdf is not None:
+            if ('t' in gdf.columns): gdf['t'] = gdf['t'].astype('datetime64')
         # set fireID as index column (force to be int type)
-        gdf = gdf.set_index('index')
+        # gdf = gdf.set_index('index')
 
         return gdf
     else:
         return None
+
 
 def load_gdfobj(regnm,t='',op=''):
     ''' Load daily allfires diagnostic dataframe as geopandas gdf
@@ -1635,12 +1655,12 @@ def get_summary_fnm_lt(t,regnm):
 
     # if there is, find the nearest one
     endloop = False
-    pt = FireObj.t_nb(t,nb='previous')
+    pt = FireTime.t_nb(t,nb='previous')
     while endloop == False:
         if os.path.exists(get_summary_fnm(pt,regnm)):
             return pt
         else:
-            pt = FireObj.t_nb(pt,nb='previous')
+            pt = FireTime.t_nb(pt,nb='previous')
             if pt[0] != t[0]:
                 return None
 
@@ -1791,9 +1811,11 @@ def read_gpkg(fnm,layer='perimeter'):
     import geopandas as gpd
     import pandas as pd
 
-    gdf = gpd.read_file(fnm,layer=layer)
-
-    return gdf
+    try:
+        gdf = gpd.read_file(fnm,layer=layer)
+        return gdf
+    except:
+        return None
 
 #%% other functions related to read/write
 

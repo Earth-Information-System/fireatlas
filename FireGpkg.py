@@ -22,7 +22,7 @@ Modules required
 * FireConsts
 """
 
-def make_gdf_fperim(allfires, heritage, regnm):
+def make_gdf_snapshot(allfires, regnm, layer='perimeter'):
     ''' Create gpd DataFrame for fire basic attributes and fire perimeter.
 
     Method:
@@ -44,267 +44,124 @@ def make_gdf_fperim(allfires, heritage, regnm):
     '''
     import geopandas as gpd
     # from FireConsts import dd
-    import FireIO, FireObj
+    import FireIO, FireObj,FireTime
 
     # diagnostic data name and types saved in geojson files (in addition to geometries)
-    # note this list can be expanded
-    dd = {'fireID':'int',                  # id
-          'mergid':'int',               # this is the id in the large fire database
-          #'clat':'float',               # centroid latitude   -> centroid[0]
-          #'clon':'float',               # centroid longitude  -> centroid[1]
-          'ftype':'int',                # fire type
-          'isactive':'int',             # active status
-          't_inactive':'int',           # how long has it been inactive
-          'isignition':'int',           # is this a new ignition?
-          'invalid':'int',              # invalid status
-          'n_pixels':'int',             # number of total pixels
-          'n_newpixels':'int',          # number of new pixels
-          'farea':'float',              # fire size
-          'fperim':'float',             # fire perimeter length
-          'flinelen':'float',           # active fire front line length
-          'duration':'float',           # fire duration
-          'pixden':'float',             # fire pixel density
-          'meanFRP':'float',            # mean FRP of the new fire pixels
-          'tst_year':'int',             # t_st[0]
-          'tst_month':'int',
-          'tst_day':'int',
-          'tst_ampm':'str',
-          'ted_year':'int',             # t_ed[0]
-          'ted_month':'int',
-          'ted_day':'int',
-          'ted_ampm':'str',
-          'ted_doy':'int',
-          }
+    if layer == 'perimeter':
+        # dd1: group of attributes that can change with time (even without expansion or merging)
+        dd1 = {
+              'isactive':'int',             # active status
+              'isdead':'int',               # dead status
+              't_inactive':'int',           # how long has it been inactive
+              'isignition':'int',           # is this a new ignition?
+              'mayreactivate':'int',        # sleeper status
+              't':'datetime64',
+              }
 
+        # dd2: group of attributes that can only change with fire expansion or merging
+        dd2 = {
+              'mergeid':'int',               # this is the id in the large fire database
+              'ftype':'int',                # fire type
+              'invalid':'int',              # invalid status
+              'n_pixels':'int',             # number of total pixels
+              'n_newpixels':'int',          # number of new pixels
+              'farea':'float',              # fire size
+              'fperim':'float',             # fire perimeter length
+              'flinelen':'float',           # active fire front line length
+              'duration':'float',           # fire duration
+              'pixden':'float',             # fire pixel density
+              'meanFRP':'float',            # mean FRP of the new fire pixels
+              't_st':'datetime64',
+              't_ed':'datetime64'
+              }
+    elif layer == 'fireline':
+        dd1 = {
+              't':'datetime64',
+              }
+        dd2 = {
+              'mergeid':'int',               # this is the id in the large fire database
+              }
+    elif layer == 'newfirepix':
+        dd1 = {
+              't':'datetime64',
+              }
+        dd2 = {
+              'mergeid':'int',               # this is the id in the large fire database
+              }
+
+    dd = {**dd1, **dd2}  # or (dd1 | dd2) for Python 3.9.0 or higher
     # read or initialize the gdf
-    t_pt = FireObj.t_nb(allfires.t,nb='previous')
-    gdf = None
-    if allfires.t[0] == t_pt[0]: # don't read at year start
-        gdf = FireIO.load_gpkgobj(t_pt,regnm,layer='perimeter')
+    t_pt = FireTime.t_nb(allfires.t,nb='previous')
+    gdf = FireIO.load_gpkgobj(t_pt,regnm,layer=layer)  # try to read data at t_pt
     if gdf is None: # when no previous time step data, initialize the GeoDataFrame
-        gdf = gpd.GeoDataFrame(columns=list(dd.keys()),crs='epsg:4326', geometry=[])
+        gdf = gpd.GeoDataFrame(columns=(list(dd.keys())+['fireID']),crs='epsg:4326', geometry=[])
         gdf = gdf.set_index('fireID')   # set fid column as the index column
-    else:
-        gdf['isactive'] = 0  # pre-set all fires to inactive and update true status below
 
-    # update data for each active fire using the allfires object
-    for fid in (allfires.fids_active):
-        #gdf.loc[fid,'clat'] = allfires.fires[fid].centroid[0]
-        #gdf.loc[fid,'clon'] = allfires.fires[fid].centroid[1]
-        if 'mergid' in dd.keys():
-            gdf.loc[fid,'mergid'] = fid
-        if 'ftype' in dd.keys():
-            gdf.loc[fid,'ftype'] = allfires.fires[fid].ftype
-        if 'isactive' in dd.keys():
-            gdf.loc[fid,'isactive'] = 1
-        if 'invalid' in dd.keys():
-            gdf.loc[fid,'invalid'] = 0
-        if 'isignition' in dd.keys():
-            gdf.loc[fid,'isignition'] = allfires.fires[fid].isignition
-        if 't_inactive' in dd.keys():
-            gdf.loc[fid,'t_inactive'] = int(allfires.fires[fid].t_inactive)
-        if 'n_pixels' in dd.keys():
-            gdf.loc[fid,'n_pixels'] = int(allfires.fires[fid].n_pixels)
-        if 'n_newpixels' in dd.keys():
-            gdf.loc[fid,'n_newpixels'] = int(allfires.fires[fid].n_newpixels)
-        if 'farea' in dd.keys():
-            gdf.loc[fid,'farea'] = allfires.fires[fid].farea
-        if 'fperim' in dd.keys():
-            gdf.loc[fid,'fperim'] = allfires.fires[fid].fperim
-        if 'flinelen' in dd.keys():
-            gdf.loc[fid,'flinelen'] = allfires.fires[fid].flinelen
-        if 'duration' in dd.keys():
-            gdf.loc[fid,'duration'] = allfires.fires[fid].duration
-        if 'pixden' in dd.keys():
-            gdf.loc[fid,'pixden'] = allfires.fires[fid].pixden
-        if 'meanFRP' in dd.keys():
-            gdf.loc[fid,'meanFRP'] = allfires.fires[fid].meanFRP
-        if 'tst_year' in dd.keys():
-            gdf.loc[fid,'tst_year'] = int(allfires.fires[fid].t_st[0])
-        if 'tst_month' in dd.keys():
-            gdf.loc[fid,'tst_month'] = int(allfires.fires[fid].t_st[1])
-        if 'tst_day' in dd.keys():
-            gdf.loc[fid,'tst_day'] = int(allfires.fires[fid].t_st[2])
-        if 'tst_ampm' in dd.keys():
-            gdf.loc[fid,'tst_ampm'] = allfires.fires[fid].t_st[3]
-        if 'ted_year' in dd.keys():
-            gdf.loc[fid,'ted_year'] = int(allfires.fires[fid].t_ed[0])
-        if 'ted_month' in dd.keys():
-            gdf.loc[fid,'ted_month'] = int(allfires.fires[fid].t_ed[1])
-        if 'ted_day' in dd.keys():
-            gdf.loc[fid,'ted_day'] = int(allfires.fires[fid].t_ed[2])
-        if 'ted_ampm' in dd.keys():
-            gdf.loc[fid,'ted_ampm'] = allfires.fires[fid].t_ed[3]
-        if 'ted_doy' in dd.keys():
-            gdf.loc[fid,'ted_doy'] = allfires.fires[fid].cdoy
+    # 1. drop rows for fires that are newly invalidated or dead
 
-        # change mergeid in case fire has been merged
-        # (this is probably only useful for retrospective calculation :
-        #  For NRT run: all active fires should not be merged;
-        #  maybe this should only be done in sfs recording)
-        if 'mergid' in dd.keys():
-            if fid in heritage.keys():
-                gdf.loc[fid,'mergid'] = heritage[fid]
-
-    # drop entries for newly invalidated fire objects
+    # - for newly invalidated fire objects, drop the row
     if 'invalid' in dd.keys():
-        for fid in (allfires.fids_invalid):
+        for fid in allfires.fids_invalid:  # set newly invalidated object
             gdf.loc[fid,'invalid'] = 1
-        gdf.drop(gdf.index[gdf['invalid'] == 1], inplace = True)
+        gdf.drop(gdf.index[gdf['invalid'] == 1], inplace = True)  # drop the row
 
-    # # drop inactive fires
-    # gdf.drop(gdf.index[gdf['isactive'] == 0], inplace = True)
+    # - for newly dead fires, drop the row
+    if 'isdead' in dd.keys():
+        for fid,f in allfires.deadfires.items():  # set dead fire object
+            gdf.loc[fid,'isdead'] = 1
+        gdf.drop(gdf.index[gdf['isdead'] == 1], inplace = True)  # drop the row
 
-    # make sure the attribute data formats follow that defined in dd (is this needed for gpkg?)
-    for v,tp in dd.items():
-        if v != 'fireID':
-            gdf[v] = gdf[v].astype(tp)
+    # 2. modify dd2 for fires with possible modification
+
+    # - for mayactive fires (active+sleeper), copy attributes from fire object to gdf
+    for fid,f in allfires.mayactivefires.items():  # loop over active fires
+        for k,tp in dd2.items():
+            if tp == 'datetime64':
+                gdf.loc[fid,k] = FireTime.t2dt(getattr(f,k))
+            else:
+                gdf.loc[fid,k] = getattr(f,k)
 
     # update the hull of each active fire as the geometry column
-    for fid in allfires.fids_active:
-        fhull = allfires.fires[fid].hull
-        if fhull is not None:
+    if layer == 'perimeter':
+        for fid,f in allfires.mayactivefires.items():
+            fhull = f.hull
             if fhull.geom_type == 'MultiPolygon':
                 gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fhull]).geometry.values
             else:
                 gdf.loc[fid,'geometry'] = fhull
 
-    return gdf
+    elif layer == 'fireline':
+        for fid,f in allfires.activefires.items():  # loop over active fires
+            fline = f.fline
+            if fline is not None:
+                if fline.geom_type == 'MultiLineString':
+                    gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fline]).geometry.values
+                else:
+                    gdf.loc[fid,'geometry'] = fline
 
-def make_gdf_fline(allfires, heritage):
-    ''' Create geopandas DataFrame for active fire line
+    elif layer == 'newfirepix':
+        for fid,f in allfires.activefires.items():  # loop over active fires
+            if f.n_newpixels > 0:
+                gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[f.newlocsMP]).geometry.values
 
-    Parameters
-    ----------
-    allfires : Allfires object
-        the Allfires object to be used to create gdf
-
-    Returns
-    -------
-    gdf : geopandas DataFrame
-        the gdf containing half daily fire line
-    '''
-    import geopandas as gpd
-
-    # initialize the GeoDataFrame
-    gdf = gpd.GeoDataFrame(columns=['fireID', 'mergid'],crs='epsg:4326', geometry=[])
-    gdf['fireID'] = gdf['fireID'].astype('int')
-    gdf['mergid'] = gdf['mergid'].astype('int')
-
-    # for each active fire, record the fline to the geometry column of gdf
-    for fid in allfires.fids_active:
-        fline = allfires.fires[fid].fline
-        if fline is not None:
-            gdf.loc[fid,'fireID'] = fid
-
-            # add and correct mergid
-            gdf.loc[fid,'mergid'] = fid
-            if fid in heritage.keys():
-                gdf.loc[fid,'mergid'] = heritage[fid]
-
-            # gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fline]).geometry.values
-            if fline.geom_type == 'MultiLineString':
-                gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fline]).geometry.values
+    # 3. modify dd1 for all fires
+    for fid,f in allfires.fires.items():  # loop over all fires
+        for k,tp in dd1.items():
+            if tp == 'datetime64':
+                gdf.loc[fid,k] = FireTime.t2dt(getattr(f,k))
             else:
-                gdf.loc[fid,'geometry'] = fline
+                gdf.loc[fid,k] = getattr(f,k)
 
-    if len(gdf) > 1:
-        # dissolve by mergid
-        gdf = gdf.dissolve(by = 'mergid')
+    # 4. force the correct dtypes
+    for k,tp in dd.items():
+        gdf[k] = gdf[k].astype(tp)
 
-
-    return gdf
-
-def make_gdf_NFP(allfires, heritage):
-    ''' Create geopandas DataFrame for new fire pixels (detected at this time step)
-
-    Parameters
-    ----------
-    allfires : Allfires object
-        the Allfires object to be used to create gdf
-
-    Returns
-    -------
-    gdf : geopandas DataFrame
-        the gdf containing half daily new fire pixels
-    '''
-    import geopandas as gpd
-    #from FireConsts import dd
-    from shapely.geometry import MultiPoint
-
-    # initialize the GeoDataFrame
-    gdf = gpd.GeoDataFrame(columns=['fireID', 'mergid'],crs='epsg:4326', geometry=[])
-    gdf['fireID'] = gdf['fireID'].astype('int')
-    gdf['mergid'] = gdf['mergid'].astype('int')
-
-    # for each fire, record the newlocs to the geometry column of gdf
-    for fid in allfires.fids_active:
-        newlocs = allfires.fires[fid].newlocs
-        if len(newlocs) > 0:
-            gdf.loc[fid,'fireID'] = fid
-            nfp = MultiPoint([(l[1],l[0]) for l in newlocs])
-            gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[nfp]).geometry.values
-            # add and correct mergid
-            gdf.loc[fid,'mergid'] = fid
-            if fid in heritage.keys():
-                gdf.loc[fid,'mergid'] = heritage[fid]
-
-    if len(gdf) > 1:
-        # dissolve by mergid
-        gdf = gdf.dissolve(by = 'mergid')
+    # 5. drop the columns with no use
+    if 'invalid' in dd.keys(): gdf = gdf.drop(columns='invalid')
 
     return gdf
 
-def make_gdf_NFPlist(allfires, heritage):
-    ''' Create geopandas DataFrame for new fire pixels (detected at this time step)
-
-    Parameters
-    ----------
-    allfires : Allfires object
-        the Allfires object to be used to create gdf
-
-    Returns
-    -------
-    gdf : geopandas DataFrame
-        the gdf containing half daily new fire pixels
-
-    Read file: dfread = pd.read_csv(fnm,parse_dates=['datetime'],index_col=0)
-    '''
-    import pandas as pd
-
-    # initialize the GeoDataFrame
-    columns=['fireID', 'mergid','lon','lat','DS','DT','frp','sat','datetime']
-    df = pd.DataFrame(columns=columns)
-    # fid_df = 0
-
-    # for each active fire, record the newlocs to the geometry column of gdf
-    for fid in allfires.fids_active:
-        f = allfires.fires[fid]
-        mergid = fid
-        if fid in heritage.keys():
-            mergid = heritage[fid]
-        if len(f.newlocs)>0:
-            for p in f.newpixels:
-                df = df.append({'fireID':f.fireID,'mergid':mergid,'lon':p.lon,'lat':p.lat,
-                                'DS':p.DS,'DT':p.DT,'frp':p.frp,'sat':p.sat,'datetime':p.datetime},
-                               ignore_index=True)
-            # lats, lons = zip(*allfires.fires[fid].newlocs)
-            # # line, sample, frp = zip(*allfires.fires[fid].newpixelatts)
-            # frp, origin = zip(*allfires.fires[fid].newpixelatts)
-            # for i,lat in enumerate(lats):
-            #     df.loc[fid_df,'fireID'] = fid_df
-            #     df.loc[fid_df,'mergid'] = mergid
-            #     df.loc[fid_df,'lon'] = lons[i]
-            #     df.loc[fid_df,'lat'] = lat
-            #     # df.loc[fid_df,'line'] = line[i]
-            #     # df.loc[fid_df,'sample'] = sample[i]
-            #     df.loc[fid_df,'frp'] = frp[i]
-            #     df.loc[fid_df,'origin'] = origin[i]
-            #     fid_df += 1
-
-    return df
-
-def save_gdf_1t(allfires, heritage,regnm):
+def save_gdf_1t(t,regnm):
     ''' Creat gdf using one Allfires object and save it to a geopackage file at 1 time step.
             This can be used  for fperim, fline, and NFP files.
 
@@ -315,16 +172,15 @@ def save_gdf_1t(allfires, heritage,regnm):
     '''
     import FireIO
 
-    # create gdf using previous time step gdf values and new allfires object
-    gdf_fperim = make_gdf_fperim(allfires, heritage,regnm)
-    gdf_fline = make_gdf_fline(allfires, heritage)
-    gdf_NFP = make_gdf_NFP(allfires, heritage)
-    gdf_NFPlist = make_gdf_NFPlist(allfires,heritage)
-    if len(gdf_fperim) > 0:
-        FireIO.save_gpkgobj(gdf_fperim,gdf_fline,gdf_NFP,allfires.t,regnm)
+    # read Allfires object from the saved pkl file
+    allfires = FireIO.load_fobj(t,regnm,activeonly=True)
 
-    if len(gdf_NFPlist) > 0:
-        FireIO.save_FP_txt(gdf_NFPlist, allfires.t, regnm)
+    # create gdf using previous time step gdf values and new allfires object
+    gdf_fperim = make_gdf_snapshot(allfires,regnm,layer='perimeter')
+    gdf_fline = make_gdf_snapshot(allfires,regnm,layer='fireline')
+    gdf_nfp = make_gdf_snapshot(allfires,regnm,layer='newfirepix')
+
+    FireIO.save_gpkgobj(allfires.t,regnm,gdf_fperim=gdf_fperim,gdf_fline=gdf_fline,gdf_nfp=gdf_nfp)
 
 def save_gdf_trng(tst,ted,regnm):
     ''' Wrapper to create and save gpkg files for a time period
@@ -336,28 +192,77 @@ def save_gdf_trng(tst,ted,regnm):
     ted : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' at end time
     '''
-    import FireObj, FireIO
+    import FireObj,FireIO,FireTime
 
     # loop over all days during the period
-    endloop = False  # flag to control the ending of the loop
+    endloop = False  # flag to control the ending olf the loop
     t = list(tst)    # t is the time (year,month,day,ampm) for each step
-    heritage = dict(FireIO.load_fobj(ted,regnm).heritages)
     while endloop == False:
-        print(t)
-
-        # read Allfires object from the saved pkl file
-        allfires = FireIO.load_fobj(t,regnm)
+        print('Snapshot making', t)
 
         # create and save gdfs according to input options
-        save_gdf_1t(allfires,heritage,regnm)
+        save_gdf_1t(t,regnm)
 
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
-        if FireObj.t_dif(t,ted)==0:
+        if FireTime.t_dif(t,ted)==0:
             endloop = True
 
         #  - update t with the next time stamp
-        t = FireObj.t_nb(t,nb='next')
+        t = FireTime.t_nb(t,nb='next')
+
+def save_gdf_uptonow(t,regnm):
+    ''' Create and save all valid fires (active, sleeper, and dead) up to now
+    '''
+    import FireIO,FireTime
+    import geopandas as gpd
+
+    # read allfires object
+    allfires = FireIO.load_fobj(t,regnm,activeonly=False)
+
+    # initialize gdf
+    dd =  {
+                  'isactive':'int',             # active status
+                  'isdead':'int',               # dead status
+                  't_inactive':'int',           # how long has it been inactive
+                  'isignition':'int',           # is this a new ignition?
+                  'mayreactivate':'int',        # sleeper status
+                  't':'datetime64',
+                  'mergeid':'int',              # this is the id in the large fire database
+                  'ftype':'int',                # fire type
+                  'n_pixels':'int',             # number of total pixels
+                  'farea':'float',              # fire size
+                  'fperim':'float',             # fire perimeter length
+                  'duration':'float',           # fire duration
+                  'pixden':'float',             # fire pixel density
+                  't_st':'datetime64',
+                  't_ed':'datetime64'
+                  }
+    gdf = gpd.GeoDataFrame(columns=(list(dd.keys())+['fireID']),crs='epsg:4326', geometry=[])
+    gdf = gdf.set_index('fireID')
+
+    # loop over valid fires
+    for fid,f in allfires.validfires.items():
+        # assign attributes
+        for k,tp in dd.items():
+            if tp == 'datetime64':
+                gdf.loc[fid,k] = FireTime.t2dt(getattr(f,k))
+            else:
+                gdf.loc[fid,k] = getattr(f,k)
+        # assign geometry
+        fhull = f.hull
+        if fhull.geom_type == 'MultiPolygon':
+            gdf.loc[fid,'geometry'] = gpd.GeoDataFrame(geometry=[fhull]).geometry.values
+        else:
+            gdf.loc[fid,'geometry'] = fhull
+
+    # make sure the data types are correct
+    for k,tp in dd.items():
+        gdf[k] = gdf[k].astype(tp)
+
+    # save
+    FireIO.save_gpkgobj(allfires.t,regnm,gdf_uptonow=gdf)
+    # return gdf
 
 if __name__ == "__main__":
     ''' The main code to record daily geojson data for a time period
@@ -366,14 +271,17 @@ if __name__ == "__main__":
     import time
     t1 = time.time()
     # set the start and end time
-    tst=(2021,7,13,'AM')
-    ted=(2021,9,15,'PM')
+    # tst=(2021,7,13,'AM')
+    # ted=(2021,9,15,'PM')
+    #
+    # # for each day during the period, create and save geojson summary file
+    # save_gdf_trng(tst=tst,ted=ted,regnm='Dixie')
 
-    # for each day during the period, create and save geojson summary file
-    #save_gdf_trng(tst=tst,ted=ted,fall=True)
-    #save_gdf_trng(tst=tst,ted=ted,fperim=True)
-    # save_gdf_trng(tst=tst,ted=ted,fline=True)
-    save_gdf_trng(tst=tst,ted=ted,regnm='Dixie')
+    # tst=(2020,10,29,'PM')
+    tst=(2020,9,5,'AM')
+    ted=(2020,11,5,'PM')
+    # save_gdf_trng(tst=tst,ted=ted,regnm='Creek')
+    save_gdf_uptonow(ted,'Creek')
 
     t2 = time.time()
     print(f'{(t2-t1)/60.} minutes used to run code')
