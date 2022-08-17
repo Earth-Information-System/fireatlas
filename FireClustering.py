@@ -62,7 +62,7 @@ def compute_all_spatial_distances(data, max_thresh_km):
     Parameters
     ----------
     data : pd DataFrame
-        point location with 'latitude' and 'longitude' columns
+        point location with 'x' and 'y' columns
     max_thresh_km : float
         maximum distance threshold (km) used for classifying neighbors
 
@@ -74,23 +74,18 @@ def compute_all_spatial_distances(data, max_thresh_km):
         distance (km) of neighbors (self excluded)
     '''
     import numpy as np
-    import math
     from sklearn.neighbors import BallTree
-    from FireConsts import EARTH_RADIUS_KM
 
-    lats = data.latitude.values
-    lons = data.longitude.values
+    x = data.x.values
+    y = data.y.values
 
-    lats_rad = [math.radians(l) for l in lats]
-    lons_rad = [math.radians(l) for l in lons]
+    X = np.stack([x, y], axis=-1)
 
-    X = np.stack([lats_rad, lons_rad], axis=-1)
+    bt = BallTree(X, leaf_size=20)
 
-    bt = BallTree(X, metric='haversine', leaf_size=20)
-
-    inds, dist = bt.query_radius(X, r = max_thresh_km / EARTH_RADIUS_KM, return_distance=True)
+    inds, dist = bt.query_radius(X, r = max_thresh_km*1000, return_distance=True)
     inds, dist = remove_self(inds, dist)
-    return inds, dist * EARTH_RADIUS_KM
+    return inds, dist * 1000
 
 def sort_neighbors(inds, dists):
     ''' Do neighbor sorting (based on distance) for all points
@@ -150,7 +145,7 @@ def do_clustering(data, max_thresh_km):
         return cluster_id
 
     # convert list to pd DataFrame
-    dfdata = pd.DataFrame(data,columns=['latitude','longitude'])
+    dfdata = pd.DataFrame(data,columns=['x','y'])
 
     # initialization
     cluster_id_counter = 0
@@ -187,44 +182,6 @@ def do_clustering(data, max_thresh_km):
             point_to_cluster_id[all_neighbors] = cluster_id_counter
             cluster_id_counter += 1
             to_check[all_neighbors] = 0
-
-    # # try 1: retroactively change clusters (didnt work )
-    # for i in range(num_points):
-    #     neighbors = neighbor_inds[i]
-    #     if len(neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
-    #         point_to_cluster_id[i] = cluster_id_counter
-    #         cluster_id_counter += 1
-    #     else:  # if with neighbor, record all neighbors
-    #         # neighbor_cluster_ids = point_to_cluster_id[neighbors]   #  This won't work sometimes, e.g. 2017-11-20
-    #         neighbor_cluster_ids = point_to_cluster_id[list(neighbors)]
-    #         neighbor_cluster_ids = neighbor_cluster_ids[neighbor_cluster_ids != -1]
-
-    #         if len(neighbor_cluster_ids) == 0:   # if no neighbor has been assigned to clusters, record current pixel as a separate cluster
-    #             point_to_cluster_id[i] = cluster_id_counter
-    #             cluster_id_counter += 1
-    #         else:                               # if some neighbors have been assigned to clusters, assign current pixel to the nearest cluster
-    #             point_to_cluster_id[i] = neighbor_cluster_ids[0]
-    #             if len(neighbor_cluster_ids) > 1: # retroactively merge clusters
-    #                 for clust in range(1, len(neighbor_cluster_ids)):
-    #                     point_to_cluster_id[point_to_cluster_id == clust] = neighbor_cluster_ids[0]
-
-
-    # # loop over all pixels and do clustering ORIGINAL
-    # for i in range(num_points):
-    #     neighbors = neighbor_inds[i]
-    #     if len(neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
-    #         point_to_cluster_id[i] = cluster_id_counter
-    #         cluster_id_counter += 1
-    #     else:  # if with neighbor, record all neighbors
-    #         # neighbor_cluster_ids = point_to_cluster_id[neighbors]   #  This won't work sometimes, e.g. 2017-11-20
-    #         neighbor_cluster_ids = point_to_cluster_id[list(neighbors)]
-    #         neighbor_cluster_ids = neighbor_cluster_ids[neighbor_cluster_ids != -1]
-
-    #         if len(neighbor_cluster_ids) == 0:   # if no neighbor has been assigned to clusters, record current pixel as a separate cluster
-    #             point_to_cluster_id[i] = cluster_id_counter
-    #             cluster_id_counter += 1
-    #         else:                               # if some neighbors have been assigned to clusters, assign current pixel to the nearest cluster
-    #             point_to_cluster_id[i] = neighbor_cluster_ids[0]
 
     return point_to_cluster_id.tolist()
 
@@ -282,26 +239,26 @@ def cal_mindist(c1,c2):
 
     return mindist
 
-def filter_centroid(loc_tgt,locs,MAX_THRESH_CENT_KM=50):
-    ''' Get cluster ids if centroid is close to the target cluster centroid
-
-    Parameters
-    ----------
-    loc_tgt : list, [lat,lon]
-        target centroid
-    locs : list of [lat,lon]
-        all existing fire centroid
-    MAX_THRESH_CENT_KM : float
-        maximum threshold to determine close clusters
-
-    Returns
-    -------
-    closeindices : list
-        ids of existing clusters that are close to the target cluster
-    '''
-    closeornot = [cal_distance(loc_tgt,loc) < MAX_THRESH_CENT_KM for loc in locs]
-    closeindices = [i for i, x in enumerate(closeornot) if x == True]
-    return closeindices
+# def filter_centroid(loc_tgt,locs,MAX_THRESH_CENT_KM=50):
+#     ''' Get cluster ids if centroid is close to the target cluster centroid
+#
+#     Parameters
+#     ----------
+#     loc_tgt : list, [lat,lon]
+#         target centroid
+#     locs : list of [lat,lon]
+#         all existing fire centroid
+#     MAX_THRESH_CENT_KM : float
+#         maximum threshold to determine close clusters
+#
+#     Returns
+#     -------
+#     closeindices : list
+#         ids of existing clusters that are close to the target cluster
+#     '''
+#     closeornot = [cal_distance(loc_tgt,loc) < MAX_THRESH_CENT_KM for loc in locs]
+#     closeindices = [i for i, x in enumerate(closeornot) if x == True]
+#     return closeindices
 
 def cal_centroid(data):
     ''' Calculate the centroid of a list of points

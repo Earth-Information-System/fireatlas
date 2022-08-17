@@ -102,6 +102,12 @@ class Allfires:
         return {i:f for i,f in self.fires.items() if not (f.isactive or f.mayreactivate)}
 
     @property
+    def fids_dead(self):
+        ''' List of fire ids that is not going to be reactivated
+        '''
+        return [i for i,f in self.fires.items() if not (f.isactive or f.mayreactivate)]
+
+    @property
     def fids_sleeper(self):
         ''' List of fire ids that may reactivate
         '''
@@ -332,6 +338,7 @@ class Fire:
 
         # initialize hull using the pixels
         locs = [p.loc for p in fpixels]  # list of [lat,lon]
+        # locs_geo = [p.loc_geo for p in fpixels]  # list of [lat,lon]
         hull = FireVector.cal_hull(locs, sensor) # the hull from all locs
         self.hull = hull   # note fire.hull is not automatically updated (need explicit calculation if changes occur)
 
@@ -443,11 +450,17 @@ class Fire:
         return [p.loc for p in self.pixels]
 
     @property
+    def locs_geo(self):
+        ''' List of fire pixel locations (lat,lon)
+        '''
+        return [p.loc_geo for p in self.pixels]
+
+    @property
     def locsMP(self):
         ''' MultiPoint shape of locs
         '''
         from shapely.geometry import MultiPoint
-        mp = MultiPoint([(p[1],p[0]) for p in self.locs])
+        mp = MultiPoint([(p[0],p[1]) for p in self.locs])
         return mp
 
     @property
@@ -462,18 +475,24 @@ class Fire:
         return [p.loc for p in self.newpixels]
 
     @property
+    def newlocs_geo(self):
+        ''' List of new fire pixels locations (lat,lon)
+        '''
+        return [p.loc_geo for p in self.newpixels]
+
+    @property
     def newlocsMP(self):
         ''' MultiPoint shape of newlocs
         '''
         from shapely.geometry import MultiPoint
-        mp = MultiPoint([(p[1],p[0]) for p in self.newlocs])
+        mp = MultiPoint([(p[0],p[1]) for p in self.newlocs])
         return mp
 
     @property
     def newpixelatts(self):
         ''' List of new fire pixels attributes
         '''
-        return [(p.lat,p.lon,p.frp, p.DS, p.DT, p.datetime, p.ampm, p.sat) for p in self.newpixels]
+        return [(p.lon,p.lat,p.frp, p.DS, p.DT, p.datetime, p.ampm, p.sat) for p in self.newpixels]
 
     @property
     def n_newpixels(self):
@@ -492,7 +511,7 @@ class Fire:
         ''' MultiPoint shape of extlocs
         '''
         from shapely.geometry import MultiPoint
-        mp = MultiPoint([(p[1],p[0]) for p in self.extlocs])
+        mp = MultiPoint([(p[0],p[1]) for p in self.extlocs])
         return mp
 
     @property
@@ -512,7 +531,21 @@ class Fire:
         ''' MultiPoint shape of ignlocs
         '''
         from shapely.geometry import MultiPoint
-        mp = MultiPoint([(p[1],p[0]) for p in self.ignlocs])
+        mp = MultiPoint([(p[0],p[1]) for p in self.ignlocs])
+        return mp
+
+    @property
+    def ignlocs_geo(self):
+        ''' List of fire pixel locations (lat,lon) at ignition time step
+        '''
+        return [p.loc_geo for p in self.ignpixels]
+
+    @property
+    def ignlocsMP_geo(self):
+        ''' MultiPoint shape of ignlocs
+        '''
+        from shapely.geometry import MultiPoint
+        mp = MultiPoint([(p[0],p[1]) for p in self.ignlocs_geo])
         return mp
 
     @property
@@ -537,28 +570,29 @@ class Fire:
         # otherwise, use calConcHarea to calculate area,
         #   but no smaller than area_VI (sometimes calculated hull area is very small)
         else:
-            from pyproj import Geod
-            geod = Geod(ellps="WGS84")
-            area_cal = np.abs(geod.geometry_area_perimeter(self.hull)[0]/1e6)
+            # from pyproj import Geod
+            # geod = Geod(ellps="WGS84")
+            # area_cal = np.abs(geod.geometry_area_perimeter(self.hull)[0]/1e6)
+            area_cal = fhull.area/1e6
             return max(area_cal,area_VI)
 
             # import FireVector
             # return max(FireVector.calConcHarea(fhull),area_VI)
 
-    @property
-    def centroid(self):
-        ''' Centroid of fire object (lat,lon)
-        '''
-        import FireClustering
-
-        # get hull
-        fhull = self.hull
-
-        if fhull is not None: # centroid of the hull
-            cent = (fhull.centroid.y,fhull.centroid.x)
-        else: # when no hull, use the centroid of all pixels
-            cent = FireClustering.cal_centroid(self.locs)
-        return cent
+    # @property
+    # def centroid(self):
+    #     ''' Centroid of fire object (lat,lon)
+    #     '''
+    #     import FireClustering
+    #
+    #     # get hull
+    #     fhull = self.hull
+    #
+    #     if fhull is not None: # centroid of the hull
+    #         cent = (fhull.centroid.y,fhull.centroid.x)
+    #     else: # when no hull, use the centroid of all pixels
+    #         cent = FireClustering.cal_centroid(self.locs)
+    #     return cent
 
     @property
     def pixden(self):
@@ -598,11 +632,10 @@ class Fire:
         if fhull is None:  # if no hull, return zero
             perim = 0
         else:  # otherwise, use the hull length
-            # flinelen = self.fline.length
-            from pyproj import Geod
-            geod = Geod(ellps="WGS84")
-            perim = geod.geometry_length(fhull)/1000 # in km
-
+            # from pyproj import Geod
+            # geod = Geod(ellps="WGS84")
+            # perim = geod.geometry_length(fhull)/1000 # in km
+            perim = fhull.length/1e3  # km
         return perim
 
     @property
@@ -626,14 +659,14 @@ class Fire:
             if fhull.type == 'Polygon':
                 # lr = fhull.exterior.buffer(fpbuffer)
                 lr = FireVector.addbuffer(fhull.exterior, fpbuffer)
-                return [p for p in nps if lr.contains(Point(p.loc[1],p.loc[0]))]
+                return [p for p in nps if lr.contains(Point(p.loc[0],p.loc[1]))]
 
             # if hull is a multipolygon, return new pixels near the hull
             elif fhull.type == 'MultiPolygon':
                 # mlr = MultiLineString([x.exterior for x in fhull]).buffer(fpbuffer)
                 mlr = MultiLineString([x.exterior for x in fhull])
                 mlr = FireVector.addbuffer(mlr,fpbuffer)
-                return [p for p in nps if mlr.contains(Point(p.loc[1],p.loc[0]))]
+                return [p for p in nps if mlr.contains(Point(p.loc[0],p.loc[1]))]
 
     @property
     def flplocs(self):
@@ -647,7 +680,7 @@ class Fire:
         '''
         from shapely.geometry import Point
         import geopandas as gpd
-        mp = [Point(p[1],p[0]) for p in self.flplocs]
+        mp = [Point(p[0],p[1]) for p in self.flplocs]
         return gpd.GeoSeries(mp)
 
     @property
@@ -704,9 +737,9 @@ class Fire:
         '''
         from pyproj import Geod
         try:
-            # flinelen = self.fline.length
-            geod = Geod(ellps="WGS84")
-            flinelen = geod.geometry_length(self.fline)/1000 # in km
+            flinelen = self.fline.length/1e3   # km
+            # geod = Geod(ellps="WGS84")
+            # flinelen = geod.geometry_length(self.fline)/1000 # in km
         except:
             flinelen = 0
 
@@ -759,14 +792,14 @@ class Cluster:
         self.ampm = t[-1]          # current ampm
         self.id = id
         self.sensor = sensor
-        self.pixels = pixels       # (lat,lon, FRP)
+        self.pixels = pixels       # (x,y,FRP,...)
 
     # properties
     @property
     def locs(self):
         ''' List of pixel locations (lat,lon)
         '''
-        return [(p.lat,p.lon) for p in self.pixels]
+        return [(p.x,p.y) for p in self.pixels]
 
     @property
     def centroid(self):
@@ -805,7 +838,9 @@ class FirePixel:
         t : time (y,m,d,ampm) of record
         origin : the fire id originally recorded (before merging)
     """
-    def __init__(self,lat,lon,frp,DS,DT,ampm,t,Sat,origin):
+    def __init__(self,x,y,lon,lat,frp,DS,DT,ampm,t,Sat,origin):
+        self.x = x
+        self.y = y
         self.lat = lat
         self.lon = lon
         self.frp = frp        # frp
@@ -816,8 +851,10 @@ class FirePixel:
         self.datetime = t      # YYYYMMDD_HHMM
         self.sat = Sat          # satellite
         self.origin = origin    # intially assigned fire id
-
-
     @property
     def loc(self):
-        return (self.lat,self.lon)
+        return (self.x,self.y)
+
+    @property
+    def loc_geo(self):
+        return (self.lon,self.lat)

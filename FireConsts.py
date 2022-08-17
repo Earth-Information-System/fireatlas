@@ -111,5 +111,5 @@ FTYP_Glb = {
 # ------------------------------------------------------------------------------
 # other options
 # ------------------------------------------------------------------------------
-
+epsg = 32610  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 2163: US National Atlas Equal Area)
 opt_rmstatfire = False  # do the removal of small fires with high pixel density

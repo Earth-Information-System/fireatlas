@@ -45,6 +45,7 @@ def make_gdf_snapshot(allfires, regnm, layer='perimeter'):
     import geopandas as gpd
     # from FireConsts import dd
     import FireIO, FireObj,FireTime
+    from FireConsts import epsg
 
     # diagnostic data name and types saved in geojson files (in addition to geometries)
     if layer == 'perimeter':
@@ -62,7 +63,7 @@ def make_gdf_snapshot(allfires, regnm, layer='perimeter'):
         dd2 = {
               'mergeid':'int',               # this is the id in the large fire database
               'ftype':'int',                # fire type
-              'invalid':'int',              # invalid status
+              # 'invalid':'int',              # invalid status
               'n_pixels':'int',             # number of total pixels
               'n_newpixels':'int',          # number of new pixels
               'farea':'float',              # fire size
@@ -94,23 +95,24 @@ def make_gdf_snapshot(allfires, regnm, layer='perimeter'):
     t_pt = FireTime.t_nb(allfires.t,nb='previous')
     gdf = FireIO.load_gpkgobj(t_pt,regnm,layer=layer)  # try to read data at t_pt
     if gdf is None: # when no previous time step data, initialize the GeoDataFrame
-        gdf = gpd.GeoDataFrame(columns=(list(dd.keys())+['fireID']),crs='epsg:4326', geometry=[])
+        gdf = gpd.GeoDataFrame(columns=(list(dd.keys())+['fireID']),crs='epsg:'+str(epsg), geometry=[])
         gdf = gdf.set_index('fireID')   # set fid column as the index column
 
     # 1. drop rows for fires that are newly invalidated or dead
 
     # - for newly invalidated fire objects, drop the row
-    if 'invalid' in dd.keys():
-        for fid in allfires.fids_invalid:  # set newly invalidated object
-            gdf.loc[fid,'invalid'] = 1
-        gdf.drop(gdf.index[gdf['invalid'] == 1], inplace = True)  # drop the row
+    # if 'invalid' in dd.keys():
+    #     for fid in allfires.fids_invalid:  # set newly invalidated object
+    #         gdf.loc[fid,'invalid'] = 1
+    #     gdf.drop(gdf.index[gdf['invalid'] == 1], inplace = True)  # drop the row
+    gdf.drop(allfires.fids_invalid,inplace=True)
 
     # - for newly dead fires, drop the row
-    if 'isdead' in dd.keys():
-        for fid,f in allfires.deadfires.items():  # set dead fire object
-            gdf.loc[fid,'isdead'] = 1
-        gdf.drop(gdf.index[gdf['isdead'] == 1], inplace = True)  # drop the row
-
+    # if 'isdead' in dd.keys():
+    #     for fid,f in allfires.deadfires.items():  # set dead fire object
+    #         gdf.loc[fid,'isdead'] = 1
+    #     gdf.drop(gdf.index[gdf['isdead'] == 1], inplace = True)  # drop the row
+    gdf.drop(allfires.fids_dead,inplace=True)
     # 2. modify dd2 for fires with possible modification
 
     # - for mayactive fires (active+sleeper), copy attributes from fire object to gdf
@@ -156,8 +158,8 @@ def make_gdf_snapshot(allfires, regnm, layer='perimeter'):
     for k,tp in dd.items():
         gdf[k] = gdf[k].astype(tp)
 
-    # 5. drop the columns with no use
-    if 'invalid' in dd.keys(): gdf = gdf.drop(columns='invalid')
+    # # 5. drop the columns with no use
+    # if 'invalid' in dd.keys(): gdf = gdf.drop(columns='invalid')
 
     return gdf
 
@@ -216,6 +218,7 @@ def save_gdf_uptonow(t,regnm):
     '''
     import FireIO,FireTime
     import geopandas as gpd
+    from FireConsts import epsg
 
     # read allfires object
     allfires = FireIO.load_fobj(t,regnm,activeonly=False)
@@ -238,7 +241,7 @@ def save_gdf_uptonow(t,regnm):
                   't_st':'datetime64',
                   't_ed':'datetime64'
                   }
-    gdf = gpd.GeoDataFrame(columns=(list(dd.keys())+['fireID']),crs='epsg:4326', geometry=[])
+    gdf = gpd.GeoDataFrame(columns=(list(dd.keys())+['fireID']),crs='epsg:'+str(epsg), geometry=[])
     gdf = gdf.set_index('fireID')
 
     # loop over valid fires

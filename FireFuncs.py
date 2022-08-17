@@ -81,6 +81,7 @@ def set_ftype(fire):
     from FireConsts import FTYP_opt
     import FireIO
     from datetime import date
+    import random
 
     # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
     # 1 - use the CA type classification (dtermined using LCTmax)
@@ -91,7 +92,13 @@ def set_ftype(fire):
         ftype = FTYP_preset[0]
     elif FTYP_opt == 1: # use CA type classifications (determined using LCTmax)
         # update or read LCTmax; calculated using all newlocs
-        vLCT = FireIO.get_LCT_NLCD(fire.newlocs) # call get_LCT to get all LCT for the fire pixels
+        if (fire.n_newpixels < 1000):
+            uselocs = fire.newlocs_geo
+        else:
+            # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+            uselocs = random.sample(fire.newlocs_geo, 1000)
+
+        vLCT = FireIO.get_LCT_NLCD(uselocs) # call get_LCT to get all LCT for the fire pixels
         LCTmax = max(set(vLCT), key = vLCT.count) # extract the LCT with most pixel counts
 
         # get and record fm1000 value at ignition

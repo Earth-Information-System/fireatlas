@@ -52,7 +52,8 @@ def Yearbatchrun(year,tst=None,ted=None,restart=False):
     print(f'{(t2-t1)/60.} minutes to run code')
 
 def CreekSamplerun():
-    ''' ~ 16 minutes
+    '''
+    need to change firesrc in FireConsts.py 'SNPP'
     '''
     import FireMain,FireGpkg,FireGpkg_sfs
 
@@ -70,7 +71,8 @@ def CreekSamplerun():
     FireGpkg_sfs.save_sfts_trng(tst,ted,regnm=region[0])
 
 def CreekSamplerunNOAA20():
-    ''' ~ 16 minutes
+    '''
+    need to change firesrc in FireConsts.py 'NOAA20'
     '''
     import FireMain,FireGpkg,FireGpkg_sfs
 
@@ -88,7 +90,8 @@ def CreekSamplerunNOAA20():
     FireGpkg_sfs.save_sfts_trng(tst,ted,regnm=region[0])
 
 def CreekSamplerunVIIRS():
-    ''' ~ 16 minutes
+    '''
+    need to change firesrc in FireConsts.py 'VIIRS'
     '''
     import FireMain,FireGpkg,FireGpkg_sfs
 
@@ -148,9 +151,10 @@ if __name__ == "__main__":
     # Yearbatchrun(2020)
     import time
     t1 = time.time()
-    # CreekSamplerunNOAA20()
-    CreekSamplerunVIIRS()    
     # CreekSamplerun()
+    # CreekSamplerunNOAA20()
+    CreekSamplerunVIIRS()
+
     # CreekRegionSamplerun()
     # CArun()
     t2 = time.time()

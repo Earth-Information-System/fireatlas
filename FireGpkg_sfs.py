@@ -138,6 +138,7 @@ def make_sf(t,regnm,layer,fids_m,fid,sfkeys):
     import FireIO, FireTime
     import pandas as pd
     import geopandas as gpd
+    from FireConsts import epsg
 
     if layer != 'nfplist':
         # extract rows for fires merged to the target fire
@@ -180,7 +181,7 @@ def make_sf(t,regnm,layer,fids_m,fid,sfkeys):
                 if len(plist)>0:
                     df = pd.DataFrame(plist)
                     df.columns = sfkeys
-                    gdf_1f = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lon, df.lat))
+                    gdf_1f = gpd.GeoDataFrame(df,crs='epsg:'+str(epsg),geometry=gpd.points_from_xy(df.x, df.y))
 
                     if gdf_1d is None:
                         gdf_1d = gdf_1f
@@ -292,8 +293,8 @@ def update_sfts_1f(allfires,fid,regnm,layer='perimeter'):
               't':'datetime64',
               }
     elif layer == 'nfplist':
-        dd = {'lat':'float',
-              'lon':'float',
+        dd = {'x':'float',
+              'y':'float',
               'frp':'float',
               'DS':'float',
               'DT':'float',
@@ -380,7 +381,7 @@ def save_sfts_1f(fid,regnm,allfires=None,t=None,
         gdf_nfplist = update_sfts_1f(allfires,fid,regnm,layer='nfplist')
         FireIO.save_gpkgsfs(allfires.t,fid,regnm,gdf_nfplist=gdf_nfplist)
 
-def save_sfts_all(t,regnm):
+def save_sfts_all(t,regnm,layers=['perimeter','fireline','newfirepix','nfplist']):
     '''Wrapper to create and save gpkg files at a time step for all large fires
 
     Parameters
@@ -400,9 +401,9 @@ def save_sfts_all(t,regnm):
 
     # loop over all fires, and create/save gpkg files for each single fire
     for fid in large_ids:
-        save_sfts_1f(fid,regnm,allfires=allfires)
+        save_sfts_1f(fid,regnm,allfires=allfires,layers=layers)
 
-def save_sfts_trng(tst,ted,regnm):
+def save_sfts_trng(tst,ted,regnm,layers=['perimeter','fireline','newfirepix','nfplist']):
     '''Wrapper to create and save all gpkg files for a time period
 
     Parameters
@@ -423,7 +424,7 @@ def save_sfts_trng(tst,ted,regnm):
         print('Single fire saving',t)
 
         # create and save all gpkg files at time t
-        save_sfts_all(t,regnm)
+        save_sfts_all(t,regnm,layers=layers)
 
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop

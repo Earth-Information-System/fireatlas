@@ -182,7 +182,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,log=True):
     ea_idx = FireClustering.build_rtree(eafirerngs)
 
     # do preliminary clustering using new active fire locations (assign cid to each pixel)
-    afp_loc = list(zip(afp.Lat, afp.Lon))
+    afp_loc = list(zip(afp.x, afp.y))
     CONNECTIVITY_CLUSTER = FireFuncs.get_CONNECTIVITY_CLUSTER()
     cid = FireClustering.do_clustering(afp_loc,CONNECTIVITY_CLUSTER)  # cluster id for each afp_loc
     if log:
@@ -193,7 +193,7 @@ def Fire_expand_rtree(allfires,afp,fids_ea,log=True):
     for ic in range(max(cid)+1):
         # create cluster object using all newly detected active fires within a cluster
         #   (-1 means no source fireid)
-        pixels = [FireObj.FirePixel(afp.iloc[i].Lat,afp.iloc[i].Lon,afp.iloc[i].FRP,
+        pixels = [FireObj.FirePixel(afp.iloc[i].x,afp.iloc[i].y,afp.iloc[i].Lon,afp.iloc[i].Lat,afp.iloc[i].FRP,
                                     afp.iloc[i].DS,afp.iloc[i].DT,afp.iloc[i].ampm,afp.iloc[i].YYYYMMDD_HHMM,
                                     afp.iloc[i].Sat,-1) for i, v in enumerate(cid) if v==ic]  # pixels
         cluster = FireObj.Cluster(ic,pixels,allfires.t,sensor=firessr)  # form cluster
@@ -209,11 +209,11 @@ def Fire_expand_rtree(allfires,afp,fids_ea,log=True):
                     # record existing target fire id in fid_expand list
                     fmid = fids_ea[id_cf]  # this is the fire id of the existing active fire
                     # record pixels from target cluster (locs and time) along with the existing active fire object id
-                    newFPs = [FireObj.FirePixel(p.lat,p.lon,p.frp,p.DS,p.DT,p.ampm,p.datetime,p.sat,fmid) for p in pixels] # new FirePixels from the cluster
+                    # newFPs = [FireObj.FirePixel(p.x,p.y,p.lon,p.lat,p.frp,p.DS,p.DT,p.ampm,p.datetime,p.sat,fmid) for p in pixels] # new FirePixels from the cluster
                     if fmid in FP2expand.keys():  # single existing object, can have multiple new clusters to append
-                        FP2expand[fmid] = FP2expand[fmid] + newFPs
+                        FP2expand[fmid] = FP2expand[fmid] + pixels # newFPs
                     else:
-                        FP2expand[fmid] = newFPs
+                        FP2expand[fmid] = pixels # newFPs
                     fids_expanded.append(fmid) # record fmid to fid_expanded ? is this same as list(FP2expand.keys)?
                     clusterdone = True   # mark the cluster as done (no need to create new Fobj)
 
