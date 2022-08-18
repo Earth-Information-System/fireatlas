@@ -2,8 +2,9 @@
 This module include all functions used for doing fire clustering
 """
 
+
 def remove_self(inds, dist):
-    ''' Remove self from the index and distance arrays
+    """ Remove self from the index and distance arrays
 
     Parameters
     ----------
@@ -18,24 +19,25 @@ def remove_self(inds, dist):
         indices of neighbors (self excluded)
     new_dist : np array of np array
         distance of neighbors (self excluded)
-    '''
+    """
     import numpy as np
 
     new_inds = []
     new_dist = []
     for i in range(len(inds)):
-       pos = np.where(inds[i] == i)
-       new_inds.append(np.delete(inds[i], pos))
-       new_dist.append(np.delete(dist[i], pos))
+        pos = np.where(inds[i] == i)
+        new_inds.append(np.delete(inds[i], pos))
+        new_dist.append(np.delete(dist[i], pos))
 
-    return np.array(new_inds,dtype=object), np.array(new_dist,dtype=object)
+    return np.array(new_inds, dtype=object), np.array(new_dist, dtype=object)
+
 
 def build_rtree(geoms, fids=False):
-    '''Builds Rtree from a shapely multipolygon shape
-    and optionally uses list of fids as identifier'''
+    """Builds Rtree from a shapely multipolygon shape
+    and optionally uses list of fids as identifier"""
     import rtree
 
-    idx = rtree.index.Index() # create new index
+    idx = rtree.index.Index()  # create new index
     for ind, geom in enumerate(geoms):
         if fids:
             idx.insert(ind, geom.bounds, fids[ind])
@@ -44,12 +46,13 @@ def build_rtree(geoms, fids=False):
 
     return idx
 
+
 def idx_intersection(idx, bbox):
-    '''
+    """
     Finds all objects in an index whcih bounding boxes intersect with a geometry's bounding box
-    '''
-    intersections = list(idx.intersection(bbox, objects = True))
-    if len(intersections)>0:
+    """
+    intersections = list(idx.intersection(bbox, objects=True))
+    if len(intersections) > 0:
         fids, bbox = zip(*[(item.object, item.bbox) for item in intersections])
     else:
         fids = []
@@ -57,7 +60,7 @@ def idx_intersection(idx, bbox):
 
 
 def compute_all_spatial_distances(data, max_thresh_km):
-    ''' Derive neighbors (and distances) for each point (with lat/lon)
+    """ Derive neighbors (and distances) for each point (with lat/lon)
 
     Parameters
     ----------
@@ -72,7 +75,7 @@ def compute_all_spatial_distances(data, max_thresh_km):
         indices of neighbors (self exluded)
     dist : np array of np array
         distance (km) of neighbors (self excluded)
-    '''
+    """
     import numpy as np
     from sklearn.neighbors import BallTree
 
@@ -83,12 +86,13 @@ def compute_all_spatial_distances(data, max_thresh_km):
 
     bt = BallTree(X, leaf_size=20)
 
-    inds, dist = bt.query_radius(X, r = max_thresh_km*1000, return_distance=True)
+    inds, dist = bt.query_radius(X, r=max_thresh_km * 1000, return_distance=True)
     inds, dist = remove_self(inds, dist)
     return inds, dist * 1000
 
+
 def sort_neighbors(inds, dists):
-    ''' Do neighbor sorting (based on distance) for all points
+    """ Do neighbor sorting (based on distance) for all points
 
     Parameters
     ----------
@@ -103,7 +107,7 @@ def sort_neighbors(inds, dists):
         indices of neighbors (self exluded)
     sorted_dists : np array of np array
         distance (km) of neighbors (self excluded)
-    '''
+    """
     import numpy as np
 
     sorted_inds = []
@@ -117,8 +121,9 @@ def sort_neighbors(inds, dists):
 
     return sorted_inds, sorted_dists
 
+
 def do_clustering(data, max_thresh_km):
-    ''' Do initial clustering for fire pixels
+    """ Do initial clustering for fire pixels
 
     Parameters
     ----------
@@ -131,7 +136,7 @@ def do_clustering(data, max_thresh_km):
     -------
     point_to_cluster_id : list
         cluster id for each fire point
-    '''
+    """
     import numpy as np
     import pandas as pd
 
@@ -145,25 +150,29 @@ def do_clustering(data, max_thresh_km):
         return cluster_id
 
     # convert list to pd DataFrame
-    dfdata = pd.DataFrame(data,columns=['x','y'])
+    dfdata = pd.DataFrame(data, columns=["x", "y"])
 
     # initialization
     cluster_id_counter = 0
     point_to_cluster_id = np.full(num_points, fill_value=NO_CLUSTER_VAL, dtype=np.int64)
 
     # compute and sort neighbor pixels for each pixel
-    neighbor_inds, neighbor_spatial_dists = compute_all_spatial_distances(dfdata, max_thresh_km)
+    neighbor_inds, neighbor_spatial_dists = compute_all_spatial_distances(
+        dfdata, max_thresh_km
+    )
     # neighbor_inds, neighbor_spatial_dists = sort_neighbors(neighbor_inds, neighbor_spatial_dists)
 
     # include all possible pixels in cluster
     to_check = np.full(num_points, fill_value=1, dtype=np.int8)
     while np.sum(to_check) > 0:
-        start_ind = np.argmax(to_check == 1) # catch first index to check
+        start_ind = np.argmax(to_check == 1)  # catch first index to check
 
         neighbors_to_search = list(neighbor_inds[start_ind])
         all_neighbors = neighbors_to_search
 
-        if len(all_neighbors) == 0:  # if no neighbor, record the current pixel as a separate cluster
+        if (
+            len(all_neighbors) == 0
+        ):  # if no neighbor, record the current pixel as a separate cluster
             point_to_cluster_id[start_ind] = cluster_id_counter
             cluster_id_counter += 1
             to_check[start_ind] = 0
@@ -177,7 +186,9 @@ def do_clustering(data, max_thresh_km):
                 searched_neighbours.append(px)
                 px_neighbors = list(neighbor_inds[px])
                 all_neighbors = list(set(all_neighbors + px_neighbors))
-                neighbors_to_search = list(set(all_neighbors).difference(searched_neighbours))
+                neighbors_to_search = list(
+                    set(all_neighbors).difference(searched_neighbours)
+                )
             # now we have all pixels in this cluster in all_neighbors
             point_to_cluster_id[all_neighbors] = cluster_id_counter
             cluster_id_counter += 1
@@ -185,8 +196,9 @@ def do_clustering(data, max_thresh_km):
 
     return point_to_cluster_id.tolist()
 
-def cal_distance(loc1,loc2):
-    ''' Calculate the distance between two points
+
+def cal_distance(loc1, loc2):
+    """ Calculate the distance between two points
 
     Parameters
     ----------
@@ -199,7 +211,7 @@ def cal_distance(loc1,loc2):
     -------
     distance : float
         distance (km) between two points
-    '''
+    """
     from FireConsts import EARTH_RADIUS_KM
     import math
 
@@ -211,14 +223,18 @@ def cal_distance(loc1,loc2):
     dlon = lon2 - lon1
     dlat = lat2 - lat1
 
-    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
+    a = (
+        math.sin(dlat / 2) ** 2
+        + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
     distance = EARTH_RADIUS_KM * c
     return distance
 
-def cal_mindist(c1,c2):
-    ''' Calculate the minimum distance beween two clusters (may modify the algorithm to speed up this calculation)
+
+def cal_mindist(c1, c2):
+    """ Calculate the minimum distance beween two clusters (may modify the algorithm to speed up this calculation)
 
     Parameters
     ----------
@@ -231,13 +247,14 @@ def cal_mindist(c1,c2):
     -------
     mindist : float
         the minimum distance (km) between c1 and c2
-    '''
+    """
 
     import itertools
 
-    mindist = min([cal_distance(l1, l2) for l1,l2 in itertools.product(c1, c2)])
+    mindist = min([cal_distance(l1, l2) for l1, l2 in itertools.product(c1, c2)])
 
     return mindist
+
 
 # def filter_centroid(loc_tgt,locs,MAX_THRESH_CENT_KM=50):
 #     ''' Get cluster ids if centroid is close to the target cluster centroid
@@ -260,8 +277,9 @@ def cal_mindist(c1,c2):
 #     closeindices = [i for i, x in enumerate(closeornot) if x == True]
 #     return closeindices
 
+
 def cal_centroid(data):
-    ''' Calculate the centroid of a list of points
+    """ Calculate the centroid of a list of points
     Parameters
     ----------
     data : list of [lat,lon]
@@ -273,9 +291,9 @@ def cal_centroid(data):
         lat of centroid
     yct : float
         lon of centroid
-    '''
+    """
     x, y = zip(*(data))
     l = len(x)
-    xct, yct =  sum(x) / l, sum(y) / l
+    xct, yct = sum(x) / l, sum(y) / l
 
-    return xct,yct
+    return xct, yct

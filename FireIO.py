@@ -6,8 +6,9 @@ This module include functions used to read and save data
 #%% Read and filter active fire data
 # ------------------------------------------------------------------------------
 
-def viirs_pixel_size(sample,band='i',rtSCAN_ANGLE=False):
-    '''calculate approximate size of i-band (375-m) or m-band (750-m) VIIRS pixel
+
+def viirs_pixel_size(sample, band="i", rtSCAN_ANGLE=False):
+    """calculate approximate size of i-band (375-m) or m-band (750-m) VIIRS pixel
         Adapted from L. Giolio's IDL code
     Usage: DS, DT = viirs_pixel_size(200,band='m',rtSCAN_ANGLE=False)
 
@@ -26,20 +27,20 @@ def viirs_pixel_size(sample,band='i',rtSCAN_ANGLE=False):
         length in along-track dimension [km]
     DS : float
         length in along-scan dimension [km]
-    '''
+    """
     import numpy as np
 
     # set constants
-    earth_radius = 6371.   # earth radius [km]
-    h = 824.               # SUOMI-NPP orbit altitude [km]
-    pt = 0.361             # nadir pixel resolution [km]
-    scan_rate = 56.06/6304 # scan rate (deg)
-    st1,st2,st3 = 1184, 1920, 3200  # sample tier steps
-    sb1,sb2,sb3 = 0, 3552, 5024  # sample base for each tier
+    earth_radius = 6371.0  # earth radius [km]
+    h = 824.0  # SUOMI-NPP orbit altitude [km]
+    pt = 0.361  # nadir pixel resolution [km]
+    scan_rate = 56.06 / 6304  # scan rate (deg)
+    st1, st2, st3 = 1184, 1920, 3200  # sample tier steps
+    sb1, sb2, sb3 = 0, 3552, 5024  # sample base for each tier
     ps_const = 0.128  # constant to convert zone number to along-scan deg for 1 pixel
 
     # adjust constants for m band
-    if band == 'm':
+    if band == "m":
         pt *= 2
         scan_rate *= 2
         st1 /= 2
@@ -51,27 +52,29 @@ def viirs_pixel_size(sample,band='i',rtSCAN_ANGLE=False):
         ps_const *= 2
 
     # derive more constants
-    st = pt/h              # along-track deg for 1 pixel[rad]
-    r = earth_radius + h   # r for satellite[km]
+    st = pt / h  # along-track deg for 1 pixel[rad]
+    r = earth_radius + h  # r for satellite[km]
 
     # calculate along-scan degrees
-    abs_sample = (sample>=st3)*(sample+1-st3) + (sample<st3)*(st3-sample)
+    abs_sample = (sample >= st3) * (sample + 1 - st3) + (sample < st3) * (st3 - sample)
     zone1 = abs_sample <= st1
-    zone2 = np.logical_and(abs_sample > st1,abs_sample <= st2)
+    zone2 = np.logical_and(abs_sample > st1, abs_sample <= st2)
     zone3 = abs_sample > st2
-    ps = ps_const*(3*zone1 + 2*zone2 + zone3)
-    ss = ps/h              # along-scan deg for 1 pixel[rad]
-    abs_scan = zone1*(abs_sample*3 * scan_rate) + \
-               zone2*((sb2+((abs_sample-st1)*2))*scan_rate) + \
-               zone3*((sb3+(abs_sample-st2))*scan_rate)      # scan angle, in degree
+    ps = ps_const * (3 * zone1 + 2 * zone2 + zone3)
+    ss = ps / h  # along-scan deg for 1 pixel[rad]
+    abs_scan = (
+        zone1 * (abs_sample * 3 * scan_rate)
+        + zone2 * ((sb2 + ((abs_sample - st1) * 2)) * scan_rate)
+        + zone3 * ((sb3 + (abs_sample - st2)) * scan_rate)
+    )  # scan angle, in degree
     theta = np.deg2rad(abs_scan)  # scan angle, in radian
     cos_theta = np.cos(theta)
 
     # calculate pixel size DS and DT
-    temp = (earth_radius/r)**2.-np.sin(theta)**2.
+    temp = (earth_radius / r) ** 2.0 - np.sin(theta) ** 2.0
     sqrt_temp = np.sqrt(temp)
-    DS = earth_radius * ss * (cos_theta/sqrt_temp-1.)
-    DT = r * st * (cos_theta-sqrt_temp)
+    DS = earth_radius * ss * (cos_theta / sqrt_temp - 1.0)
+    DT = r * st * (cos_theta - sqrt_temp)
 
     if rtSCAN_ANGLE == True:
         scan_angle = np.rad2deg(theta)
@@ -79,24 +82,26 @@ def viirs_pixel_size(sample,band='i',rtSCAN_ANGLE=False):
     else:
         return DS, DT
 
-def read_geojson_nv_CA(y0=2012,y1=2019):
-    ''' read non vegetation fire data in California
+
+def read_geojson_nv_CA(y0=2012, y1=2019):
+    """ read non vegetation fire data in California
 
     Returns
     -------
     gdf : GeoDataFrame
         the points of non vegetation fire location
-    '''
+    """
     import geopandas as gpd
     from FireConsts import dirextdata
 
-    fnm = dirextdata + 'CA/Calnvf/FCs_nv_'+str(y0)+'-'+str(y1)+'.geojson'
+    fnm = dirextdata + "CA/Calnvf/FCs_nv_" + str(y0) + "-" + str(y1) + ".geojson"
     gdf = gpd.read_file(fnm)
 
     return gdf
 
-def read_VNP14IMGML(yr,mo,ver='C1.05'):
-    ''' read monthly VNP14IMGML data
+
+def read_VNP14IMGML(yr, mo, ver="C1.05"):
+    """ read monthly VNP14IMGML data
 
     Parameters
     ----------
@@ -109,26 +114,47 @@ def read_VNP14IMGML(yr,mo,ver='C1.05'):
     -------
     df : dataframe
         the monthly dataframe of VIIRS active fires
-    '''
+    """
     from FireConsts import dirextdata
     import os
     import pandas as pd
 
     # set monthly file name
-    fnmFC = os.path.join(dirextdata,'VNP14IMGML','VNP14IMGML.'+str(yr)+str(mo).zfill(2)+'.'+ver+'.txt')
+    fnmFC = os.path.join(
+        dirextdata,
+        "VNP14IMGML",
+        "VNP14IMGML." + str(yr) + str(mo).zfill(2) + "." + ver + ".txt",
+    )
 
     # read
-    usecols = ['YYYYMMDD','HHMM','Lat','Lon','Line','Sample','FRP','Confidence','Type','DNFlag']
+    usecols = [
+        "YYYYMMDD",
+        "HHMM",
+        "Lat",
+        "Lon",
+        "Line",
+        "Sample",
+        "FRP",
+        "Confidence",
+        "Type",
+        "DNFlag",
+    ]
     if os.path.exists(fnmFC):
-        df = pd.read_csv(fnmFC,parse_dates=[['YYYYMMDD','HHMM']],usecols=usecols,skipinitialspace=True)
-        df['DT'],df['DS'] = viirs_pixel_size(df['Sample'].values)
-        df = df.drop(columns=['Sample','Line'])
+        df = pd.read_csv(
+            fnmFC,
+            parse_dates=[["YYYYMMDD", "HHMM"]],
+            usecols=usecols,
+            skipinitialspace=True,
+        )
+        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+        df = df.drop(columns=["Sample", "Line"])
         return df
     else:
         return None
+
 
 def read_VNP14IMGTDL(t):
-    ''' Read daily NRT S-NPP VIIRS fire location data
+    """ Read daily NRT S-NPP VIIRS fire location data
 
     Parameters
     ----------
@@ -139,7 +165,7 @@ def read_VNP14IMGTDL(t):
     -------
     vlist : list
         (lat,lon) tuple of all daily active fires
-    '''
+    """
     from FireConsts import dirextdata
 
     import pandas as pd
@@ -149,22 +175,48 @@ def read_VNP14IMGTDL(t):
     d = date(*t[:-1])
 
     # derive monthly file name with path
-    dirFC = os.path.join(dirextdata,'VNP14IMGTDL') + '/'
-    fnmFC = os.path.join(dirFC,'SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_'+d.strftime('%Y%j')+'.txt')
+    dirFC = os.path.join(dirextdata, "VNP14IMGTDL") + "/"
+    fnmFC = os.path.join(
+        dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
+    )
 
     # read and extract
-    usecols = ['latitude','longitude','daynight','frp','confidence','scan','track','acq_date','acq_time']
+    usecols = [
+        "latitude",
+        "longitude",
+        "daynight",
+        "frp",
+        "confidence",
+        "scan",
+        "track",
+        "acq_date",
+        "acq_time",
+    ]
     if os.path.exists(fnmFC):
         # read data
-        df = pd.read_csv(fnmFC,parse_dates=[['acq_date','acq_time']],usecols=usecols,skipinitialspace=True)
-        df = df.rename(columns={'latitude':'Lat','longitude':'Lon','frp':'FRP',
-                                'scan':'DS','track':'DT','acq_date_acq_time':'YYYYMMDD_HHMM'})
+        df = pd.read_csv(
+            fnmFC,
+            parse_dates=[["acq_date", "acq_time"]],
+            usecols=usecols,
+            skipinitialspace=True,
+        )
+        df = df.rename(
+            columns={
+                "latitude": "Lat",
+                "longitude": "Lon",
+                "frp": "FRP",
+                "scan": "DS",
+                "track": "DT",
+                "acq_date_acq_time": "YYYYMMDD_HHMM",
+            }
+        )
         return df
     else:
         return None
 
-def read_VJ114IMGML(yr,mo):
-    ''' read monthly VNP14IMGML data
+
+def read_VJ114IMGML(yr, mo):
+    """ read monthly VNP14IMGML data
 
     Parameters
     ----------
@@ -177,33 +229,65 @@ def read_VJ114IMGML(yr,mo):
     -------
     df : dataframe
         the monthly dataframe of VIIRS active fires
-    '''
+    """
     from FireConsts import dirextdata
     import os
     import pandas as pd
 
     # set monthly file name
-    fnmFC = os.path.join(dirextdata,'VJ114IMGML',str(yr),'VJ114IMGML_'+str(yr)+str(mo).zfill(2)+'.txt')
+    fnmFC = os.path.join(
+        dirextdata,
+        "VJ114IMGML",
+        str(yr),
+        "VJ114IMGML_" + str(yr) + str(mo).zfill(2) + ".txt",
+    )
 
     # read
-    usecols = ['year','month','day','hh','mm','lon','lat','mask',
-               'line','sample','frp']
-    def parser(yr,mo,dy, h, m):
-        return pd.to_datetime(yr + '-' + mo + '-' + dy + ' ' + h + ':' + m,
-                              format='%Y-%m-%d %H:%M')
+    usecols = [
+        "year",
+        "month",
+        "day",
+        "hh",
+        "mm",
+        "lon",
+        "lat",
+        "mask",
+        "line",
+        "sample",
+        "frp",
+    ]
+
+    def parser(yr, mo, dy, h, m):
+        return pd.to_datetime(
+            yr + "-" + mo + "-" + dy + " " + h + ":" + m, format="%Y-%m-%d %H:%M"
+        )
+
     if os.path.exists(fnmFC):
         # df = pd.read_csv(fnmFC,usecols=usecols,skipinitialspace=True)
-        df = pd.read_csv(fnmFC, parse_dates={'YYYYMMDD_HHMM': ['year','month','day','hh','mm']},
-                         date_parser=parser,usecols=usecols,skipinitialspace=True)
-        df = df.rename(columns={'lat':'Lat','lon':'Lon','frp':'FRP',
-                                'line':'Line','sample':'Sample'})
-        df['DT'],df['DS'] = viirs_pixel_size(df['Sample'].values)
+        df = pd.read_csv(
+            fnmFC,
+            parse_dates={"YYYYMMDD_HHMM": ["year", "month", "day", "hh", "mm"]},
+            date_parser=parser,
+            usecols=usecols,
+            skipinitialspace=True,
+        )
+        df = df.rename(
+            columns={
+                "lat": "Lat",
+                "lon": "Lon",
+                "frp": "FRP",
+                "line": "Line",
+                "sample": "Sample",
+            }
+        )
+        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
         return df
     else:
         return None
 
+
 def read_VJ114IMGTDL(t):
-    ''' Read daily NRT S-NPP VIIRS fire location data
+    """ Read daily NRT S-NPP VIIRS fire location data
 
     Parameters
     ----------
@@ -214,7 +298,7 @@ def read_VJ114IMGTDL(t):
     -------
     vlist : list
         (lat,lon) tuple of all daily active fires
-    '''
+    """
     from FireConsts import dirextdata
 
     import pandas as pd
@@ -224,23 +308,49 @@ def read_VJ114IMGTDL(t):
     d = date(*t[:-1])
 
     # derive monthly file name with path
-    dirFC = os.path.join(dirextdata,'VJ114IMGTDL') + '/'
-    fnmFC = os.path.join(dirFC,'J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_'+d.strftime('%Y%j')+'.txt')
+    dirFC = os.path.join(dirextdata, "VJ114IMGTDL") + "/"
+    fnmFC = os.path.join(
+        dirFC, "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
+    )
 
     # read and extract
     # usecols = ['latitude','longitude','daynight','frp','confidence']
-    usecols = ['latitude','longitude','daynight','frp','confidence','scan','track','acq_date','acq_time']
+    usecols = [
+        "latitude",
+        "longitude",
+        "daynight",
+        "frp",
+        "confidence",
+        "scan",
+        "track",
+        "acq_date",
+        "acq_time",
+    ]
     if os.path.exists(fnmFC):
         # read data
-        df = pd.read_csv(fnmFC,parse_dates=[['acq_date','acq_time']],usecols=usecols,skipinitialspace=True)
-        df = df.rename(columns={'latitude':'Lat','longitude':'Lon','frp':'FRP',
-                                'scan':'DS','track':'DT','acq_date_acq_time':'YYYYMMDD_HHMM'})
+        df = pd.read_csv(
+            fnmFC,
+            parse_dates=[["acq_date", "acq_time"]],
+            usecols=usecols,
+            skipinitialspace=True,
+        )
+        df = df.rename(
+            columns={
+                "latitude": "Lat",
+                "longitude": "Lon",
+                "frp": "FRP",
+                "scan": "DS",
+                "track": "DT",
+                "acq_date_acq_time": "YYYYMMDD_HHMM",
+            }
+        )
         return df
     else:
         return None
 
-def AFP_regfilter(df,shp_Reg,strlat='Lat',strlon='Lon'):
-    ''' filter fire pixels using a given shp_Reg
+
+def AFP_regfilter(df, shp_Reg, strlat="Lat", strlon="Lon"):
+    """ filter fire pixels using a given shp_Reg
 
     Parameters
     ----------
@@ -257,32 +367,39 @@ def AFP_regfilter(df,shp_Reg,strlat='Lat',strlon='Lon'):
     -------
     df_filtered : pandas DataFrame
         the filtered fire pixels
-    '''
+    """
     from shapely.geometry import Point
     import geopandas as gpd
     import pandas as pd
 
     # preliminary spatial filter and quality filter
-    regext= shp_Reg.bounds
-    newfirepixels = df.loc[(df[strlat] >= regext[1]) & (df[strlat] <= regext[3]) &
-                          (df[strlon] >= regext[0]) & (df[strlon] <= regext[2])]
+    regext = shp_Reg.bounds
+    newfirepixels = df.loc[
+        (df[strlat] >= regext[1])
+        & (df[strlat] <= regext[3])
+        & (df[strlon] >= regext[0])
+        & (df[strlon] <= regext[2])
+    ]
     point_data = [Point(xy) for xy in zip(newfirepixels[strlon], newfirepixels[strlat])]
     gdf_filtered = gpd.GeoDataFrame(newfirepixels, geometry=point_data, crs=4326)
 
     # if shp_Reg is not a rectangle, do detailed filtering (within shp_Reg)
     import math
+
     if not math.isclose(shp_Reg.minimum_rotated_rectangle.area, shp_Reg.area):
-        gdf_filtered = gdf_filtered[gdf_filtered['geometry'].within(shp_Reg)]
+        gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
 
     # drop geometry column
     from FireConsts import epsg
-    df_filtered = AFP_toprj(gdf_filtered,epsg=epsg)
+
+    df_filtered = AFP_toprj(gdf_filtered, epsg=epsg)
     # df_filtered = pd.DataFrame(gdf_filtered.drop(columns='geometry'))
 
     return df_filtered
 
+
 def AFP_nonstatfilter(df):
-    ''' Function used to filter non-static VIIRS active fire data
+    """ Function used to filter non-static VIIRS active fire data
 
     Parameters
     ----------
@@ -293,17 +410,20 @@ def AFP_nonstatfilter(df):
     -------
     df_filtered : pandas DataFrame
         the filtered fire pixels
-    '''
+    """
 
     # filter non-veg fires using a pre-derived mask
     gdf_nv = read_geojson_nv_CA()
-    buf_nv = 0.0071 # buffer for each nv point (now set to 0.0071 deg = 0.71 km)
-    df_filtered = df[(df.geometry.within(gdf_nv.iloc[0].geometry.buffer(0.005)) == False)]
+    buf_nv = 0.0071  # buffer for each nv point (now set to 0.0071 deg = 0.71 km)
+    df_filtered = df[
+        (df.geometry.within(gdf_nv.iloc[0].geometry.buffer(0.005)) == False)
+    ]
 
     return df_filtered
 
+
 def AFP_setampm(df):
-    ''' Function to set ampm column (using local hour) and update the df
+    """ Function to set ampm column (using local hour) and update the df
 
     Parameters
     ----------
@@ -314,69 +434,82 @@ def AFP_setampm(df):
     -------
     df_withampm : pandas DataFrame
         the DataFrame with 'ampm' column
-    '''
+    """
     import pandas as pd
     import numpy as np
 
     # calculate local hour using the longitude and YYYYMMDD_HHMM column
-    localhour = (pd.to_timedelta(df.Lon/15, unit='hours')+df['YYYYMMDD_HHMM']).dt.hour
+    localhour = (
+        pd.to_timedelta(df.Lon / 15, unit="hours") + df["YYYYMMDD_HHMM"]
+    ).dt.hour
 
     # set am/pm flag based on local hour
-    df_withampm = df.assign(ampm = np.where(((localhour > 6) & (localhour < 18)), 'PM','AM'))
+    df_withampm = df.assign(
+        ampm=np.where(((localhour > 6) & (localhour < 18)), "PM", "AM")
+    )
 
     return df_withampm
 
-def AFP_toprj(gdf,epsg=32610):
-    '''Transforms lat/lon coordinates to projected coordinate system for computations in m
+
+def AFP_toprj(gdf, epsg=32610):
+    """Transforms lat/lon coordinates to projected coordinate system for computations in m
     for global studies probably proj:cea would be a good choice
     for the boreals we use North Pole LAEA (epsg:3571)
     for CA may use WGS 84 / UTM zone 10N (epsg: 32610)
-    for US may use US National Atlas Equal Area (epsg: 2163)'''
+    for US may use US National Atlas Equal Area (epsg: 2163)"""
 
     import pandas as pd
 
     gdf = gdf.to_crs(epsg=epsg)
-    gdf['x'] = gdf.geometry.x
-    gdf['y'] = gdf.geometry.y
-    df = pd.DataFrame(gdf.drop(columns='geometry'))
+    gdf["x"] = gdf.geometry.x
+    gdf["y"] = gdf.geometry.y
+    df = pd.DataFrame(gdf.drop(columns="geometry"))
 
     return df
 
-def save_AFPtmp(df,d,head='VNP14IMGML.',tail='.pkl'):
-    ''' Function used to save regional filtered data to a temporary directory
-    '''
+
+def save_AFPtmp(df, d, head="VNP14IMGML.", tail=".pkl"):
+    """ Function used to save regional filtered data to a temporary directory
+    """
     from FireConsts import dirtmpdata
     import os
     import pickle
 
     # temporary file name
-    fnm_tmp = os.path.join(dirtmpdata,head+d.strftime('%Y%m')+tail)
+    fnm_tmp = os.path.join(dirtmpdata, head + d.strftime("%Y%m") + tail)
     check_filefolder(fnm_tmp)
 
     # save
-    with open(fnm_tmp,'wb') as f:
+    with open(fnm_tmp, "wb") as f:
         pickle.dump(df, f)
 
-def load_AFPtmp(d,head='VNP14IMGML.',tail='.pkl'):
-    ''' Function used to load regional filtered data to a temporary directory
-    '''
+
+def load_AFPtmp(d, head="VNP14IMGML.", tail=".pkl"):
+    """ Function used to load regional filtered data to a temporary directory
+    """
     from FireConsts import dirtmpdata
     import os
     import pickle
 
     # temporary file name
-    fnm_tmp = os.path.join(dirtmpdata,head+d.strftime('%Y%m')+tail)
+    fnm_tmp = os.path.join(dirtmpdata, head + d.strftime("%Y%m") + tail)
 
     # load and return
     if os.path.exists(fnm_tmp):
-        with open(fnm_tmp,'rb') as f:
+        with open(fnm_tmp, "rb") as f:
             df = pickle.load(f)
             return df
     else:  # if no presaved file, return None
         return None
 
-def read_AFPVIIRS(t, region, sat='SNPP',cols=['Lat','Lon','FRP','Sat','DT','DS','YYYYMMDD_HHMM','ampm','x','y']):
-    ''' Read half-daily fire location for a region from monthly NOAA20 VIIRS fire data.
+
+def read_AFPVIIRS(
+    t,
+    region,
+    sat="SNPP",
+    cols=["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"],
+):
+    """ Read half-daily fire location for a region from monthly NOAA20 VIIRS fire data.
         For the monthly VIIRS data, in order to reduce repeat calculation, we
         do the spatial and quality filtering once and save the filtered data to
         files in a temporary directory. For most time steps, we read the pre-saved
@@ -397,21 +530,21 @@ def read_AFPVIIRS(t, region, sat='SNPP',cols=['Lat','Lon','FRP','Sat','DT','DS',
     -------
     df_AFP : pandas DataFrame
         list of active fire pixels (filtered) from NOAA20
-    '''
+    """
 
     from datetime import date
 
     # read from pre-saved file
     d = date(*t[:-1])
-    if sat=='SNPP':
-        sathead = 'VNP14IMGML'
-    elif sat=='NOAA20':
-        sathead = 'VJ114IMGML'
+    if sat == "SNPP":
+        sathead = "VNP14IMGML"
+    elif sat == "NOAA20":
+        sathead = "VJ114IMGML"
     else:
-        print('please set SNPP or NOAA20 for sat')
+        print("please set SNPP or NOAA20 for sat")
 
     # load from pre-saved file
-    df = load_AFPtmp(d,head=region[0]+'_'+sathead+'.')
+    df = load_AFPtmp(d, head=region[0] + "_" + sathead + ".")
 
     # if no pre-saved file, read from original VNP14IMGML file and do/save spatial filtering
     if df is None:
@@ -419,37 +552,43 @@ def read_AFPVIIRS(t, region, sat='SNPP',cols=['Lat','Lon','FRP','Sat','DT','DS',
         shp_Reg = get_reg_shp(region[1])
 
         # read VJ114IMGML monthly file
-        if sat=='SNPP':
-            df = read_VNP14IMGML(t[0],t[1])
-            df = df.loc[df['Type'] == 0]     # type filtering
-        elif sat=='NOAA20':
-            df = read_VJ114IMGML(t[0],t[1])
-            df = df.loc[df['mask'] >= 7]
+        if sat == "SNPP":
+            df = read_VNP14IMGML(t[0], t[1])
+            df = df.loc[df["Type"] == 0]  # type filtering
+        elif sat == "NOAA20":
+            df = read_VJ114IMGML(t[0], t[1])
+            df = df.loc[df["mask"] >= 7]
         else:
-            print('please set SNPP or NOAA20 for sat')
+            print("please set SNPP or NOAA20 for sat")
 
         # do regional filtering
-        df = AFP_regfilter(df,shp_Reg)
+        df = AFP_regfilter(df, shp_Reg)
 
         # set ampm
         df = AFP_setampm(df)
 
         # save to temporary file
-        save_AFPtmp(df,d,head=region[0]+'_'+sathead+'.')
+        save_AFPtmp(df, d, head=region[0] + "_" + sathead + ".")
 
     # extract active pixels at current time step  (day and ampm filter)
-    df = df.loc[(df['YYYYMMDD_HHMM'].dt.day == t[2]) & (df['ampm'] == t[-1])]
+    df = df.loc[(df["YYYYMMDD_HHMM"].dt.day == t[2]) & (df["ampm"] == t[-1])]
 
     # add the satellite information
-    df['Sat'] = sat
+    df["Sat"] = sat
 
     # return selected columns; need to change column names first
     df_AFP = df[cols]
 
     return df_AFP
 
-def read_AFPVIIRSNRT(t, region, sat='SNPP', cols=['Lat','Lon','FRP','Sat','DT','DS','YYYYMMDD_HHMM','ampm','x','y']):
-    ''' Read half-daily active fire pixels in a region from daily NRT NOAA20 VIIRS
+
+def read_AFPVIIRSNRT(
+    t,
+    region,
+    sat="SNPP",
+    cols=["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"],
+):
+    """ Read half-daily active fire pixels in a region from daily NRT NOAA20 VIIRS
     fire location data
 
     Parameters
@@ -467,41 +606,42 @@ def read_AFPVIIRSNRT(t, region, sat='SNPP', cols=['Lat','Lon','FRP','Sat','DT','
     -------
     df_AFP : pandas DataFrame
         list of active fire pixels (filtered) from SNPPNRT
-    '''
+    """
     from datetime import date
 
     # read from VNP14IMGTDL file
-    if sat=='SNPP':
+    if sat == "SNPP":
         df = read_VNP14IMGTDL(t)
-    elif sat=='NOAA20':
+    elif sat == "NOAA20":
         df = read_VJ114IMGTDL(t)
     else:
-        print('please set SNPP or NOAA20 for sat')
+        print("please set SNPP or NOAA20 for sat")
 
     if df is None:
         return None
 
     # extract active pixes at current time step
     df = AFP_setampm(df)
-    df = df.loc[(df['ampm'] == t[-1])]
+    df = df.loc[(df["ampm"] == t[-1])]
 
     # do regional filtering
     shp_Reg = get_reg_shp(region[1])
-    df = AFP_regfilter(df,shp_Reg)
+    df = AFP_regfilter(df, shp_Reg)
 
     # do non-static filtering; now only available at CA
     # df = AFP_nonstatfilter(df)
 
     # add the satellite information
-    df['Sat'] = sat
+    df["Sat"] = sat
 
     # return selected columns; need to change column names first
     df_AFP = df[cols]
 
     return df_AFP
 
-def read_AFP(t,src='SNPP',nrt=False,region=None):
-    ''' The wrapper function used to read and extract half-daily active fire
+
+def read_AFP(t, src="SNPP", nrt=False, region=None):
+    """ The wrapper function used to read and extract half-daily active fire
     pixels in a region.
 
     Parameters
@@ -521,32 +661,32 @@ def read_AFP(t,src='SNPP',nrt=False,region=None):
     -------
     vlist : pandas DataFrame
         extracted active fire pixel data used for fire tracking
-    '''
+    """
     import pandas as pd
 
-    if src == 'VIIRS':
+    if src == "VIIRS":
         if nrt:
-            vlist_SNPP = read_AFPVIIRSNRT(t,region,sat='SNPP')
-            vlist_NOAA20 = read_AFPVIIRSNRT(t,region,sat='NOAA20')
-            vlist = pd.concat([vlist_NOAA20,vlist_SNPP],ignore_index=True)
+            vlist_SNPP = read_AFPVIIRSNRT(t, region, sat="SNPP")
+            vlist_NOAA20 = read_AFPVIIRSNRT(t, region, sat="NOAA20")
+            vlist = pd.concat([vlist_NOAA20, vlist_SNPP], ignore_index=True)
         else:
-            vlist_SNPP = read_AFPVIIRS(t,region,sat='SNPP')
-            vlist_NOAA20 = read_AFPVIIRS(t,region,sat='NOAA20')
-            vlist = pd.concat([vlist_NOAA20,vlist_SNPP],ignore_index=True)
-    elif src == 'SNPP':
+            vlist_SNPP = read_AFPVIIRS(t, region, sat="SNPP")
+            vlist_NOAA20 = read_AFPVIIRS(t, region, sat="NOAA20")
+            vlist = pd.concat([vlist_NOAA20, vlist_SNPP], ignore_index=True)
+    elif src == "SNPP":
         if nrt:
-            vlist = read_AFPVIIRSNRT(t,region,sat='SNPP')
+            vlist = read_AFPVIIRSNRT(t, region, sat="SNPP")
         else:
-            vlist = read_AFPVIIRS(t,region,sat='SNPP')
-    elif src == 'NOAA20':
+            vlist = read_AFPVIIRS(t, region, sat="SNPP")
+    elif src == "NOAA20":
         if nrt:
-            vlist = read_AFPVIIRSNRT(t,region,sat='NOAA20')
+            vlist = read_AFPVIIRSNRT(t, region, sat="NOAA20")
         else:
-            vlist = read_AFPVIIRS(t,region,sat='NOAA20')
-    elif src == 'BAMOD':
-        vlist = read_BAMOD(t,region)
+            vlist = read_AFPVIIRS(t, region, sat="NOAA20")
+    elif src == "BAMOD":
+        vlist = read_BAMOD(t, region)
     else:
-        print('Please set src to SNPP, NOAA20, or BAMOD')
+        print("Please set src to SNPP, NOAA20, or BAMOD")
         return None
 
     return vlist.reset_index(drop=True)
@@ -556,8 +696,9 @@ def read_AFP(t,src='SNPP',nrt=False,region=None):
 #%% Read other datasets
 # ------------------------------------------------------------------------------
 
-def read_mcd64_pixels(year,ext=[]):
-    '''Reads all Modis burned area pixels of a year from text file
+
+def read_mcd64_pixels(year, ext=[]):
+    """Reads all Modis burned area pixels of a year from text file
 
     Parameters
     ----------
@@ -567,35 +708,45 @@ def read_mcd64_pixels(year,ext=[]):
     Returns
     -------
     df: pd.dataframe, dataframe containing lat, lon and day of burning
-        from modis burned area '''
+        from modis burned area """
 
     from FireConsts import dirextdata
+
     # import glob
     import numpy as np
     import pandas as pd
     import os
 
-    mcd64dir = os.path.join(dirextdata,'MCD64A1')
+    mcd64dir = os.path.join(dirextdata, "MCD64A1")
     # filelist_viirs = glob.glob(dirpjdata+str(year)+'/Snapshot/*_NFP.txt')
     # df = pd.concat([pd.read_csv(i, dtype = {'lat':np.float64, 'lon':np.float64},
     #                             usecols = ['lat', 'lon'])
     #                 for i in filelist_viirs], ignore_index=True)
     # df['sensor'] = 'viirs'
 
-    filelist_mcd64 = os.path.join(mcd64dir,'ba_centroids_'+str(year)+'.csv')
-    df = pd.read_csv(filelist_mcd64, dtype = {'lat':np.float64, 'lon':np.float64},
-                     usecols = ['lat', 'lon','doy'])
+    filelist_mcd64 = os.path.join(mcd64dir, "ba_centroids_" + str(year) + ".csv")
+    df = pd.read_csv(
+        filelist_mcd64,
+        dtype={"lat": np.float64, "lon": np.float64},
+        usecols=["lat", "lon", "doy"],
+    )
     # filter by bounding box
     if len(ext) == 4:
         minx, miny, maxx, maxy = ext
-        df = df.loc[(df['lat']>=miny) & (df['lat']<= maxy) & (df['lon']>=minx) & (df['lon']<=maxx)]
+        df = df.loc[
+            (df["lat"] >= miny)
+            & (df["lat"] <= maxy)
+            & (df["lon"] >= minx)
+            & (df["lon"] <= maxx)
+        ]
 
     # df = pd.concat([df, df2])
 
     return df
 
-def load_mcd64(year,xoff=0,yoff=0,xsize=None,ysize=None):
-    '''get annual circumpolar modis burned/unburned tif
+
+def load_mcd64(year, xoff=0, yoff=0, xsize=None, ysize=None):
+    """get annual circumpolar modis burned/unburned tif
     optional: clip using UL pixel and pixel dimensions
 
     Parameters
@@ -606,82 +757,86 @@ def load_mcd64(year,xoff=0,yoff=0,xsize=None,ysize=None):
 
     Returns
     -------
-    arr: np.array, clipped image'''
+    arr: np.array, clipped image"""
 
     from FireConsts import dirextdata
     import gdal
     import os
 
-    mcd64dir = os.path.join(dirextdata,'MCD64A1')
-    fnm = os.path.join(mcd64dir, 'mcd64_' + str(year) + '.tif')
+    mcd64dir = os.path.join(dirextdata, "MCD64A1")
+    fnm = os.path.join(mcd64dir, "mcd64_" + str(year) + ".tif")
     ds = gdal.Open(fnm)
-    #arr = ds.ReadAsArray(xsize=xsize, ysize=ysize)
+    # arr = ds.ReadAsArray(xsize=xsize, ysize=ysize)
     arr = ds.ReadAsArray(xoff=xoff, yoff=yoff, xsize=xsize, ysize=ysize)
 
     return arr
 
+
 def get_any_shp(filename):
-    ''' get shapefile of any region given the input file name
+    """ get shapefile of any region given the input file name
 
     Parameters
     ----------
     filename : str
         the shapefile names saved in the directory dirextdata/shapefiles/
-    '''
+    """
     from FireConsts import dirextdata
     import geopandas as gpd
     import os
 
     # find the california shapefile
-    dirshape = os.path.join(dirextdata,'shapefiles')
-    statefnm = os.path.join(dirshape,filename)
+    dirshape = os.path.join(dirextdata, "shapefiles")
+    statefnm = os.path.join(dirshape, filename)
 
     # read the geometry
     shp = gpd.read_file(statefnm).iloc[0].geometry
 
     return shp
 
+
 def get_Cal_shp():
-    ''' get shapefile of California
+    """ get shapefile of California
     !!! this function can be realized using get_reg_shp(); still keep here for convenience...;
         will be deleted or modified later !!!
-    '''
+    """
     from FireConsts import dirextdata
     import geopandas as gpd
     import os
 
     # find the california shapefile
-    statefnm = os.path.join(dirextdata,'CA','Calshape','California.shp')
+    statefnm = os.path.join(dirextdata, "CA", "Calshape", "California.shp")
 
     # read the geometry
     shp_Cal = gpd.read_file(statefnm).iloc[0].geometry
 
     return shp_Cal
 
+
 def get_Cty_shp(ctr):
-    ''' get shapefile of a country
+    """ get shapefile of a country
 
     Parameters
     ----------
     ctr : str
         country name
-    '''
+    """
     import geopandas as gpd
     import os
     from FireConsts import dirextdata
 
-    ctyfnm = os.path.join(dirextdata,'World','country.shp')
+    ctyfnm = os.path.join(dirextdata, "World", "country.shp")
 
     gdf_cty = gpd.read_file(ctyfnm)
 
-    if ctr in gdf_cty['CNTRY_NAME'].values:
+    if ctr in gdf_cty["CNTRY_NAME"].values:
         g = gdf_cty[gdf_cty.CNTRY_NAME == ctr].iloc[0].geometry
         return g
     else:
         return None
 
+
 def get_reg_shp(reg):
-    ''' return the shape of a region, given an optional reg input
+    """ return the shape of a region, given an optional reg input
 
     Parameters
     ----------
@@ -695,28 +850,39 @@ def get_reg_shp(reg):
     -------
     shp_Reg : geometry
         the geometry of the region shape
-    '''
+    """
     from shapely.geometry import Point, Polygon
     import shapely
 
     # read or form shape used for filtering active fires
     if isinstance(reg, shapely.geometry.base.BaseGeometry):
         shp_Reg = reg
-    elif isinstance(reg,str):
+    elif isinstance(reg, str):
         shp_Reg = get_Cty_shp(reg)
         if shp_Reg is None:
-            print('Please input a valid Country name')
+            print("Please input a valid Country name")
             return None
-    elif isinstance(reg,list):
-        shp_Reg = Polygon([[reg[0],reg[1]],[reg[0],reg[3]],[reg[2],reg[3]],[reg[2],reg[1]],[reg[0],reg[1]]])
+    elif isinstance(reg, list):
+        shp_Reg = Polygon(
+            [
+                [reg[0], reg[1]],
+                [reg[0], reg[3]],
+                [reg[2], reg[3]],
+                [reg[2], reg[1]],
+                [reg[0], reg[1]],
+            ]
+        )
     else:
-        print('Please use geometry, country name (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region')
+        print(
+            "Please use geometry, country name (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
+        )
         return None
 
     return shp_Reg
 
+
 def get_LCT(locs):
-    ''' Get land cover type for active fires
+    """ Get land cover type for active fires
 
     Parameters
     ----------
@@ -727,7 +893,7 @@ def get_LCT(locs):
     -------
     vLCT : list of ints
         land cover types for all input active fires
-    '''
+    """
     from FireConsts import dirextdata
 
     from osgeo import gdal
@@ -735,7 +901,7 @@ def get_LCT(locs):
     import os
 
     # read NLCD 500m data
-    fnmLCT = os.path.join(dirextdata,'CA','nlcd_510m.tif')
+    fnmLCT = os.path.join(dirextdata, "CA", "nlcd_510m.tif")
     dataset = gdal.Open(fnmLCT, gdal.GA_ReadOnly)
     band = dataset.GetRasterBand(1)
     data = band.ReadAsArray()
@@ -745,15 +911,16 @@ def get_LCT(locs):
 
     # extract LCTs for each points
     vLCT = []
-    for lon,lat in locs:
-        x,y = pfunc(lon,lat)
-        i,j = int((x-gt[0])/gt[1]),int((y-gt[3])/gt[5])
-        vLCT.append(data[j,i])
+    for lon, lat in locs:
+        x, y = pfunc(lon, lat)
+        i, j = int((x - gt[0]) / gt[1]), int((y - gt[3]) / gt[5])
+        vLCT.append(data[j, i])
 
     return vLCT
 
+
 def get_LCT_NLCD(locs):
-    ''' Get land cover type from NCLD for multiple locations
+    """ Get land cover type from NCLD for multiple locations
 
     Parameters
     ----------
@@ -764,7 +931,7 @@ def get_LCT_NLCD(locs):
     -------
     vLCT : list of ints
         land cover types for all input active fires
-    '''
+    """
     from FireConsts import dirextdata
     import rasterio
 
@@ -773,16 +940,17 @@ def get_LCT_NLCD(locs):
     import os
 
     # read NLCD 500m data
-    fnmLCT = os.path.join(dirextdata,'CA','nlcd_510m_latlon.tif')
+    fnmLCT = os.path.join(dirextdata, "CA", "nlcd_510m_latlon.tif")
     dataset = rasterio.open(fnmLCT)
     # locs = [(x,y) for (y,x) in locs]
-    vLCT = dataset.sample(locs, indexes = 1)
-    vLCT = [lc[0] for lc in vLCT] # list values
+    vLCT = dataset.sample(locs, indexes=1)
+    vLCT = [lc[0] for lc in vLCT]  # list values
 
     return vLCT
 
-def get_FM1000(t,loc):
-    ''' Get fm1000 for a point at t
+
+def get_FM1000(t, loc):
+    """ Get fm1000 for a point at t
 
     Parameters
     ----------
@@ -795,31 +963,33 @@ def get_FM1000(t,loc):
     -------
     FM1000_loc : list of floats
         fm1000 value for all input active fires
-    '''
+    """
     from FireConsts import dirextdata
 
     import xarray as xr
     import os
 
     import warnings
+
     warnings.simplefilter("ignore")
 
     # read annual fm1000 data
-    dirGridMET = os.path.join(dirextdata,'GridMET') + '/'
-    fnm = dirGridMET + 'fm1000_'+t.strftime('%Y')+'.nc'
+    dirGridMET = os.path.join(dirextdata, "GridMET") + "/"
+    fnm = dirGridMET + "fm1000_" + t.strftime("%Y") + ".nc"
     ds = xr.open_dataset(fnm)
-    FM1000_all = ds['dead_fuel_moisture_1000hr']
+    FM1000_all = ds["dead_fuel_moisture_1000hr"]
 
     # extract daily data at t
     try:
-        FM1000_day = FM1000_all.sel(day=t.strftime('%Y-%m-%d'))
+        FM1000_day = FM1000_all.sel(day=t.strftime("%Y-%m-%d"))
     except:  # if data are not available, use the last available date
         FM1000_day = FM1000_all.isel(day=-1)
 
     # extract data near the given location
-    FM1000_loc = FM1000_day.sel(lon=loc[0],lat=loc[1],method='nearest').item()
+    FM1000_loc = FM1000_day.sel(lon=loc[0], lat=loc[1], method="nearest").item()
 
     return FM1000_loc
+
 
 # def get_stFM1000(fhull,locs,t):
 #     ''' get FM1000 for a fire at a time
@@ -860,13 +1030,13 @@ def get_FM1000(t,loc):
 #%% read and load object, gdf and summary related files
 # ------------------------------------------------------------------------------
 def check_filefolder(fnm):
-    ''' if the folder containing a file does not exist, make it
+    """ if the folder containing a file does not exist, make it
 
     Parameters
     ----------
     fnm : str
         file name
-    '''
+    """
     import os
 
     # folder name
@@ -876,22 +1046,24 @@ def check_filefolder(fnm):
     if not os.path.exists(dirnm):
         os.makedirs(dirnm)
 
+
 def check_folder(dirnm):
-    ''' if the folder does not exist, make it
+    """ if the folder does not exist, make it
 
     Parameters
     ----------
     dirfnm : str
         folder name
-    '''
+    """
     import os
 
     # create the folder if needed
     if not os.path.exists(dirnm):
         os.makedirs(dirnm)
 
-def correct_dtype(gdf,op=''):
-    ''' correct the datatype for gdfs loaded from geojson files
+
+def correct_dtype(gdf, op=""):
+    """ correct the datatype for gdfs loaded from geojson files
 
     Parameters
     ----------
@@ -907,20 +1079,21 @@ def correct_dtype(gdf,op=''):
     -------
     gdf : gpd DataFrame
         the gdf with correct datatype as given in FireConsts
-    '''
+    """
     from FireConsts import dd
 
     # explicitly set the attributes data types
-    if op == '':
-        for v,tp in dd.items():
+    if op == "":
+        for v, tp in dd.items():
             gdf[v] = gdf[v].astype(tp)
     else:
-        gdf['fireID'] = gdf['fireID'].astype('int')
+        gdf["fireID"] = gdf["fireID"].astype("int")
 
     return gdf
 
-def get_fobj_fnm(t,regnm,activeonly=False):
-    ''' Return the fire object pickle file name at a time step
+
+def get_fobj_fnm(t, regnm, activeonly=False):
+    """ Return the fire object pickle file name at a time step
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -930,7 +1103,7 @@ def get_fobj_fnm(t,regnm,activeonly=False):
     ----------
     fnm : str
         pickle file name
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import os
@@ -938,26 +1111,40 @@ def get_fobj_fnm(t,regnm,activeonly=False):
     d = date(*t[:-1])
     # fnm = dirpjdata+regnm+'/'+d.strftime('%Y')+'/Serialization/'+d.strftime('%Y%m%d')+t[-1]+'.pkl'
     if activeonly:
-        fnm = os.path.join(diroutdata, regnm, d.strftime('%Y'),'Serialization', d.strftime('%Y%m%d')+t[-1]+'.pkl')
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            d.strftime("%Y"),
+            "Serialization",
+            d.strftime("%Y%m%d") + t[-1] + ".pkl",
+        )
     else:
-        fnm = os.path.join(diroutdata, regnm, d.strftime('%Y'),'Serialization', d.strftime('%Y%m%d')+t[-1]+'_full.pkl')
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            d.strftime("%Y"),
+            "Serialization",
+            d.strftime("%Y%m%d") + t[-1] + "_full.pkl",
+        )
     return fnm
 
-def check_fobj(t,regnm,activeonly=False):
-    ''' Check if the pickle file storing a daily allfires object exists
+
+def check_fobj(t, regnm, activeonly=False):
+    """ Check if the pickle file storing a daily allfires object exists
 
     Parameters
     ----------
     t : tuple, (year,month,day,str)
         the day and 'AM'|'PM' during the intialization
-    '''
+    """
     import os
 
-    fnm = get_fobj_fnm(t,regnm,activeonly=activeonly)
+    fnm = get_fobj_fnm(t, regnm, activeonly=activeonly)
     return os.path.exists(fnm)
 
-def save_fobj(allfires,t,regnm,activeonly=False):
-    ''' Save a daily allfires object to a pickle file
+
+def save_fobj(allfires, t, regnm, activeonly=False):
+    """ Save a daily allfires object to a pickle file
 
     Parameters
     ----------
@@ -967,7 +1154,7 @@ def save_fobj(allfires,t,regnm,activeonly=False):
         the day and 'AM'|'PM' during the intialization
     activeonly : bool
         the flag to save activeonly or full pickle file
-    '''
+    """
 
     import pickle
     import os
@@ -975,9 +1162,11 @@ def save_fobj(allfires,t,regnm,activeonly=False):
 
     if activeonly:
         # we only want to save active and sleeper fires
-        allfires_out = Allfires(t) # create a new allfires object
+        allfires_out = Allfires(t)  # create a new allfires object
         # allfires_out.update_t(t)  # correct the time (previous time step was used in the intialization)
-        fids_out = allfires.fids_active + allfires.fids_sleeper # active fire or sleeper
+        fids_out = (
+            allfires.fids_active + allfires.fids_sleeper
+        )  # active fire or sleeper
         id_dict = []
         allfires_index = 0
         for fid in fids_out:
@@ -993,17 +1182,18 @@ def save_fobj(allfires,t,regnm,activeonly=False):
         allfires_out = allfires
 
     # get output file name
-    fnm = get_fobj_fnm(t,regnm,activeonly=activeonly)
+    fnm = get_fobj_fnm(t, regnm, activeonly=activeonly)
 
     # check folder
     check_filefolder(fnm)
 
     # save
-    with open(fnm,'wb') as f:
+    with open(fnm, "wb") as f:
         pickle.dump(allfires_out, f)
 
-def load_fobj(t,regnm,activeonly=False):
-    ''' Load a daily allfires object from a pickle file
+
+def load_fobj(t, regnm, activeonly=False):
+    """ Load a daily allfires object from a pickle file
 
     Parameters
     ----------
@@ -1014,16 +1204,17 @@ def load_fobj(t,regnm,activeonly=False):
     ----------
     data : obj of Allfires class
         daily allfires
-    '''
+    """
     import pickle
 
     # get file name
-    fnm = get_fobj_fnm(t,regnm,activeonly=activeonly)
+    fnm = get_fobj_fnm(t, regnm, activeonly=activeonly)
 
     # load data
-    with open(fnm,'rb') as f:
+    with open(fnm, "rb") as f:
         data = pickle.load(f)
     return data
+
 
 # def update_fobj_ia(data,t,regnm):
 #     ''' Update the pickle file saving inactive fire objects (one for each year)
@@ -1056,8 +1247,8 @@ def load_fobj(t,regnm,activeonly=False):
 #         pickle.dump(allfires_ia, f)
 
 
-def get_gdfobj_fnm(t,regnm,op=''):
-    ''' Return the fire object gpkg file name at a time step
+def get_gdfobj_fnm(t, regnm, op=""):
+    """ Return the fire object gpkg file name at a time step
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1071,21 +1262,34 @@ def get_gdfobj_fnm(t,regnm,op=''):
     ----------
     fnm : str
         gdf file name
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import os
 
     d = date(*t[:-1])
-    if op == '':
-        fnm = os.path.join(diroutdata,regnm, d.strftime('%Y'), 'Snapshot', d.strftime('%Y%m%d')+t[-1]+'.gpkg')
+    if op == "":
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            d.strftime("%Y"),
+            "Snapshot",
+            d.strftime("%Y%m%d") + t[-1] + ".gpkg",
+        )
     else:
-        fnm = os.path.join(diroutdata,regnm, d.strftime('%Y'), 'Snapshot', d.strftime('%Y%m%d')+t[-1]+'_'+op+'.gpkg')
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            d.strftime("%Y"),
+            "Snapshot",
+            d.strftime("%Y%m%d") + t[-1] + "_" + op + ".gpkg",
+        )
 
     return fnm
 
-def get_gpkgobj_fnm(t,regnm):
-    ''' Return the gpkg snapshot file name at a time step
+
+def get_gpkgobj_fnm(t, regnm):
+    """ Return the gpkg snapshot file name at a time step
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1094,7 +1298,7 @@ def get_gpkgobj_fnm(t,regnm):
     ----------
     fnm : str
         gpkg file name
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import FireIO
@@ -1102,15 +1306,16 @@ def get_gpkgobj_fnm(t,regnm):
 
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Snapshot')
+    strdir = os.path.join(diroutdata, regnm, d.strftime("%Y"), "Snapshot")
 
     # get the output file name
-    fnm = os.path.join(strdir,d.strftime('%Y%m%d')+t[-1]+'.gpkg')
+    fnm = os.path.join(strdir, d.strftime("%Y%m%d") + t[-1] + ".gpkg")
 
     return fnm
 
-def get_gpkgsfs_fnm(t,fid,regnm):
-    ''' Return the gpkg snapshot file name at a time step
+
+def get_gpkgsfs_fnm(t, fid, regnm):
+    """ Return the gpkg snapshot file name at a time step
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1119,7 +1324,7 @@ def get_gpkgsfs_fnm(t,fid,regnm):
     ----------
     fnm : str
         gpkg file name
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import FireIO
@@ -1127,15 +1332,18 @@ def get_gpkgsfs_fnm(t,fid,regnm):
 
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Largefire')
+    strdir = os.path.join(diroutdata, regnm, d.strftime("%Y"), "Largefire")
 
     # get the output file name
-    fnm = os.path.join(strdir,'F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'.gpkg')
+    fnm = os.path.join(
+        strdir, "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1] + ".gpkg"
+    )
 
     return fnm
 
-def get_NFPlistsfs_fnm(t,fid,regnm):
-    ''' Return the gpkg snapshot file name at a time step
+
+def get_NFPlistsfs_fnm(t, fid, regnm):
+    """ Return the gpkg snapshot file name at a time step
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1144,7 +1352,7 @@ def get_NFPlistsfs_fnm(t,fid,regnm):
     ----------
     fnm : str
         gpkg file name
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import FireIO
@@ -1152,16 +1360,18 @@ def get_NFPlistsfs_fnm(t,fid,regnm):
 
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Largefire')
+    strdir = os.path.join(diroutdata, regnm, d.strftime("%Y"), "Largefire")
 
     # get the output file name
-    fnm = os.path.join(strdir,'F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'_NFP.txt')
+    fnm = os.path.join(
+        strdir, "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1] + "_NFP.txt"
+    )
 
     return fnm
 
 
-def check_gpkgobj(t,regnm):
-    ''' Check if the gpkg file storing a daily allfires attributes exists
+def check_gpkgobj(t, regnm):
+    """ Check if the gpkg file storing a daily allfires attributes exists
 
     Parameters
     ----------
@@ -1169,17 +1379,18 @@ def check_gpkgobj(t,regnm):
         the day and 'AM'|'PM' during the intialization
     regnm : str
         the name of the region
-    '''
+    """
     from datetime import date
     import os
 
     # d = date(*t[:-1])
-    fnm = get_gpkgobj_fnm(t,regnm)
+    fnm = get_gpkgobj_fnm(t, regnm)
 
     return os.path.exists(fnm)
 
-def check_gdfobj(t,regnm,op=''):
-    ''' Check if the gpkg file storing a daily allfires attributes exists
+
+def check_gdfobj(t, regnm, op=""):
+    """ Check if the gpkg file storing a daily allfires attributes exists
 
     Parameters
     ----------
@@ -1190,17 +1401,18 @@ def check_gdfobj(t,regnm,op=''):
         '': fire perimeter and attributes
         'FL': active fire line
         'NFP': new fire pixels
-    '''
+    """
     from datetime import date
     import os
 
     d = date(*t[:-1])
-    fnm = get_gdfobj_fnm(t,regnm)
+    fnm = get_gdfobj_fnm(t, regnm)
 
     return os.path.exists(fnm)
 
-def save_gdfobj(gdf,t,regnm,param='',fid='',op=''):
-    ''' Save geopandas to a gpgk file
+
+def save_gdfobj(gdf, t, regnm, param="", fid="", op=""):
+    """ Save geopandas to a gpgk file
 
     Parameters
     ----------
@@ -1215,37 +1427,47 @@ def save_gdfobj(gdf,t,regnm,param='',fid='',op=''):
         if 'final': save final perimeters layer
     fid : int,
         fire id (needed only with param = 'large')
-    '''
+    """
     import os
 
     # get file name
-    if param == '':
-        fnm = get_gdfobj_fnm(t,regnm,op=op)
-    elif param == 'large':
-        fnm = get_gdfobj_sf_fnm(t,fid,regnm,op=op)
+    if param == "":
+        fnm = get_gdfobj_fnm(t, regnm, op=op)
+    elif param == "large":
+        fnm = get_gdfobj_sf_fnm(t, fid, regnm, op=op)
     else:
         from datetime import date
         from FireConsts import diroutdata
+
         d = date(*t[:-1])
 
         # get file name
-        fnm = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Summary',param+d.strftime('%Y')+'.gpkg')
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            d.strftime("%Y"),
+            "Summary",
+            param + d.strftime("%Y") + ".gpkg",
+        )
 
     # check folder
     check_filefolder(fnm)
 
     # create a new id column used for indexing
-    #(id column will be dropped when reading gpkg)
+    # (id column will be dropped when reading gpkg)
     gdf["id"] = gdf.index
-    gdf = gdf.set_index('id')
-    if op == 'FL':
-        gdf['fireID'] = gdf['fireID'].astype(int) # data types are screwed up in fline
+    gdf = gdf.set_index("id")
+    if op == "FL":
+        gdf["fireID"] = gdf["fireID"].astype(int)  # data types are screwed up in fline
 
     # save file
-    gdf.to_file(fnm, driver='GPKG')
+    gdf.to_file(fnm, driver="GPKG")
 
-def save_gpkgobj(t,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_uptonow=None):
-    ''' Save geopandas to a gpkg fire object file
+
+def save_gpkgobj(
+    t, regnm, gdf_fperim=None, gdf_fline=None, gdf_nfp=None, gdf_uptonow=None
+):
+    """ Save geopandas to a gpkg fire object file
 
     Parameters
     ----------
@@ -1253,14 +1475,14 @@ def save_gpkgobj(t,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_uptonow
         daily allfires diagnostic parameters
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM'
-    '''
+    """
     from datetime import date
 
     # date of the time step
     d = date(*t[:-1])
 
     # get file name
-    fnm = get_gpkgobj_fnm(t,regnm)
+    fnm = get_gpkgobj_fnm(t, regnm)
 
     # check folder
     check_filefolder(fnm)
@@ -1274,19 +1496,22 @@ def save_gpkgobj(t,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_uptonow
 
     # save file
     if gdf_fperim is not None:
-        gdf_fperim.to_file(fnm, driver='GPKG',layer='perimeter')
+        gdf_fperim.to_file(fnm, driver="GPKG", layer="perimeter")
 
     if gdf_fline is not None:
-        gdf_fline.to_file(fnm, driver='GPKG',layer='fireline')
+        gdf_fline.to_file(fnm, driver="GPKG", layer="fireline")
 
     if gdf_nfp is not None:
-        gdf_nfp.to_file(fnm, driver='GPKG',layer='newfirepix')
+        gdf_nfp.to_file(fnm, driver="GPKG", layer="newfirepix")
 
     if gdf_uptonow is not None:
-        gdf_uptonow.to_file(fnm, driver='GPKG',layer='uptonow')
+        gdf_uptonow.to_file(fnm, driver="GPKG", layer="uptonow")
 
-def save_gpkgsfs(t,fid,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_nfplist=None):
-    ''' Save geopandas to a gpkg fire object file
+
+def save_gpkgsfs(
+    t, fid, regnm, gdf_fperim=None, gdf_fline=None, gdf_nfp=None, gdf_nfplist=None
+):
+    """ Save geopandas to a gpkg fire object file
 
     Parameters
     ----------
@@ -1294,14 +1519,14 @@ def save_gpkgsfs(t,fid,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_nfp
         daily allfires diagnostic parameters
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM'
-    '''
+    """
     from datetime import date
 
     # date of the time step
     d = date(*t[:-1])
 
     # get file name
-    fnm = get_gpkgsfs_fnm(t,fid,regnm)
+    fnm = get_gpkgsfs_fnm(t, fid, regnm)
 
     # check folder
     check_filefolder(fnm)
@@ -1315,22 +1540,22 @@ def save_gpkgsfs(t,fid,regnm,gdf_fperim=None,gdf_fline=None,gdf_nfp=None,gdf_nfp
 
     # save file
     if gdf_fperim is not None:
-        gdf_fperim.to_file(fnm, driver='GPKG',layer='perimeter')
+        gdf_fperim.to_file(fnm, driver="GPKG", layer="perimeter")
 
     # if len(gdf_fline) > 0:
     if gdf_fline is not None:
-        gdf_fline.to_file(fnm, driver='GPKG',layer='fireline')
+        gdf_fline.to_file(fnm, driver="GPKG", layer="fireline")
 
     # if len(gdf_NFP) > 0:
     if gdf_nfp is not None:
-        gdf_nfp.to_file(fnm, driver='GPKG',layer='newfirepix')
+        gdf_nfp.to_file(fnm, driver="GPKG", layer="newfirepix")
 
     if gdf_nfplist is not None:
-        gdf_nfplist.to_file(fnm, driver='GPKG',layer='nfplist')
+        gdf_nfplist.to_file(fnm, driver="GPKG", layer="nfplist")
 
 
-def load_gpkgobj(t,regnm,layer='perimeter'):
-    ''' Load geopandas from a gpkg fire object file
+def load_gpkgobj(t, regnm, layer="perimeter"):
+    """ Load geopandas from a gpkg fire object file
 
     Parameters
     ----------
@@ -1342,25 +1567,27 @@ def load_gpkgobj(t,regnm,layer='perimeter'):
     -------
     gdf : geopandas DataFrame
         daily allfires diagnostic parameters
-    '''
+    """
     import os
     import pandas as pd
 
     # get file name
-    fnm = get_gpkgobj_fnm(t,regnm)
+    fnm = get_gpkgobj_fnm(t, regnm)
 
     if os.path.exists(fnm):
         try:
-            gdf = read_gpkg(fnm,layer=layer)
+            gdf = read_gpkg(fnm, layer=layer)
 
             # set fireID as index column (force to be int type)
-            if 't' in gdf.columns: gdf['t'] = pd.to_datetime(gdf.t)
-            if 't_st' in gdf.columns: gdf['t_st'] = pd.to_datetime(gdf.t_st)
-            if 't_ed' in gdf.columns: gdf['t_ed'] = pd.to_datetime(gdf.t_ed)
+            if "t" in gdf.columns:
+                gdf["t"] = pd.to_datetime(gdf.t)
+            if "t_st" in gdf.columns:
+                gdf["t_st"] = pd.to_datetime(gdf.t_st)
+            if "t_ed" in gdf.columns:
+                gdf["t_ed"] = pd.to_datetime(gdf.t_ed)
 
-
-            gdf.fireID = gdf.fireID.astype('int')
-            gdf = gdf.set_index('fireID')
+            gdf.fireID = gdf.fireID.astype("int")
+            gdf = gdf.set_index("fireID")
         except:
             gdf = None
 
@@ -1369,8 +1596,9 @@ def load_gpkgobj(t,regnm,layer='perimeter'):
     else:
         return None
 
-def load_gpkgsfs(t,fid,regnm,layer='perimeter'):
-    ''' Load geopandas from a gpkg fire object file
+
+def load_gpkgsfs(t, fid, regnm, layer="perimeter"):
+    """ Load geopandas from a gpkg fire object file
 
     Parameters
     ----------
@@ -1382,17 +1610,18 @@ def load_gpkgsfs(t,fid,regnm,layer='perimeter'):
     -------
     gdf : geopandas DataFrame
         daily allfires diagnostic parameters
-    '''
+    """
     import os
 
     # get file name
-    fnm = get_gpkgsfs_fnm(t,fid,regnm)
+    fnm = get_gpkgsfs_fnm(t, fid, regnm)
 
     if os.path.exists(fnm):
-        gdf = read_gpkg(fnm,layer=layer)
+        gdf = read_gpkg(fnm, layer=layer)
 
         if gdf is not None:
-            if ('t' in gdf.columns): gdf['t'] = gdf['t'].astype('datetime64')
+            if "t" in gdf.columns:
+                gdf["t"] = gdf["t"].astype("datetime64")
         # set fireID as index column (force to be int type)
         # gdf = gdf.set_index('index')
 
@@ -1401,8 +1630,8 @@ def load_gpkgsfs(t,fid,regnm,layer='perimeter'):
         return None
 
 
-def load_gdfobj(regnm,t='',op=''):
-    ''' Load daily allfires diagnostic dataframe as geopandas gdf
+def load_gdfobj(regnm, t="", op=""):
+    """ Load daily allfires diagnostic dataframe as geopandas gdf
 
     Parameters
     ----------
@@ -1412,11 +1641,11 @@ def load_gdfobj(regnm,t='',op=''):
     ----------
     gdf : geopandas DataFrame
         daily allfires diagnostic parameters
-    '''
+    """
     import geopandas as gpd
 
     # get file name
-    fnm = get_gdfobj_fnm(t,regnm,op=op)
+    fnm = get_gdfobj_fnm(t, regnm, op=op)
 
     # read data as gpd DataFrame
     gdf = gpd.read_file(fnm)
@@ -1425,37 +1654,39 @@ def load_gdfobj(regnm,t='',op=''):
     gdf = gdf.rename(columns={"id": "fid"})
 
     # correct the datatype
-    gdf = correct_dtype(gdf,op=op)
+    gdf = correct_dtype(gdf, op=op)
 
     # set fid as the index
-    gdf = gdf.set_index('fireID')
+    gdf = gdf.set_index("fireID")
 
     return gdf
 
-def save_newyearfidmapping(fidmapping,year,regnm):
-    ''' Save the cross year fid mapping tuples
-    '''
+
+def save_newyearfidmapping(fidmapping, year, regnm):
+    """ Save the cross year fid mapping tuples
+    """
     from FireConsts import diroutdata
     import os
     import pandas as pd
 
     # convert list to dataframe
     df = pd.DataFrame(fidmapping)
-    df.columns = ['oldfid','newfid']
+    df.columns = ["oldfid", "newfid"]
 
     # determine output file name
-    strdir = os.path.join(diroutdata,regnm,str(year),'Summary')
-    fnmout = os.path.join(strdir,'CrossyrFidmapping_'+str(year)+'.csv')
+    strdir = os.path.join(diroutdata, regnm, str(year), "Summary")
+    fnmout = os.path.join(strdir, "CrossyrFidmapping_" + str(year) + ".csv")
     check_filefolder(fnmout)
 
     # save
-    df.to_csv(fnmout) # use df = pd.read_csv(fnmout,index_col=0) to read
+    df.to_csv(fnmout)  # use df = pd.read_csv(fnmout,index_col=0) to read
+
 
 def save_FP_txt(df, t, regnm):
 
     # get filename of new fire pixels product
-    fnm = get_gdfobj_fnm(t,regnm,op='NFP')
-    fnm = fnm[:-4]+'txt' # change ending to txt
+    fnm = get_gdfobj_fnm(t, regnm, op="NFP")
+    fnm = fnm[:-4] + "txt"  # change ending to txt
 
     # check folder
     check_filefolder(fnm)
@@ -1463,11 +1694,12 @@ def save_FP_txt(df, t, regnm):
     # write out
     if len(df) > 0:
         df.to_csv(fnm)
+
 
 def save_FPsfs_txt(df, t, fid, regnm):
 
     # get filename of new fire pixels product
-    fnm = get_NFPlistsfs_fnm(t,fid,regnm)
+    fnm = get_NFPlistsfs_fnm(t, fid, regnm)
 
     # check folder
     check_filefolder(fnm)
@@ -1477,19 +1709,21 @@ def save_FPsfs_txt(df, t, fid, regnm):
         df.to_csv(fnm)
 
 
-def load_FP_txt(t,regnm):
+def load_FP_txt(t, regnm):
     import os
     import pandas as pd
+
     # get filename of new fire pixels product
-    fnm = get_gdfobj_fnm(t,regnm,op='NFP')
-    fnm = fnm[:-4]+'txt' # change ending to txt
+    fnm = get_gdfobj_fnm(t, regnm, op="NFP")
+    fnm = fnm[:-4] + "txt"  # change ending to txt
 
     if os.path.exists(fnm):
-        df = pd.read_csv(fnm,parse_dates=['datetime'],index_col=0)
+        df = pd.read_csv(fnm, parse_dates=["datetime"], index_col=0)
         return df
 
+
 def load_lake_geoms(t, fid, regnm):
-    ''' Load final perimeters as geopandas gdf
+    """ Load final perimeters as geopandas gdf
 
     Parameters
     ----------
@@ -1501,7 +1735,7 @@ def load_lake_geoms(t, fid, regnm):
     ----------
     geoms : tuple (geom, geom)
         geometry of all lake perimeters within the fire
-    '''
+    """
     import geopandas as gpd
     from datetime import date
     from FireConsts import diroutdata
@@ -1510,22 +1744,28 @@ def load_lake_geoms(t, fid, regnm):
     d = date(*t[:-1])
 
     # get file name
-    fnm_lakes = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Summary','lakes'+d.strftime('%Y')+'.gpkg')
+    fnm_lakes = os.path.join(
+        diroutdata,
+        regnm,
+        d.strftime("%Y"),
+        "Summary",
+        "lakes" + d.strftime("%Y") + ".gpkg",
+    )
 
     # read data and extract target geometry
     gdf = gpd.read_file(fnm_lakes)
-    gdf = gdf.set_index('mergid')
+    gdf = gdf.set_index("mergid")
     if fid in gdf.index:
         gdf = gdf.loc[fid]
-        geom_lakes = gdf['geometry']
+        geom_lakes = gdf["geometry"]
     else:
         geom_lakes = None
 
     return geom_lakes
 
 
-def get_gdfobj_sf_fnm(t,fid,regnm,op=''):
-    ''' Return the single fire fire object pickle file name at a time step
+def get_gdfobj_sf_fnm(t, fid, regnm, op=""):
+    """ Return the single fire fire object pickle file name at a time step
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1536,21 +1776,42 @@ def get_gdfobj_sf_fnm(t,fid,regnm,op=''):
     ----------
     fnm : str
         gdf file name
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import os
+
     d = date(*t[:-1])
 
-    if op == '':
-        fnm = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Largefire','F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'.gpkg')
+    if op == "":
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            d.strftime("%Y"),
+            "Largefire",
+            "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1] + ".gpkg",
+        )
     else:
-        fnm = os.path.join(diroutdata,regnm,d.strftime('%Y'),'Largefire','F'+str(int(fid))+'_'+d.strftime('%Y%m%d')+t[-1]+'_'+op+'.gpkg')
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            d.strftime("%Y"),
+            "Largefire",
+            "F"
+            + str(int(fid))
+            + "_"
+            + d.strftime("%Y%m%d")
+            + t[-1]
+            + "_"
+            + op
+            + ".gpkg",
+        )
 
     return fnm
 
-def get_gdfobj_sf_fnms_year(year,fid,regnm,op=''):
-    ''' Return the single fire fire object pickle file name at a time step
+
+def get_gdfobj_sf_fnms_year(year, fid, regnm, op=""):
+    """ Return the single fire fire object pickle file name at a time step
     Parameters
     ----------
     year : int
@@ -1561,21 +1822,38 @@ def get_gdfobj_sf_fnms_year(year,fid,regnm,op=''):
     ----------
     fnms : list of str
         geojson file names
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     from glob import glob
     import os
 
-    if op == '':
-        fnms = glob(os.path.join(diroutdata,regnm,str(year),'Largefire','F'+str(int(fid))+'_??????????.gpkg'))
+    if op == "":
+        fnms = glob(
+            os.path.join(
+                diroutdata,
+                regnm,
+                str(year),
+                "Largefire",
+                "F" + str(int(fid)) + "_??????????.gpkg",
+            )
+        )
     else:
-        fnms = glob(os.path.join(diroutdata,regnm,str(year),'Largefire','F'+str(int(fid))+'_??????????_'+op+'.gpkg'))
+        fnms = glob(
+            os.path.join(
+                diroutdata,
+                regnm,
+                str(year),
+                "Largefire",
+                "F" + str(int(fid)) + "_??????????_" + op + ".gpkg",
+            )
+        )
 
     return fnms
 
-def save_gdfobj_sf(gdf,t,fid,regnm,op=''):
-    ''' Save daily single fire allfires diagnostic dataframe to a geojson file
+
+def save_gdfobj_sf(gdf, t, fid, regnm, op=""):
+    """ Save daily single fire allfires diagnostic dataframe to a geojson file
 
     Parameters
     ----------
@@ -1585,19 +1863,19 @@ def save_gdfobj_sf(gdf,t,fid,regnm,op=''):
         the year, month, day and 'AM'|'PM'
     fid : int
         fire id
-    '''
+    """
     # get file name
-    fnm = get_gdfobj_sf_fnm(t,fid,regnm,op=op)
+    fnm = get_gdfobj_sf_fnm(t, fid, regnm, op=op)
 
     # check folder
     check_filefolder(fnm)
 
     # save data to file
-    gdf.to_file(fnm, driver='GeoJSON')
+    gdf.to_file(fnm, driver="GeoJSON")
 
 
-def load_gdfobj_sf(t,fid,regnm,op=''):
-    ''' Load single fire daily allfires diagnostic dataframe to a geojson file
+def load_gdfobj_sf(t, fid, regnm, op=""):
+    """ Load single fire daily allfires diagnostic dataframe to a geojson file
 
     Parameters
     ----------
@@ -1609,24 +1887,25 @@ def load_gdfobj_sf(t,fid,regnm,op=''):
     ----------
     gdf : geopandas DataFrame
         time series of daily single fire diagnostic parameters
-    '''
+    """
     import geopandas as gpd
     import pandas as pd
 
     # get file name
-    fnm = get_gdfobj_sf_fnm(t, fid, regnm,op=op)
+    fnm = get_gdfobj_sf_fnm(t, fid, regnm, op=op)
 
     # read data as gpd DataFrame
     gdf = gpd.read_file(fnm)
 
     # parse time step to Datetime and set as index
-    gdf['index'] = pd.to_datetime(gdf['index'])
-    gdf = gdf.set_index('index')
+    gdf["index"] = pd.to_datetime(gdf["index"])
+    gdf = gdf.set_index("index")
 
     return gdf
 
-def get_summary_fnm(t,regnm):
-    ''' Return the fire summary file name at year end
+
+def get_summary_fnm(t, regnm):
+    """ Return the fire summary file name at year end
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1635,21 +1914,28 @@ def get_summary_fnm(t,regnm):
     ----------
     fnm : str
         summary netcdf file name
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import os
 
     d = date(*t[:-1])
-    fnm = os.path.join(diroutdata, regnm, d.strftime('%Y'),'Summary','fsummary_'+d.strftime('%Y%m%d')+t[-1]+'.nc')
+    fnm = os.path.join(
+        diroutdata,
+        regnm,
+        d.strftime("%Y"),
+        "Summary",
+        "fsummary_" + d.strftime("%Y%m%d") + t[-1] + ".nc",
+    )
 
     # check folder
     check_filefolder(fnm)
 
     return fnm
 
-def get_summary_fnm_lt(t,regnm):
-    ''' Return the latest time step before current time when summary file exists
+
+def get_summary_fnm_lt(t, regnm):
+    """ Return the latest time step before current time when summary file exists
     Parameters
     ----------
     t : tuple, (year,month,day,str)
@@ -1659,7 +1945,7 @@ def get_summary_fnm_lt(t,regnm):
     ----------
     pt : tuple, (year, month, day, pmpm)
         the lastest time step with summary file
-    '''
+    """
     from FireConsts import diroutdata
     from datetime import date
     import os
@@ -1667,39 +1953,41 @@ def get_summary_fnm_lt(t,regnm):
     import FireObj
 
     # if there's no summary file for this year, return the first time step of the year
-    fnms = glob(os.path.join(diroutdata, regnm,str(t[0]),'Summary','fsummary_*.nc'))
+    fnms = glob(os.path.join(diroutdata, regnm, str(t[0]), "Summary", "fsummary_*.nc"))
     if len(fnms) == 0:
         return None
 
     # if there is, find the nearest one
     endloop = False
-    pt = FireTime.t_nb(t,nb='previous')
+    pt = FireTime.t_nb(t, nb="previous")
     while endloop == False:
-        if os.path.exists(get_summary_fnm(pt,regnm)):
+        if os.path.exists(get_summary_fnm(pt, regnm)):
             return pt
         else:
-            pt = FireTime.t_nb(pt,nb='previous')
+            pt = FireTime.t_nb(pt, nb="previous")
             if pt[0] != t[0]:
                 return None
 
-def check_summary(t,regnm):
-    ''' Check if the summary file storing a daily allfires object exists
+
+def check_summary(t, regnm):
+    """ Check if the summary file storing a daily allfires object exists
 
     Parameters
     ----------
     t : tuple, (year,month,day,str)
         the day and 'AM'|'PM' during the intialization
-    '''
+    """
     import os
 
     # get file name
-    fnm = get_summary_fnm(t,regnm)
+    fnm = get_summary_fnm(t, regnm)
 
     # return if it's present
     return os.path.exists(fnm)
 
-def save_summary(ds,t,regnm):
-    ''' Save summary info as of t a netcdf file
+
+def save_summary(ds, t, regnm):
+    """ Save summary info as of t a netcdf file
 
     Parameters
     ----------
@@ -1707,9 +1995,9 @@ def save_summary(ds,t,regnm):
         year end summary dataset
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM'
-    '''
+    """
     # get file name
-    fnm = get_summary_fnm(t,regnm)
+    fnm = get_summary_fnm(t, regnm)
 
     # check folder
     check_filefolder(fnm)
@@ -1717,8 +2005,9 @@ def save_summary(ds,t,regnm):
     # save netcdf file
     ds.to_netcdf(fnm)
 
-def load_summary(t,regnm):
-    ''' Load summary info from a netcdf file at t
+
+def load_summary(t, regnm):
+    """ Load summary info from a netcdf file at t
 
     Parameters
     ----------
@@ -1729,19 +2018,20 @@ def load_summary(t,regnm):
     -------
     ds : xarray dataset
         summary dataset
-    '''
+    """
     import xarray as xr
 
     # get file name
-    fnm = get_summary_fnm(t,regnm)
+    fnm = get_summary_fnm(t, regnm)
 
     # read data as xarray Dataset
     ds = xr.open_dataset(fnm)
 
     return ds
 
-def save_summarycsv(df,year,regnm,op='heritage'):
-    ''' save summary csv files
+
+def save_summarycsv(df, year, regnm, op="heritage"):
+    """ save summary csv files
 
     Parameters
     ----------
@@ -1751,17 +2041,24 @@ def save_summarycsv(df,year,regnm,op='heritage'):
         year
     op : str
         option, 'heritage'|'large'
-    '''
+    """
     from FireConsts import diroutdata
     import os
 
-    fnm = os.path.join(diroutdata, regnm,str(year),'Summary','Flist_'+op+'_'+str(year)+'.csv')
+    fnm = os.path.join(
+        diroutdata,
+        regnm,
+        str(year),
+        "Summary",
+        "Flist_" + op + "_" + str(year) + ".csv",
+    )
     check_filefolder(fnm)
 
     df.to_csv(fnm)
 
-def read_summarycsv(year,regnm,op='heritage'):
-    ''' read summary csv files
+
+def read_summarycsv(year, regnm, op="heritage"):
+    """ read summary csv files
 
     Parameters
     ----------
@@ -1774,14 +2071,21 @@ def read_summarycsv(year,regnm,op='heritage'):
     -------
     df : pandas DataFrame
         the data
-    '''
+    """
     from FireConsts import diroutdata
     import pandas as pd
     import os
 
-    fnm = os.path.join(diroutdata,regnm, str(year),'Summary','Flist_'+op+'_'+str(year)+'.csv')
-    df = pd.read_csv(fnm,index_col=0)
+    fnm = os.path.join(
+        diroutdata,
+        regnm,
+        str(year),
+        "Summary",
+        "Flist_" + op + "_" + str(year) + ".csv",
+    )
+    df = pd.read_csv(fnm, index_col=0)
     return df
+
 
 def get_lts_VNP14IMGTDL(year=None):
     from FireConsts import dirextdata
@@ -1792,16 +2096,21 @@ def get_lts_VNP14IMGTDL(year=None):
     if year == None:
         year = date.today().year
 
-    dirFC = os.path.join(dirextdata,'VNP14IMGTDL') + '/'
-    fnms = glob(os.path.join(dirFC,'SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_'+str(year)+'*.txt'))
+    dirFC = os.path.join(dirextdata, "VNP14IMGTDL") + "/"
+    fnms = glob(
+        os.path.join(
+            dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + str(year) + "*.txt"
+        )
+    )
     fnms.sort()
     DOY_lts = int(os.path.splitext(os.path.basename(fnms[-1]))[0][-3:])
 
     return DOY_lts
 
-def get_lts_serialization(regnm,year=None):
-    ''' get the time with lastest pkl data
-    '''
+
+def get_lts_serialization(regnm, year=None):
+    """ get the time with lastest pkl data
+    """
     from FireConsts import diroutdata
     from datetime import date
     from glob import glob
@@ -1810,52 +2119,56 @@ def get_lts_serialization(regnm,year=None):
     if year == None:
         year = date.today().year
 
-    fnms = glob(os.path.join(diroutdata,regnm,str(year),'Serialization','*.pkl'))
+    fnms = glob(os.path.join(diroutdata, regnm, str(year), "Serialization", "*.pkl"))
 
     if len(fnms) > 0:
         fnms.sort()
         fnm_lts = os.path.basename(fnms[-1])
 
-        lts = [int(fnm_lts[0:4]),int(fnm_lts[4:6]),int(fnm_lts[6:8]),fnm_lts[8:10]]
+        lts = [int(fnm_lts[0:4]), int(fnm_lts[4:6]), int(fnm_lts[6:8]), fnm_lts[8:10]]
     else:
         lts = None
 
     return lts
 
-def read_gpkg(fnm,layer='perimeter'):
-    ''' read gpkg data
+
+def read_gpkg(fnm, layer="perimeter"):
+    """ read gpkg data
     op: 'perimeter', 'fireline', 'newfirepix'
-    '''
+    """
     import geopandas as gpd
     import pandas as pd
 
     try:
-        gdf = gpd.read_file(fnm,layer=layer)
+        gdf = gpd.read_file(fnm, layer=layer)
         return gdf
     except:
         return None
 
+
 #%% other functions related to read/write
 
+
 def save2gtif(arr, outfile, cols, rows, geotrans, proj):
-    '''write out a geotiff'''
+    """write out a geotiff"""
 
     import gdal
 
-    driver = gdal.GetDriverByName('GTiff')
+    driver = gdal.GetDriverByName("GTiff")
     ds = driver.Create(outfile, cols, rows, 1, gdal.GDT_Byte)
     ds.SetGeoTransform(geotrans)
     ds.SetProjection(proj)
     band = ds.GetRasterBand(1)
     band.WriteArray(arr)
 
+
 def geo_to_polar(lon_arr, lat_arr):
-    '''transform lists of geographic lat lon coordinates to polar LAEA grid (projected)'''
+    """transform lists of geographic lat lon coordinates to polar LAEA grid (projected)"""
 
     import numpy as np
     import pyproj
 
-    proj4str = ("epsg:3571")
+    proj4str = "epsg:3571"
     p_modis_grid = pyproj.Proj(proj4str)
 
     x_arr, y_arr = p_modis_grid(lon_arr, lat_arr)
@@ -1864,24 +2177,26 @@ def geo_to_polar(lon_arr, lat_arr):
 
     return x_arr, y_arr
 
+
 def polar_to_geo(x_arr, y_arr):
-    '''transform lists of geographic lat lon coordinates to polar LAEA grid (projected)'''
+    """transform lists of geographic lat lon coordinates to polar LAEA grid (projected)"""
 
     import numpy as np
     import pyproj
 
-    proj4str = ("epsg:3571")
+    proj4str = "epsg:3571"
     p_modis_grid = pyproj.Proj(proj4str)
 
-    lon_arr, lat_arr = p_modis_grid(x_arr, y_arr,inverse=True)
+    lon_arr, lat_arr = p_modis_grid(x_arr, y_arr, inverse=True)
     lon_arr = np.array(lon_arr)
     lat_arr = np.array(lat_arr)
 
     return lon_arr, lat_arr
 
+
 def world2Pixel(gt, Xgeo, Ygeo):
-    ''' Uses a geomatrix (gdal.GetGeoTransform()) to calculate the pixel
-    location of a geospatial coordinate'''
+    """ Uses a geomatrix (gdal.GetGeoTransform()) to calculate the pixel
+    location of a geospatial coordinate"""
 
     import numpy as np
 
@@ -1891,11 +2206,12 @@ def world2Pixel(gt, Xgeo, Ygeo):
 
     return (Xpx, Ypx)
 
-def pixel2World(gt, Xpixel, Ypixel):
-    '''Uses a gdal geomatrix (gdal.GetGeoTransform()) to calculate the
-    geospatial coordinate of a pixel location'''
 
-    Xgeo = gt[0] + Xpixel*gt[1] + Ypixel*gt[2]
-    Ygeo = gt[3] + Xpixel*gt[4] + Ypixel*gt[5]
+def pixel2World(gt, Xpixel, Ypixel):
+    """Uses a gdal geomatrix (gdal.GetGeoTransform()) to calculate the
+    geospatial coordinate of a pixel location"""
+
+    Xgeo = gt[0] + Xpixel * gt[1] + Ypixel * gt[2]
+    Ygeo = gt[3] + Xpixel * gt[4] + Ypixel * gt[5]
 
     return (Xgeo, Ygeo)
