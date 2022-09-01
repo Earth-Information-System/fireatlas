@@ -17,9 +17,9 @@ dirdata = os.path.join(dirhome, "Jacaranda", "ProjectData", projnm)  # project d
 # run at MacBook
 # dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
 
-dirextdata = os.path.join(dirdata, "ExtData")  # exterior input data directory
-dirtmpdata = os.path.join(dirdata, "Temp")  # temporary data directory
-diroutdata = os.path.join(dirdata, "Output")  # output data directory
+dirextdata = '/projects/my-public-bucket/FEDSinput/'  # exterior input data directory
+dirtmpdata = '/projects/my-public-bucket/FEDStemp/'     # temporary data directory
+diroutdata = '/projects/my-public-bucket/FEDSoutput/'   # output data directory
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 
@@ -124,5 +124,5 @@ FTYP_Glb = {
 # ------------------------------------------------------------------------------
 # other options
 # ------------------------------------------------------------------------------
-epsg = 32610  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 2163: US National Atlas Equal Area)
+epsg = 4326  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 2163: US National Atlas Equal Area)
 opt_rmstatfire = False  # do the removal of small fires with high pixel density
