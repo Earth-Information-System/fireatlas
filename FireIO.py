@@ -122,34 +122,57 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
     # set monthly file name
     fnmFC = os.path.join(
         dirextdata,
-        "VNP14IMGML",
-        "VNP14IMGML." + str(yr) + str(mo).zfill(2) + "." + ver + ".txt",
-    )
-
+        "VIIRS","VNP14IMGML",
+        "VNP14IMGML." + str(yr) + str(mo).zfill(2) + "." + ver + ".txt",)
+    print(fnmFC)
     # read
+    #usecols = [
+    #    "YYYYMMDD",
+    #    "HHMM",
+    #    "Lat",
+    #    "Lon",
+    #    "Line",
+    #    "Sample",
+    #    "FRP",
+    #    "Confidence",
+    #    "Type",
+    #    "DNFlag",
+    #]
     usecols = [
-        "YYYYMMDD",
-        "HHMM",
-        "Lat",
-        "Lon",
-        "Line",
-        "Sample",
-        "FRP",
-        "Confidence",
-        "Type",
-        "DNFlag",
-    ]
+        "latitude",
+        "longitude",
+        "daynight",
+        "frp",
+        "confidence",
+        "scan",
+        "track",
+        "acq_date_acq_time",
+        "type"]
+    
     if os.path.exists(fnmFC):
         df = pd.read_csv(
             fnmFC,
-            parse_dates=[["YYYYMMDD", "HHMM"]],
+            parse_dates=["acq_date_acq_time"],
             usecols=usecols,
             skipinitialspace=True,
         )
-        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-        df = df.drop(columns=["Sample", "Line"])
+        #df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+        #df = df.drop(columns=["Sample", "Line"])
+        
+        df = df.rename(
+            columns={
+                "latitude": "Lat",
+                "longitude": "Lon",
+                "frp": "FRP",
+                "scan": "DS",
+                "track": "DT",
+                "acq_date_acq_time": "YYYYMMDD_HHMM",
+                "type": "Type"
+            }
+        )
         return df
     else:
+        print('No data available for file',fnmFC)
         return None
 
 
@@ -175,7 +198,7 @@ def read_VNP14IMGTDL(t):
     d = date(*t[:-1])
 
     # derive monthly file name with path
-    dirFC = os.path.join(dirextdata, "VNP14IMGTDL") + "/"
+    dirFC = os.path.join(dirextdata,'VIIRS', "VNP14IMGTDL") + "/"
     fnmFC = os.path.join(
         dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
     )
@@ -308,7 +331,7 @@ def read_VJ114IMGTDL(t):
     d = date(*t[:-1])
 
     # derive monthly file name with path
-    dirFC = os.path.join(dirextdata, "VJ114IMGTDL") + "/"
+    dirFC = os.path.join(dirextdata,'VIIRS', "VJ114IMGTDL") + "/"
     fnmFC = os.path.join(
         dirFC, "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
     )
@@ -550,8 +573,9 @@ def read_AFPVIIRS(
     if df is None:
         # read or form shape used for filtering active fires
         shp_Reg = get_reg_shp(region[1])
-
+        
         # read VJ114IMGML monthly file
+        print('reading data...')
         if sat == "SNPP":
             df = read_VNP14IMGML(t[0], t[1])
             df = df.loc[df["Type"] == 0]  # type filtering
@@ -562,8 +586,9 @@ def read_AFPVIIRS(
             print("please set SNPP or NOAA20 for sat")
 
         # do regional filtering
+        print('Do regional filtering...')
         df = AFP_regfilter(df, shp_Reg)
-
+        print('set am/pm...')
         # set ampm
         df = AFP_setampm(df)
 
