@@ -6,6 +6,23 @@ This module include functions used to read and save data
 #%% Read and filter active fire data
 # ------------------------------------------------------------------------------
 
+# Try to read a Geopandas file several times. Sometimes, the read fails the
+# first time for mysterious reasons.
+def gpd_read_file(filename, parquet=False):
+    import geopandas as gpd
+    itry = 0
+    maxtries = 5
+    fun = gpd.read_parquet if parquet else gpd.read_file
+    while itry < maxtries:
+        try:
+            dat = fun(filename)
+            return dat
+        except Exception as e:
+            itry += 1
+            print(f"Attempt {itry}/{maxtries} failed.")
+            if not itry < maxtries:
+                raise e
+
 
 def viirs_pixel_size(sample, band="i", rtSCAN_ANGLE=False):
     """calculate approximate size of i-band (375-m) or m-band (750-m) VIIRS pixel
@@ -95,7 +112,7 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
     from FireConsts import dirextdata
 
     fnm = dirextdata + "CA/Calnvf/FCs_nv_" + str(y0) + "-" + str(y1) + ".geojson"
-    gdf = gpd.read_file(fnm)
+    gdf = gpd_read_file(fnm)
 
     return gdf
 
@@ -794,7 +811,7 @@ def get_any_shp(filename):
     statefnm = os.path.join(dirshape, filename)
 
     # read the geometry
-    shp = gpd.read_file(statefnm).iloc[0].geometry
+    shp = gpd_read_file(statefnm).iloc[0].geometry
 
     return shp
 
@@ -812,7 +829,7 @@ def get_Cal_shp():
     statefnm = os.path.join(dirextdata, "CA", "Calshape", "California.shp")
 
     # read the geometry
-    shp_Cal = gpd.read_file(statefnm).iloc[0].geometry
+    shp_Cal = gpd_read_file(statefnm).iloc[0].geometry
 
     return shp_Cal
 
@@ -831,7 +848,7 @@ def get_Cty_shp(ctr):
 
     ctyfnm = os.path.join(dirextdata, "World", "country.shp")
 
-    gdf_cty = gpd.read_file(ctyfnm)
+    gdf_cty = gpd_read_file(ctyfnm)
 
     if ctr in gdf_cty["CNTRY_NAME"].values:
         g = gdf_cty[gdf_cty.CNTRY_NAME == ctr].iloc[0].geometry
@@ -1653,7 +1670,7 @@ def load_gdfobj(regnm, t="", op=""):
     fnm = get_gdfobj_fnm(t, regnm, op=op)
 
     # read data as gpd DataFrame
-    gdf = gpd.read_file(fnm)
+    gdf = gpd_read_file(fnm)
 
     # with gpkg the id column has to be renamed back to fid
     gdf = gdf.rename(columns={"id": "fid"})
@@ -1758,7 +1775,7 @@ def load_lake_geoms(t, fid, regnm):
     )
 
     # read data and extract target geometry
-    gdf = gpd.read_file(fnm_lakes)
+    gdf = gpd_read_file(fnm_lakes)
     gdf = gdf.set_index("mergid")
     if fid in gdf.index:
         gdf = gdf.loc[fid]
@@ -1900,7 +1917,7 @@ def load_gdfobj_sf(t, fid, regnm, op=""):
     fnm = get_gdfobj_sf_fnm(t, fid, regnm, op=op)
 
     # read data as gpd DataFrame
-    gdf = gpd.read_file(fnm)
+    gdf = gpd_read_file(fnm)
 
     # parse time step to Datetime and set as index
     gdf["index"] = pd.to_datetime(gdf["index"])
@@ -2145,7 +2162,7 @@ def read_gpkg(fnm, layer="perimeter"):
     import pandas as pd
 
     try:
-        gdf = gpd.read_file(fnm, layer=layer)
+        gdf = gpd_read_file(fnm, layer=layer)
         return gdf
     except:
         return None
