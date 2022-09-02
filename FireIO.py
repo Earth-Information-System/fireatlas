@@ -1009,7 +1009,7 @@ def get_FM1000(t, loc):
     # read annual fm1000 data
     dirGridMET = os.path.join(dirextdata, "GridMET") + "/"
     fnm = dirGridMET + "fm1000_" + t.strftime("%Y") + ".zarr"
-    ds = xr.open_dataset(fnm)
+    ds = xr.open_zarr(fnm)
     FM1000_all = ds["dead_fuel_moisture_1000hr"]
 
     # extract daily data at t
