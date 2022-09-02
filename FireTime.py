@@ -202,7 +202,7 @@ def isyearst(t):
     Ture: at new year start
     False: not at new year start
     """
-    if t[1] == 1 & t[2] == 1 & t[3] == "AM":
+    if (t[1] == 1) & (t[2] == 1) & (t[3] == "AM"):
         return True
     else:
         return False
