@@ -13,7 +13,7 @@ projnm = "FEDStest"  # project name
 dirhome = os.environ.get("HOME")  # get system home directory
 
 # run at iMac
-dirdata = os.path.join(dirhome, "Jacaranda", "ProjectData", projnm)  # project directory
+dirdata = '/projects/feds_dev/fireatlas/'  # project directory
 # run at MacBook
 # dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
 
@@ -61,7 +61,7 @@ area_VI = 0.141  # km2, area of each 375m VIIRS pixel
 MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.31271653 m/2
 
 # fire source data
-firesrc = "VIIRS"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
+firesrc = "SNPP"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
 firenrt = False  # NRT - True, False
 firessr = "viirs"  # sensor - 'mcd64'
 

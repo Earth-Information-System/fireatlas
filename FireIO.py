@@ -126,50 +126,29 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
         "VNP14IMGML." + str(yr) + str(mo).zfill(2) + "." + ver + ".txt",)
     print(fnmFC)
     # read
-    #usecols = [
-    #    "YYYYMMDD",
-    #    "HHMM",
-    #    "Lat",
-    #    "Lon",
-    #    "Line",
-    #    "Sample",
-    #    "FRP",
-    #    "Confidence",
-    #    "Type",
-    #    "DNFlag",
-    #]
     usecols = [
-        "latitude",
-        "longitude",
-        "daynight",
-        "frp",
-        "confidence",
-        "scan",
-        "track",
-        "acq_date_acq_time",
-        "type"]
+        "YYYYMMDD",
+        "HHMM",
+        "Lat",
+        "Lon",
+        "Line",
+        "Sample",
+        "FRP",
+        "Confidence",
+        "Type",
+        "DNFlag",
+    ]
+
     
     if os.path.exists(fnmFC):
         df = pd.read_csv(
             fnmFC,
-            parse_dates=["acq_date_acq_time"],
+            parse_dates=[["YYYYMMDD", "HHMM"]],
             usecols=usecols,
             skipinitialspace=True,
         )
-        #df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-        #df = df.drop(columns=["Sample", "Line"])
-        
-        df = df.rename(
-            columns={
-                "latitude": "Lat",
-                "longitude": "Lon",
-                "frp": "FRP",
-                "scan": "DS",
-                "track": "DT",
-                "acq_date_acq_time": "YYYYMMDD_HHMM",
-                "type": "Type"
-            }
-        )
+        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+        df = df.drop(columns=["Sample", "Line"])
         return df
     else:
         print('No data available for file',fnmFC)
@@ -575,7 +554,6 @@ def read_AFPVIIRS(
         shp_Reg = get_reg_shp(region[1])
         
         # read VJ114IMGML monthly file
-        print('reading data...')
         if sat == "SNPP":
             df = read_VNP14IMGML(t[0], t[1])
             df = df.loc[df["Type"] == 0]  # type filtering
@@ -586,9 +564,7 @@ def read_AFPVIIRS(
             print("please set SNPP or NOAA20 for sat")
 
         # do regional filtering
-        print('Do regional filtering...')
         df = AFP_regfilter(df, shp_Reg)
-        print('set am/pm...')
         # set ampm
         df = AFP_setampm(df)
 
@@ -611,8 +587,8 @@ def read_AFPVIIRSNRT(
     t,
     region,
     sat="SNPP",
-    cols=["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"],
-):
+    cols=["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"],):
+    
     """ Read half-daily active fire pixels in a region from daily NRT NOAA20 VIIRS
     fire location data
 
@@ -713,7 +689,11 @@ def read_AFP(t, src="SNPP", nrt=False, region=None):
     else:
         print("Please set src to SNPP, NOAA20, or BAMOD")
         return None
-
+    
+    if vlist is None: 
+        print("No data available for this source for time",t) 
+        return
+    
     return vlist.reset_index(drop=True)
 
 

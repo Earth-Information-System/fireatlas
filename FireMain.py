@@ -631,10 +631,10 @@ if __name__ == "__main__":
     # ted=(2021,9,15,'PM')
     # region = ('Dixie',[-121.6,39.8,-120.5,40.6])
 
-    tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
-    region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
-
+    tst = (2022, 1, 5, "AM")
+    ted = (2022, 7, 15, "PM")
+    #region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
+    region = ('CA',[-124.409591, 32.534155999999996, -114.131211, 42.009518])
     # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
     Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 

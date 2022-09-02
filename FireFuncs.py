@@ -105,7 +105,7 @@ def set_ftype(fire):
             # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
             uselocs = random.sample(fire.newlocs_geo, 1000)
 
-        vLCT = FireIO.get_LCT_NLCD(
+        vLCT = FireIO.get_LCT(
             uselocs
         )  # call get_LCT to get all LCT for the fire pixels
         LCTmax = max(
