@@ -493,13 +493,14 @@ def save_AFPtmp(df, d, head="VNP14IMGML.", tail=".pkl"):
     from FireConsts import dirtmpdata
     import os
     import pickle
+    import fsspec
 
     # temporary file name
     fnm_tmp = os.path.join(dirtmpdata, head + d.strftime("%Y%m") + tail)
     check_filefolder(fnm_tmp)
 
     # save
-    with open(fnm_tmp, "wb") as f:
+    with fsspec.open(fnm_tmp, "wb") as f:
         pickle.dump(df, f)
 
 
@@ -508,17 +509,19 @@ def load_AFPtmp(d, head="VNP14IMGML.", tail=".pkl"):
     """
     from FireConsts import dirtmpdata
     import os
+    import fsspec
     import pickle
 
     # temporary file name
     fnm_tmp = os.path.join(dirtmpdata, head + d.strftime("%Y%m") + tail)
 
     # load and return
-    if os.path.exists(fnm_tmp):
-        with open(fnm_tmp, "rb") as f:
+    try:
+        with fsspec.open(fnm_tmp, "rb") as f:
             df = pickle.load(f)
             return df
-    else:  # if no presaved file, return None
+    except Exception as e:
+        print(f"Encountered the following error reading tmp file: '{str(e)}'")
         return None
 
 
@@ -1063,6 +1066,9 @@ def check_filefolder(fnm):
 
     # folder name
     dirnm = os.path.dirname(fnm)
+    if dirnm.startswith("s3://"):
+        # No concept of "folders" in S3, so no need to create them.
+        return None
 
     # create the folder if needed
     if not os.path.exists(dirnm):
@@ -1078,6 +1084,10 @@ def check_folder(dirnm):
         folder name
     """
     import os
+
+    if dirnm.startswith("s3://"):
+        # No concept of "folders" in S3, so no need to create them.
+        return None
 
     # create the folder if needed
     if not os.path.exists(dirnm):
@@ -1180,6 +1190,7 @@ def save_fobj(allfires, t, regnm, activeonly=False):
 
     import pickle
     import os
+    import fsspec
     from FireObj import Allfires
 
     if activeonly:
@@ -1210,7 +1221,7 @@ def save_fobj(allfires, t, regnm, activeonly=False):
     check_filefolder(fnm)
 
     # save
-    with open(fnm, "wb") as f:
+    with fsspec.open(fnm, "wb") as f:
         pickle.dump(allfires_out, f)
 
 
@@ -1228,12 +1239,13 @@ def load_fobj(t, regnm, activeonly=False):
         daily allfires
     """
     import pickle
+    import fsspec
 
     # get file name
     fnm = get_fobj_fnm(t, regnm, activeonly=activeonly)
 
     # load data
-    with open(fnm, "rb") as f:
+    with fsspec.open(fnm, "rb") as f:
         data = pickle.load(f)
     return data
 
