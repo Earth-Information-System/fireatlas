@@ -14,6 +14,7 @@ dependencies:
   - pandas
   - pyarrow
   - pyproj
+  - rasterio
   - s3fs
   - shapely
   - xarray

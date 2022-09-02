@@ -931,26 +931,24 @@ def get_LCT(locs):
     """
     from FireConsts import dirextdata
 
-    from osgeo import gdal
+    import rasterio
     import pyproj
     import os
 
     # read NLCD 500m data
     fnmLCT = os.path.join(dirextdata, "CA", "nlcd_510m.tif")
-    dataset = gdal.Open(fnmLCT, gdal.GA_ReadOnly)
-    band = dataset.GetRasterBand(1)
-    data = band.ReadAsArray()
-    gt = dataset.GetGeoTransform()
-    srs = dataset.GetSpatialRef()
-    pfunc = pyproj.Proj(srs.ExportToProj4())
-
-    # extract LCTs for each points
-    vLCT = []
-    for lon, lat in locs:
-        x, y = pfunc(lon, lat)
-        i, j = int((x - gt[0]) / gt[1]), int((y - gt[3]) / gt[5])
-        vLCT.append(data[j, i])
-
+    dataset = rasterio.open(fnmLCT)
+    transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
+    locs_crs_x, locs_crs_y = transformer.transform(
+        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
+        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
+        # here.
+        [l[1] for l in locs],
+        [l[0] for l in locs]
+    )
+    locs_crs = list(zip(locs_crs_x, locs_crs_y))
+    samps = list(dataset.sample(locs_crs))
+    vLCT = [int(s) for s in samps]
     return vLCT
 
 
