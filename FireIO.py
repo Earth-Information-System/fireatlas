@@ -24,6 +24,16 @@ def gpd_read_file(filename, parquet=False):
                 raise e
 
 
+def os_path_exists(filename):
+    """Alternative to os.path.exists that also works with S3 paths."""
+    if filename.startswith("s3://"):
+        import s3fs
+        s3 = s3fs.S3FileSystem(anon=False)
+        return s3.exists(filename)
+    else:
+        import os
+        os.path.exists(filename)
+
 def viirs_pixel_size(sample, band="i", rtSCAN_ANGLE=False):
     """calculate approximate size of i-band (375-m) or m-band (750-m) VIIRS pixel
         Adapted from L. Giolio's IDL code
@@ -157,7 +167,7 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
     ]
 
     
-    if os.path.exists(fnmFC):
+    if os_path_exists(fnmFC):
         df = pd.read_csv(
             fnmFC,
             parse_dates=[["YYYYMMDD", "HHMM"]],
@@ -211,7 +221,7 @@ def read_VNP14IMGTDL(t):
         "acq_date",
         "acq_time",
     ]
-    if os.path.exists(fnmFC):
+    if os_path_exists(fnmFC):
         # read data
         df = pd.read_csv(
             fnmFC,
@@ -281,7 +291,7 @@ def read_VJ114IMGML(yr, mo):
             yr + "-" + mo + "-" + dy + " " + h + ":" + m, format="%Y-%m-%d %H:%M"
         )
 
-    if os.path.exists(fnmFC):
+    if os_path_exists(fnmFC):
         # df = pd.read_csv(fnmFC,usecols=usecols,skipinitialspace=True)
         df = pd.read_csv(
             fnmFC,
@@ -345,7 +355,7 @@ def read_VJ114IMGTDL(t):
         "acq_date",
         "acq_time",
     ]
-    if os.path.exists(fnmFC):
+    if os_path_exists(fnmFC):
         # read data
         df = pd.read_csv(
             fnmFC,
@@ -516,12 +526,12 @@ def load_AFPtmp(d, head="VNP14IMGML.", tail=".pkl"):
     fnm_tmp = os.path.join(dirtmpdata, head + d.strftime("%Y%m") + tail)
 
     # load and return
-    try:
+    if os_path_exists(fnm_tmp):
         with fsspec.open(fnm_tmp, "rb") as f:
             df = pickle.load(f)
             return df
-    except Exception as e:
-        print(f"Encountered the following error reading tmp file: '{str(e)}'")
+    else:
+        print(f"Temporary file not found: {fnm_tmp}.")
         return None
 
 
@@ -1172,7 +1182,7 @@ def check_fobj(t, regnm, activeonly=False):
     import os
 
     fnm = get_fobj_fnm(t, regnm, activeonly=activeonly)
-    return os.path.exists(fnm)
+    return os_path_exists(fnm)
 
 
 def save_fobj(allfires, t, regnm, activeonly=False):
@@ -1420,7 +1430,7 @@ def check_gpkgobj(t, regnm):
     # d = date(*t[:-1])
     fnm = get_gpkgobj_fnm(t, regnm)
 
-    return os.path.exists(fnm)
+    return os_path_exists(fnm)
 
 
 def check_gdfobj(t, regnm, op=""):
@@ -1442,7 +1452,7 @@ def check_gdfobj(t, regnm, op=""):
     d = date(*t[:-1])
     fnm = get_gdfobj_fnm(t, regnm)
 
-    return os.path.exists(fnm)
+    return os_path_exists(fnm)
 
 
 def save_gdfobj(gdf, t, regnm, param="", fid="", op=""):
@@ -1608,7 +1618,7 @@ def load_gpkgobj(t, regnm, layer="perimeter"):
     # get file name
     fnm = get_gpkgobj_fnm(t, regnm)
 
-    if os.path.exists(fnm):
+    if os_path_exists(fnm):
         try:
             gdf = read_gpkg(fnm, layer=layer)
 
@@ -1650,7 +1660,7 @@ def load_gpkgsfs(t, fid, regnm, layer="perimeter"):
     # get file name
     fnm = get_gpkgsfs_fnm(t, fid, regnm)
 
-    if os.path.exists(fnm):
+    if os_path_exists(fnm):
         gdf = read_gpkg(fnm, layer=layer)
 
         if gdf is not None:
@@ -1751,7 +1761,7 @@ def load_FP_txt(t, regnm):
     fnm = get_gdfobj_fnm(t, regnm, op="NFP")
     fnm = fnm[:-4] + "txt"  # change ending to txt
 
-    if os.path.exists(fnm):
+    if os_path_exists(fnm):
         df = pd.read_csv(fnm, parse_dates=["datetime"], index_col=0)
         return df
 
@@ -1995,7 +2005,7 @@ def get_summary_fnm_lt(t, regnm):
     endloop = False
     pt = FireTime.t_nb(t, nb="previous")
     while endloop == False:
-        if os.path.exists(get_summary_fnm(pt, regnm)):
+        if os_path_exists(get_summary_fnm(pt, regnm)):
             return pt
         else:
             pt = FireTime.t_nb(pt, nb="previous")
@@ -2017,7 +2027,7 @@ def check_summary(t, regnm):
     fnm = get_summary_fnm(t, regnm)
 
     # return if it's present
-    return os.path.exists(fnm)
+    return os_path_exists(fnm)
 
 
 def save_summary(ds, t, regnm):
