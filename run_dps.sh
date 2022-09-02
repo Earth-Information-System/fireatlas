@@ -22,7 +22,7 @@ echo "pip: $(which pip)"
 pip --version
 
 echo "Starting download"
-python -u "$basedir/FireRunNRT.py"
+python -u "$basedir/FireMain.py"
 echo "Done!"
 
 exit
