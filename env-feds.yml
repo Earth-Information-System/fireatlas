@@ -1,0 +1,27 @@
+name: feds
+channels:
+  - conda-forge
+  - default
+dependencies:
+  - ipython
+  - python
+  - pip
+  - pyright
+  - boto3
+  - geopandas
+  - netcdf4
+  - numpy
+  - pandas
+  - pyarrow
+  - pyproj
+  - s3fs
+  - shapely
+  - xarray
+  - zarr
+  # Below libraries for visualization:
+  # - cartopy
+  # - contextily
+  # - folium
+  # - matplotlib
+  # - seaborn
+  # - pandas_bokeh
