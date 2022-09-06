@@ -623,6 +623,8 @@ if __name__ == "__main__":
     """
 
     import time
+    import FireGpkg
+    import FireGpkg_sfs
 
     t1 = time.time()
 
@@ -635,8 +637,24 @@ if __name__ == "__main__":
     ted = (2020, 1, 30, "PM")
     #region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
     region = ('CA',[-124.409591, 32.534155999999996, -114.131211, 42.009518])
+
     # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
+    print("----------------------------------------")
+    print("Running Fire_Forward")
+    print("----------------------------------------")
     Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+
+    # calculate and save snapshot files
+    print("----------------------------------------")
+    print("Running save_gdf_trng")
+    print("----------------------------------------")
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    print("----------------------------------------")
+    print("Running save_sfts_trng")
+    print("----------------------------------------")
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run code")
