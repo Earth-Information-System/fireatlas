@@ -631,8 +631,8 @@ if __name__ == "__main__":
     # ted=(2021,9,15,'PM')
     # region = ('Dixie',[-121.6,39.8,-120.5,40.6])
 
-    tst = (2022, 1, 5, "AM")
-    ted = (2022, 7, 15, "PM")
+    tst = (2020, 1, 2, "AM")
+    ted = (2020, 1, 30, "PM")
     #region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
     region = ('CA',[-124.409591, 32.534155999999996, -114.131211, 42.009518])
     # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
