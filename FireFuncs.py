@@ -135,6 +135,9 @@ def set_ftype(fire):
                 ftype = 5
             else:  # 'Shrub wild'
                 ftype = 4
+        else:
+            print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
+            ftype = 0
     elif FTYP_opt == 2:  # global type classification
         ftype = 1  # need more work here...
 
