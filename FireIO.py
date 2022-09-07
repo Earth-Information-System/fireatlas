@@ -1351,7 +1351,7 @@ def get_gpkgobj_fnm(t, regnm):
     strdir = os.path.join(diroutdata, regnm, d.strftime("%Y"), "Snapshot")
 
     # get the output file name
-    fnm = os.path.join(strdir, d.strftime("%Y%m%d") + t[-1] + ".gpkg")
+    fnm = os.path.join(strdir, d.strftime("%Y%m%d") + t[-1])
 
     return fnm
 
@@ -1378,7 +1378,7 @@ def get_gpkgsfs_fnm(t, fid, regnm):
 
     # get the output file name
     fnm = os.path.join(
-        strdir, "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1] + ".gpkg"
+        strdir, "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1]
     )
 
     return fnm
@@ -1538,16 +1538,16 @@ def save_gpkgobj(
 
     # save file
     if gdf_fperim is not None:
-        gdf_fperim.to_file(fnm, driver="GPKG", layer="perimeter")
+        gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
 
     if gdf_fline is not None:
-        gdf_fline.to_file(fnm, driver="GPKG", layer="fireline")
+        gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
 
     if gdf_nfp is not None:
-        gdf_nfp.to_file(fnm, driver="GPKG", layer="newfirepix")
+        gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
 
     if gdf_uptonow is not None:
-        gdf_uptonow.to_file(fnm, driver="GPKG", layer="uptonow")
+        gdf_uptonow.to_file(f"{fnm}/uptonow.fgb", driver="FlatGeobuf")
 
 
 def save_gpkgsfs(
@@ -1582,18 +1582,18 @@ def save_gpkgsfs(
 
     # save file
     if gdf_fperim is not None:
-        gdf_fperim.to_file(fnm, driver="GPKG", layer="perimeter")
+        gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
 
     # if len(gdf_fline) > 0:
     if gdf_fline is not None:
-        gdf_fline.to_file(fnm, driver="GPKG", layer="fireline")
+        gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
 
     # if len(gdf_NFP) > 0:
     if gdf_nfp is not None:
-        gdf_nfp.to_file(fnm, driver="GPKG", layer="newfirepix")
+        gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
 
     if gdf_nfplist is not None:
-        gdf_nfplist.to_file(fnm, driver="GPKG", layer="nfplist")
+        gdf_nfplist.to_file(f"{fnm}/nfplist.fgb", driver="FlatGeobuf")
 
 
 def load_gpkgobj(t, regnm, layer="perimeter"):
@@ -2184,7 +2184,8 @@ def read_gpkg(fnm, layer="perimeter"):
     try:
         gdf = gpd_read_file(fnm, layer=layer)
         return gdf
-    except:
+    except Exception as e:
+        print(f"Failed to read GPKG file {fnm} with error: {str(e)}")
         return None
 
 
