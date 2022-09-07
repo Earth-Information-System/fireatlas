@@ -642,7 +642,7 @@ if __name__ == "__main__":
     print("----------------------------------------")
     print("Running Fire_Forward")
     print("----------------------------------------")
-    Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
 
     # calculate and save snapshot files
     print("----------------------------------------")
