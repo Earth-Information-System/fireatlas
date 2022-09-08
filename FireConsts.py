@@ -18,8 +18,8 @@ dirdata = './'  # project directory -- only used For logging location
 # dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
 
 dirextdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/'  # exterior input data directory
-dirtmpdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDStemp-s3-test/'     # temporary data directory
-diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-test/'   # output data directory
+dirtmpdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDStemp-s3-conus/'     # temporary data directory
+diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/'   # output data directory
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 
