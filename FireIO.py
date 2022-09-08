@@ -8,21 +8,20 @@ This module include functions used to read and save data
 
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
-def gpd_read_file(filename, parquet=False):
+def gpd_read_file(filename, parquet=False, **kwargs):
     import geopandas as gpd
     itry = 0
     maxtries = 5
     fun = gpd.read_parquet if parquet else gpd.read_file
     while itry < maxtries:
         try:
-            dat = fun(filename)
+            dat = fun(filename, **kwargs)
             return dat
         except Exception as e:
             itry += 1
             print(f"Attempt {itry}/{maxtries} failed.")
             if not itry < maxtries:
                 raise e
-
 
 def os_path_exists(filename):
     """Alternative to os.path.exists that also works with S3 paths."""
