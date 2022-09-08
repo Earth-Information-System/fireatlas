@@ -150,7 +150,7 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
         dirextdata,
         "VIIRS","VNP14IMGML",
         "VNP14IMGML." + str(yr) + str(mo).zfill(2) + "." + ver + ".txt",)
-    print(fnmFC)
+    
     # read
     usecols = [
         "YYYYMMDD",
