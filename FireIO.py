@@ -950,6 +950,40 @@ def get_LCT(locs):
     vLCT = [int(s) for s in samps]
     return vLCT
 
+def get_LCT_CONUS(locs):
+    """ Get land cover type for active fires
+
+    Parameters
+    ----------
+    locs : list of lists (nx2)
+        lat and lon values for each active fire detection
+
+    Returns
+    -------
+    vLCT : list of ints
+        land cover types for all input active fires
+    """
+    from FireConsts import dirextdata
+
+    import rasterio
+    import pyproj
+    import os
+
+    # read NLCD 500m data
+    fnmLCT = os.path.join(dirextdata, "NLCD", "nlcd_export_510m_simplified.tif")
+    dataset = rasterio.open(fnmLCT)
+    transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
+    locs_crs_x, locs_crs_y = transformer.transform(
+        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
+        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
+        # here.
+        [l[1] for l in locs],
+        [l[0] for l in locs]
+    )
+    locs_crs = list(zip(locs_crs_x, locs_crs_y))
+    samps = list(dataset.sample(locs_crs))
+    vLCT = [int(s) for s in samps]
+    return vLCT
 
 def get_LCT_NLCD(locs):
     """ Get land cover type from NCLD for multiple locations
