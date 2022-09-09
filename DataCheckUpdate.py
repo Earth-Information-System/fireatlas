@@ -2,10 +2,26 @@
 This module include functions used to check and update needed data files
 """
 from FireConsts import dirextdata
-from glob import glob
 import subprocess
 from datetime import date, timedelta
 import pandas as pd
+
+def glob2(pathname, **kwargs):
+    '''
+    Custom implementation of Glob that also works for S3 directories.
+    '''
+    if pathname.startswith("s3://"):
+        import s3fs
+        import fnmatch
+        import os
+        s3 = s3fs.S3FileSystem(anon=False)
+        s3_dir = os.path.dirname(pathname)
+        fnms = [f"s3://{f}" for f in s3.ls(s3_dir) if fnmatch.fnmatch(f"s3://{f}", pathname)]
+        return sorted(fnms)
+    else:
+        import glob
+        return sorted(list(glob.glob(pathname, **kwargs)))
+
 # ------------------------------------------------------------------------------
 # Check external dataset
 # ------------------------------------------------------------------------------
@@ -22,7 +38,6 @@ def check_VNP14IMGML_avail(year, month, ver="C1.05"):
 
     from FireConsts import dirextdata
     import os
-    from glob import glob
     from datetime import date
 
     # derive monthly file name with path
@@ -33,13 +48,13 @@ def check_VNP14IMGML_avail(year, month, ver="C1.05"):
     # check if the file exist
     if os.path.exists(fnmFC):
         print("[Yes] Monthly VNP14IMGML exists at ", dirFC)
-        fnms = glob(dirFC + "VNP14IMGML." + t.strftime("%Y") + "*.txt")
+        fnms = glob2(dirFC + "VNP14IMGML." + t.strftime("%Y") + "*.txt")
         mons = max([int(os.path.basename(fnm)[15:17]) for fnm in fnms])
         print(f"The latest VNP14IMGML available month for {year} is {mons}")
     else:
         print("[No] Monthly VNP14IMGML is not available at ", dirFC)
         # if the file does not exist, also find the last available month
-        fnms = glob(dirFC + "VNP14IMGML." + t.strftime("%Y") + "*.txt")
+        fnms = glob2(dirFC + "VNP14IMGML." + t.strftime("%Y") + "*.txt")
         if len(fnms) == 0:
             print("No any monthly VNP14IMGML is not available at ", dirFC)
         else:
@@ -62,7 +77,6 @@ def check_VNP14IMGTDL_avail(year, month, day):
 
     from FireConsts import dirextdata
     import os
-    from glob import glob
     from datetime import date, timedelta
 
     # derive monthly file name with path
@@ -79,7 +93,7 @@ def check_VNP14IMGTDL_avail(year, month, day):
         print("[No] Daily VNP14IMGTDL is not available!")
 
         # if the file does not exist, also find the last available day
-        fnms = glob(
+        fnms = glob2(
             dirFC
             + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"
             + t.strftime("%Y")
@@ -308,7 +322,7 @@ def update_VNP14IMGTDL(local_dir=None):
 
     # Derive the date periods needed to download
     today = date.today()
-    fnms = glob(local_dir+'SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_'+str(today.year)+'*.txt')
+    fnms = glob2(local_dir+'SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_'+str(today.year)+'*.txt')
     if len(fnms)==0:
         ndays = 0
     else:
@@ -339,7 +353,7 @@ def update_VJ114IMGTDL(local_dir=None):
         local_dir=dirextdata+'VIIRS/VJ114IMGTDL/'
     # Derive the date periods needed to download
     today = date.today()
-    fnms = glob(local_dir+'J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_'+str(today.year)+'*.txt')
+    fnms = glob2(local_dir+'J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_'+str(today.year)+'*.txt')
     if len(fnms)==0:
         ndays = 0
     else:
