@@ -6,6 +6,8 @@ import subprocess
 from datetime import date, timedelta
 import pandas as pd
 
+from FireIO import os_path_exists
+
 def glob2(pathname, **kwargs):
     '''
     Custom implementation of Glob that also works for S3 directories.
@@ -46,7 +48,7 @@ def check_VNP14IMGML_avail(year, month, ver="C1.05"):
     fnmFC = os.path.join(dirFC, "VNP14IMGML." + t.strftime("%Y%m") + "." + ver + ".txt")
 
     # check if the file exist
-    if os.path.exists(fnmFC):
+    if os_path_exists(fnmFC):
         print("[Yes] Monthly VNP14IMGML exists at ", dirFC)
         fnms = glob2(dirFC + "VNP14IMGML." + t.strftime("%Y") + "*.txt")
         mons = max([int(os.path.basename(fnm)[15:17]) for fnm in fnms])
@@ -87,7 +89,7 @@ def check_VNP14IMGTDL_avail(year, month, day):
     )
 
     # check if the file exist
-    if os.path.exists(fnmFC):
+    if os_path_exists(fnmFC):
         print("[Yes] Daily VNP14IMGTDL exists!")
     else:
         print("[No] Daily VNP14IMGTDL is not available!")
@@ -138,7 +140,7 @@ def check_GridMET_avail(year, month, day):
     dirGridMET = os.path.join(dirextdata, "GridMET") + "/"
     fnmFM1000 = dirGridMET + "fm1000_" + t.strftime("%Y") + ".nc"
 
-    if os.path.exists(fnmFM1000):
+    if os_path_exists(fnmFM1000):
         print("[Yes] Annual GridMET FM1000 exists!")
 
         # if the file exist, check whether the date is beyond the time range in the data
