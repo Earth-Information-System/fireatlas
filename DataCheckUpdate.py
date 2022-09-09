@@ -177,135 +177,29 @@ def check_data_avail(year, month, day):
     check_GridMET_avail(year, month, day)
 
 
-
 # ------------------------------------------------------------------------------
 # update external dataset
 # ------------------------------------------------------------------------------
-def wget(url,locdir=None,header=None,nc=False,recursive=False,depth=None,no_remove_listing=False,
-         np=False,acclist=None,rejlist=None,nH=False,cut_dirs=None,robots_off=False,mirror=False,
-         timestamping=False, no_wget=False):
-    ''' Simulate the shell command wget
-    Usage: wget(url,locdir=None,nc=False,recursive=False,depth=None,no_remove_listing=False,
-         np=False,rejlist=None,nH=False,cut_dirs=None,header=None,robots_off=False,mirror=False)
+def wget(url, **kwargs):
+    import urllib.request
+    import os
+    import fsspec
 
-    Parameters
-    ----------
-    url : str
-        The remote url to be downloaded
-    locdir : str (optional)
-        The local directory used to save the downloaded files, default = '.'
-    header : str (optional)
-        The header for query. If set to 'NASA', the API for NASA earthdata will be used to authorization
-    nc : bool (optional)
-        If True, the previously downloaded local file will be preserved
-    recursive : bool (optional)
-        If Ture, turn on recursive retrieving.
-    depth : str (optional)
-        If not None, specify recursion maximum depth level depth ('inf' for infinite recursion)
-    no_remove_listing : bool (optional)
-        If True, do not remove listings downloaded by Wget.
-    np : bool (optional)
-        If True, do not ever ascend to the parent directory when retrieving recursively
-    acclist : str (optional)
-        Specify comma-separated lists of file name suffixes or patterns to accept
-    rejlist : str (optional)
-        Specify comma-separated lists of file name suffixes or patterns to reject
-    nH : bool (optional)
-        If True, disable host-prefixed file names
-    cut_dirs : str of number (optional)
-        The number of directory layers (starting from root) to be cut.
-    robots_off : bool (optional)
-        If True, turn off the robot exclusion
-    mirror : bool (optional)
-        If True, turn on options suitable for mirroring.
-        It is currently equivalent to ‘-r -N -l inf --no-remove-listing’.
-    timestamping : bool (optional)
-        If True, turn on timestamping option (-N)
-
-    Returns
-    -------
-    strcmd : str
-        The full wget script with options
-    '''
-
-    strcmd = 'wget'
-
-    # -------
-    # options
-
-    # '-nc'
-    if nc:
-        strcmd = ' '.join([strcmd, '-nc'])
-
-    # '-r'
-    if recursive:
-        strcmd = ' '.join([strcmd, '-r'])
-
-    # '-l depth'
-    if depth is not None:
-        strcmd = ' '.join([strcmd, '-l', depth])
-
-    # ‘-np’
-    if np:
-        strcmd = ' '.join([strcmd, '-np'])
-
-    # '--no-remove-listing'
-    if no_remove_listing:
-        strcmd = ' '.join([strcmd, '--no-remove-listing'])
-
-    # '-A rejlist'
-    if acclist is not None:
-        strcmd = ' '.join([strcmd, '-A', acclist])
-
-    # '-R rejlist'
-    if rejlist is not None:
-        strcmd = ' '.join([strcmd, '-R', rejlist])
-
-    # ‘-nH’
-    if nH:
-        strcmd = ' '.join([strcmd, '-nH'])
-
-    if cut_dirs is not None:
-        strcmd = ' '.join([strcmd, '--cut-dirs='+cut_dirs])
-
-    # '-e robots=off'
-    if robots_off:
-        strcmd = ' '.join([strcmd, '-e', 'robots=off'])
-
-    # ‘-m’
-    if mirror:
-        strcmd = ' '.join([strcmd, '-m'])
-
-    # '-N'
-    if timestamping:
-        strcmd = ' '.join([strcmd, '-N'])
-
-    # ---
-    # url
-    strurl = '"'+url+'"'
-    strcmd = ' '.join([strcmd, strurl])
-
-    # -----------
-    # '-P locdir'
-    if locdir is not None:
-        strlocdir = '-P "'+locdir+'"'
-        strcmd = ' '.join([strcmd, strlocdir])
-
-    # -------
-    # '--header header'
-    if header is not None:
-        if header=='NASA':
-            strheader = '--header "Authorization: Bearer dHJpbmtldDplV05vWlc0eE4wQjFZMmt1WldSMToxNjIyODMxODExOjg1NDMyYTZiZTFjZDFkNzZkZWIxMjc3ODdlYzY2NGUxMmI1NzYyMTU"'
-        else:
-            strheader = '--header "'+header+'"'
-        strcmd = ' '.join([strcmd, strheader])
-
-    # run
-    if no_wget is False:
-        subprocess.run(strcmd,shell=True)
-
-    return strcmd
-
+    target_dir = "."
+    if "locdir" in kwargs:
+        target_dir = kwargs.pop("locdir")
+    target_file = os.path.join(target_dir, os.path.basename(url))
+    print(f"Downloading {url} to {target_file}")
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
+    request = urllib.request.Request(url)
+    if "header" in kwargs:
+        header = kwargs.pop("header")
+        assert header == "NASA", f"Non-standard header is not implemented: {header}"
+        request.add_header("Authorization", "Bearer dHJpbmtldDplV05vWlc0eE4wQjFZMmt1WldSMToxNjIyODMxODExOjg1NDMyYTZiZTFjZDFkNzZkZWIxMjc3ODdlYzY2NGUxMmI1NzYyMTU")
+    if len(kwargs) > 0:
+        print(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
+    with opener.open(request) as response, fsspec.open(target_file, "wb") as f:
+        f.write(response.read())
 
 def update_VNP14IMGTDL(local_dir=None):
 
