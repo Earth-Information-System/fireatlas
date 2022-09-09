@@ -1745,8 +1745,7 @@ def save_newyearfidmapping(fidmapping, year, regnm):
     import pandas as pd
 
     # convert list to dataframe
-    df = pd.DataFrame(fidmapping)
-    df.columns = ["oldfid", "newfid"]
+    df = pd.DataFrame(fidmapping, columns=["oldfid", "newfid"])
 
     # determine output file name
     strdir = os.path.join(diroutdata, regnm, str(year), "Summary")
