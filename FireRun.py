@@ -151,6 +151,43 @@ def CArun():
     # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
+def CArunNRT():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    import DataCheckUpdate
+    from datetime import datetime
+    import os
+    ctime = datetime.now()
+
+    CAshp = FireIO.get_Cal_shp()
+    region = ("CA", CAshp)
+
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        tst = FireObj.t_nb(lts, nb="previous")
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    print(f"Running code from {tst} to {ted}.")
+
+    # Download data
+    # Download Suomi-NPP
+    snpp_path = os.path.join(FireConsts.dirextdata, "VIIRS", "...")
+    DataCheckUpdate.update_VNP14IMGTDL(snpp_path)
+    # Download NOAA-20
+    n20_path = os.path.join(FireConsts.dirextdata, "VIIRS", "...")
+    DataCheckUpdate.update_VJ114IMGTDL(n20_path)
+    # Download GridMET
+    # TODO ...
+    
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
