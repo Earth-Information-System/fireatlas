@@ -268,6 +268,9 @@ def update_VJ114IMGTDL(local_dir=None):
 def update_GridMET_fm1000(local_dir=None):
     ''' Get updated GridMET data (including fm1000)
     '''
+    import os
+    import xarray as xr
+    import tempfile
     
     # The directory to save GridMET data
     if local_dir == None:
@@ -280,9 +283,16 @@ def update_GridMET_fm1000(local_dir=None):
     # strvars = ['vpd','pr','tmmn','tmmx','vs','fm100','fm1000','bi','pdsi']
     strvars = ['fm1000']
     for strvar in strvars:
-        urlfnm = urldir + strvar + '_' + str(today.year) + '.nc'
-        strget = ' '.join(['wget', '-N', '-c', '-nd',urlfnm, '-P', local_dir])
-        subprocess.run(strget,shell=True)
+        target_file = strvar + '_' + str(today.year) + '.nc'
+        urlfnm = urldir + target_file
+        with tempfile.TemporaryDirectory() as tempdir:
+            wget(urlfnm, locdir=tempdir)
+            file_name = os.path.join(tempdir, target_file)
+            # Convert to Zarr
+            zarrfile = target_file.replace(".nc", ".zarr")
+            print(f"Converting {target_file} to {zarrfile}.")
+            dat = xr.open_dataset(file_name)
+            dat.to_zarr(os.path.join(local_dir, zarrfile), mode="w")
 
 
 if __name__ == "__main__":
