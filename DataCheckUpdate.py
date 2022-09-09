@@ -1,7 +1,11 @@
 """ DataUpdate
 This module include functions used to check and update needed data files
 """
-
+from FireConsts import dirextdata
+from glob import glob
+import subprocess
+from datetime import date, timedelta
+import pandas as pd
 # ------------------------------------------------------------------------------
 # Check external dataset
 # ------------------------------------------------------------------------------
@@ -157,138 +161,218 @@ def check_data_avail(year, month, day):
     check_GridMET_avail(year, month, day)
 
 
+
 # ------------------------------------------------------------------------------
 # update external dataset
 # ------------------------------------------------------------------------------
-def update_VNP14IMGTDL(local_dir=None):
-
-    """ Batch read and extract SNPP NRT VIIRS (VNP14IMGTDL) data
-    Usage : update_VNP14IMGTDL(local_dir)
+def wget(url,locdir=None,header=None,nc=False,recursive=False,depth=None,no_remove_listing=False,
+         np=False,acclist=None,rejlist=None,nH=False,cut_dirs=None,robots_off=False,mirror=False,
+         timestamping=False, no_wget=False):
+    ''' Simulate the shell command wget
+    Usage: wget(url,locdir=None,nc=False,recursive=False,depth=None,no_remove_listing=False,
+         np=False,rejlist=None,nH=False,cut_dirs=None,header=None,robots_off=False,mirror=False)
 
     Parameters
     ----------
-    local_dir : str
-        the directory containing the downloaded data
-    """
-    from datetime import date, timedelta
-    import pandas as pd
-    import ycpy
-    from glob import glob
+    url : str
+        The remote url to be downloaded
+    locdir : str (optional)
+        The local directory used to save the downloaded files, default = '.'
+    header : str (optional)
+        The header for query. If set to 'NASA', the API for NASA earthdata will be used to authorization
+    nc : bool (optional)
+        If True, the previously downloaded local file will be preserved
+    recursive : bool (optional)
+        If Ture, turn on recursive retrieving.
+    depth : str (optional)
+        If not None, specify recursion maximum depth level depth ('inf' for infinite recursion)
+    no_remove_listing : bool (optional)
+        If True, do not remove listings downloaded by Wget.
+    np : bool (optional)
+        If True, do not ever ascend to the parent directory when retrieving recursively
+    acclist : str (optional)
+        Specify comma-separated lists of file name suffixes or patterns to accept
+    rejlist : str (optional)
+        Specify comma-separated lists of file name suffixes or patterns to reject
+    nH : bool (optional)
+        If True, disable host-prefixed file names
+    cut_dirs : str of number (optional)
+        The number of directory layers (starting from root) to be cut.
+    robots_off : bool (optional)
+        If True, turn off the robot exclusion
+    mirror : bool (optional)
+        If True, turn on options suitable for mirroring.
+        It is currently equivalent to ‘-r -N -l inf --no-remove-listing’.
+    timestamping : bool (optional)
+        If True, turn on timestamping option (-N)
 
-    # The directory to save VNP14IMGTDL data
-    if local_dir == None:
-        local_dir = "/Users/yangchen/Jacaranda/Data/VIIRS/VNP14IMGTDL/Global/"
+    Returns
+    -------
+    strcmd : str
+        The full wget script with options
+    '''
 
-    # Derive the date periods needed to download
-    today = date.today()
-    fnms = glob(
-        local_dir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + str(today.year) + "*.txt"
-    )
-    if len(fnms) == 0:
-        ndays = 0
-    else:
-        doys = [int(d[-7:-4]) for d in fnms]
-        ndays = max(doys)
-    dstart = date(today.year, 1, 1) + timedelta(days=ndays)
-    dstart = dstart - timedelta(
-        days=1
-    )  # downloaded the last file again to avoid incomplete data
+    strcmd = 'wget'
 
-    # Do the download process
-    urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
-    for d in pd.date_range(dstart, today):
-        urlfnm = (
-            urldir
-            + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"
-            + d.strftime("%Y%j")
-            + ".txt"
-        )
-        strcmd = ycpy.util.wget(
-            url=urlfnm,
-            locdir=local_dir,
-            robots_off=True,
-            no_wget=False,
-            timestamping=True,
-            header="NASA",
-        )
+    # -------
+    # options
+
+    # '-nc'
+    if nc:
+        strcmd = ' '.join([strcmd, '-nc'])
+
+    # '-r'
+    if recursive:
+        strcmd = ' '.join([strcmd, '-r'])
+
+    # '-l depth'
+    if depth is not None:
+        strcmd = ' '.join([strcmd, '-l', depth])
+
+    # ‘-np’
+    if np:
+        strcmd = ' '.join([strcmd, '-np'])
+
+    # '--no-remove-listing'
+    if no_remove_listing:
+        strcmd = ' '.join([strcmd, '--no-remove-listing'])
+
+    # '-A rejlist'
+    if acclist is not None:
+        strcmd = ' '.join([strcmd, '-A', acclist])
+
+    # '-R rejlist'
+    if rejlist is not None:
+        strcmd = ' '.join([strcmd, '-R', rejlist])
+
+    # ‘-nH’
+    if nH:
+        strcmd = ' '.join([strcmd, '-nH'])
+
+    if cut_dirs is not None:
+        strcmd = ' '.join([strcmd, '--cut-dirs='+cut_dirs])
+
+    # '-e robots=off'
+    if robots_off:
+        strcmd = ' '.join([strcmd, '-e', 'robots=off'])
+
+    # ‘-m’
+    if mirror:
+        strcmd = ' '.join([strcmd, '-m'])
+
+    # '-N'
+    if timestamping:
+        strcmd = ' '.join([strcmd, '-N'])
+
+    # ---
+    # url
+    strurl = '"'+url+'"'
+    strcmd = ' '.join([strcmd, strurl])
+
+    # -----------
+    # '-P locdir'
+    if locdir is not None:
+        strlocdir = '-P "'+locdir+'"'
+        strcmd = ' '.join([strcmd, strlocdir])
+
+    # -------
+    # '--header header'
+    if header is not None:
+        if header=='NASA':
+            strheader = '--header "Authorization: Bearer dHJpbmtldDplV05vWlc0eE4wQjFZMmt1WldSMToxNjIyODMxODExOjg1NDMyYTZiZTFjZDFkNzZkZWIxMjc3ODdlYzY2NGUxMmI1NzYyMTU"'
+        else:
+            strheader = '--header "'+header+'"'
+        strcmd = ' '.join([strcmd, strheader])
+
+    # run
+    if no_wget is False:
+        subprocess.run(strcmd,shell=True)
+
+    return strcmd
 
 
-def update_VJ114IMGTDL(local_dir=None):
+def update_VNP14IMGTDL(local_dir=None):
 
-    """ Batch read and extract NOAA20 VIIRS (VJ114IMGTDL) data
+    ''' Batch read and extract update_VJ114IMGTDL data
     Usage : update_VJ114IMGTDL(local_dir)
 
     Parameters
     ----------
     local_dir : str
         the directory containing the downloaded data
-    """
-    from datetime import date, timedelta
-    import pandas as pd
-    import ycpy
-    from glob import glob
+    '''
 
     # The directory to save VNP14IMGTDL data
     if local_dir == None:
-        local_dir = "/Users/yangchen/Jacaranda/Data/VIIRS/VJ114IMGTDL/Global/"
+        local_dir=dirextdata+'VIIRS/VNP14IMGTDL/'
 
     # Derive the date periods needed to download
     today = date.today()
-    fnms = glob(
-        local_dir
-        + "NOAA20_VIIRS_C2_Global_VJ114IMGTDL_NRT_"
-        + str(today.year)
-        + "*.txt"
-    )
-    if len(fnms) == 0:
+    fnms = glob(local_dir+'SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_'+str(today.year)+'*.txt')
+    if len(fnms)==0:
         ndays = 0
     else:
         doys = [int(d[-7:-4]) for d in fnms]
         ndays = max(doys)
-    dstart = date(today.year, 1, 1) + timedelta(days=ndays)
-    dstart = dstart - timedelta(
-        days=1
-    )  # downloaded the last file again to avoid incomplete data
+    dstart = date(today.year,1,1) + timedelta(days=ndays)
+    dstart = dstart - timedelta(days=1)              # downloaded the last file again to avoid incomplete data
+
+    # Do the download process
+    urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
+    for d in pd.date_range(dstart,today):
+        urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
+        strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+
+def update_VJ114IMGTDL(local_dir=None):
+
+    ''' Batch read and extract update_VJ114IMGTDL data
+    Usage : update_VJ114IMGTDL(local_dir)
+
+    Parameters
+    ----------
+    local_dir : str
+        the directory containing the downloaded data
+    '''
+
+    # The directory to save VNP14IMGTDL data
+    if local_dir == None:
+        local_dir=dirextdata+'VIIRS/VJ114IMGTDL/'
+    # Derive the date periods needed to download
+    today = date.today()
+    fnms = glob(local_dir+'J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_'+str(today.year)+'*.txt')
+    if len(fnms)==0:
+        ndays = 0
+    else:
+        doys = [int(d[-7:-4]) for d in fnms]
+        ndays = max(doys)
+    dstart = date(today.year,1,1) + timedelta(days=ndays)
+    dstart = dstart - timedelta(days=1)              # downloaded the last file again to avoid incomplete data
 
     # Do the download process
     urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
-    for d in pd.date_range(dstart, today):
-        urlfnm = (
-            urldir
-            + "NOAA20_VIIRS_C2_Global_VJ114IMGTDL_NRT_"
-            + d.strftime("%Y%j")
-            + ".txt"
-        )
-        strcmd = ycpy.util.wget(
-            url=urlfnm,
-            locdir=local_dir,
-            robots_off=True,
-            no_wget=False,
-            timestamping=True,
-            header="NASA",
-        )
-
-
+    for d in pd.date_range(dstart,today):
+        urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
+        strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        
+        
 def update_GridMET_fm1000(local_dir=None):
-    """ Get updated GridMET data (including fm1000)
-    """
-    import subprocess
-    from datetime import date
-
+    ''' Get updated GridMET data (including fm1000)
+    '''
+    
     # The directory to save GridMET data
     if local_dir == None:
-        local_dir = "/Users/yangchen/Jacaranda/Data/GridMET/"
+        local_dir = dirextdata+'GridMET/'
 
     today = date.today()
 
     # Do the download process
     urldir = "http://www.northwestknowledge.net/metdata/data/"
     # strvars = ['vpd','pr','tmmn','tmmx','vs','fm100','fm1000','bi','pdsi']
-    strvars = ["fm1000"]
+    strvars = ['fm1000']
     for strvar in strvars:
-        urlfnm = urldir + strvar + "_" + str(today.year) + ".nc"
-        strget = " ".join(["wget", "-N", "-c", "-nd", urlfnm, "-P", local_dir])
-        subprocess.run(strget, shell=True)
+        urlfnm = urldir + strvar + '_' + str(today.year) + '.nc'
+        strget = ' '.join(['wget', '-N', '-c', '-nd',urlfnm, '-P', local_dir])
+        subprocess.run(strget,shell=True)
 
 
 if __name__ == "__main__":
