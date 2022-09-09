@@ -177,11 +177,9 @@ def CArunNRT():
 
     # Download data
     # Download Suomi-NPP
-    snpp_path = os.path.join(FireConsts.dirextdata, "VIIRS", "...")
-    DataCheckUpdate.update_VNP14IMGTDL(snpp_path)
+    DataCheckUpdate.update_VNP14IMGTDL()
     # Download NOAA-20
-    n20_path = os.path.join(FireConsts.dirextdata, "VIIRS", "...")
-    DataCheckUpdate.update_VJ114IMGTDL(n20_path)
+    DataCheckUpdate.update_VJ114IMGTDL()
     # Download GridMET
     # TODO ...
     
