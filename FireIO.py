@@ -1747,8 +1747,7 @@ def save_newyearfidmapping(fidmapping, year, regnm):
     import pandas as pd
 
     # convert list to dataframe
-    df = pd.DataFrame(fidmapping)
-    df.columns = ["oldfid", "newfid"]
+    df = pd.DataFrame(fidmapping, columns=["oldfid", "newfid"])
 
     # determine output file name
     strdir = os.path.join(diroutdata, regnm, str(year), "Summary")
@@ -2196,7 +2195,14 @@ def get_lts_serialization(regnm, year=None):
     if year == None:
         year = date.today().year
 
-    fnms = glob(os.path.join(diroutdata, regnm, str(year), "Serialization", "*.pkl"))
+    if diroutdata.startswith("s3://"):
+        # Can't use glob for S3. Use s3.ls instead.
+        import s3fs
+        s3 = s3fs.S3FileSystem(anon=False)
+        s3path = os.path.join(diroutdata, regnm, str(year), "Serialization")
+        fnms = [f for f in s3.ls(s3path) if f.endswith(".pkl")]
+    else:
+        fnms = glob(os.path.join(diroutdata, regnm, str(year), "Serialization", "*.pkl"))
 
     if len(fnms) > 0:
         fnms.sort()
