@@ -951,8 +951,9 @@ def get_LCT(locs):
     return vLCT
 
 def get_LCT_CONUS(locs):
-    """ Get land cover type for active fires
-
+    """ Get land cover type for active fires - CONUS scale.
+        This is the same function as get_LCT but with a CONUS wide file.
+    
     Parameters
     ----------
     locs : list of lists (nx2)
@@ -1665,10 +1666,11 @@ def load_gpkgobj(t, regnm, layer="perimeter"):
             gdf = gdf.set_index("fireID")
         except:
             gdf = None
-
+            
         return gdf
 
     else:
+        print(str(fnm),'does not exist.')
         return None
 
 
