@@ -23,6 +23,8 @@ Modules required
 * FireConsts
 """
 
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 def find_largefires(allfires, falim=4):
     """ Given an allfires object, extract large fires to be used for single fire
@@ -160,10 +162,18 @@ def make_sf(t, regnm, layer, fids_m, fid, sfkeys):
         gdf = FireIO.load_gpkgobj(
             t, regnm, layer=layer
         )  # read daily gdf: active and sleeper only
-
+        if gdf is None: 
+            print("No GPKG loaded. Returning None...")
+            return None
         # extract rows with fireID in fids_m only
-        idx = [i for i in fids_m if i in list(gdf.index)]
+        try: idx = [i for i in fids_m if i in list(gdf.index)]
+        
+        except Exception as e:
+            print('Could not load ids due to the following error:',e)
+            return None
+        
         if len(idx) == 0:  # if no rows satistying condition, return None
+            print("No satisfying rows for layer",layer+'.', "Returning None...")
             return None
 
         gdf_1d = gdf.loc[idx]  # extract all fires merged to fid
@@ -253,13 +263,15 @@ def make_sfts_1f(allfires, fid, regnm, dd, layer="perimeter"):
     t = list(f.t_st)  # t is the time (year,month,day,ampm) for each step
     while endloop == False:
 
-        gdf_1d = make_sf(t, regnm, layer, fids_m + [fid], fid, sfkeys)
-
-        # append daily row to gdf_all
         if FireTime.t_dif(t, f.t_st) == 0:
-            gdf_all = gdf_1d
+            gdf_all = make_sf(t, regnm, layer, fids_m + [fid], fid, sfkeys)
         else:
-            gdf_all = gdf_all.append(gdf_1d, ignore_index=True)
+            if gdf_all is None:
+                print('Warning: variable gdf_all is was previously None. Resetting to current timestep...')
+                gdf_all = make_sf(t, regnm, layer, fids_m + [fid], fid, sfkeys)
+            else:
+                gdf_1d = make_sf(t, regnm, layer, fids_m + [fid], fid, sfkeys)
+                gdf_all = gdf_all.append(gdf_1d, ignore_index=True)
 
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireTime.t_dif(t, f.t_ed) == 0:
@@ -480,13 +492,18 @@ if __name__ == "__main__":
     t1 = time.time()
 
     # set the start and end time
-    tst = (2020, 9, 5, "AM")
+    #tst = (2020, 9, 5, "AM")
     # ted=(2020,9,10,'PM')
-    ted = (2020, 11, 5, "PM")
+    #ted = (2020, 11, 5, "PM")
 
     # run creation
-    save_sfts_trng(tst, ted, regnm="Creek")
+    #save_sfts_trng(tst, ted, regnm="Creek")
     # save_sfts([2020, 9, 19, 'AM'],'Creek')
+    
+    tst = (2021, 7, 12, "AM")
+    ted = (2021, 9, 16, "PM")
+    
+    save_sfts_trng(tst, ted, regnm='CA')
 
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run code")

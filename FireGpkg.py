@@ -95,6 +95,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     dd = {**dd1, **dd2}  # or (dd1 | dd2) for Python 3.9.0 or higher
     # read or initialize the gdf
     t_pt = FireTime.t_nb(allfires.t, nb="previous")
+    
     gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
     if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
         gdf = gpd.GeoDataFrame(

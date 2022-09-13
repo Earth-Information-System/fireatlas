@@ -1646,33 +1646,42 @@ def load_gpkgobj(t, regnm, layer="perimeter"):
     """
     import os
     import pandas as pd
-
+    from time import sleep
+    
     # get file name
     fnm = get_gpkgobj_fnm(t, regnm)
+    
+    itry = 0
+    maxtries = 5
+    while itry < maxtries:
+        if os_path_exists(fnm):
+            try:
+                gdf = read_gpkg(fnm, layer=layer)
 
-    if os_path_exists(fnm):
-        try:
-            gdf = read_gpkg(fnm, layer=layer)
+                # set fireID as index column (force to be int type)
+                if "t" in gdf.columns:
+                    gdf["t"] = pd.to_datetime(gdf.t)
+                if "t_st" in gdf.columns:
+                    gdf["t_st"] = pd.to_datetime(gdf.t_st)
+                if "t_ed" in gdf.columns:
+                    gdf["t_ed"] = pd.to_datetime(gdf.t_ed)
 
-            # set fireID as index column (force to be int type)
-            if "t" in gdf.columns:
-                gdf["t"] = pd.to_datetime(gdf.t)
-            if "t_st" in gdf.columns:
-                gdf["t_st"] = pd.to_datetime(gdf.t_st)
-            if "t_ed" in gdf.columns:
-                gdf["t_ed"] = pd.to_datetime(gdf.t_ed)
-
-            gdf.fireID = gdf.fireID.astype("int")
-            gdf = gdf.set_index("fireID")
-        except:
-            gdf = None
+                gdf.fireID = gdf.fireID.astype("int")
+                gdf = gdf.set_index("fireID")
+                return gdf
             
-        return gdf
+            except Exception as e:
+                print('File exists but the following error was encountered:',e)
+                gdf = None
+                return gdf
 
-    else:
-        print(str(fnm),'does not exist.')
-        return None
-
+        else:
+            itry += 1
+            print(f"Read attempt {itry}/{maxtries} failed.")
+            if not itry < maxtries:
+                print(str(fnm),'does not exist.')
+                return None
+            sleep(5)
 
 def load_gpkgsfs(t, fid, regnm, layer="perimeter"):
     """ Load geopandas from a gpkg fire object file

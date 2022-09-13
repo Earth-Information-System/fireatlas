@@ -633,8 +633,8 @@ if __name__ == "__main__":
     # ted=(2021,9,15,'PM')
     # region = ('Dixie',[-121.6,39.8,-120.5,40.6])
 
-    tst = (2020, 1, 2, "AM")
-    ted = (2020, 1, 30, "PM")
+    tst = (2021, 10, 1, "AM")
+    ted = (2021, 10, 7, "PM")
     #region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
     region = ('CA',[-124.409591, 32.534155999999996, -114.131211, 42.009518])
 
@@ -642,7 +642,7 @@ if __name__ == "__main__":
     print("----------------------------------------")
     print("Running Fire_Forward")
     print("----------------------------------------")
-    Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
     print("----------------------------------------")
@@ -654,7 +654,7 @@ if __name__ == "__main__":
     print("----------------------------------------")
     print("Running save_sfts_trng")
     print("----------------------------------------")
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run code")
