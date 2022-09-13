@@ -105,7 +105,7 @@ def set_ftype(fire):
             # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
             uselocs = random.sample(fire.newlocs_geo, 1000)
 
-        vLCT = FireIO.get_LCT(
+        vLCT = FireIO.get_LCT_CONUS(
             uselocs
         )  # call get_LCT to get all LCT for the fire pixels
         LCTmax = max(
@@ -119,7 +119,7 @@ def set_ftype(fire):
         stFM1000 = FireIO.get_FM1000(t, loc)
 
         # determine the fire type using the land cover type and stFM1000
-        if LCTmax in [11, 31]:  # 'Water', 'Barren' -> 'Other'
+        if LCTmax in [0, 11, 31]:  #'NoData', 'Water', 'Barren' -> 'Other'
             ftype = 0
         elif LCTmax in [23]:  # 'Urban' -> 'Urban'
             ftype = 1
