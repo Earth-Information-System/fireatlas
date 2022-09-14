@@ -1,10 +1,12 @@
 from maap.maap import MAAP
 import yaml
 
+maap = MAAP(maap_host="api.ops.maap-project.org")
+
 with open("algorithm_config.yaml", "r") as f:
     yml = yaml.safe_load(f)
 
-info = {{ 
+info = {
     "script_command" : yml["run_command"],
     "algorithm_name" : yml["algo_name"],
     "code_version": yml["version"],
@@ -17,6 +19,7 @@ info = {{
     "algorithm_params" : [
         yml["inputs"]
     ]
-}}
+}
 
-response = MAAP.registerAlgorithm(info)
+response = maap.registerAlgorithm(arg=info)
+print(response.text)
