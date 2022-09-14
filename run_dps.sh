@@ -25,7 +25,7 @@ echo "Starting algorithm in subshell"
 (
 cd "$basedir"
 echo "Switched to directory: $(pwd -P)"
-python -u c "import FireRun; FireRun.CArun()"
+python -u c "import FireRun; FireRun.CArunNRT()"
 )
 echo "Done!"
 
