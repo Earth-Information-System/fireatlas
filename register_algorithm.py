@@ -1,5 +1,6 @@
 from maap.maap import MAAP
 import yaml
+import json
 
 maap = MAAP(maap_host="api.ops.maap-project.org")
 
@@ -21,5 +22,5 @@ info = {
     ]
 }
 
-response = maap.registerAlgorithm(arg=info)
+response = maap.registerAlgorithm(json.dumps(info))
 print(response.text)
