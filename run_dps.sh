@@ -21,8 +21,12 @@ python --version
 echo "pip: $(which pip)"
 pip --version
 
-echo "Starting download"
-python -u "$basedir/FireMain.py"
+echo "Starting algorithm in subshell"
+(
+cd "$basedir"
+echo "Switched to directory: $(pwd -P)"
+python -u c "import FireRun; FireRun.CArun()"
+)
 echo "Done!"
 
 exit
