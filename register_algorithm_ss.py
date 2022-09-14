@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from maap.maap import MAAP
 import argparse
 from yaml import load as yaml_load, dump as yaml_dump
