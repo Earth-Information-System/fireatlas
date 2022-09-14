@@ -265,6 +265,7 @@ def make_sfts_1f(allfires, fid, regnm, dd, layer="perimeter"):
 
         if FireTime.t_dif(t, f.t_st) == 0:
             gdf_all = make_sf(t, regnm, layer, fids_m + [fid], fid, sfkeys)
+            if gdf_all is None: print('Warning, this initial instance of gdf_all is None.')
         else:
             if gdf_all is None:
                 print('Warning: variable gdf_all is was previously None. Resetting to current timestep...')
