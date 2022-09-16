@@ -108,10 +108,13 @@ def set_ftype(fire):
         vLCT = FireIO.get_LCT_CONUS(
             uselocs
         )  # call get_LCT to get all LCT for the fire pixels
-        LCTmax = max(
-            set(vLCT), key=vLCT.count
-        )  # extract the LCT with most pixel counts
-
+        try:
+            LCTmax = max(
+            set(vLCT), key=vLCT.count)  # extract the LCT with most pixel counts
+        except:
+            print('No LCT data available, setting ftype to 0...')
+            ftype = 0
+            return ftype
         # get and record fm1000 value at ignition
         ignct = fire.ignlocsMP.centroid  # ignition centroid
         loc = (ignct.y, ignct.x)  # (lat,lon)
