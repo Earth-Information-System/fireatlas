@@ -22,5 +22,10 @@ info = {
     ]
 }
 
+version = yml["version"]
+alg_id = f"{yml['algo_name']}_{yml['environment']}:{yml['version']}"
+adel = maap.deleteAlgorithm(alg_id)
+print(adel.text)
+
 response = maap.registerAlgorithm(json.dumps(info))
 print(response.text)
