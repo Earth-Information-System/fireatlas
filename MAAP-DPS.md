@@ -90,3 +90,52 @@ Only proceed with this step once you are sure the current version of your algori
       ```
 
 You can check on the status of your job using the "DPS/MAS Operations" --> "Get DPS Job Status" menu item, or `maap.getJobStatus` Python function.
+
+Here some code that (1) submits a MAAP DPS job; (2) continuously reports on the job's status while it's running; and (3) prints out the output in a (more) human-readable format once the job is finished.
+
+```python
+from maap.maap import MAAP
+maap = MAAP(maap_host='api.ops.maap-project.org')
+import xml.etree.ElementTree as ET
+import time
+
+def getStatus(job):
+    jobid = job["job_id"]
+    st = ET.fromstring(maap.getJobStatus(jobid).content)
+    result = st.find("{http://www.opengis.net/wps/2.0}Status").text
+    return result
+
+def getOutput(job):
+    jobid = job["job_id"]
+    e = ET.fromstring(maap.getJobResult(jobid).content)
+    wps = "{http://www.opengis.net/wps/2.0}"
+    result = e.find(f"{wps}Output/{wps}Data").text
+    return result
+
+def sleepJob(job, sleeptime=5):
+    while not getStatus(job) in ("Failed", "Succeeded"):
+        current_status = getStatus(job)
+        print(f'Status: {current_status}')
+        while getStatus(job) == current_status:
+            print('.', end='')
+            time.sleep(sleeptime)
+        print("\n", end='')
+    print(f'Status: {getStatus(job)}')
+
+alg = "eis-fire-feds-v2"  # Algorithm name
+version = "conus-dps-4"   # Current branch
+
+submit = maap.submitJob(
+    identifier=f"job-{alg}_ubuntu:{version}",
+    username="ashiklom",
+    algo_id=f"{alg}_ubuntu",
+    version=version
+)
+print(submit)
+
+# Continuously monitor job status until the job succeeds or fails
+sleepJob(submit)
+
+# Print the output of the job once it finishes
+print(getOutput(job))
+```
