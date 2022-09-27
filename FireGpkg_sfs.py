@@ -352,7 +352,11 @@ def update_sfts_1f(allfires, fid, regnm, layer="perimeter"):
     # if no gdf_sf_pt, create time series using the make_fire_history()
     # if the running is fast, no need to use the code in the 'else' part...
     if gdf_sf_pt is None:
+        print('Could not load previous timestep. Making sfs from allfires object.')
         gdf_all = make_sfts_1f(allfires, fid, regnm, dd, layer=layer)
+        if gdf_all is None:
+            print('Warning: gdf_all is still None.')
+            return gdf_all
     # when gdf_sf_pt is present, to save time, read it and add fires just merged at t
     else:
         # use gdf_sf_pt as basis

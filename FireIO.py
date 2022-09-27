@@ -1628,8 +1628,6 @@ def save_gpkgsfs(
 
     if gdf_nfplist is not None:
         gdf_nfplist.to_file(f"{fnm}/nfplist.fgb", driver="FlatGeobuf")
-
-
         
 def load_gpkgobj(t, regnm, layer="perimeter"):
     """ Load geopandas from a gpkg fire object file
@@ -1690,7 +1688,7 @@ def load_gpkgsfs(t, fid, regnm, layer="perimeter"):
     # get file name
     fnm = get_gpkgsfs_fnm(t, fid, regnm)
 
-    if os_path_exists(fnm):
+    try:
         gdf = read_gpkg(fnm, layer=layer)
 
         if gdf is not None:
@@ -1700,7 +1698,7 @@ def load_gpkgsfs(t, fid, regnm, layer="perimeter"):
         # gdf = gdf.set_index('index')
 
         return gdf
-    else:
+    except:
         return None
 
 
