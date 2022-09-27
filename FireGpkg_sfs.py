@@ -25,6 +25,9 @@ Modules required
 
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
+# Use a logger to record console output
+from FireLog import logger
+import time
 
 def find_largefires(allfires, falim=4):
     """ Given an allfires object, extract large fires to be used for single fire
@@ -265,6 +268,7 @@ def make_sfts_1f(allfires, fid, regnm, dd, layer="perimeter"):
 
         if FireTime.t_dif(t, f.t_st) == 0:
             gdf_all = make_sf(t, regnm, layer, fids_m + [fid], fid, sfkeys)
+            if gdf_all is None: print('Warning, this initial instance of gdf_all is None.')
         else:
             if gdf_all is None:
                 print('Warning: variable gdf_all is was previously None. Resetting to current timestep...')
@@ -469,11 +473,16 @@ def save_sfts_trng(
     endloop = False  # flag to control the ending olf the loop
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
     while endloop == False:
+        
         print("Single fire saving", t)
-
+        logger.info('Single fire saving: '+str(t))
+        
         # create and save all gpkg files at time t
+        tstart = time.time()
         save_sfts_all(t, regnm, layers=layers)
-
+        tend = time.time()
+        
+        logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireTime.t_dif(t, ted) == 0:

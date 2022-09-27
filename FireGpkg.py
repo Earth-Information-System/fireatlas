@@ -98,6 +98,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     
     gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
     if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
+        print('No previous Snapshot found. Making file from allfires obj.')
         gdf = gpd.GeoDataFrame(
             columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(epsg), geometry=[]
         )

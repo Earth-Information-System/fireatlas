@@ -1630,9 +1630,9 @@ def save_gpkgsfs(
         gdf_nfplist.to_file(f"{fnm}/nfplist.fgb", driver="FlatGeobuf")
 
 
+        
 def load_gpkgobj(t, regnm, layer="perimeter"):
     """ Load geopandas from a gpkg fire object file
-
     Parameters
     ----------
     t : tuple, (int,int,int,str)
@@ -1650,39 +1650,27 @@ def load_gpkgobj(t, regnm, layer="perimeter"):
     
     # get file name
     fnm = get_gpkgobj_fnm(t, regnm)
-    
-    itry = 0
-    maxtries = 5
-    while itry < maxtries:
-        if os_path_exists(fnm):
-            try:
-                gdf = read_gpkg(fnm, layer=layer)
+    try:
+        gdf = read_gpkg(fnm, layer=layer)
+        if gdf is None:
+            return gdf
+        # set fireID as index column (force to be int type)
+        if "t" in gdf.columns:
+            gdf["t"] = pd.to_datetime(gdf.t)
+        if "t_st" in gdf.columns:
+            gdf["t_st"] = pd.to_datetime(gdf.t_st)
+        if "t_ed" in gdf.columns:
+            gdf["t_ed"] = pd.to_datetime(gdf.t_ed)
 
-                # set fireID as index column (force to be int type)
-                if "t" in gdf.columns:
-                    gdf["t"] = pd.to_datetime(gdf.t)
-                if "t_st" in gdf.columns:
-                    gdf["t_st"] = pd.to_datetime(gdf.t_st)
-                if "t_ed" in gdf.columns:
-                    gdf["t_ed"] = pd.to_datetime(gdf.t_ed)
-
-                gdf.fireID = gdf.fireID.astype("int")
-                gdf = gdf.set_index("fireID")
-                return gdf
+        gdf.fireID = gdf.fireID.astype("int")
+        gdf = gdf.set_index("fireID")
+        return gdf
             
-            except Exception as e:
-                print('File exists but the following error was encountered:',e)
-                gdf = None
-                return gdf
-
-        else:
-            itry += 1
-            print(f"Read attempt {itry}/{maxtries} failed.")
-            if not itry < maxtries:
-                print(str(fnm),'does not exist.')
-                return None
-            sleep(5)
-
+    except Exception as e:
+        print('Encountered the following error:',e)
+        gdf = None
+        return gdf
+    
 def load_gpkgsfs(t, fid, regnm, layer="perimeter"):
     """ Load geopandas from a gpkg fire object file
 
