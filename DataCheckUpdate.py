@@ -282,7 +282,10 @@ def update_VNP14IMGTDL(local_dir=None):
     urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
-        strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        except: 
+            print("\nCould not download VNP14IMGTDL data for",d)
+            continue
 
 def update_VJ114IMGTDL(local_dir=None):
 
@@ -313,7 +316,10 @@ def update_VJ114IMGTDL(local_dir=None):
     urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
-        strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        except: 
+            print("\nCould not download VJ114IMGTDL data for",d)
+            continue
         
         
 def update_GridMET_fm1000(local_dir=None):
