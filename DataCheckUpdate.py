@@ -44,7 +44,7 @@ def check_VNP14IMGML_avail(year, month, ver="C1.05"):
 
     # derive monthly file name with path
     t = date(year, month, 1)
-    dirFC = os.path.join(dirextdata, "VNP14IMGML") + "/"
+    dirFC = os.path.join(dirextdata,"VIIRS", "VNP14IMGML") + "/"
     fnmFC = os.path.join(dirFC, "VNP14IMGML." + t.strftime("%Y%m") + "." + ver + ".txt")
 
     # check if the file exist
@@ -83,7 +83,7 @@ def check_VNP14IMGTDL_avail(year, month, day):
 
     # derive monthly file name with path
     t = date(year, month, day)
-    dirFC = os.path.join(dirextdata, "VNP14IMGTDL") + "/"
+    dirFC = os.path.join(dirextdata,"VIIRS", "VNP14IMGTDL") + "/"
     fnmFC = os.path.join(
         dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + t.strftime("%Y%j") + ".txt"
     )
@@ -112,7 +112,55 @@ def check_VNP14IMGTDL_avail(year, month, day):
                 + ")"
             )
 
+def check_VJ114IMGTDL_avail(year, month, day):
+    """ Check if the daily NRT VIIRS data exist
 
+    Parameters
+    ----------
+    year : int
+        the year
+    month : int
+        the month
+    day : int
+        the day
+    """
+
+    from FireConsts import dirextdata
+    import os
+    from datetime import date, timedelta
+
+    # derive monthly file name with path
+    t = date(year, month, day)
+    dirFC = os.path.join(dirextdata,'VIIRS', "VJ114IMGTDL") + "/"
+    fnmFC = os.path.join(
+        dirFC, "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_" + t.strftime("%Y%j") + ".txt"
+    )
+
+    # check if the file exist
+    if os_path_exists(fnmFC):
+        print("[Yes] Daily VJ114IMGTDL exists!")
+    else:
+        print("[No] Daily VJ114IMGTDL is not available!")
+
+        # if the file does not exist, also find the last available day
+        fnms = glob2(
+            dirFC
+            + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"
+            + t.strftime("%Y")
+            + "*.txt"
+        )
+        if len(fnms) > 0:
+            days = max([int(os.path.basename(fnm)[-7:-4]) for fnm in fnms])
+            tmax = date(t.year, 1, 1) + timedelta(days=days - 1)
+            print(
+                "The latest VNP14IMGTDL available date is "
+                + tmax.strftime("%Y%m%d")
+                + "(doy = "
+                + tmax.strftime("%j")
+                + ")"
+            )
+                        
+            
 def check_GridMET_avail(year, month, day):
     """ Check if the GridMET fm1000 data exist
 
@@ -172,6 +220,9 @@ def check_data_avail(year, month, day):
 
     # VIIRS VNP14IMGTDL data
     check_VNP14IMGTDL_avail(year, month, day)
+    
+    # VIIRS VJ114IMGTDL data
+    check_VJ114IMGTDL_avail(year, month, day)
 
     # GridMET fm1000 data
     check_GridMET_avail(year, month, day)
