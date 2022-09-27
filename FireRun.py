@@ -181,7 +181,7 @@ def CArunNRT():
     # Download NOAA-20
     DataCheckUpdate.update_VJ114IMGTDL()
     # Download GridMET
-    # TODO ...
+    DataCheckUpdate.update_GridMET_fm1000()
     
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
