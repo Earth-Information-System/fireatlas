@@ -12,7 +12,7 @@
   * Geopandas (0.7.0)
   * Xarray (0.15.0)
   * Scipy (1.4.1)
-  * Shapely (1.7.1)
+  * Shapely (1.8.0)
   * Gdal (3.0.4)
   * Pyproj (2.5.0)
   * sklearn
