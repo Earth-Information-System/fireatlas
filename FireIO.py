@@ -315,7 +315,7 @@ def read_VJ114IMGML(yr, mo):
 
 
 def read_VJ114IMGTDL(t):
-    """ Read daily NRT S-NPP VIIRS fire location data
+    """ Read daily NRT NOAA20 VIIRS fire location data
 
     Parameters
     ----------
@@ -334,7 +334,7 @@ def read_VJ114IMGTDL(t):
     from datetime import date
 
     d = date(*t[:-1])
-
+    print(str(d))
     # derive monthly file name with path
     dirFC = os.path.join(dirextdata,'VIIRS', "VJ114IMGTDL") + "/"
     fnmFC = os.path.join(
@@ -356,12 +356,16 @@ def read_VJ114IMGTDL(t):
     ]
     if os_path_exists(fnmFC):
         # read data
-        df = pd.read_csv(
-            fnmFC,
-            parse_dates=[["acq_date", "acq_time"]],
-            usecols=usecols,
-            skipinitialspace=True,
-        )
+        #df = pd.read_csv(
+        #    fnmFC,
+        #    parse_dates=[["acq_date", "acq_time"]],
+        #    usecols=usecols,
+        #    skipinitialspace=True,
+        #)
+        df = pd.read_csv(fnmFC)
+        df['acq_date'] = str(d)
+        df["acq_date_acq_time"] = df['acq_date'] + df['acq_time']
+        print(df['acq_date_acq_time'])
         df = df.rename(
             columns={
                 "latitude": "Lat",

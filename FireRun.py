@@ -172,7 +172,8 @@ def CArunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
+    ted = [2022,2,1,'AM']
     print(f"Running code from {tst} to {ted}.")
 
     # Download data
@@ -181,6 +182,7 @@ def CArunNRT():
     # Download NOAA-20
     DataCheckUpdate.update_VJ114IMGTDL()
     # Download GridMET
+    print('Updating GridMET...')
     DataCheckUpdate.update_GridMET_fm1000()
     
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
@@ -203,9 +205,9 @@ if __name__ == "__main__":
     t1 = time.time()
     # CreekSamplerun()
     # CreekSamplerunNOAA20()
-    CreekSamplerunVIIRS()
+    #CreekSamplerunVIIRS()
 
     # CreekRegionSamplerun()
-    # CArun()
+    CArunNRT()
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code code")
