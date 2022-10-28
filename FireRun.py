@@ -56,71 +56,96 @@ def Yearbatchrun(year, tst=None, ted=None, restart=False):
     print(f"{(t2-t1)/60.} minutes to run code")
 
 
-def CreekSamplerun():
+def CreekSamplerun(firesrc='SNPP'):
     """
-    need to change firesrc in FireConsts.py 'SNPP'
-    """
-    import FireMain, FireGpkg, FireGpkg_sfs
-
-    tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
-    region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
-
-    # do fire tracking
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
-
-    # calculate and save snapshot files
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
-
-    # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-
-
-def CreekSamplerunNOAA20():
-    """
-    need to change firesrc in FireConsts.py 'NOAA20'
+    - Run Creek fire tracking
+    - firesrc options: 'SNPP', 'NOAA20', 'VIIRS'
+    - before running, need to set corresponding firesrc in FireConsts.py
     """
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
     ted = (2020, 11, 5, "PM")
-    region = ("CreekNOAA20", [-119.5, 36.8, -118.9, 37.7])
+    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
-    # do fire tracking
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    # # do fire tracking
+    # FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    #
+    # # calculate and save snapshot files
+    # FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #
+    # # calculate and save single fire files
+    # FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    # calculate and save snapshot files
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
-    # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-
-
-def CreekSamplerunVIIRS():
+def DixieSamplerun(firesrc='SNPP'):
     """
-    need to change firesrc in FireConsts.py 'VIIRS'
+    - Run Creek fire tracking
+    - firesrc options: 'SNPP', 'NOAA20', 'VIIRS'
+    - before running, need to set corresponding firesrc in FireConsts.py
     """
     import FireMain, FireGpkg, FireGpkg_sfs
 
-    tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
-    region = ("CreekVIIRS", [-119.5, 36.8, -118.9, 37.7])
+    tst = (2021, 7, 13, "AM")
+    ted = (2021, 9, 16, "PM")
+    region = ("Dixie"+firesrc, [-121.6, 39.8, -120.1, 40.8])
 
-    # do fire tracking
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    # # do fire tracking
+    # FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    #
+    # # calculate and save snapshot files
+    # FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #
+    # # calculate and save single fire files
+    # FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    # calculate and save snapshot files
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
-
-    # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    FireGpkg_sfs.convert_sfts(region[0],2021,[5])
+# def CreekSamplerunNOAA20():
+#     """
+#     need to change firesrc in FireConsts.py 'NOAA20'
+#     """
+#     import FireMain, FireGpkg, FireGpkg_sfs
+#
+#     tst = (2020, 9, 5, "AM")
+#     ted = (2020, 11, 5, "PM")
+#     region = ("CreekNOAA20", [-119.5, 36.8, -118.9, 37.7])
+#
+#     # do fire tracking
+#     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+#
+#     # calculate and save snapshot files
+#     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+#
+#     # calculate and save single fire files
+#     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+#
+#
+# def CreekSamplerunVIIRS():
+#     """
+#     need to change firesrc in FireConsts.py 'VIIRS'
+#     """
+#     import FireMain, FireGpkg, FireGpkg_sfs
+#
+#     tst = (2020, 9, 5, "AM")
+#     ted = (2020, 11, 5, "PM")
+#     region = ("CreekVIIRS", [-119.5, 36.8, -118.9, 37.7])
+#
+#     # do fire tracking
+#     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+#
+#     # calculate and save snapshot files
+#     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+#
+#     # calculate and save single fire files
+#     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 
 def CreekRegionSamplerun():
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 1, "AM")
-    ted = (2020, 9, 30, "PM")
+    ted = (2020, 9, 10, "PM")
     region = ("CreekRegion", [-120, 36, -118, 38])
 
     # do fire tracking
@@ -151,6 +176,46 @@ def CArun():
     # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
+def CArun2136():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+
+    CAshp = FireIO.get_Cal_shp()
+    region = ("California2136", CAshp)
+
+    tst = (2020, 9, 23, "AM")
+    ted = (2020, 9, 30, "PM")
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+
+def CArun32610():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+
+    CAshp = FireIO.get_Cal_shp()
+    region = ("California32610", CAshp)
+
+    tst = (2012, 1, 20, "AM")  # temporarily set to 'pm' to avoid reading from previous year's data
+    # tst = (2012, 1, 1, "AM")
+
+    ted = (2012, 12, 31, "PM")
+
+    # do fire tracking
+    # FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+#     calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0], layers=["perimeter", "fireline", "newfirepix","nfplist"])
+
+    FireGpkg_sfs.combine_sfts(region[0],tst[0],addFRAP=True)
+
 def CArunNRT():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
@@ -163,17 +228,19 @@ def CArunNRT():
     region = ("CA", CAshp)
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
+    print(lts)
     if lts == None:
         tst = [ctime.year, 1, 1, 'AM']
     else:
-        tst = FireObj.t_nb(lts, nb="previous")
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
 
     if ctime.hour >= 18:
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #ted = [ctime.year, ctime.month, ctime.day, ampm]
-    ted = [2022,2,1,'AM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted}.")
 
     # Download data
@@ -207,7 +274,7 @@ if __name__ == "__main__":
     # CreekSamplerunNOAA20()
     #CreekSamplerunVIIRS()
 
-    # CreekRegionSamplerun()
-    CArunNRT()
+    CreekRegionSamplerun()
+    #CArunNRT()
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code code")

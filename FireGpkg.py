@@ -1,12 +1,10 @@
 """ FireGpkg
 Module for creating regional geopackage summary at each time step
-
 List of geojson types
 ---------------------
 * fperim(''): fire basic attributes and perimeter geometry
 * fline('FL'): active fire line geometry
 * NFP('NFP'): new fire pixels
-
 List of functions
 -----------------
 * make_gdf_fperim
@@ -14,7 +12,6 @@ List of functions
 * make_gdf_NFP
 * save_gdf_1t
 * save_gdf_trng
-
 Modules required
 ----------------
 * FireObj
@@ -25,19 +22,16 @@ Modules required
 
 def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     """ Create gpd DataFrame for fire basic attributes and fire perimeter.
-
     Method:
     -------
     Extract attributes rom the allfires obj input, and create a gdf DataFrame.
     In order to save the running time, if the gpkg file for previous time step
     is available, read the data and only modify properties of previously active
     fires.
-
     Parameters
     ----------
     allfires : Allfires object
         the Allfires object to be used to modify gdf
-
     Returns
     -------
     gdf : geopandas DataFrame
@@ -95,10 +89,8 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     dd = {**dd1, **dd2}  # or (dd1 | dd2) for Python 3.9.0 or higher
     # read or initialize the gdf
     t_pt = FireTime.t_nb(allfires.t, nb="previous")
-    
     gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
     if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
-        print('No previous Snapshot found. Making file from allfires obj.')
         gdf = gpd.GeoDataFrame(
             columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(epsg), geometry=[]
         )
@@ -119,6 +111,11 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     #         gdf.loc[fid,'isdead'] = 1
     #     gdf.drop(gdf.index[gdf['isdead'] == 1], inplace = True)  # drop the row
     gdf.drop(allfires.fids_dead, inplace=True)
+
+    # - drop fires with fid not in allfires object anymore (mostly fires turning from mayactive to dead)
+    fids_remove = list(set(gdf.index) - set(allfires.fids))
+    gdf.drop(fids_remove, inplace=True)
+
     # 2. modify dd2 for fires with possible modification
 
     # - for mayactive fires (active+sleeper), copy attributes from fire object to gdf
@@ -179,7 +176,6 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
 def save_gdf_1t(t, regnm):
     """ Creat gdf using one Allfires object and save it to a geopackage file at 1 time step.
             This can be used  for fperim, fline, and NFP files.
-
     Parameters
     ----------
     allfires : Allfires object
@@ -189,6 +185,7 @@ def save_gdf_1t(t, regnm):
 
     # read Allfires object from the saved pkl file
     allfires = FireIO.load_fobj(t, regnm, activeonly=True)
+#     allfires = FireIO.load_fobj(t, regnm, activeonly=False)
 
     # create gdf using previous time step gdf values and new allfires object
     gdf_fperim = make_gdf_snapshot(allfires, regnm, layer="perimeter")
@@ -202,7 +199,6 @@ def save_gdf_1t(t, regnm):
 
 def save_gdf_trng(tst, ted, regnm):
     """ Wrapper to create and save gpkg files for a time period
-
     Parameters
     ----------
     tst : tuple, (int,int,int,str)
@@ -304,10 +300,14 @@ if __name__ == "__main__":
     # save_gdf_trng(tst=tst,ted=ted,regnm='Dixie')
 
     # tst=(2020,10,29,'PM')
-    tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
+    tst = (2020, 1, 1, "PM")
+    ted = (2020, 12, 31, "PM")
     # save_gdf_trng(tst=tst,ted=ted,regnm='Creek')
-    save_gdf_uptonow(ted, "Creek")
+    save_gdf_trng(tst=tst, ted=ted, regnm='California32610')
+#     save_gdf_uptonow(ted, "Creek")
+
+
+
 
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run code")

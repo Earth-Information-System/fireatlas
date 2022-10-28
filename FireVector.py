@@ -81,7 +81,6 @@ def alpha_shape(points, alpha):
 
 def addbuffer(geom_ll, vbuf):
     """ add a geometry in geographic projection with a buffer in meter
-
     Parameters
     ----------
     geom_ll : shapely geometry
@@ -103,12 +102,10 @@ def addbuffer(geom_ll, vbuf):
 
 def doMultP(locs, buf):
     """ deirvve a MultipPolygon (bufferred MultiPoint) shape from given fire locations
-
     Parameters
     ----------
     locs : list (nx2)
         latitude and longitude values of all fire pixels
-
     Returns
     -------
     multP : MultiPolygon object
@@ -127,12 +124,10 @@ def doMultP(locs, buf):
 
 def doConvH(locs, buf):
     """ derive the convex hull given fire locations
-
     Parameters
     ----------
     locs : list (nx2)
         latitude and longitude values of all fire pixels
-
     Returns
     -------
     hull : Polygon object
@@ -162,14 +157,12 @@ def doConvH(locs, buf):
 
 def doConcH(locs, buf, alpha=100):
     """ derive the concave hull given fire locations
-
     Parameters
     ----------
     locs : list (nx2)
         latitude and longitude values of all fire pixels
     alpha : int
         alpha value (1/deg)
-
     Returns
     -------
     hull : Polygon or MultiPolygon object
@@ -201,18 +194,16 @@ def doConcH(locs, buf, alpha=100):
 def cal_hull(fp_locs, sensor="viirs"):
     """ wrapper to calculate the hull given fire locations.
         the returned hull type depends on the pixel number
-
     Parameters
     ----------
     fp_locs : list (nx2)
         latitude and longitude values of all fire pixels
-
     Returns
     -------
     hull : object
         calculated hull (a buffer of VIIRS half pixel size included)
     """
-    from FireConsts import valpha, lalpha, VIIRSbuf  # ,MCD64buf
+    from FireConsts import valpha, VIIRSbuf  # ,MCD64buf
     import numpy as np
 
     # set buffer according to sensor
@@ -221,9 +212,7 @@ def cal_hull(fp_locs, sensor="viirs"):
     elif sensor == "mcd64":
         buf = MCD64buf
     else:
-        buf = 30
-        valpha = lalpha
-        # buf = MCD64buf
+        print('please set sensor to viirs or mcd64')
 
     # number of points
     nfp = len(fp_locs)
@@ -247,14 +236,11 @@ def cal_hull(fp_locs, sensor="viirs"):
         # vdeg = sum(x)/len(x)
         # km1deg = 6371*np.cos(np.deg2rad(vdeg))*2*np.pi/360
         # valphadeg = 1/(valpha/1000/km1deg)   # in 1/deg
-
         hull = doConcH(fp_locs, buf, alpha=valpha)
-        # hull = doConcH(fp_locs,alpha=valpha)
         if hull == None:  # in case where convex hull can't be determined, call doMultP
             hull = doMultP(fp_locs, buf)
         elif hull.area == 0:
             hull = doMultP(fp_locs, buf)
-
     return hull
 
 
@@ -268,7 +254,6 @@ def cal_extpixels(fps, hull, alpha=100):
         the existing hull for the fire
     alpha : int
         alpha value (1/deg) to define the inward buffer
-
     Returns
     -------
     fps_ext : list (nx2)
@@ -295,12 +280,10 @@ def cal_extpixels(fps, hull, alpha=100):
 
 def calConcHarea(hull):
     """ calculate area given the concave hull (km2)
-
     Parameters
     ----------
     hull : geometry, 'Polygon' | 'MultiPoint'
         the hull for the fire
-
     Returns
     -------
     farea : float

@@ -83,6 +83,11 @@ def t_dif(t1, t2):
             dt += 0.5
     return dt
 
+def dt_dif(dt1,dt2):
+    ''' given two datatime values, calculate the differences (in days)
+    '''
+    daysdif = (dt1-dt2).seconds/24/3600 + (dt1-dt2).days
+    return daysdif
 
 def t2d(t):
     """ convert a t tuple to date and ampm

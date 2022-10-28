@@ -173,6 +173,11 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
             usecols=usecols,
             skipinitialspace=True,
         )
+        
+         # sometimes the FRP value is '*******' and cause incorrect dtype, need to correct this
+        df = df.replace('*******',0)
+        df['FRP'] = df['FRP'].astype('float')
+        
         df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
         df = df.drop(columns=["Sample", "Line"])
         return df
@@ -334,7 +339,6 @@ def read_VJ114IMGTDL(t):
     from datetime import date
 
     d = date(*t[:-1])
-    print(str(d))
     # derive monthly file name with path
     dirFC = os.path.join(dirextdata,'VIIRS', "VJ114IMGTDL") + "/"
     fnmFC = os.path.join(
@@ -364,8 +368,8 @@ def read_VJ114IMGTDL(t):
         #)
         df = pd.read_csv(fnmFC)
         df['acq_date'] = str(d)
-        df["acq_date_acq_time"] = df['acq_date'] + df['acq_time']
-        print(df['acq_date_acq_time'])
+        df["acq_date_acq_time"] = pd.to_datetime(df['acq_date'] +' '+ df['acq_time'])
+        #print(df['acq_date_acq_time'])
         df = df.rename(
             columns={
                 "latitude": "Lat",
@@ -1421,6 +1425,26 @@ def get_gpkgsfs_fnm(t, fid, regnm):
 
     return fnm
 
+def get_gpkgsfs_dir(yr, regnm):
+    """ Return the gpkg snapshot directory name for a year
+    Parameters
+    ----------
+    yr : int
+        year
+    regnm : str
+        region name
+    Returns
+    ----------
+    fnm : str
+        gpkg file name
+    """
+    from FireConsts import diroutdata
+    import os
+
+    # determine output dir
+    strdir = os.path.join(diroutdata, regnm, str(yr), "Largefire")
+
+    return strdir
 
 def get_NFPlistsfs_fnm(t, fid, regnm):
     """ Return the gpkg snapshot file name at a time step

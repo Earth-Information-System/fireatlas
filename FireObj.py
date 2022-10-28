@@ -261,7 +261,8 @@ class Allfires:
         self.heritages = []
 
         # save the mapping table
-        FireIO.save_newyearfidmapping(fidmapping, self.t[0], regnm)
+        if len(fidmapping) > 0:
+            FireIO.save_newyearfidmapping(fidmapping, self.t[0], regnm)
 
     # functions to be run after tracking VIIRS active fire pixels at each time step
     def record_fids_change(

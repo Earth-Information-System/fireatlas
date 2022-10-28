@@ -143,7 +143,7 @@ def Fobj_init(tst, regnm, restart=False):
 
     pst = FireTime.t_nb(tst, nb="previous")  # previous time step
     if FireIO.check_fobj(pst, regnm, activeonly=False) & (restart == False):
-        allfires = FireIO.load_fobj(pst, regnm, activeonly=False)
+        allfires = FireIO.load_fobj(pst, regnm, activeonly=False) # load all fires (including dead)
         allfires.cleanup(tst)  # update time and reset lists
         # # if it's the first time step of a calendar year, reset all fires id
         # if (tst[1]==1 & tst[2]==1 & tst[3]=='AM'):
