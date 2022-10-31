@@ -217,6 +217,7 @@ def CArun32610():
     FireGpkg_sfs.combine_sfts(region[0],tst[0],addFRAP=True)
 
 def CArunNRT():
+    
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
     import DataCheckUpdate
@@ -228,7 +229,6 @@ def CArunNRT():
     region = ("CA", CAshp)
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
-    print(lts)
     if lts == None:
         tst = [ctime.year, 1, 1, 'AM']
     else:
@@ -242,6 +242,51 @@ def CArunNRT():
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted}.")
+
+    # Download data
+    # Download Suomi-NPP
+    DataCheckUpdate.update_VNP14IMGTDL()
+    # Download NOAA-20
+    DataCheckUpdate.update_VJ114IMGTDL()
+    # Download GridMET
+    print('Updating GridMET...')
+    DataCheckUpdate.update_GridMET_fm1000()
+    
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    
+def CONUSrunNRT():
+    
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    import DataCheckUpdate
+    from datetime import datetime
+    import os
+    
+    if FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    ctime = datetime.now()
+
+    region = ('CONUS_NRT',[-126.401171875,-61.36210937500001,24.071240929282325,49.40003415463647])
+
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2022,1,10,'AM']
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
     # Download data
     # Download Suomi-NPP
@@ -274,7 +319,7 @@ if __name__ == "__main__":
     # CreekSamplerunNOAA20()
     #CreekSamplerunVIIRS()
 
-    CreekRegionSamplerun()
-    #CArunNRT()
+    #CreekRegionSamplerun()
+    CONUSrunNRT()
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code code")
