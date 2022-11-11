@@ -408,7 +408,11 @@ def update_sfts_1f(allfires, fid, regnm, layer="perimeter"):
         # for k,tp in dd.items():
         #     gdf_ct[k] = gdf_ct[k].astype(tp)
         gdf_all = gdf_all.append(gdf_ct, ignore_index=True)
-
+    
+    if gdf_all is None:
+        print('Warning gdf_all is None. Returning...')
+        return gdf_all
+    
     # 4. force the correct dtypes
     for k, tp in dd.items():
         gdf_all[k] = gdf_all[k].astype(tp)

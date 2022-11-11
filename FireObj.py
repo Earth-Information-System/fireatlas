@@ -701,19 +701,25 @@ class Fire:
 
         if fhull is None:  # if no hull, return empty list
             return []
-        else:  # otherwise, extract the pixels nearl the hull
-            # if hull is a polygon, return new pixels near the hull
-            if fhull.type == "Polygon":
-                # lr = fhull.exterior.buffer(fpbuffer)
-                lr = FireVector.addbuffer(fhull.exterior, fpbuffer)
-                return [p for p in nps if lr.contains(Point(p.loc[0], p.loc[1]))]
+        else:
+            try:
+                # otherwise, extract the pixels nearl the hull
+                # if hull is a polygon, return new pixels near the hull
+                if fhull.type == "Polygon":
+                    # lr = fhull.exterior.buffer(fpbuffer)
+                    lr = FireVector.addbuffer(fhull.exterior, fpbuffer)
+                    return [p for p in nps if lr.contains(Point(p.loc[0], p.loc[1]))]
 
-            # if hull is a multipolygon, return new pixels near the hull
-            elif fhull.type == "MultiPolygon":
-                # mlr = MultiLineString([x.exterior for x in fhull]).buffer(fpbuffer)
-                mlr = MultiLineString([x.exterior for x in fhull])
-                mlr = FireVector.addbuffer(mlr, fpbuffer)
-                return [p for p in nps if mlr.contains(Point(p.loc[0], p.loc[1]))]
+                # if hull is a multipolygon, return new pixels near the hull
+                elif fhull.type == "MultiPolygon":
+                    # mlr = MultiLineString([x.exterior for x in fhull]).buffer(fpbuffer)
+                    mlr = MultiLineString([x.exterior for x in fhull])
+                    mlr = FireVector.addbuffer(mlr, fpbuffer)
+                    return [p for p in nps if mlr.contains(Point(p.loc[0], p.loc[1]))]
+            
+            except Exception as e:
+                print(e)
+                return []
 
     @property
     def flplocs(self):

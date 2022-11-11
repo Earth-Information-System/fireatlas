@@ -633,26 +633,30 @@ if __name__ == "__main__":
     # ted=(2021,9,15,'PM')
     # region = ('Dixie',[-121.6,39.8,-120.5,40.6])
 
-    tst = (2018, 5, 1, "AM")
-    ted = (2018, 10, 31, "PM")
+    tst = (2019, 6, 7, "AM")
+    ted = (2019, 7, 31, "PM")
     #region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
     #region = ('CA',[-124.409591, 32.534155999999996, -114.131211, 42.009518])
     #region = ('Thomas',[-119.79311723013566,34.162521752180936,-118.87850541372941,34.791948775281746])
+    #region = ('Meyers',[-113.77550545807375,45.84172304592036,-113.426689540105,46.13941078007829])
+    #region = ('Buzzard',[-108.74314027373264,33.57499501702004,-108.31604676787326,33.86512549268285])
+    region = ('Woodbury',[-111.4389213614576,33.292662533634825,-110.89784470130135,33.75974712254538])
+    #region = ('Fish',[-117.98761271684656,34.14492745779149,-117.9021253511239,34.21536501245526])
     #region = ('GrizzlyCreek',[-107.32359115976944,39.51527120096794,-107.04481308359756,39.698839413262284])
-    region = ('WesternUS',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
+    #region = ('WesternUS',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
     # region = ('CONUS',[-126.401171875,-61.36210937500001,24.071240929282325,49.40003415463647])
     #region = ('Caldor',[-120.69305873258455,38.52600288552201,-119.90341639860017,38.916006495378696])
     # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data
     print("----------------------------------------")
     print("Running Fire_Forward")
     print("----------------------------------------")
-    #Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
     print("----------------------------------------")
     print("Running save_gdf_trng")
     print("----------------------------------------")
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
     print("----------------------------------------")
