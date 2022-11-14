@@ -295,13 +295,17 @@ class Allfires:
         """ If pixel density of an active fire is too large, assume it's static
                 fires and invalidate it.
         """
-        for i, f in self.activefires:
-            if (f.pixden > 20) & (f.farea < 20):
-                # invalidate the fire
-                f.invalid = True
+        try:
+            for i, f in self.activefires.items():
+                if (f.pixden > 20) & (f.farea < 20):
+                    # invalidate the fire
+                    f.invalid = True
 
-                # add the fire id into the fids_invalid list
-                self.fids_invalid.append(f.fireID)
+                    # add the fire id into the fids_invalid list
+                    self.fids_invalid.append(f.fireID)
+                    print('one static fire invalidated')
+        except Exception as e:
+            print(e)
 
     # def updateLCTmax(self):
     #     ''' update Land cover type (dominant LCT for all fire pixels) for active

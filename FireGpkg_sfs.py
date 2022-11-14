@@ -482,10 +482,14 @@ def save_sfts_trng(
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
     while endloop == False:
         print("Single fire saving", t)
-
+        logger.info('Single fire saving: '+str(t))
+        
+        tstart = time.time()
         # create and save all gpkg files at time t
         save_sfts_all(t, regnm, layers=layers)
+        tend = time.time()
 
+        logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireTime.t_dif(t, ted) == 0:
