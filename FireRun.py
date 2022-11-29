@@ -239,7 +239,7 @@ def CArunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    tst = [2022,1,1,'AM']
+    #tst = [2022,1,1,'AM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted}.")
@@ -285,22 +285,22 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    tst = [ctime.year, 1, 1, 'AM']
+    tst = [ctime.year, 2, 18, 'PM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
     # Download data
     # Download Suomi-NPP
-    #DataCheckUpdate.update_VNP14IMGTDL()
+    DataCheckUpdate.update_VNP14IMGTDL()
     # Download NOAA-20
-    #DataCheckUpdate.update_VJ114IMGTDL()
+    DataCheckUpdate.update_VJ114IMGTDL()
     # Download GridMET
-    #print('Updating GridMET...')
-    #DataCheckUpdate.update_GridMET_fm1000()
+    print('Updating GridMET...')
+    DataCheckUpdate.update_GridMET_fm1000()
     
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
 def WesternUSrunNRT():
@@ -330,6 +330,7 @@ def WesternUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
+    
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
@@ -342,6 +343,25 @@ def WesternUSrunNRT():
     # Download GridMET
     print('Updating GridMET...')
     DataCheckUpdate.update_GridMET_fm1000()
+    
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+def WesternUSYrRun(year):
+    
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    import DataCheckUpdate
+    from datetime import datetime
+    import os
+    
+    region = ('WesternUS',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
+
+    tst = (year, 1, 1, "AM")
+    ted = (year, 12, 31, "PM")
+    
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
     
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
@@ -366,6 +386,7 @@ if __name__ == "__main__":
     #CreekSamplerunVIIRS()
 
     #CreekRegionSamplerun()
-    CONUSrunNRT()
+    #CONUSrunNRT()
+    
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code code")
