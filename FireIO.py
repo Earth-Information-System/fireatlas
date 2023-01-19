@@ -427,8 +427,10 @@ def AFP_regfilter(df, shp_Reg, strlat="Lat", strlon="Lon"):
 
     # drop geometry column
     from FireConsts import epsg
-
+    
+    print('current proj:',gdf_filtered.crs)
     df_filtered = AFP_toprj(gdf_filtered, epsg=epsg)
+    print('converting to proj:',epsg)
     # df_filtered = pd.DataFrame(gdf_filtered.drop(columns='geometry'))
 
     return df_filtered
@@ -492,7 +494,7 @@ def AFP_toprj(gdf, epsg=32610):
     for global studies probably proj:cea would be a good choice
     for the boreals we use North Pole LAEA (epsg:3571)
     for CA may use WGS 84 / UTM zone 10N (epsg: 32610)
-    for US may use US National Atlas Equal Area (epsg: 2163)"""
+    for US may use US National Atlas Equal Area (epsg: 9311)"""
 
     import pandas as pd
 

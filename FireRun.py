@@ -69,13 +69,13 @@ def CreekSamplerun(firesrc='SNPP'):
     region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
-    # FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
     #
     # # calculate and save snapshot files
-    # FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     #
     # # calculate and save single fire files
-    # FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
     FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
@@ -146,7 +146,7 @@ def CreekRegionSamplerun():
 
     tst = (2020, 9, 1, "AM")
     ted = (2020, 9, 10, "PM")
-    region = ("CreekRegion", [-120, 36, -118, 38])
+    region = ("CreekRegion9311", [-120, 36, -118, 38])
 
     # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
@@ -164,8 +164,8 @@ def CArun():
     CAshp = FireIO.get_Cal_shp()
     region = ("California", CAshp)
 
-    tst = (2020, 9, 1, "AM")
-    ted = (2020, 9, 30, "PM")
+    tst = (2019, 6, 1, "AM")
+    ted = (2019, 11, 30, "PM")
 
     # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
@@ -265,6 +265,7 @@ def CONUSrunNRT():
     import DataCheckUpdate
     from datetime import datetime
     import os
+    from time import sleep
     
     if FireConsts.firenrt != True:
         print('Please set firenrt to True')
@@ -285,7 +286,7 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    tst = [ctime.year, 2, 18, 'PM']
+    #tst = [ctime.year, 1, 1, 'AM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
@@ -297,7 +298,13 @@ def CONUSrunNRT():
     DataCheckUpdate.update_VJ114IMGTDL()
     # Download GridMET
     print('Updating GridMET...')
-    DataCheckUpdate.update_GridMET_fm1000()
+    try: DataCheckUpdate.update_GridMET_fm1000()
+    
+    except Exception as e: # catch if no Data available
+        print(e) 
+    
+    #print('Now sleeping for 10min...')
+    #sleep(600)
     
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
@@ -381,12 +388,23 @@ if __name__ == "__main__":
     import time
 
     t1 = time.time()
-    # CreekSamplerun()
+    #CreekSamplerun()
     # CreekSamplerunNOAA20()
     #CreekSamplerunVIIRS()
 
     #CreekRegionSamplerun()
-    #CONUSrunNRT()
-    
+    i = 0
+    while i < 3:
+        try:
+            CONUSrunNRT()
+            WesternUSrunNRT()
+            break
+        except Exception as e:
+            print(e)
+            print('Attempting next run....')
+            i +=1
+            if not i < 3:
+                raise e
+    #CArun()
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code code")

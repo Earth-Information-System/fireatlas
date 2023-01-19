@@ -62,7 +62,7 @@ MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.3127
 
 # fire source data
 firesrc = "VIIRS"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
-firenrt = True  # NRT - True, False
+firenrt = True # NRT - True, False
 firessr = "viirs"  # sensor - 'mcd64'
 
 # ------------------------------------------------------------------------------
@@ -124,5 +124,5 @@ FTYP_Glb = {
 # ------------------------------------------------------------------------------
 # other options
 # ------------------------------------------------------------------------------
-epsg = 2163  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 2163: US National Atlas Equal Area)
-opt_rmstatfire = False  # do the removal of small fires with high pixel density
+epsg = 9311  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
+opt_rmstatfire = True  # do the removal of small fires with high pixel density

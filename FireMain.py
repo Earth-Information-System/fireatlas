@@ -545,11 +545,18 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         allfires.cleanup(t)
 
         # 3. read active fire pixels from VIIRS dataset
-        t_read = time.time()
-        afp = FireIO.read_AFP(t, src=firesrc, nrt=firenrt, region=region)
-        t_read2 = time.time()
-        logger.info(f"reading file {(t_read2-t_read)}")
-
+        i = 0
+        while i < 5:
+            try: 
+                afp = FireIO.read_AFP(t, src=firesrc, nrt=firenrt, region=region)
+                break
+            except Exception as e:
+                print(f"Attempt {i}/5 failed.")
+                print(e)
+                i += 1
+                if not i < 5:
+                    raise e
+        
         # 4.5. if active fire pixels are detected, do fire expansion/merging
         if len(afp) > 0:
             # 4. do fire expansion/creation using afp
@@ -627,23 +634,26 @@ if __name__ == "__main__":
     import FireGpkg_sfs
 
     t1 = time.time()
+    print(t1)
 
     # # set the start and end time
     # tst=(2021,7,13,'AM')
     # ted=(2021,9,15,'PM')
     # region = ('Dixie',[-121.6,39.8,-120.5,40.6])
 
-    tst = (2019, 6, 7, "AM")
-    ted = (2019, 7, 31, "PM")
+    tst = (2015, 1, 1, 'AM')
+    ted = (2015, 12, 31, "PM")
+    #print(tst)
     #region = ("Creek", [-119.5, 36.8, -118.9, 37.7])
     #region = ('CA',[-124.409591, 32.534155999999996, -114.131211, 42.009518])
     #region = ('Thomas',[-119.79311723013566,34.162521752180936,-118.87850541372941,34.791948775281746])
     #region = ('Meyers',[-113.77550545807375,45.84172304592036,-113.426689540105,46.13941078007829])
-    #region = ('Buzzard',[-108.74314027373264,33.57499501702004,-108.31604676787326,33.86512549268285])
-    region = ('Woodbury',[-111.4389213614576,33.292662533634825,-110.89784470130135,33.75974712254538])
+    #region = ('Bighorn',[-111.2483396974153,32.107921771038576,-110.2980223146028,32.73852603996812])
+    #region = ('Frye',[-110.02849137185659,32.568462386228475,-109.69752823709096,32.84117803581184])
     #region = ('Fish',[-117.98761271684656,34.14492745779149,-117.9021253511239,34.21536501245526])
     #region = ('GrizzlyCreek',[-107.32359115976944,39.51527120096794,-107.04481308359756,39.698839413262284])
-    #region = ('WesternUS',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
+    region = ('WesternUS_REDO',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
+    #region = ('HermitsPeak',[-105.62745646198083,35.373429737675505,-105.18251017291833,36.26028722617026])
     # region = ('CONUS',[-126.401171875,-61.36210937500001,24.071240929282325,49.40003415463647])
     #region = ('Caldor',[-120.69305873258455,38.52600288552201,-119.90341639860017,38.916006495378696])
     # Run the time forward and record daily fire objects .pkl data and fire attributes .GeoJSON data

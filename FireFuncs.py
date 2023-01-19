@@ -119,7 +119,10 @@ def set_ftype(fire):
         ignct = fire.ignlocsMP.centroid  # ignition centroid
         loc = (ignct.y, ignct.x)  # (lat,lon)
         t = date(*fire.t_st[:-1])
-        stFM1000 = FireIO.get_FM1000(t, loc)
+        try: stFM1000 = FireIO.get_FM1000(t, loc)
+        except:
+            #print('FM1000 data is unavailable at this time.')
+            stFM1000 = 0
 
         # determine the fire type using the land cover type and stFM1000
         if LCTmax in [0, 11, 31]:  #'NoData', 'Water', 'Barren' -> 'Other'
@@ -133,7 +136,7 @@ def set_ftype(fire):
                 ftype = 3
             else:  # 'Forest wild'
                 ftype = 2
-        elif LCTmax in [52, 71]:  # 'Shurb', 'Grassland' ->
+        elif LCTmax in [52, 71]:  # 'Shrub', 'Grassland' ->
             if stFM1000 > 12:  # 'Shrub manage'
                 ftype = 5
             else:  # 'Shrub wild'

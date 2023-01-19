@@ -283,8 +283,9 @@ def update_VNP14IMGTDL(local_dir=None):
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
         try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
-        except: 
+        except Exception as e: 
             print("\nCould not download VNP14IMGTDL data for",d)
+            print('Error message:',e)
             continue
 
 def update_VJ114IMGTDL(local_dir=None):
@@ -317,8 +318,9 @@ def update_VJ114IMGTDL(local_dir=None):
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
         try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
-        except: 
+        except Exception as e: 
             print("\nCould not download VJ114IMGTDL data for",d)
+            print('Error message:',e)
             continue
         
         
