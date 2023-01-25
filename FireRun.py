@@ -349,8 +349,11 @@ def WesternUSrunNRT():
     DataCheckUpdate.update_VJ114IMGTDL()
     # Download GridMET
     print('Updating GridMET...')
-    DataCheckUpdate.update_GridMET_fm1000()
+    try: DataCheckUpdate.update_GridMET_fm1000()
     
+    except Exception as e: # catch if no Data available
+        print(e) 
+        
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
@@ -378,6 +381,7 @@ if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     """
     import sys
+    import DataCheckUpdate
 
     sys.path.insert(
         1,
@@ -395,16 +399,17 @@ if __name__ == "__main__":
     #CreekRegionSamplerun()
     i = 0
     while i < 3:
-        try:
-            CONUSrunNRT()
+        try:        
             WesternUSrunNRT()
+            #CONUSrunNRT()
             break
         except Exception as e:
             print(e)
             print('Attempting next run....')
             i +=1
             if not i < 3:
-                raise e
+                print('All attempts failed.')
+                pass
     #CArun()
     t2 = time.time()
-    print(f"{(t2-t1)/60.} minutes used to run the whole code code")
+    print(f"{(t2-t1)/60.} minutes used to run the whole code")

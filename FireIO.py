@@ -428,9 +428,11 @@ def AFP_regfilter(df, shp_Reg, strlat="Lat", strlon="Lon"):
     # drop geometry column
     from FireConsts import epsg
     
-    print('current proj:',gdf_filtered.crs)
+    #print('current proj:',gdf_filtered.crs)
+    
     df_filtered = AFP_toprj(gdf_filtered, epsg=epsg)
-    print('converting to proj:',epsg)
+    
+    #print('converting to proj:',epsg)
     # df_filtered = pd.DataFrame(gdf_filtered.drop(columns='geometry'))
 
     return df_filtered
