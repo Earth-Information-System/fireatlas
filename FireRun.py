@@ -397,19 +397,12 @@ if __name__ == "__main__":
     #CreekSamplerunVIIRS()
 
     #CreekRegionSamplerun()
-    i = 0
-    while i < 3:
-        try:        
-            WesternUSrunNRT()
-            #CONUSrunNRT()
-            break
-        except Exception as e:
-            print(e)
-            print('Attempting next run....')
-            i +=1
-            if not i < 3:
-                print('All attempts failed.')
-                pass
+    
+    try: WesternUSrunNRT()
+    except Exception as e: 
+        print(e)
+        pass
+    
     #CArun()
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code")
