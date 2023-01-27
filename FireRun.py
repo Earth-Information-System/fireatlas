@@ -354,7 +354,7 @@ def WesternUSrunNRT():
     except Exception as e: # catch if no Data available
         print(e) 
         
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
