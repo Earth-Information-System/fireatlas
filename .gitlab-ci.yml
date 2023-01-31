@@ -6,9 +6,7 @@ stages:
   only:
     - conus-dps-w-cronjob
     #- main
-  tags:
-    - docker
-  script: 
+  script:
     - docker build -t ${IMAGE_TAG} -f Dockerfile .
     - docker run ${IMAGE_TAG} ${ALGO_NAME} ${BRANCH_NAME} ${USERNAME} ${QUEUE} --params ${PARAMS}
 
