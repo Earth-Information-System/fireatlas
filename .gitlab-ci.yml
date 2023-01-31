@@ -7,8 +7,8 @@ stages:
     - conus-dps-w-cronjob
     #- main
   tags:
-    - hysds
-    - verdi
+    #- hysds
+    - shell
   script:
     - echo "[ HERE ]"
     - docker build -t ${IMAGE_TAG} -f Dockerfile .
