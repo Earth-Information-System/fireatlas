@@ -1,8 +1,8 @@
 stages:
-  - build-and-run
+  - dps-run
 
 .run_dps_job_base:
-  stage: build-and-run
+  stage: dps-run
   only:
     - conus-dps-w-cronjob
     #- main
@@ -16,7 +16,7 @@ stages:
 # DPS JOBS
 ###################################
 
-build-and-run:fire-atlas:
+dps-run:fire-atlas:
   extends: .run_dps_job_base
   variables:
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
