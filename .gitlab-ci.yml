@@ -1,0 +1,33 @@
+stages:
+  - build-and-run
+
+.run_dps_job_base:
+  stage: build-and-run
+  only:
+    - cronjob
+    #- main
+  tags:
+    - docker
+  script: 
+    - docker build -t ${IMAGE_TAG} -f Dockerfile .
+    - docker run ${IMAGE_TAG} ${ALGO_NAME} ${BRANCH_NAME} ${USERNAME} ${QUEUE} --params ${PARAMS}
+
+###################################
+# DPS JOBS
+###################################
+
+build-and-run:fire-atlas:
+  extends: .run_dps_job_base
+  environment: staging
+  variables:
+    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: hello-world-aimee_ubuntu
+    #ALGO_NAME: eis-fire-feds-nrt-dps
+    BRANCH_NAME: main
+    #BRANCH_NAME: conus-dps
+    USERNAME: aimeeb
+    #USERNAME:
+    QUEUE: maap-dps-worker-16gb
+    #QUEUE: maap-dps-worker-8gb
+    PARAMS: '{"boom":"town"}'
+
