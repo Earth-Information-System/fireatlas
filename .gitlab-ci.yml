@@ -4,7 +4,7 @@ stages:
 .run_dps_job_base:
   stage: build-and-run
   only:
-    - cronjob
+    - conus-dps-w-cronjob
     #- main
   tags:
     - docker
