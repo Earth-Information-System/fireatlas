@@ -19,7 +19,6 @@ stages:
 
 build-and-run:fire-atlas:
   extends: .run_dps_job_base
-  environment: staging
   variables:
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: hello-world-aimee_ubuntu
