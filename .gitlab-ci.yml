@@ -4,7 +4,7 @@ stages:
 .run_dps_job_base:
   stage: dps-run
   only:
-    - conus-dps-w-cronjob
+    - main
   tags:
     - shell
   script:
@@ -15,8 +15,11 @@ stages:
 # DPS JOBS
 ###################################
 
-dps-run:fire-atlas:
+dps-run:fire-atlas-western-us-nrt:
   extends: .run_dps_job_base
+  only:
+    variables:
+      - $WESTERN_US_NRT
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
