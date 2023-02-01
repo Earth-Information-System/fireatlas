@@ -9,7 +9,7 @@ stages:
     - shell
   script:
     - docker build -t ${IMAGE_TAG} -f Dockerfile .
-    - docker run ${IMAGE_TAG} ${ALGO_NAME} ${BRANCH_NAME} ${USERNAME} ${QUEUE} --params ${PARAMS}
+    - docker run ${IMAGE_TAG} ${ALGO_NAME} ${BRANCH_NAME} ${USERNAME} ${QUEUE}
 
 ###################################
 # DPS JOBS
@@ -19,9 +19,8 @@ dps-run:fire-atlas:
   extends: .run_dps_job_base
   variables:
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-nrt-dps
+    ALGO_NAME: eis-fire-feds-nrt-dps_ubuntu
     BRANCH_NAME: conus-dps
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-8gb
-    PARAMS: '{}'
 
