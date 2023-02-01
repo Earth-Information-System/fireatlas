@@ -21,7 +21,7 @@ dps-run:fire-atlas:
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-nrt-dps
     BRANCH_NAME: conus-dps
-    USERNAME: eorland_gee
+    USERNAME: ashiklom
     QUEUE: maap-dps-worker-8gb
     PARAMS: '{}'
 
