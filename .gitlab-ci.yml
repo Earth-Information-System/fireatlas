@@ -4,7 +4,7 @@ stages:
 .run_dps_job_base:
   stage: dps-run
   only:
-    - main
+    - conus-dps
   tags:
     - shell
   script:
