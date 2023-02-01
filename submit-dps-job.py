@@ -29,7 +29,9 @@ def submit_job(algo_id, version, username, queue, params={}):
 if __name__ == '__main__':
     args = parser.parse_args()
     deserialized_params = json.loads(args.params)
-    response = submit_job(args.algo, args.version, args.username, args.queue, params=deserialized_params)
+    pargs = [args.algo, args.version, args.username, args.queue]
+    print(f"[ ARGS ]: {pargs}")
+    response = submit_job(*pargs, params=deserialized_params)
     print(response)
 
 
