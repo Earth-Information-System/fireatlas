@@ -6,6 +6,9 @@ This module include functions used to read and save data
 #%% Read and filter active fire data
 # ------------------------------------------------------------------------------
 
+import os
+import pandas as pd
+
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
 def gpd_read_file(filename, parquet=False, **kwargs):
@@ -2133,7 +2136,14 @@ def load_summary(t, regnm):
     return ds
 
 
-def save_summarycsv(df, year, regnm, op="heritage"):
+def get_path(year):
+    ''' returns the base output directory for the year and region '''
+    from FireConsts import dirpjdata
+    path = dirpjdata+year
+    return path
+
+
+def save_summarycsv(df, year, op="heritage", regnm=None):
     """ save summary csv files
 
     Parameters
@@ -2148,16 +2158,75 @@ def save_summarycsv(df, year, regnm, op="heritage"):
     from FireConsts import diroutdata
     import os
 
-    fnm = os.path.join(
-        diroutdata,
-        regnm,
-        str(year),
-        "Summary",
-        "Flist_" + op + "_" + str(year) + ".csv",
-    )
-    check_filefolder(fnm)
+    #########################################################
+    # IDEA 1: always additive and backward compatible
+    #########################################################
+    # plus: function handles regions and original assumptions without breaking original
+    # plus: if we had tests around this we would see the old and new ones pass
+    # minus: what if someone upstream doesn't care about code being regional?
+    # minus: ugly (not to mention we'd have to apply this pattern everywhere in the code)
+    #        so let's try to be more DRY in IDEA 2
+    if regnm:
+        # regional code
+        fnm = os.path.join(
+            diroutdata,
+            regnm,
+            str(year),
+            "Summary",
+            "Flist_" + op + "_" + str(year) + ".csv",
+        )
+    else:
+        # original code
+        path = get_path(str(year))
+        fnm = os.path.join(path, 'Summary', 'Flist_' + op + '_' + str(year) + '.csv')
 
+    check_filefolder(fnm)
     df.to_csv(fnm)
+
+
+#########################################################
+# IDEA 2: always additive and extensible
+#########################################################
+class FileIOBase:
+
+    def save_summarycsv(self, df, year, op="heritage"):
+        raise NotImplemented("you need to subclass and override to use")
+
+
+class OriginalIO(FileIOBase):
+
+    def save_summarycsv(self, df, year, op="heritage"):
+        path = get_path(str(year))
+        fnm = os.path.join(path, 'Summary', 'Flist_' + op + '_' + str(year) + '.csv')
+        check_filefolder(fnm)
+        df.to_csv(fnm)
+
+
+class RegionalIO(FileIOBase):
+
+    def __init__(self, region_name, year):
+        self.regnm = region_name
+        self.diroutdata = "/blah/blah/blah"
+        self.year = year
+
+    def summarycsv_filepath(self, op):
+        return os.path.join(
+            self.diroutdata,
+            self.regnm,
+            str(self.year),
+            "Summary",
+            "Flist_" + op + "_" + str(self.year) + ".csv",
+        )
+
+    def save_summarycsv(self, df, year, op="heritage"):
+        fnm = self.summarycsv_filepath(op)
+        check_filefolder(fnm)
+        df.to_csv(fnm)
+
+    def read_summarycsv(self, df, year, op="heritage"):
+        fnm = self.summarycsv_filepath(op)
+        df = pd.read_csv(fnm, index_col=0)
+        return df
 
 
 def read_summarycsv(year, regnm, op="heritage"):
