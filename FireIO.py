@@ -2193,6 +2193,9 @@ class FileIOBase:
     def save_summarycsv(self, df, year, op="heritage"):
         raise NotImplemented("you need to subclass and override to use")
 
+    def read_summarycsv(self, year, op="heritage"):
+        raise NotImplemented("you need to subclass and override to use")
+
 
 class OriginalIO(FileIOBase):
 
@@ -2202,30 +2205,35 @@ class OriginalIO(FileIOBase):
         check_filefolder(fnm)
         df.to_csv(fnm)
 
+    def read_summarycsv(self, year, op="heritage"):
+        path = get_path(str(year))
+        fnm = os.path.join(path, 'Summary', 'Flist_' + op + '_' + str(year) + '.csv')
+        df = pd.read_csv(fnm, index_col=0)
+        return df
+
 
 class RegionalIO(FileIOBase):
 
-    def __init__(self, region_name, year):
+    def __init__(self, region_name):
         self.regnm = region_name
         self.diroutdata = "/blah/blah/blah"
-        self.year = year
 
-    def summarycsv_filepath(self, op):
+    def summarycsv_filepath(self, year, op):
         return os.path.join(
             self.diroutdata,
             self.regnm,
-            str(self.year),
+            str(year),
             "Summary",
-            "Flist_" + op + "_" + str(self.year) + ".csv",
+            "Flist_" + op + "_" + str(year) + ".csv",
         )
 
     def save_summarycsv(self, df, year, op="heritage"):
-        fnm = self.summarycsv_filepath(op)
+        fnm = self.summarycsv_filepath(year, op)
         check_filefolder(fnm)
         df.to_csv(fnm)
 
-    def read_summarycsv(self, df, year, op="heritage"):
-        fnm = self.summarycsv_filepath(op)
+    def read_summarycsv(self, year, op="heritage"):
+        fnm = self.summarycsv_filepath(year, op)
         df = pd.read_csv(fnm, index_col=0)
         return df
 
