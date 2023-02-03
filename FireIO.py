@@ -2187,6 +2187,7 @@ def save_summarycsv(df, year, op="heritage", regnm=None):
 #########################################################
 # IDEA 2: always additive and extensible
 #########################################################
+# imagine that these were in different modules and not stuck together in one single module
 class FileIOBase:
 
     def save_summarycsv(self, df, year, op="heritage"):
