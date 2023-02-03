@@ -2161,7 +2161,8 @@ def save_summarycsv(df, year, op="heritage", regnm=None):
     #########################################################
     # IDEA 1: always additive and backward compatible
     #########################################################
-    # plus: function handles regions and original assumptions without breaking original
+    # plus: note that the additional kwarg we want above `regnm` is optional, so the function handles regions
+    #       and original flow with backward compatibility
     # plus: if we had tests around this we would see the old and new ones pass
     # minus: what if someone upstream doesn't care about code being regional?
     # minus: ugly (not to mention we'd have to apply this pattern everywhere in the code)
