@@ -33,7 +33,7 @@ dps-run:fire-atlas-western-us-nrt-build-command-test:
   extends: .run_dps_job_base
   only:
     variables:
-      - $WESTERN_US_NRT
+      - $BUILD_CMD_TEST
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
