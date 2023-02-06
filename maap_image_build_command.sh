@@ -7,4 +7,4 @@ pushd ${HOME}
 # required to get all the MAAP(y) things
 /opt/conda/envs/feds/bin/pip install --user -e git+https://github.com/MAAP-Project/maap-py.git#egg=maappy
 
-source activate feds
+conda info --envs
