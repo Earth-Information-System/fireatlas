@@ -17,7 +17,7 @@ echo "conda: $(which conda)"
 #  conda env create -f "$basedir/env-feds.yml" -p "$basedir/env-feds"
 #  source activate "$basedir/env-feds"
 #fi
-source activate /opt/conda/envs/feds
+source activate feds
 echo "Python: $(which python)"
 python --version
 echo "Starting algorithm in subshell"
