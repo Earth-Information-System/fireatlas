@@ -1,0 +1,5 @@
+FROM docker.io/ashiklom/maap-mamba
+
+COPY . /
+
+CMD ["tail", "-f", "/dev/log"]
