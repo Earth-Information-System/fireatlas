@@ -28,3 +28,17 @@ dps-run:fire-atlas-western-us-nrt:
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-8gb
 
+
+dps-run:fire-atlas-western-us-nrt-build-command-test:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $WESTERN_US_NRT
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-feds-nrt-dps-build-command
+    BRANCH_NAME: conus-dps-build-command
+    USERNAME: ashiklom
+    QUEUE: maap-dps-worker-8gb
+
