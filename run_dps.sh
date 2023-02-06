@@ -18,9 +18,9 @@ echo "conda: $(which conda)"
 #  source activate "$basedir/env-feds"
 #fi
 
+source activate feds
 echo "Python: $(which python)"
 python --version
-
 echo "Starting algorithm in subshell"
 (
 cd "$basedir"
