@@ -1,7 +1,6 @@
-name: null
+name: feds
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
@@ -246,5 +245,3 @@ dependencies:
   - zeromq=4.3.4=h9c3ff4c_1
   - zlib=1.2.12=h166bdaf_2
   - zstd=1.5.2=h6239696_4
-
-prefix: /projects/env-feds
