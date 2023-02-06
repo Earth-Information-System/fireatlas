@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -euxo pipefail
 basedir=$( cd "$(dirname "$0")" ; pwd -P )
 mamba env create -f ${basedir}/env-feds.yaml
 pushd ${HOME}
