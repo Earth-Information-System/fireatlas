@@ -324,7 +324,7 @@ def WesternUSrunNRT():
     
     ctime = datetime.now()
 
-    region = ('WesternUSNRT_DPS',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
+    region = ('WesternUSNRT_DPS_JULIA',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
     if lts == None:

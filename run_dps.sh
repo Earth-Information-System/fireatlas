@@ -28,7 +28,6 @@ cd "$basedir"
 echo "Running in directory: $(pwd -P)"
 #python -u -c "import FireRun; FireRun.CreekSamplerun()"
 python FireRun.py
-python FireRun.py
 )
 echo "Done!"
 

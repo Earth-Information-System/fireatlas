@@ -18,9 +18,7 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 
 # define the file handler
-fh = logging.FileHandler(
-    dirdata + "running.log"
-)  # the logfile is stored in the dirpjdata directory
+fh = logging.FileHandler("outputs/running.log")
 fh.setLevel(logging.INFO)
 
 # format the console and file handlers
