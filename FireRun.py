@@ -3,6 +3,28 @@ Module to control different runs
 """
 
 
+def DataUpdateChecker():
+    """ download data from different satellite sensors at the
+    start of every 2nd hour from 1am through 11pm: `0 1-23/2 * * *`
+
+    the jobs are being scheduled here: https://repo.ops.maap-project.org/eorland_gee/fireatlas_nrt/-/pipeline_schedules
+
+    :return: None
+    """
+    from FireLog import logger
+    import DataCheckUpdate
+
+    try:
+        # Download SUOMI-NPP
+        DataCheckUpdate.update_VNP14IMGTDL()
+        # Download NOAA-20
+        DataCheckUpdate.update_VJ114IMGTDL()
+        # Download GridMET
+        DataCheckUpdate.update_GridMET_fm1000()
+    except Exception as exc:
+        logger.exception(exc)
+
+
 def Yearbatchrun(year, tst=None, ted=None, restart=False):
     """ Run the code for each single year
     """
@@ -220,7 +242,6 @@ def CArunNRT():
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
-    import DataCheckUpdate
     from datetime import datetime
     import os
     ctime = datetime.now()
@@ -244,15 +265,6 @@ def CArunNRT():
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted}.")
 
-    # Download data
-    # Download Suomi-NPP
-    #DataCheckUpdate.update_VNP14IMGTDL()
-    # Download NOAA-20
-    #DataCheckUpdate.update_VJ114IMGTDL()
-    # Download GridMET
-    print('Updating GridMET...')
-    #DataCheckUpdate.update_GridMET_fm1000()
-    
     #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
@@ -262,7 +274,6 @@ def CONUSrunNRT():
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
-    import DataCheckUpdate
     from datetime import datetime
     import os
     from time import sleep
@@ -291,21 +302,6 @@ def CONUSrunNRT():
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    # Download data
-    # Download Suomi-NPP
-    DataCheckUpdate.update_VNP14IMGTDL()
-    # Download NOAA-20
-    DataCheckUpdate.update_VJ114IMGTDL()
-    # Download GridMET
-    print('Updating GridMET...')
-    try: DataCheckUpdate.update_GridMET_fm1000()
-    
-    except Exception as e: # catch if no Data available
-        print(e) 
-    
-    #print('Now sleeping for 10min...')
-    #sleep(600)
-    
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
@@ -314,7 +310,6 @@ def WesternUSrunNRT():
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
-    import DataCheckUpdate
     from datetime import datetime
     import os
     
@@ -342,18 +337,6 @@ def WesternUSrunNRT():
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    # Download data
-    # Download Suomi-NPP
-    DataCheckUpdate.update_VNP14IMGTDL()
-    # Download NOAA-20
-    DataCheckUpdate.update_VJ114IMGTDL()
-    # Download GridMET
-    print('Updating GridMET...')
-    try: DataCheckUpdate.update_GridMET_fm1000()
-    
-    except Exception as e: # catch if no Data available
-        print(e) 
-        
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
@@ -363,7 +346,6 @@ def SouthEastUSrunNRT():
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
-    import DataCheckUpdate
     from datetime import datetime
     import os
     
@@ -392,18 +374,6 @@ def SouthEastUSrunNRT():
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    # Download data
-    # Download Suomi-NPP
-    DataCheckUpdate.update_VNP14IMGTDL()
-    # Download NOAA-20
-    DataCheckUpdate.update_VJ114IMGTDL()
-    # Download GridMET
-    print('Updating GridMET...')
-    try: DataCheckUpdate.update_GridMET_fm1000()
-    
-    except Exception as e: # catch if no Data available
-        print(e) 
-        
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
@@ -413,7 +383,6 @@ def NorthEastUSrunNRT():
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
-    import DataCheckUpdate
     from datetime import datetime
     import os
     
@@ -443,27 +412,15 @@ def NorthEastUSrunNRT():
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    # Download data
-    # Download Suomi-NPP
-    DataCheckUpdate.update_VNP14IMGTDL()
-    # Download NOAA-20
-    DataCheckUpdate.update_VJ114IMGTDL()
-    # Download GridMET
-    print('Updating GridMET...')
-    try: DataCheckUpdate.update_GridMET_fm1000()
-    
-    except Exception as e: # catch if no Data available
-        print(e) 
-        
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-    
+
+
 def WesternUSYrRun(year):
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
-    import DataCheckUpdate
     from datetime import datetime
     import os
     
@@ -478,11 +435,11 @@ def WesternUSYrRun(year):
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
+
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     """
     import sys
-    import DataCheckUpdate
 
     sys.path.insert(
         1,
