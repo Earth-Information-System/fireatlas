@@ -331,7 +331,7 @@ def WesternUSrunNRT():
     
     ctime = datetime.now()
 
-    region = ('WesternUSNRT_DPS',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
+    region = ('WesternUSNRT_DPS',[-125.698046875,31.176476158707615,-101.00078125,49.51429477264348])
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
     if lts == None:
@@ -345,6 +345,107 @@ def WesternUSrunNRT():
     else:
         ampm = 'AM'
     
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2022,1,10,'AM']
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    # Download data
+    # Download Suomi-NPP
+    DataCheckUpdate.update_VNP14IMGTDL()
+    # Download NOAA-20
+    DataCheckUpdate.update_VJ114IMGTDL()
+    # Download GridMET
+    print('Updating GridMET...')
+    try: DataCheckUpdate.update_GridMET_fm1000()
+    
+    except Exception as e: # catch if no Data available
+        print(e) 
+        
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    
+def SouthEastUSrunNRT():
+    
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    import DataCheckUpdate
+    from datetime import datetime
+    import os
+    
+    if FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    ctime = datetime.now()
+
+    region = ('SouthEastUSNRT_DPS',[-106.79802059770478,24.457626666909054,
+                                    72.87223934770478,37.309430118635944])
+
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2022,1,10,'AM']
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    # Download data
+    # Download Suomi-NPP
+    DataCheckUpdate.update_VNP14IMGTDL()
+    # Download NOAA-20
+    DataCheckUpdate.update_VJ114IMGTDL()
+    # Download GridMET
+    print('Updating GridMET...')
+    try: DataCheckUpdate.update_GridMET_fm1000()
+    
+    except Exception as e: # catch if no Data available
+        print(e) 
+        
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+
+    
+def NorthEastUSrunNRT():
+    
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    import DataCheckUpdate
+    from datetime import datetime
+    import os
+    
+    if FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    ctime = datetime.now()
+
+    region = ('NorthEastUSNRT_DPS',[-106.79802059770478,35.590087054959234,
+                                    66.11829033856952,49.628319367544776])
+
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    
+    #tst = [ctime.year, 1, 1, 'AM']    
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
