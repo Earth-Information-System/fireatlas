@@ -41,7 +41,7 @@ def main(algo_config, maap_api_host):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Register Algorithm to MAS")
-    parser.add_argument("config_file", metavar="config", nargs=1, help="Path to ./maap_registry_yamls/algorithm_config.yaml file")
+    parser.add_argument("config_file", metavar="config", nargs=1, help="Path to ./maap_runtime/<algorithm-dir-name>/algorithm_config.yaml")
     parser.add_argument("--maap_api_host", help="Optional maap api host url", default="api.ops.maap-project.org")
     args = parser.parse_args()
     main(args.config_file[0], args.maap_api_host)
