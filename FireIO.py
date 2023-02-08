@@ -31,7 +31,7 @@ def os_path_exists(filename):
         return s3.exists(filename)
     else:
         import os
-        os.path.exists(filename)
+        return os.path.exists(filename)
 
 def viirs_pixel_size(sample, band="i", rtSCAN_ANGLE=False):
     """calculate approximate size of i-band (375-m) or m-band (750-m) VIIRS pixel
