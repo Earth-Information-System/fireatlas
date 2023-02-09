@@ -4,7 +4,7 @@ import json
 
 maap = MAAP(maap_host="api.ops.maap-project.org")
 
-with open("algorithm_config.yaml", "r") as f:
+with open("./maap_registry_yamls/algorithm_config.yaml", "r") as f:
     yml = yaml.safe_load(f)
 
 info = {

@@ -8,7 +8,7 @@ stages:
   tags:
     - shell
   script:
-    - docker build -t ${IMAGE_TAG} -f Dockerfile .
+    - docker build -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
     - docker run ${IMAGE_TAG} ${ALGO_NAME} ${BRANCH_NAME} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV}
 
 
@@ -45,3 +45,28 @@ dps-run:fire-atlas-western-us-nrt:
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-8gb
 
+dps-run:fire-atlas-northeastern-us-nrt:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $NORTHEASTERN_US_NRT
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-feds-northeastern-us-nrt-dps
+    BRANCH_NAME: conus-dps
+    USERNAME: ashiklom
+    QUEUE: maap-dps-worker-8gb
+
+dps-run:fire-atlas-southeastern-us-nrt:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $SOUTHEASTERN_US_NRT
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-feds-southeastern-us-nrt-dps
+    BRANCH_NAME: conus-dps
+    USERNAME: ashiklom
+    QUEUE: maap-dps-worker-8gb
