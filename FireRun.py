@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 logger.addHandler(stdout_handler)
 logger.setLevel(logging.INFO)
 
+
 def DataUpdateChecker():
     """ download data from different satellite sensors at the
     start of every 2nd hour from 1am through 11pm: `0 1-23/2 * * *`
