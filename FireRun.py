@@ -324,7 +324,8 @@ def WesternUSrunNRT():
     
     ctime = datetime.now()
 
-    region = ('WesternUSNRT_DPS',[-125.698046875,31.176476158707615,-101.00078125,49.51429477264348])
+    region = ('WesternUSNRT',[-125.698046875,31.176476158707615,
+                              -101.00078125,49.51429477264348])
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
     if lts == None:
@@ -374,7 +375,7 @@ def SouthEastUSrunNRT():
     ctime = datetime.now()
 
     region = ('SouthEastUSNRT_DPS',[-106.79802059770478,24.457626666909054,
-                                    72.87223934770478,37.309430118635944])
+                                    -72.87223934770478,37.309430118635944])
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
     if lts == None:
@@ -424,7 +425,7 @@ def NorthEastUSrunNRT():
     ctime = datetime.now()
 
     region = ('NorthEastUSNRT_DPS',[-106.79802059770478,35.590087054959234,
-                                    66.11829033856952,49.628319367544776])
+                                    -66.11829033856952,49.628319367544776])
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
     if lts == None:
@@ -467,7 +468,8 @@ def WesternUSYrRun(year):
     from datetime import datetime
     import os
     
-    region = ('WesternUS',[-125.698046875,31.676476158707615,-101.00078125,49.51429477264348])
+    region = ('WesternUS',[-125.698046875,31.676476158707615,
+                           -101.00078125,49.51429477264348])
 
     tst = (year, 1, 1, "AM")
     ted = (year, 12, 31, "PM")
