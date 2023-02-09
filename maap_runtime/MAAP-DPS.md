@@ -6,7 +6,7 @@
 
 ## Configuring the algorithm
 
-All algorithm configuration is specified in the `algorithm_config.yaml` file.
+All algorithm configuration is specified in the `./maap_runtime/<algorithm-dir-name>/algorithm_config.yaml` file.
 Make sure that:
 
 - The `version` matches the current Git branch.
@@ -37,7 +37,7 @@ Make sure that:
       print(del_result.text)  # Confirm that this is code 200 and says "successfully delted job ..."
       ```
 
-4. In the MAAP ADE file browser, right click on the `algorithm_config.yaml` file and click "Register as MAS Algorithm".
+4. In the MAAP ADE file browser, right click on the `./maap_runtime/<algorithm-dir-name>/algorithm_config.yaml` file and click "Register as MAS Algorithm".
   In the popup menu, the only option you should change is the MAAP queue; select the smallest node necessary to run your algorithm.
   Submit your selection.
 

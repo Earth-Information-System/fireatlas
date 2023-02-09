@@ -1,7 +1,14 @@
 """ FireRun
 Module to control different runs
 """
-
+import sys
+import time
+import argparse
+import logging
+stdout_handler = logging.StreamHandler(sys.stdout)
+logger = logging.getLogger(__name__)
+logger.addHandler(stdout_handler)
+logger.setLevel(logging.INFO)
 
 def Yearbatchrun(year, tst=None, ted=None, restart=False):
     """ Run the code for each single year
@@ -481,29 +488,23 @@ def WesternUSYrRun(year):
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     """
-    import sys
-    import DataCheckUpdate
+    parser = argparse.ArgumentParser(description="registered MAAP.DPS jobs call ./run_dps.sh which delegates to this run function")
+    parser.add_argument("run_function_name", help="The name of the function in ./FireRun.py to call")
+    args = parser.parse_args()
 
     sys.path.insert(
         1,
         "/Users/yangchen/GoogleDrive/My/My.Research/UCI/ProjectsFull/California.fire/Code/fireatlas",
     )
 
-    # Yearbatchrun(2020)
-    import time
-
     t1 = time.time()
-    #CreekSamplerun()
-    # CreekSamplerunNOAA20()
-    #CreekSamplerunVIIRS()
 
-    #CreekRegionSamplerun()
-    
-    try: WesternUSrunNRT()
-    except Exception as e: 
-        print(e)
-        pass
-    
-    #CArun()
+    try:
+        run_func = globals()[args.run_function_name]
+        logger.info(f"[ RUNNING ]: {run_func}")
+        run_func()
+    except Exception as e:
+        logger.exception(e)
+
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code")
