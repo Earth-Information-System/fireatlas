@@ -16,8 +16,13 @@ queue: "maap-dps-worker-8gb"
 description: "Map active fire perimeters."
 # path to the wrapper script for running the algorithm
 # Command starts with repository name
+<<<<<<< HEAD:algorithm_config.yaml
 run_command: "fireatlas_nrt/run_dps.sh"
 build_command: "fireatlas_nrt/maap_image_build_command.sh"
+=======
+run_command: "fireatlas_nrt/run_dps.sh 'WesternUSrunNRT'"
+# build_command: my-build-script.sh
+>>>>>>> conus-dps:maap_runtime/western_us_nrt/algorithm_config.yaml
 # set a storage value in GB or MB or KB, e.g. "100GB", "20MB", "10KB"
 disk_space: "10GB"
 inputs:
