@@ -926,6 +926,9 @@ def get_reg_shp(reg):
 
     return shp_Reg
 
+# TODO - MODIFIED New function for Global land cover
+
+
 
 def get_LCT(locs):
     """ Get land cover type for active fires

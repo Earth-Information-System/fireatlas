@@ -61,8 +61,8 @@ area_VI = 0.141  # km2, area of each 375m VIIRS pixel
 MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.31271653 m/2
 
 # fire source data
-firesrc = "VIIRS"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
-firenrt = True # NRT - True, False
+firesrc = "SNPP" # MODIFIED: "VIIRS"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
+firenrt = False # MODIFIED: True # NRT - True, False
 firessr = "viirs"  # sensor - 'mcd64'
 
 # ------------------------------------------------------------------------------
