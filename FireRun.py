@@ -387,6 +387,16 @@ def SouthEastUSrunNRT():
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
+
+def s3_copy():
+    import boto3, os
+    path = "/tmp/hello_from_dps.txt"
+    with open(path, "w") as fsock:
+        fsock.write("hi")
+
+    s3 = boto3.client('s3')
+    s3.meta.client.upload_file(Filename=path, Bucket='veda-data-store-staging', Key='aimee_examples/hello_from_dps.txt')
+
     
 def NorthEastUSrunNRT():
     
