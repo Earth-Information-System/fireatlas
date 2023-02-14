@@ -927,8 +927,30 @@ def get_reg_shp(reg):
     return shp_Reg
 
 # TODO - MODIFIED New function for Global land cover
+def get_LCT_Global(locs):
+    """ Get land cover type for active fires - Global scale
+    
+    Parameters
+    ----------
+    locs : list of lists (nx2)
+        lat and lon values for each active fire detection
 
+    Returns
+    -------
+    vLCT : list of ints
+        land cover types for all input active fires
+    """
 
+    from FireConsts import dirextdata
+
+    import rasterio
+    import pyproj
+    import os
+    
+    # TODO - pull data from s3 bucket -> need to add data in first
+    # TODO - ESA currently already hosted on s3 buckets ! 
+    # TODO - external to function, add logic for global selection
+    
 
 def get_LCT(locs):
     """ Get land cover type for active fires
