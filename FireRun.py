@@ -390,12 +390,13 @@ def SouthEastUSrunNRT():
 
 def s3_copy():
     import boto3, os
-    path = "/tmp/hello_from_dps.txt"
+    path = "/tmp/hello_from_dps_snoop_addition.txt"
     with open(path, "w") as fsock:
         fsock.write("hi")
 
-    s3 = boto3.client('s3')
-    s3.meta.client.upload_file(Filename=path, Bucket='veda-data-store-staging', Key='aimee_examples/hello_from_dps.txt')
+    session = boto3.Session()
+    s3 = session.resource('s3')
+    s3.meta.client.upload_file(Filename=path, Bucket='veda-data-store-staging', Key='aimee_examples/hello_from_dps_snoop_addition.txt')
 
     
 def NorthEastUSrunNRT():
