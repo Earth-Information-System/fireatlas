@@ -466,12 +466,9 @@ if __name__ == "__main__":
 
     t1 = time.time()
 
-    try:
-        run_func = globals()[args.run_function_name]
-        logger.info(f"[ RUNNING ]: {run_func}")
-        run_func()
-    except Exception as e:
-        logger.exception(e)
+    run_func = globals()[args.run_function_name]
+    logger.info(f"[ RUNNING ]: {run_func}")
+    run_func()
 
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code")
