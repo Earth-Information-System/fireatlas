@@ -561,7 +561,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
 
     # import libraries
     import FireObj, FireIO, FireTime
-    from FireConsts import firesrc, firenrt, opt_rmstatfire, remove_static_sources, remove_static_sources_sourcefile
+    from FireConsts import firesrc, firenrt, opt_rmstatfire, remove_static_sources_bool, remove_static_sources_sourcefile
 
     import os
     import glob
@@ -576,7 +576,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     allfires = Fobj_init(tst, region[0], restart=restart)
     
     # remove static sources
-    if remove_static_sources: 
+    if remove_static_sources_bool: 
         region = remove_static_sources(region, remove_static_sources_sourcefile)
 
     # loop over all days during the period
