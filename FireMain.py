@@ -154,6 +154,54 @@ def Fobj_init(tst, regnm, restart=False):
     return allfires
 
 
+def remove_static_sources(region, source):
+    """ Modify region to exclude static sources
+
+    Parameters
+    ----------
+    region : the run region. 
+    source : str
+        Name of the file in dirextdata that containts statics sources with a Longitude and Latitude column.  
+
+    Returns
+    -------
+    region : region obj
+        A region that is the diference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
+    """
+    # import
+    import os
+    from FireIO import get_reg_shp
+    from FireConsts import dirextdata, epsg, remove_static_sources_buffer
+    import shapely
+    import shapely.geometry
+    from shapely.geometry import Point, Polygon
+    import geopandas as gpd
+    
+    # get source data geometry
+    global_flaring = gpd.read_file(os.path.join(dirextdata,'static_sources', source))
+    global_flaring = global_flaring.drop_duplicates()
+    global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
+
+    global_flaring = gpd.GeoDataFrame(global_flaring, geometry=gpd.points_from_xy(global_flaring.Longitude, global_flaring.Latitude)) # Convert to point geometries
+    global_flaring["buffer_geometry"] = global_flaring.buffer(remove_static_sources_buffer)
+    global_flaring = global_flaring.set_geometry(col = "buffer_geometry")
+    
+    # get region geometry
+    reg = get_reg_shp(region[1])
+    reg_df = gpd.GeoDataFrame.from_dict({"name":[region[0]], "geometry":[reg]}) # Put geometry into dataframe for join
+    
+    # ensure everything is in the same projection
+    global_flaring.set_crs("EPSG:4346") ## Set a lat lon system
+    global_flaring.to_crs("EPSG:" + epsg) ## Translate to the user-input coordinate system
+    reg_df.set_crs("EPSG:" + epsg)
+    
+    # Take the difference of points and region
+    diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
+    
+    region = (diff.name[0], diff.geometry[0])
+    return(region)
+    
+
 def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
     """ Use daily new AF pixels to create new Fobj or combine with existing Fobj
 
@@ -513,7 +561,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
 
     # import libraries
     import FireObj, FireIO, FireTime
-    from FireConsts import firesrc, firenrt, opt_rmstatfire
+    from FireConsts import firesrc, firenrt, opt_rmstatfire, remove_static_sources, remove_static_sources_sourcefile
 
     import os
     import glob
@@ -526,6 +574,10 @@ def Fire_Forward(tst, ted, restart=False, region=None):
 
     # initialize allfires object
     allfires = Fobj_init(tst, region[0], restart=restart)
+    
+    # remove static sources
+    if remove_static_sources: 
+        region = remove_static_sources(region, remove_static_sources_sourcefile)
 
     # loop over all days during the period
     endloop = False  # flag to control the ending of the loop
