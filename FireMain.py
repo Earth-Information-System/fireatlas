@@ -170,7 +170,7 @@ def remove_static_sources(region, source):
     """
     # import
     import os
-    from FireIO import get_reg_shp
+    from FireIO import get_reg_shp, gpd_read_file
     from FireConsts import dirextdata, epsg, remove_static_sources_buffer
     import shapely
     import shapely.geometry
@@ -178,7 +178,7 @@ def remove_static_sources(region, source):
     import geopandas as gpd
     
     # get source data geometry
-    global_flaring = gpd.read_file(os.path.join(dirextdata,'static_sources', source))
+    global_flaring = gpd_read_file(os.path.join(dirextdata,'static_sources', source))
     global_flaring = global_flaring.drop_duplicates()
     global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
 
