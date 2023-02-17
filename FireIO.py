@@ -928,6 +928,7 @@ def get_reg_shp(reg):
 
 
 # TODO - create function which using locs provides particular tile(s) bounded by locs
+# TODO - identify what locs is passed as -> already bounding box?
 def download_ESA_global(locs):
     """ Function used to download and provide tiles ESA cover by
     creating a bounding box with locs
@@ -955,8 +956,10 @@ def download_ESA_global(locs):
     url = f'{s3_url_prefix}/v100/2020/esa_worldcover_2020_grid.geojson'
     grid = gpd.read_file(url) 
     
-    # TODO generate geometry bounds using locs
-    geom = Polygon.from_bounds(*bounds)
+    # TODO generate geometry bounds using locs - valid or specific region needed?
+    geom = Polygon(locs)
+    # geom = gpd.GeoDataFrame(index=[0], crs='epsg:4326', geometry=[polygon_geom])
+    # geom = Polygon.from_bounds(xmin, ymin, xmax, ymax)
     tiles = grid[grid.intersects(geom)]
     
     assert tiles.shape[0] != 0, "No ESA LCT tiles selected in given bounds."
@@ -969,7 +972,7 @@ def download_ESA_global(locs):
         out_fn = output_folder / \
             f"ESA_WorldCover_10m_{year}_{version}_{tile}_Map.tif"
 
-        if out_fn.is_file() and not args.overwrite:
+        if out_fn.is_file():
             print(f"{out_fn} already exists.")
             continue
 
@@ -1008,6 +1011,12 @@ def get_LCT_Global(locs):
     
     # TODO - gain access to AWS and import dataset 
     pathLCT = download_ESA_global(locs)
+    
+    # TODO: concat tiles (?) or read data off multiple 
+    if len(pathLCT) > 1:
+    
+    else: 
+    
     dataset = g
     
     # TODO - check CRS and match (see Eli's pm) 
