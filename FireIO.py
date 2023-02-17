@@ -926,9 +926,68 @@ def get_reg_shp(reg):
 
     return shp_Reg
 
-# TODO - MODIFIED New function for Global land cover
+
+# TODO - create function which using locs provides particular tile(s) bounded by locs
+def download_ESA_global(locs):
+    """ Function used to download and provide tiles ESA cover by
+    creating a bounding box with locs
+    
+    Parameters
+    ----------
+    locs : list of lists (nx2)
+        lat and lon values for each active fire detection
+
+    Returns
+    -------
+    arr_out_fn : array of output location of downloaded data
+    
+    """
+    
+    from FireConsts import s3_url_prefix, esa_year
+    from shapely.geometry import Polygon
+    
+    # select file version - dependent on esa year
+    assert year == 2020 or year == 2021, "Year selected invalid for ESA data selection."
+    version = {2020: 'v100',
+               2021: 'v200'}[esa_year]
+    
+    # URL for global land cover
+    url = f'{s3_url_prefix}/v100/2020/esa_worldcover_2020_grid.geojson'
+    grid = gpd.read_file(url) 
+    
+    # TODO generate geometry bounds using locs
+    geom = Polygon.from_bounds(*bounds)
+    tiles = grid[grid.intersects(geom)]
+    
+    assert tiles.shape[0] != 0, "No ESA LCT tiles selected in given bounds."
+    
+    # form return array with all locations
+    arr_out_fn = []
+    
+    for tile in tqdm(tiles.ll_tile):
+        url = f"{s3_url_prefix}/{version}/{year}/map/ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
+        out_fn = output_folder / \
+            f"ESA_WorldCover_10m_{year}_{version}_{tile}_Map.tif"
+
+        if out_fn.is_file() and not args.overwrite:
+            print(f"{out_fn} already exists.")
+            continue
+
+        if not dryrun:
+            r = requests.get(url, allow_redirects=True)
+            with open(out_fn, 'wb') as f:
+                f.write(r.content)
+        else:
+            print(f"Downloading {url} to {out_fn}")
+            arr_out_fn = arr_out_fn + out_fn
+    
+    return arr_out_fn
+
+
+# @Kat TODO - MODIFIED New function for Global land cover
+# TODO - for runs, modify const FTYP_opt = 2
 def get_LCT_Global(locs):
-    """ Get land cover type for active fires - Global scale
+    """ Get land cover type for active fires - Global scale (FTYP_opt == 2)
     
     Parameters
     ----------
@@ -941,15 +1000,33 @@ def get_LCT_Global(locs):
         land cover types for all input active fires
     """
 
-    from FireConsts import dirextdata
-
     import rasterio
     import pyproj
     import os
     
-    # TODO - pull data from s3 bucket -> need to add data in first
-    # TODO - ESA currently already hosted on s3 buckets ! 
     # TODO - external to function, add logic for global selection
+    
+    # TODO - gain access to AWS and import dataset 
+    pathLCT = download_ESA_global(locs)
+    dataset = g
+    
+    # TODO - check CRS and match (see Eli's pm) 
+    # TODO - does pulled data have crs attribute? 
+    transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
+    
+    locs_crs_x, locs_crs_y = transformer.transform(
+        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
+        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
+        # here.
+        [l[1] for l in locs],
+        [l[0] for l in locs]
+    )
+    
+    locs_crs = list(zip(locs_crs_x, locs_crs_y))
+    samps = list(dataset.sample(locs_crs))
+    vLCT = [int(s) for s in samps]
+    
+    return vLCT
     
 
 def get_LCT(locs):

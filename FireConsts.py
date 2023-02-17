@@ -24,6 +24,13 @@ diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 
 # ------------------------------------------------------------------------------
+# ESA Global S3 Links
+# ------------------------------------------------------------------------------
+s3_url_prefix = "https://esa-worldcover.s3.eu-central-1.amazonaws.com"
+output_folder = Path('.') if args.output is None else Path(args.output)
+esa_year = 2021 # or 2020 -> impacts selected version
+
+# ------------------------------------------------------------------------------
 # spatiotemporal constraints of fire objects
 # ------------------------------------------------------------------------------
 

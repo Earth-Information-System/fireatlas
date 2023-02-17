@@ -145,6 +145,10 @@ def set_ftype(fire):
             print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
     elif FTYP_opt == 2:  # global type classification
+       
+        # TODO @ Kat: call to GCT function
+        # TODO for runs, modify FTYP_opt logic
+        
         ftype = 1  # need more work here...
 
     return ftype
