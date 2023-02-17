@@ -929,6 +929,7 @@ def get_reg_shp(reg):
 
 # TODO - create function which using locs provides particular tile(s) bounded by locs
 # TODO - identify what locs is passed as -> already bounding box?
+# ESA AWS guide: https://github.com/ESA-WorldCover/esa-worldcover-datasets/blob/main/scripts/download.py#L52
 def download_ESA_global(locs):
     """ Function used to download and provide tiles ESA cover by
     creating a bounding box with locs
@@ -944,11 +945,11 @@ def download_ESA_global(locs):
     
     """
     
-    from FireConsts import s3_url_prefix, esa_year
+    from FireConsts import s3_url_prefix, esa_year, output_folder
     from shapely.geometry import Polygon
     
     # select file version - dependent on esa year
-    assert year == 2020 or year == 2021, "Year selected invalid for ESA data selection."
+    assert year == 2020 or year == 2021, "Invalid ESA Input Date. Check FireConsts.py"
     version = {2020: 'v100',
                2021: 'v200'}[esa_year]
     
@@ -976,11 +977,10 @@ def download_ESA_global(locs):
             print(f"{out_fn} already exists.")
             continue
 
-        if not dryrun:
+        else:
             r = requests.get(url, allow_redirects=True)
             with open(out_fn, 'wb') as f:
                 f.write(r.content)
-        else:
             print(f"Downloading {url} to {out_fn}")
             arr_out_fn = arr_out_fn + out_fn
     

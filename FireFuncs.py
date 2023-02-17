@@ -149,7 +149,56 @@ def set_ftype(fire):
         # TODO @ Kat: call to GCT function
         # TODO for runs, modify FTYP_opt logic
         
-        ftype = 1  # need more work here...
+        # -------
+        
+        # update or read LCTmax; calculated using all newlocs
+        if fire.n_newpixels < 1000:
+            uselocs = fire.newlocs_geo
+        else:
+            # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+            uselocs = random.sample(fire.newlocs_geo, 1000)
+
+        vLCT = FireIO.get_LCT_Global(
+            uselocs
+        )  # call get_LCT to get all LCT for the fire pixels
+        try:
+            LCTmax = max(
+            set(vLCT), key=vLCT.count)  # extract the LCT with most pixel counts
+        except:
+            print('No LCT data available, setting ftype to 0...')
+            ftype = 0
+            return ftype
+        # get and record fm1000 value at ignition
+        ignct = fire.ignlocsMP.centroid  # ignition centroid
+        loc = (ignct.y, ignct.x)  # (lat,lon)
+        t = date(*fire.t_st[:-1])
+        try: stFM1000 = FireIO.get_FM1000(t, loc)
+        except:
+            #print('FM1000 data is unavailable at this time.')
+            stFM1000 = 0
+
+        # determine the fire type using the land cover type and stFM1000
+        if LCTmax in [0, 11, 31]:  #'NoData', 'Water', 'Barren' -> 'Other'
+            ftype = 0
+        elif LCTmax in [23]:  # 'Urban' -> 'Urban'
+            ftype = 1
+        elif LCTmax in [82]:  # 'Agriculture' -> 'Agriculture'
+            ftype = 6
+        elif LCTmax in [42]:  # 'Forest' ->
+            if stFM1000 > 12:  # 'Forest manage'
+                ftype = 3
+            else:  # 'Forest wild'
+                ftype = 2
+        elif LCTmax in [52, 71]:  # 'Shrub', 'Grassland' ->
+            if stFM1000 > 12:  # 'Shrub manage'
+                ftype = 5
+            else:  # 'Shrub wild'
+                ftype = 4
+        else:
+            print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
+            ftype = 0
+        
+        # ftype = 1  # need more work here...
 
     return ftype
 
