@@ -27,7 +27,8 @@ diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus
 # ESA Global S3 Links
 # ------------------------------------------------------------------------------
 s3_url_prefix = "https://esa-worldcover.s3.eu-central-1.amazonaws.com"
-output_folder = Path('.') # TODO - shared location for MAAP?
+output_folder = "/projects/esa-tiles"
+sync_folder = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
 esa_year = 2021 # or 2020 -> impacts selected version
 
 # ------------------------------------------------------------------------------

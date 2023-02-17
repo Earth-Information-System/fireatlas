@@ -947,6 +947,7 @@ def download_ESA_global(locs):
     
     from FireConsts import s3_url_prefix, esa_year, output_folder
     from shapely.geometry import Polygon
+    import fsspec
     
     # select file version - dependent on esa year
     assert year == 2020 or year == 2021, "Invalid ESA Input Date. Check FireConsts.py"
@@ -964,6 +965,7 @@ def download_ESA_global(locs):
     tiles = grid[grid.intersects(geom)]
     
     assert tiles.shape[0] != 0, "No ESA LCT tiles selected in given bounds."
+    assert os.path.exists(output_folder), "No output_folder defined; check FireConsts.py"
     
     # form return array with all locations
     arr_out_fn = []
@@ -978,6 +980,7 @@ def download_ESA_global(locs):
             continue
 
         else:
+            # TODO: either locally import + sync OR directly write to s3 
             r = requests.get(url, allow_redirects=True)
             with open(out_fn, 'wb') as f:
                 f.write(r.content)
