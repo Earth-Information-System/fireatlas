@@ -947,7 +947,7 @@ def download_ESA_global(locs):
     
     from FireConsts import s3_url_prefix, esa_year, output_folder
     from shapely.geometry import Polygon
-    import fsspec
+    import os 
     
     # select file version - dependent on esa year
     assert year == 2020 or year == 2021, "Invalid ESA Input Date. Check FireConsts.py"
@@ -985,7 +985,16 @@ def download_ESA_global(locs):
             with open(out_fn, 'wb') as f:
                 f.write(r.content)
             print(f"Downloading {url} to {out_fn}")
-            arr_out_fn = arr_out_fn + out_fn
+            
+            # s3 url (generated pre-success)
+            s3_tile_url = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{year}_{version}_{tile}_Map.tif"
+            arr_out_fn = arr_out_fn + [s3_tile_url]
+    
+    # after adding all files, sync entire dir to aws bucket 
+    print("Syncing ESA Global Tiles to s3...")
+    
+    sync_command = f"aws s3 sync /projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    os.system(sync_command)
     
     return arr_out_fn
 

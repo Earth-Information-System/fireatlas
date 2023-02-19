@@ -161,6 +161,9 @@ def set_ftype(fire):
         vLCT = FireIO.get_LCT_Global(
             uselocs
         )  # call get_LCT to get all LCT for the fire pixels
+        
+        print("Success with ESA Global processing!")
+        
         try:
             LCTmax = max(
             set(vLCT), key=vLCT.count)  # extract the LCT with most pixel counts
@@ -168,7 +171,11 @@ def set_ftype(fire):
             print('No LCT data available, setting ftype to 0...')
             ftype = 0
             return ftype
+       
+        
         # get and record fm1000 value at ignition
+        
+        """
         ignct = fire.ignlocsMP.centroid  # ignition centroid
         loc = (ignct.y, ignct.x)  # (lat,lon)
         t = date(*fire.t_st[:-1])
@@ -176,8 +183,11 @@ def set_ftype(fire):
         except:
             #print('FM1000 data is unavailable at this time.')
             stFM1000 = 0
-
+        """
+        
         # determine the fire type using the land cover type and stFM1000
+        
+        """
         if LCTmax in [0, 11, 31]:  #'NoData', 'Water', 'Barren' -> 'Other'
             ftype = 0
         elif LCTmax in [23]:  # 'Urban' -> 'Urban'
@@ -197,6 +207,7 @@ def set_ftype(fire):
         else:
             print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
+        """
         
         # ftype = 1  # need more work here...
 
