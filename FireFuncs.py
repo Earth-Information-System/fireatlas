@@ -162,6 +162,7 @@ def set_ftype(fire):
             uselocs
         )  # call get_LCT to get all LCT for the fire pixels
         
+        print(vLCT)
         print("Success with ESA Global processing!")
         
         try:

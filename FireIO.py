@@ -948,9 +948,12 @@ def download_ESA_global(locs):
     from FireConsts import s3_url_prefix, esa_year, output_folder
     from shapely.geometry import Polygon
     import os 
+    import geopandas as gpd
+    import requests
+    from tqdm.auto import tqdm
     
     # select file version - dependent on esa year
-    assert year == 2020 or year == 2021, "Invalid ESA Input Date. Check FireConsts.py"
+    assert esa_year == 2020 or esa_year == 2021, "Invalid ESA Input Date. Check FireConsts.py"
     version = {2020: 'v100',
                2021: 'v200'}[esa_year]
     
@@ -959,11 +962,13 @@ def download_ESA_global(locs):
     grid = gpd.read_file(url) 
     
     # TODO generate geometry bounds using locs - valid or specific region needed?
-    geom = Polygon(locs)
     # geom = gpd.GeoDataFrame(index=[0], crs='epsg:4326', geometry=[polygon_geom])
     # geom = Polygon.from_bounds(xmin, ymin, xmax, ymax)
+    
+    geom = Polygon(locs)
     tiles = grid[grid.intersects(geom)]
     
+    assert geom is not None, "Geom empty; invalid dataset"
     assert tiles.shape[0] != 0, "No ESA LCT tiles selected in given bounds."
     assert os.path.exists(output_folder), "No output_folder defined; check FireConsts.py"
     
@@ -971,28 +976,25 @@ def download_ESA_global(locs):
     arr_out_fn = []
     
     for tile in tqdm(tiles.ll_tile):
-        url = f"{s3_url_prefix}/{version}/{year}/map/ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
-        out_fn = output_folder / \
-            f"ESA_WorldCover_10m_{year}_{version}_{tile}_Map.tif"
+        url = f"{s3_url_prefix}/{version}/{esa_year}/map/ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
+        out_fn = output_folder + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
 
-        if out_fn.is_file():
+        if os.path.exists(out_fn) and os.path.isfile(out_fn):
             print(f"{out_fn} already exists.")
             continue
 
         else:
-            # TODO: either locally import + sync OR directly write to s3 
             r = requests.get(url, allow_redirects=True)
             with open(out_fn, 'wb') as f:
                 f.write(r.content)
             print(f"Downloading {url} to {out_fn}")
             
             # s3 url (generated pre-success)
-            s3_tile_url = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{year}_{version}_{tile}_Map.tif"
+            s3_tile_url = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
             arr_out_fn = arr_out_fn + [s3_tile_url]
     
     # after adding all files, sync entire dir to aws bucket 
     print("Syncing ESA Global Tiles to s3...")
-    
     sync_command = f"aws s3 sync /projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
     os.system(sync_command)
     
@@ -1020,13 +1022,42 @@ def get_LCT_Global(locs):
     import os
     
     # TODO - external to function, add logic for global selection
+    # TODO - ASSUMING tifs are neighbors -> merge? or seperate when reading...
+    # This edges case is likeley if a fire crosses two tile regions
     
-    # TODO - gain access to AWS and import dataset 
+    # contains all s3 paths to file
     pathLCT = download_ESA_global(locs)
     
+    for i in range(len(pathLCT)):
+        dataset = rasterio.open(pathLCT[i])
+        transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
+        
+        locs_crs_x, locs_crs_y = transformer.transform(
+        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
+        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
+        # here.
+            [l[1] for l in locs],
+            [l[0] for l in locs]
+        )
+        
+        locs_crs = list(zip(locs_crs_x, locs_crs_y))
+        
+        # TODO: add coordinate handling for coordinates in bounds
+        # if not in bounds -> try for others
+        # ultimately all coords need to be assigned
+        try:
+            samps = list(dataset.sample(locs_crs))
+        except:
+            
+        vLCT = [int(s) for s in samps]
+        
+    
+    return vLCT
+
+    """
     # TODO: concat tiles (?) or read data off multiple 
     if len(pathLCT) > 1:
-    
+        
     else: 
     
     dataset = g
@@ -1048,6 +1079,8 @@ def get_LCT_Global(locs):
     vLCT = [int(s) for s in samps]
     
     return vLCT
+    
+    """
     
 
 def get_LCT(locs):
