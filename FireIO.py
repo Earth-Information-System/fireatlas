@@ -1028,31 +1028,52 @@ def get_LCT_Global(locs):
     # contains all s3 paths to file
     pathLCT = download_ESA_global(locs)
     
-    for i in range(len(pathLCT)):
+    # DEBUG
+    print(locs)
+    assert (pathLCT > 0), "Empty tif set, could not assess ESA Global LCT"
+    
+    # Case 1: 1 tif 
+    if len(pathLCT) == 1:
         dataset = rasterio.open(pathLCT[i])
         transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
-        
         locs_crs_x, locs_crs_y = transformer.transform(
-        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
-        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
-        # here.
             [l[1] for l in locs],
             [l[0] for l in locs]
         )
-        
-        locs_crs = list(zip(locs_crs_x, locs_crs_y))
-        
-        # TODO: add coordinate handling for coordinates in bounds
-        # if not in bounds -> try for others
-        # ultimately all coords need to be assigned
-        try:
-            samps = list(dataset.sample(locs_crs))
-        except:
-            
+        samps = list(dataset.sample(locs_crs))
         vLCT = [int(s) for s in samps]
         
+        return vLCT
     
-    return vLCT
+    # Case 2: locs intersect multiple tifs -> associate LCT with proper tif
+    else:
+        for i in range(len(pathLCT)):
+            
+            # open tif and assses bounds
+            dataset = rasterio.open(pathLCT[i])
+            transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
+            bounds = dataset.bounds
+            
+            
+            
+
+
+        
+    
+        # After all locs tied to specific tif -> merge associations together
+        locs_crs_x, locs_crs_y = transformer.transform(
+            # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
+            # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
+            # here.
+            [l[1] for l in locs],
+            [l[0] for l in locs]
+        )
+
+        locs_crs = list(zip(locs_crs_x, locs_crs_y))
+        samps = list(dataset.sample(locs_crs))
+        vLCT = [int(s) for s in samps]
+        
+        return vLCT
 
     """
     # TODO: concat tiles (?) or read data off multiple 
