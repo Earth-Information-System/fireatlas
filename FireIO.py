@@ -978,9 +978,11 @@ def download_ESA_global(locs):
     for tile in tqdm(tiles.ll_tile):
         url = f"{s3_url_prefix}/{version}/{esa_year}/map/ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
         out_fn = output_folder + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
+        s3_tile_url = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
 
         if os.path.exists(out_fn) and os.path.isfile(out_fn):
-            print(f"{out_fn} already exists.")
+            print(f"{out_fn} already exists. No new downloads complete.")
+            arr_out_fn = arr_out_fn + [s3_tile_url]
             continue
 
         else:
@@ -988,9 +990,6 @@ def download_ESA_global(locs):
             with open(out_fn, 'wb') as f:
                 f.write(r.content)
             print(f"Downloading {url} to {out_fn}")
-            
-            # s3 url (generated pre-success)
-            s3_tile_url = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
             arr_out_fn = arr_out_fn + [s3_tile_url]
     
     # after adding all files, sync entire dir to aws bucket 
@@ -1021,20 +1020,17 @@ def get_LCT_Global(locs):
     import pyproj
     import os
     
-    # TODO - external to function, add logic for global selection
-    # TODO - ASSUMING tifs are neighbors -> merge? or seperate when reading...
-    # This edges case is likeley if a fire crosses two tile regions
+    # TESTING: ARTIFICIAL COORDINATE INSERTION FOR EXTENDED DOWNLOADING
+    locs.append(tuple([-116.7, 37.2]))
     
     # contains all s3 paths to file
     pathLCT = download_ESA_global(locs)
-    
-    # DEBUG
-    print(locs)
-    assert (pathLCT > 0), "Empty tif set, could not assess ESA Global LCT"
+    assert (len(pathLCT) != 0), "Empty tif set, could not assess ESA Global LCT"
+    print(pathLCT)
     
     # Case 1: 1 tif 
     if len(pathLCT) == 1:
-        dataset = rasterio.open(pathLCT[i])
+        dataset = rasterio.open(pathLCT[0])
         transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
         locs_crs_x, locs_crs_y = transformer.transform(
             [l[1] for l in locs],
@@ -1046,32 +1042,53 @@ def get_LCT_Global(locs):
         return vLCT
     
     # Case 2: locs intersect multiple tifs -> associate LCT with proper tif
+    # For each tif:
+    # find points that lie inside the tif
+    # Tie together via dictionary, where tif paths of pathLCT are keys 
+    
     else:
+        print('VERBOSE: ENTERING MULTIPLE TIFS')
+        
+        # initiate dict w/ empty list values values
+        tif_to_points = {}
+        [tif_to_points.setdefault(str_path, []) for str_path in pathLCT]
+        # define vLCT to merge elements into
+        vLCT = []
+        
         for i in range(len(pathLCT)):
             
             # open tif and assses bounds
             dataset = rasterio.open(pathLCT[i])
             transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
             bounds = dataset.bounds
+            locs_crs_x, locs_crs_y = transformer.transform(
+                [l[1] for l in locs],
+                [l[0] for l in locs]
+            )
+        
+            assert len(locs_crs_x) == len(locs_crs_y), "x,y coords mismatching dimensions, check IO handling"
             
+            for j in range(len(locs_crs_x)):
+                
+                # test each set of coords if in bound
+                x = locs_crs_y[j]
+                y = locs_crs_x[j]
+                if bounds.left < x < bounds.right and bounds.bottom < y < bounds.top:
+                    # append to associated key in dict.
+                    tif_to_points[pathLCT[i]].append(tuple([x,y]))
+                else:
+                    continue
             
-            
-
-
+            # with associated coords -> tie data to sample
+            samps = list(dataset.sample(tif_to_points[pathLCT[i]]))
+            print(samps)
+            new_vLCT = [int(s) for s in samps]
+            vLCT = vLCT + new_vLCT
         
     
-        # After all locs tied to specific tif -> merge associations together
-        locs_crs_x, locs_crs_y = transformer.transform(
-            # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
-            # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
-            # here.
-            [l[1] for l in locs],
-            [l[0] for l in locs]
-        )
-
-        locs_crs = list(zip(locs_crs_x, locs_crs_y))
-        samps = list(dataset.sample(locs_crs))
-        vLCT = [int(s) for s in samps]
+        print('VERBOSE: MULTI-TIFF ANLYSIS COMPLETE')
+        print(tif_to_points)
+        print(vLCT)
         
         return vLCT
 
@@ -1137,6 +1154,7 @@ def get_LCT(locs):
     locs_crs = list(zip(locs_crs_x, locs_crs_y))
     samps = list(dataset.sample(locs_crs))
     vLCT = [int(s) for s in samps]
+    
     return vLCT
 
 def get_LCT_CONUS(locs):
@@ -1173,6 +1191,7 @@ def get_LCT_CONUS(locs):
     locs_crs = list(zip(locs_crs_x, locs_crs_y))
     samps = list(dataset.sample(locs_crs))
     vLCT = [int(s) for s in samps]
+    
     return vLCT
 
 def get_LCT_NLCD(locs):
