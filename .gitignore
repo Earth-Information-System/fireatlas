@@ -5,3 +5,4 @@ Web/
 __pycache__/
 bk/
 running.log
+.conda/

@@ -404,6 +404,7 @@ def AFP_regfilter(df, shp_Reg, strlat="Lat", strlon="Lon"):
     df_filtered : pandas DataFrame
         the filtered fire pixels
     """
+    from FireConsts import remove_static_sources_bool
     from shapely.geometry import Point
     import geopandas as gpd
     import pandas as pd
@@ -422,7 +423,7 @@ def AFP_regfilter(df, shp_Reg, strlat="Lat", strlon="Lon"):
     # if shp_Reg is not a rectangle, do detailed filtering (within shp_Reg)
     import math
 
-    if not math.isclose(shp_Reg.minimum_rotated_rectangle.area, shp_Reg.area):
+    if ((not math.isclose(shp_Reg.minimum_rotated_rectangle.area, shp_Reg.area)) | remove_static_sources_bool):
         gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
 
     # drop geometry column
