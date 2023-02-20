@@ -961,10 +961,7 @@ def download_ESA_global(locs):
     url = f'{s3_url_prefix}/v100/2020/esa_worldcover_2020_grid.geojson'
     grid = gpd.read_file(url) 
     
-    # TODO generate geometry bounds using locs - valid or specific region needed?
-    # geom = gpd.GeoDataFrame(index=[0], crs='epsg:4326', geometry=[polygon_geom])
-    # geom = Polygon.from_bounds(xmin, ymin, xmax, ymax)
-    
+    # generate geometry and intersect
     geom = Polygon(locs)
     tiles = grid[grid.intersects(geom)]
     
@@ -1021,7 +1018,7 @@ def get_LCT_Global(locs):
     import os
     
     # TESTING: ARTIFICIAL COORDINATE INSERTION FOR EXTENDED DOWNLOADING
-    locs.append(tuple([-116.7, 37.2]))
+    # locs.append(tuple([-116.7, 37.2]))
     
     # contains all s3 paths to file
     pathLCT = download_ESA_global(locs)
@@ -1087,38 +1084,9 @@ def get_LCT_Global(locs):
         
     
         print('VERBOSE: MULTI-TIFF ANLYSIS COMPLETE')
-        print(tif_to_points)
         print(vLCT)
         
         return vLCT
-
-    """
-    # TODO: concat tiles (?) or read data off multiple 
-    if len(pathLCT) > 1:
-        
-    else: 
-    
-    dataset = g
-    
-    # TODO - check CRS and match (see Eli's pm) 
-    # TODO - does pulled data have crs attribute? 
-    transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
-    
-    locs_crs_x, locs_crs_y = transformer.transform(
-        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
-        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
-        # here.
-        [l[1] for l in locs],
-        [l[0] for l in locs]
-    )
-    
-    locs_crs = list(zip(locs_crs_x, locs_crs_y))
-    samps = list(dataset.sample(locs_crs))
-    vLCT = [int(s) for s in samps]
-    
-    return vLCT
-    
-    """
     
 
 def get_LCT(locs):
