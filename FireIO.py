@@ -945,11 +945,12 @@ def download_ESA_global(locs):
     
     """
     
-    from FireConsts import s3_url_prefix, esa_year, output_folder
+    from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3
     from shapely.geometry import Polygon
     import os 
     import geopandas as gpd
     import requests
+    import fsspec
     from tqdm.auto import tqdm
     
     # select file version - dependent on esa year
@@ -984,14 +985,22 @@ def download_ESA_global(locs):
 
         else:
             r = requests.get(url, allow_redirects=True)
-            with open(out_fn, 'wb') as f:
+            
+            # with open(out_fn, 'wb') as f:
+                # f.write(r.content)
+            
+            with fsspec.open(output_folder_s3) as f:
                 f.write(r.content)
+            
             print(f"Downloading {url} to {out_fn}")
             arr_out_fn = arr_out_fn + [s3_tile_url]
     
     # after adding all files, sync entire dir to aws bucket 
     print("Syncing ESA Global Tiles to s3...")
-    sync_command = f"aws s3 sync /projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    # sync_command = f"aws s3 sync /projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    
+    sync_command = f"aws s3 sync s3://maap-ops-workspace/ksharonin/projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    
     os.system(sync_command)
     
     return arr_out_fn
