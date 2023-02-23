@@ -210,6 +210,9 @@ def set_ftype(fire):
             ftype = 0
         """
         
+        print('VERBOSE: LCTmax Printed for Const == 2:')
+        print(LCTmax)
+        
         if LCTmax in [80, 60, 70]:  #'Perm water bodies', 'Bare/sparse Veg', 'Ice/snow'
             ftype = 0
         elif LCTmax in [50]:  # 'Built up' aka 'Urban'

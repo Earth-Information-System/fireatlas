@@ -946,7 +946,7 @@ def download_ESA_global(locs):
     """
     
     from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3
-    from shapely.geometry import Polygon
+    from shapely.geometry import Polygon, Point
     import os 
     import geopandas as gpd
     import requests
@@ -963,8 +963,24 @@ def download_ESA_global(locs):
     grid = gpd.read_file(url) 
     
     # generate geometry and intersect
-    geom = Polygon(locs)
-    tiles = grid[grid.intersects(geom)]
+    print('VERBOSE: Print current locs')
+    print(locs)
+    
+    # throw error 
+    assert len(locs) != 0, "Locs is len 0; cannot possible locate ftype"
+    
+    # check if only a point / two points - case of two points?
+    if 1 <= len(locs) <= 2:
+        locs = locs[0] # potentially change; grab only single point
+        geom = Point(locs[0], locs[1])
+        print('VERBOSE: print geom formed')
+        print(geom)
+        tiles = grid[grid.intersects(geom)]
+    
+    # form a geometry otherwise
+    else:
+        geom = Polygon(locs)
+        tiles = grid[grid.intersects(geom)]
     
     assert geom is not None, "Geom empty; invalid dataset"
     assert tiles.shape[0] != 0, "No ESA LCT tiles selected in given bounds."
@@ -986,20 +1002,21 @@ def download_ESA_global(locs):
         else:
             r = requests.get(url, allow_redirects=True)
             
-            # with open(out_fn, 'wb') as f:
-                # f.write(r.content)
-            
-            with fsspec.open(output_folder_s3) as f:
+            with open(out_fn, 'wb') as f:
                 f.write(r.content)
+            
+            # with fsspec.open(output_folder_s3) as f:
+                # f.write(r.content)
             
             print(f"Downloading {url} to {out_fn}")
             arr_out_fn = arr_out_fn + [s3_tile_url]
     
     # after adding all files, sync entire dir to aws bucket 
     print("Syncing ESA Global Tiles to s3...")
-    # sync_command = f"aws s3 sync /projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
     
-    sync_command = f"aws s3 sync s3://maap-ops-workspace/ksharonin/projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    sync_command = f"aws s3 sync /projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    
+    # sync_command = f"aws s3 sync s3://maap-ops-workspace/ksharonin/projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
     
     os.system(sync_command)
     
@@ -1027,33 +1044,53 @@ def get_LCT_Global(locs):
     import os
     
     # TESTING: ARTIFICIAL COORDINATE INSERTION FOR EXTENDED DOWNLOADING
+    
+    # COORD OUTSIDE OF INITIAL TILE 
     # locs.append(tuple([-116.7, 37.2]))
+    
+    # COORD INSIDE INITIAL TILE
+    # locs.append(tuple([-119.277367, 37.199169]))
+    
+    # COORD OUTSIDE AS SINGLE REPLACEMENT
+    # locs = [tuple([-116.7, 37.2])] # foreceful set 
     
     # contains all s3 paths to file
     pathLCT = download_ESA_global(locs)
     assert (len(pathLCT) != 0), "Empty tif set, could not assess ESA Global LCT"
     print(pathLCT)
     
-    # Case 1: 1 tif 
-    if len(pathLCT) == 1:
-        dataset = rasterio.open(pathLCT[0])
-        transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
-        locs_crs_x, locs_crs_y = transformer.transform(
-            [l[1] for l in locs],
-            [l[0] for l in locs]
-        )
-        samps = list(dataset.sample(locs_crs))
-        vLCT = [int(s) for s in samps]
+    # Case 1: 1 tif - FORCEFUL FAILURE
+    # if len(pathLCT) == 0:
         
-        return vLCT
+        # dataset = rasterio.open(pathLCT[0])
+        
+        # print('VERBOSE: dataset')
+        # print(dataset)
+        # print(pathLCT[0])
+        
+        # transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
+        # locs_crs_x, locs_crs_y = transformer.transform(
+            # [l[1] for l in locs],
+            # [l[0] for l in locs]
+        # )
+        # locs_crs = list(zip(locs_crs_x, locs_crs_y))
+        # samps = list(dataset.sample(locs_crs))
+        # vLCT = [int(s) for s in samps]
+        
+        # print('VERBOSE: print samps / vLCT')
+        # print(samps)
+        # print(vLCT)
+        
+        # return vLCT
     
-    # Case 2: locs intersect multiple tifs -> associate LCT with proper tif
+    # GENERAL CASE: 
     # For each tif:
     # find points that lie inside the tif
     # Tie together via dictionary, where tif paths of pathLCT are keys 
     
-    else:
-        print('VERBOSE: ENTERING MULTIPLE TIFS')
+    # redundant if -> remove in the future
+    if len(pathLCT) > 0:
+        # print('VERBOSE: ENTERING MULTIPLE TIFS')
         
         # initiate dict w/ empty list values values
         tif_to_points = {}
@@ -1092,10 +1129,10 @@ def get_LCT_Global(locs):
             vLCT = vLCT + new_vLCT
         
     
-        print('VERBOSE: MULTI-TIFF ANLYSIS COMPLETE')
+        print('VERBOSE: vLCT GLOBAL ANLYSIS COMPLETE')
         print(vLCT)
-        
-        return vLCT
+    
+    return vLCT
     
 
 def get_LCT(locs):
