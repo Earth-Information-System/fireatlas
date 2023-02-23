@@ -1,4 +1,4 @@
-# TODO: add packages "requests" and "tqdm" for ESA Global Processing
+# TODO: add packages "requests" and "tqdm" for ESA Global Processing 
 # if syncing is an issue -> awscli must be locally installed in the env
 
 name: feds
@@ -219,6 +219,7 @@ dependencies:
   - tiledb=2.11.1=h1e4a385_0
   - tk=8.6.12=h27826a3_0
   - tornado=6.2=py310h5764c6d_0
+  - tqdm=4.64.1=pyhd8ed1ab_0
   - traitlets=5.3.0=pyhd8ed1ab_0
   - typing-extensions=4.3.0=hd8ed1ab_0
   - typing_extensions=4.3.0=pyha770c72_0
