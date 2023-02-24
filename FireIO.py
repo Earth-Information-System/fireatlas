@@ -986,7 +986,7 @@ def download_ESA_global(locs):
     
     assert geom is not None, "Geom empty; invalid dataset"
     assert tiles.shape[0] != 0, "No ESA LCT tiles selected in given bounds."
-    assert os.path.exists(output_folder), "No output_folder defined; check FireConsts.py"
+    # assert os.path.exists(output_folder), "No output_folder defined; check FireConsts.py"
     
     # form return array with all locations on veda
     arr_out_fn = []
