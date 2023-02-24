@@ -2,6 +2,7 @@ name: feds
 channels:
   - conda-forge
 dependencies:
+  - dask
   - _libgcc_mutex=0.1=conda_forge
   - _openmp_mutex=4.5=2_gnu
   - abseil-cpp=20210324.2=h9c3ff4c_0
