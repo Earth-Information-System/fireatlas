@@ -29,7 +29,7 @@ diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus
 s3_url_prefix = "https://esa-worldcover.s3.eu-central-1.amazonaws.com"
 output_folder = "/projects/esa-tiles/"
 output_folder_s3 = "s3://maap-ops-workspace/ksharonin/projects/esa-tiles/"
-sync_folder = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+sync_folder = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" # NOTE: ACCESS DENIED
 esa_year = 2021 # or 2020 -> impacts selected version
 
 # ------------------------------------------------------------------------------

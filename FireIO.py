@@ -945,7 +945,7 @@ def download_ESA_global(locs):
     
     """
     
-    from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3, dirextdata
+    from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3, dirextdata, diroutdata
     from DataCheckUpdate import wget
     from shapely.geometry import Polygon, Point
     import os 
@@ -997,7 +997,12 @@ def download_ESA_global(locs):
     for tile in tqdm(tiles.ll_tile):
         url = f"{s3_url_prefix}/{version}/{esa_year}/map/ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
         out_fn = output_folder + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
-        s3_tile_url = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
+        
+        # ORIGINAL: 
+        # s3_tile_url = "s3://veda-data-store-staging/EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
+        
+        # REPLACEMENT: fix for DPS testing
+        s3_tile_url = diroutdata + "EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
 
         if os.path.exists(out_fn) and os.path.isfile(out_fn):
             print(f"{out_fn} already exists. No new downloads complete.")
@@ -1024,10 +1029,14 @@ def download_ESA_global(locs):
     # after adding all files, sync entire dir to aws bucket 
     print("Syncing ESA Global Tiles to s3...")
     
-    # sync_command = f"aws s3 sync /projects/esa-tiles/ s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    # ORIGINAL: loop and sync downloaded tifs
+    # sync_command = f"aws s3 sync {output_folder} s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
     
-    # loop and sync downloaded tifs
-    sync_command = f"aws s3 sync {output_folder} s3://veda-data-store-staging/EIS/other/ESA-global-landcover/"
+    # TEMPORARY REPLACEMENT: syncing for other dir
+    full_data =  diroutdata + "EIS/other/ESA-global-landcover/"
+    sync_command = f"aws s3 sync {output_folder} {full_data}"
+    print(sync_command)
+    
     os.system(sync_command)
     
     return arr_out_fn
@@ -1111,6 +1120,9 @@ def get_LCT_Global(locs):
         for i in range(len(pathLCT)):
             
             # open tif and assses bounds
+            print('VERBOSE: pathLCT[i]')
+            print(pathLCT[i])
+            
             dataset = rasterio.open(pathLCT[i])
             transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
             bounds = dataset.bounds
