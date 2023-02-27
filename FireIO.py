@@ -953,7 +953,11 @@ def download_ESA_global(locs):
     import requests
     import fsspec
     import urllib.request
+    import s3fs
     from tqdm.auto import tqdm
+    
+    # sync boolean
+    sync_needed = False
     
     # select file version - dependent on esa year
     assert esa_year == 2020 or esa_year == 2021, "Invalid ESA Input Date. Check FireConsts.py"
@@ -964,10 +968,6 @@ def download_ESA_global(locs):
     url = f'{s3_url_prefix}/v100/2020/esa_worldcover_2020_grid.geojson'
     grid = gpd.read_file(url) 
     
-    # generate geometry and intersect
-    print('VERBOSE: Print current locs')
-    print(locs)
-    
     # throw error 
     assert len(locs) != 0, "Locs is len 0; cannot possible locate ftype"
     
@@ -975,8 +975,6 @@ def download_ESA_global(locs):
     if 1 <= len(locs) <= 2:
         locs = locs[0] # potentially change; grab only single point
         geom = Point(locs[0], locs[1])
-        print('VERBOSE: print geom formed')
-        print(geom)
         tiles = grid[grid.intersects(geom)]
     
     # form a geometry otherwise
@@ -1004,12 +1002,16 @@ def download_ESA_global(locs):
         # REPLACEMENT: fix for DPS testing
         s3_tile_url = diroutdata + "EIS/other/ESA-global-landcover/" + f"ESA_WorldCover_10m_{esa_year}_{version}_{tile}_Map.tif"
 
-        if os.path.exists(out_fn) and os.path.isfile(out_fn):
+        # define s3 file system and check for tif existence
+        s3 = s3fs.S3FileSystem(anon=False)
+        
+        if s3.exists(s3_tile_url):
             print(f"{out_fn} already exists. No new downloads complete.")
             arr_out_fn = arr_out_fn + [s3_tile_url]
             continue
 
         else:
+            sync_needed = True
             r = requests.get(url, allow_redirects=True)
             request = urllib.request.Request(url)
             opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
@@ -1022,8 +1024,7 @@ def download_ESA_global(locs):
             
             with opener.open(request) as response, fsspec.open(target_file, "wb") as f:
                 f.write(response.read())
-     
-            print(f"Downloading {url} to {out_fn}")
+                
             arr_out_fn = arr_out_fn + [s3_tile_url]
     
     # after adding all files, sync entire dir to aws bucket 
@@ -1035,9 +1036,9 @@ def download_ESA_global(locs):
     # TEMPORARY REPLACEMENT: syncing for other dir
     full_data =  diroutdata + "EIS/other/ESA-global-landcover/"
     sync_command = f"aws s3 sync {output_folder} {full_data}"
-    print(sync_command)
     
-    os.system(sync_command)
+    if sync_needed:
+        os.system(sync_command)
     
     return arr_out_fn
 
@@ -1076,31 +1077,6 @@ def get_LCT_Global(locs):
     # contains all s3 paths to file
     pathLCT = download_ESA_global(locs)
     assert (len(pathLCT) != 0), "Empty tif set, could not assess ESA Global LCT"
-    print(pathLCT)
-    
-    # Case 1: 1 tif - FORCEFUL FAILURE
-    # if len(pathLCT) == 0:
-        
-        # dataset = rasterio.open(pathLCT[0])
-        
-        # print('VERBOSE: dataset')
-        # print(dataset)
-        # print(pathLCT[0])
-        
-        # transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
-        # locs_crs_x, locs_crs_y = transformer.transform(
-            # [l[1] for l in locs],
-            # [l[0] for l in locs]
-        # )
-        # locs_crs = list(zip(locs_crs_x, locs_crs_y))
-        # samps = list(dataset.sample(locs_crs))
-        # vLCT = [int(s) for s in samps]
-        
-        # print('VERBOSE: print samps / vLCT')
-        # print(samps)
-        # print(vLCT)
-        
-        # return vLCT
     
     # GENERAL CASE: 
     # For each tif:
@@ -1120,9 +1096,6 @@ def get_LCT_Global(locs):
         for i in range(len(pathLCT)):
             
             # open tif and assses bounds
-            print('VERBOSE: pathLCT[i]')
-            print(pathLCT[i])
-            
             dataset = rasterio.open(pathLCT[i])
             transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
             bounds = dataset.bounds
@@ -1146,13 +1119,8 @@ def get_LCT_Global(locs):
             
             # with associated coords -> tie data to sample
             samps = list(dataset.sample(tif_to_points[pathLCT[i]]))
-            print(samps)
             new_vLCT = [int(s) for s in samps]
             vLCT = vLCT + new_vLCT
-        
-    
-        print('VERBOSE: vLCT GLOBAL ANLYSIS COMPLETE')
-        print(vLCT)
     
     return vLCT
     
