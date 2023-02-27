@@ -614,7 +614,7 @@ def convert_sfts(regnm,yr,fids):
         fire ids
     '''
     import FireIO, os
-    from AT import AT_FRAP
+    # from AT import AT_FRAP
     import geopandas as gpd
     from glob import glob
     import pandas as pd
