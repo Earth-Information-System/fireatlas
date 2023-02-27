@@ -176,66 +176,34 @@ def set_ftype(fire):
         ignct = fire.ignlocsMP.centroid  # ignition centroid
         loc = (ignct.y, ignct.x)  # (lat,lon)
         t = date(*fire.t_st[:-1])
-        try: stFM1000 = FireIO.get_FM1000(t, loc)
-        except:
-            #print('FM1000 data is unavailable at this time.')
-            stFM1000 = 0
         
-        # determine the fire type using the land cover type and stFM1000
+        # try: 
+            # stFM1000 = FireIO.get_FM1000(t, loc)
+        # except:
+            # print('FM1000 data is unavailable at this time.')
+            # stFM1000 = 0
         
-        # 2020 (page 11)
-        # https://worldcover2020.esa.int/data/docs/WorldCover_PUM_V1.1.pdf
-        # 2021 (page 15)
+        # Global LCT 2021 (page 15)
         # https://worldcover2021.esa.int/data/docs/WorldCover_PUM_V2.0.pdf
         
-        """
-        if LCTmax in [0, 11, 31]:  #'NoData', 'Water', 'Barren' -> 'Other'
+        if LCTmax in [80, 60, 70, 95]:  # 'Perm water bodies', 'Bare/sparse Veg', 'Ice/snow', 'Mangroves' -> Other
             ftype = 0
-        elif LCTmax in [23]:  # 'Urban' -> 'Urban'
-            ftype = 1
-        elif LCTmax in [82]:  # 'Agriculture' -> 'Agriculture'
-            ftype = 6
-        elif LCTmax in [42]:  # 'Forest' ->
-            if stFM1000 > 12:  # 'Forest manage'
-                ftype = 3
-            else:  # 'Forest wild'
-                ftype = 2
-        elif LCTmax in [52, 71]:  # 'Shrub', 'Grassland' ->
-            if stFM1000 > 12:  # 'Shrub manage'
-                ftype = 5
-            else:  # 'Shrub wild'
-                ftype = 4
-        else:
-            print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
-            ftype = 0
-        """
-        
-        print('VERBOSE: LCTmax Printed for Const == 2:')
-        print(LCTmax)
-        
-        if LCTmax in [80, 60, 70]:  #'Perm water bodies', 'Bare/sparse Veg', 'Ice/snow'
-            ftype = 0
-        elif LCTmax in [50]:  # 'Built up' aka 'Urban'
+        elif LCTmax in [50]:  # 'Built up' -> 'Urban'
             ftype = 1
         elif LCTmax in [40]:  # 'Cropland' -> 'Agriculture'
             ftype = 6
-        elif LCTmax in [10, 95]:  # 'Tree Cover', 'Mangroves' ->
-            if stFM1000 > 12:  # 'Forest manage'
-                ftype = 3
-            else:  # 'Forest wild'
-                ftype = 2
-        elif LCTmax in [20, 30, 90, 100]:  # 'Shrubland', 'Grassland', 
-            # 'Herbaceous Wetland', 'Moss/Lichen' ->
-            if stFM1000 > 12:  # 'Shrub manage'
-                ftype = 5
-            else:  # 'Shrub wild'
-                ftype = 4
+        elif LCTmax in [10]:  # 'Tree Cover' -> 'Forest Wild'
+            # if stFM1000 > 12:  # 'Forest manage'
+                # ftype = 3
+            ftype = 2 # 'Forest wild'
+        elif LCTmax in [20, 30, 90, 100]:  # 'Shrubland', 'Grassland', 'Herbaceous Wetland', 'Moss/Lichen' -> 'Shrub Wild'
+            # if stFM1000 > 12:  # 'Shrub manage'
+                # ftype = 5
+            # else:  # 'Shrub wild'
+            ftype = 4
         else:
             print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
-            
-            
-        # ftype = 1  # need more work here...
 
     return ftype
 
