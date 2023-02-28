@@ -1,4 +1,6 @@
 #!/bin/bash
+mkdir output
+
 # set -euxo pipefail
 set -eo pipefail
 
@@ -24,9 +26,18 @@ python --version
 
 echo "Starting algorithm in subshell"
 (
-cd "$basedir"
-echo "Running in directory: $(pwd -P)"
-python FireRun.py $1
+pushd "$basedir"
+{ # try
+  echo "Running in directory: $(pwd -P)"
+  python FireRun.py $1
+  popd
+  echo "Copying log to special output dir"
+  cp "$basedir/running.log" ./output
+} || { # catch
+  popd
+  echo "Copying log to special output dir"
+  cp "$basedir/running.log" ./output
+}
 )
 echo "Done!"
 
