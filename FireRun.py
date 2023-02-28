@@ -316,13 +316,14 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    tst = [ctime.year, 1, 1, 'AM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    tst = [ctime.year, 2, 24, 'PM']
+    ted = [ctime.year, 2, 25, 'PM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
@@ -433,7 +434,8 @@ def SouthEastUS_LF_ONLY():
     else:
         ampm = 'AM'
     tst = [2023,2,22,'PM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    ted = [2023,2,22,'PM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 

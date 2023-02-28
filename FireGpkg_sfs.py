@@ -420,7 +420,7 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
     # gdf_all = gdf_all.reset_index()
     return gdf_all
 
-def save_sfts_all(t, regnm, layers=["perimeter", "fireline", "newfirepix", "nfplist"]):
+def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix", "nfplist"]):
     """Wrapper to create and save gpkg files at a time step for all large fires
     Parameters
     ----------
@@ -431,11 +431,7 @@ def save_sfts_all(t, regnm, layers=["perimeter", "fireline", "newfirepix", "nfpl
     """
     import FireTime, FireIO
     import geopandas as gpd
-    from dask.distributed import Client 
-    
-    client = Client(n_workers=2) 
-    logger.info(f"workers = {len(client.cluster.workers)}")
-    
+      
     tstart = time.time()
     # read allfires object
     allfires = FireIO.load_fobj(t, regnm, activeonly=True)
@@ -451,9 +447,13 @@ def save_sfts_all(t, regnm, layers=["perimeter", "fireline", "newfirepix", "nfpl
     
     #dask.compute(*saved_fires)
     
-    futures = [client.submit(save_sfts_1f, allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
+    allfires_scattered = client.scatter(allfires,broadcast=True)
+    allfires_pt_scattered = client.scatter(allfires_pt,broadcast=True)
+    
+    futures = [client.submit(save_sfts_1f, allfires_scattered, allfires_pt_scattered, fid, regnm, layers) for fid in large_ids]
     client.gather(futures)
     logger.info(f"workers = {len(client.cluster.workers)}")
+    #[save_sfts_1f(allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
     tend = time.time()
     logger.info(f'Full time for time {t} with dask: {(tend-tstart)/60.} minutes')
     
@@ -518,20 +518,32 @@ def save_sfts_trng(
         region name
     """
     import FireTime
-
+    from dask.distributed import Client 
+    import gc
+    
     # loop over all days during the period
     endloop = False  # flag to control the ending olf the loop
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
+    
+    client = Client(n_workers=8)
+    client.run(gc.disable)
+    #client.wait_for_workers(8)
+    logger.info(f"workers = {len(client.cluster.workers)}")
+    
     while endloop == False:
         print("Single fire saving", t)
         logger.info('Single fire saving: '+str(t))
         
         tstart = time.time()
         # create and save all gpkg files at time t
-        save_sfts_all(t, regnm, layers=layers)
+        save_sfts_all(client, t, regnm, layers=layers)
         tend = time.time()
-
         logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
+
+        # TODO: Purge Client! 
+        client.restart(wait_for_workers=True)
+        client.run(gc.disable)
+        #client.wait_for_workers(8)
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
         if FireTime.t_dif(t, ted) == 0:
