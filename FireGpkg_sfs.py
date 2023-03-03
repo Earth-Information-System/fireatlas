@@ -429,7 +429,7 @@ def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix
     regnm : str
         region name
     """
-    import FireTime, FireIO
+    import FireTime, FireIO, FireObj
     import geopandas as gpd
       
     tstart = time.time()
@@ -437,8 +437,12 @@ def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix
     allfires = FireIO.load_fobj(t, regnm, activeonly=True)
     
     t_pt = FireTime.t_nb(t, nb="previous")
+    
+    try:
     # read allfires object at previous time step
-    allfires_pt = FireIO.load_fobj(t_pt, regnm, activeonly=True)
+        allfires_pt = FireIO.load_fobj(t_pt, regnm, activeonly=True)
+    except: 
+        allfires_pt = FireObj.Allfires(t_pt)
     # find all large active fires and sleepers
     large_ids = find_largefires(allfires)
 
@@ -527,7 +531,7 @@ def save_sfts_trng(
     
     client = Client(n_workers=8)
     client.run(gc.disable)
-    #client.wait_for_workers(8)
+    #client.wait_for_workers(16)
     logger.info(f"workers = {len(client.cluster.workers)}")
     
     while endloop == False:

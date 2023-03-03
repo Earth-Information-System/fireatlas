@@ -302,7 +302,7 @@ def CONUSrunNRT():
     
     ctime = datetime.now()
 
-    region = ('CONUS_NRT_',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    region = ('CONUS_NRT_DPS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
     logger.info(f'STARTING RUN FOR {region[0]}')
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
@@ -316,14 +316,13 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    tst = [ctime.year, 2, 24, 'PM']
-    ted = [ctime.year, 2, 25, 'PM']
-    #ted = [ctime.year, ctime.month, ctime.day, ampm]
-    #ted = [2022,1,10,'AM']
+    #tst = [ctime.year, 1, 1, 'AM']
+    #ted = [ctime.year, 1, 2, 'AM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
