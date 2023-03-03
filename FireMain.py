@@ -168,6 +168,9 @@ def remove_static_sources(region, source):
     region : region obj
         A region that is the diference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
     """
+    # KAT FLAG
+    print('VERBOSE: Entering static filtering')
+    
     # import
     import os
     from FireIO import get_reg_shp, gpd_read_file
@@ -198,6 +201,12 @@ def remove_static_sources(region, source):
     diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
     
     region = (diff.name[0], diff.geometry[0])
+    
+    # KAT FLAG
+    print("diff var result of static analysis- diff is None:")
+    print(diff is None)
+    print(region)
+    
     return(region)
     
 

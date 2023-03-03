@@ -426,7 +426,7 @@ def NorthEastUSrunNRT():
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 
-def WesternUSYrRun(year):
+def WesternUSYrRun(year=2020):
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
     import FireConsts
@@ -438,6 +438,7 @@ def WesternUSYrRun(year):
 
     tst = (year, 1, 1, "AM")
     ted = (year, 12, 31, "PM")
+    ted = (year, 1,2,"PM")
     
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
     
