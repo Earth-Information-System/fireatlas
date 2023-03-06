@@ -927,6 +927,138 @@ def get_reg_shp(reg):
     return shp_Reg
 
 
+# Alternate download function - utlizie direct downlaod 
+
+# https://github.com/ESA-WorldCover/esa-worldcover-datasets/blob/main/notebooks/01-Explore_dataset_STAC.ipynb 
+def download_ESTA_global_direct_alternative(locs):
+    import os
+    import numpy as np
+    import rio_tiler
+    import rasterio
+    from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3, dirextdata, diroutdata
+    from pystac_client import Client
+    from shapely.geometry import Polygon, Point
+
+    # form geometry from locs
+    if 1 <= len(locs) <= 2:
+        locs = locs[0] # potentially change; grab only single point
+        geom = Point(locs[0], locs[1])
+    else:
+        geom = Polygon(locs)
+    
+    assert geom is not None, "Geom empty; invalid dataset"
+    
+    # generate bounding box from geom
+    # locs should already be in WGS 85 / ESPG 4326
+    bounds = geom.bounds
+    # long left -> long right 
+    # lat bottom -> lat top
+    assert len(bounds) == 4, "Bounds misformed, check FireIO.py"
+    bbox = [bounds[0], bounds[1], bounds[2], bounds[3]]
+    
+    print('VERBOSE - print identified bound box')
+    print(bbox)
+    
+    year = esa_year
+    assert year == 2021 or year == 2020, "Invalid ESA_year input, check FireConsts.py"
+    
+    results = 
+    
+    # if mul tifs exists, need to sample each -> dict.
+    tif_to_points = {}
+    [tif_to_points.setdefault(a_result, []) for a_result in results]
+    vLCT = []
+    
+    
+    return vLCT
+    
+
+def download_ESA_global_direct(locs):
+    
+    import os
+    import numpy as np
+    import rio_tiler
+    from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3, dirextdata, diroutdata
+    from pystac_client import Client
+    from shapely.geometry import Polygon, Point
+    # from rio_tiler.io import STACReader
+    
+    stac_endopoint = 'https://services.terrascope.be/stac/'
+    
+    # collection ids for both maps in the Terrascope STAC Catalogue
+    collection_ids = {2020: 'urn:eop:VITO:ESA_WorldCover_10m_2020_AWS_V1',
+                      2021: 'urn:eop:VITO:ESA_WorldCover_10m_2021_AWS_V2'}
+    
+    client = Client.open(stac_endopoint)
+    
+    assert esa_year in collection_ids.keys(), "esa_year invalid"
+    assert len(locs) != 0, "Locs is len 0; cannot possible locate ftype"
+    
+    # form geometry from locs
+    if 1 <= len(locs) <= 2:
+        locs = locs[0] # potentially change; grab only single point
+        geom = Point(locs[0], locs[1])
+    else:
+        geom = Polygon(locs)
+    
+    assert geom is not None, "Geom empty; invalid dataset"
+    
+    # generate bounding box from geom
+    # locs should already be in WGS 85 / ESPG 4326
+    bounds = geom.bounds
+    # long left -> long right 
+    # lat bottom -> lat top
+    assert len(bounds) == 4, "Bounds misformed, check FireIO.py"
+    bbox = [bounds[0], bounds[1], bounds[2], bounds[3]]
+    
+    print('VERBOSE - print identified bound box')
+    print(bbox)
+    
+    year = esa_year
+    search_results = client.search(
+        collections=[collection_ids[year]],
+        bbox=bbox # TODO - does it have to be a box ? or any geom valid?
+    )
+    
+    # items found in dictionary form 
+    results = search_results.get_all_items()
+    
+    assert len(results) >= 1, "No results found, check provided regions"
+    
+    print('VERBOSE - printing search results')
+    print(results)
+    print('VERBOSE - size of found results:')
+    print(len(results))
+    
+    # if mul tifs exists, need to sample each -> dict.
+    tif_to_points = {}
+    [tif_to_points.setdefault(a_result, []) for a_result in results]
+    vLCT = []
+    # name of map asset
+    asset = 'ESA_WORLDCOVER_10M_MAP'
+    
+    for i in range(len(results)):
+        # retrieve the s3 path
+        item = results[i]
+        s3uri = item.assets[asset].href
+        
+        os.environ['AWS_NO_SIGN_REQUEST'] = 'YES'
+        
+        with STACReader(None, item=item) as stac:
+            img = stac.part(bbox, assets=asset)
+        
+        values, occurences = np.unique(img.data[0], return_counts=True)
+        print('VERBOSE - print identified values')
+        print(values)
+        
+        # overlay coordinates (w/o changing proj)
+        
+        # zip found int data 
+    
+    return vLCT
+        
+    
+
 # TODO - create function which using locs provides particular tile(s) bounded by locs
 # TODO - identify what locs is passed as -> already bounding box?
 # ESA AWS guide: https://github.com/ESA-WorldCover/esa-worldcover-datasets/blob/main/scripts/download.py#L52
@@ -955,6 +1087,7 @@ def download_ESA_global(locs):
     import urllib.request
     import s3fs
     from tqdm.auto import tqdm
+    from pystac_client import Client
     
     # sync boolean
     sync_needed = False

@@ -82,7 +82,7 @@ firessr = "viirs"  # sensor - 'mcd64'
 FTYP_opt = 2  # 0: preset ftype for all fires;
 # 1: use CA type classifications
 # 2: proposed global fire types
-CONT_opt = 1  # 0: preset continuity threshold for all fires;
+CONT_opt = 2  # 0: preset continuity threshold for all fires;
 # 1: use CA type classifications dependent values
 # 2: use global fire types and size dependent values
 
