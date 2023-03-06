@@ -438,7 +438,7 @@ def WesternUSYrRun(year=2020):
 
     tst = (year, 1, 1, "AM")
     ted = (year, 12, 31, "PM")
-    ted = (year, 1,2,"PM")
+    #ted = (year, 1,3,"PM")
     
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
     
