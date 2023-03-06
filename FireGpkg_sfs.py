@@ -531,7 +531,7 @@ def save_sfts_trng(
     
     client = Client(n_workers=8)
     client.run(gc.disable)
-    client.wait_for_workers(8)
+    #client.wait_for_workers(8)
     logger.info(f"workers = {len(client.cluster.workers)}")
     
     while endloop == False:
