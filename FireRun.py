@@ -4,11 +4,13 @@ Module to control different runs
 import sys
 import time
 import argparse
-import logging
-stdout_handler = logging.StreamHandler(sys.stdout)
-logger = logging.getLogger(__name__)
-logger.addHandler(stdout_handler)
-logger.setLevel(logging.INFO)
+ 
+# import logging
+# stdout_handler = logging.StreamHandler(sys.stdout)
+# logger = logging.getLogger(__name__)
+# logger.addHandler(stdout_handler)
+# logger.setLevel(logging.INFO)
+from FireLog import logger
 
 
 def DataUpdateChecker():
@@ -177,16 +179,21 @@ def CreekRegionSamplerun():
     tst = (2020, 9, 1, "AM")
     ted = (2020, 9, 10, "PM")
     region = ("CreekRegion9311", [-120, 36, -118, 38])
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    tstart = time.time()
 
+    
     # do fire tracking
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-
+    tend = time.time()
+    
+    logger.info(f"{(tend-tstart)/60.} minutes used for CreekRegionSamplerun with NO dask.")
 
 def CArun():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
@@ -285,14 +292,18 @@ def CONUSrunNRT():
     from datetime import datetime
     import os
     from time import sleep
+    #import time
     
     if FireConsts.firenrt != True:
         print('Please set firenrt to True')
         return
     
+    tstart = time.time()
+    
     ctime = datetime.now()
 
-    region = ('CONUS_NRT',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    region = ('CONUS_NRT_DPS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    logger.info(f'STARTING RUN FOR {region[0]}')
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
     if lts == None:
@@ -305,14 +316,17 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [ctime.year, 1, 1, 'AM']
+    #tst = [2022, 1, 1, 'AM']
+    #ted = [2022, 12, 31, 'PM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
-    #ted = [2022,1,10,'AM']
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    tend = time.time()
+    logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
+
     
 def WesternUSrunNRT():
     
@@ -366,7 +380,9 @@ def SouthEastUSrunNRT():
 
     region = ('SouthEastUSNRT_DPS',[-106.79802059770478,24.457626666909054,
                                     -72.87223934770478,37.309430118635944])
-
+    
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    
     lts = FireIO.get_lts_serialization(regnm=region[0])
     if lts == None:
         tst = [ctime.year, 1, 1, 'AM']
@@ -387,6 +403,44 @@ def SouthEastUSrunNRT():
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
+def SouthEastUS_LF_ONLY():
+    
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    from datetime import datetime
+    import os
+    
+    if FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    ctime = datetime.now()
+
+    region = ('SouthEastUSNRT_DPS',[-106.79802059770478,24.457626666909054,
+                                    -72.87223934770478,37.309430118635944])
+    
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    tst = [2023,2,22,'PM']
+    ted = [2023,2,22,'PM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2022,1,10,'AM']
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
 def NorthEastUSrunNRT():
     
