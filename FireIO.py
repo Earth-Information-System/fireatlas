@@ -8,6 +8,9 @@ This module include functions used to read and save data
 
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
+import time
+
+
 def gpd_read_file(filename, parquet=False, **kwargs):
     import geopandas as gpd
     itry = 0
@@ -1606,12 +1609,30 @@ def save_gpkgobj(
     # save file
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
+        # the above command should block until finished writing to remote s3
+        # but who knows what AWS does after that point to "finalize" persisted state
+        # and have the file be "ready" for a read, so add a little buffer
+        # TODO: all writes should be local and this wouldn't be a problem
+        time.sleep(15)
+        copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb")
 
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
+        # the above command should block until finished writing to remote s3
+        # but who knows what AWS does after that point to "finalize" persisted state
+        # and have the file be "ready" for a read, so add a little buffer
+        # TODO: all writes should be local and this wouldn't be a problem
+        time.sleep(15)
+        copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb")
 
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
+        # the above command should block until finished writing to remote s3
+        # but who knows what AWS does after that point to "finalize" persisted state
+        # and have the file be "ready" for a read, so add a little buffer
+        # TODO: all writes should be local and this wouldn't be a problem
+        time.sleep(15)
+        copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb")
 
     if gdf_uptonow is not None:
         gdf_uptonow.to_file(f"{fnm}/uptonow.fgb", driver="FlatGeobuf")
@@ -1650,14 +1671,32 @@ def save_gpkgsfs(
     # save file
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
+        # the above command should block until finished writing to remote s3
+        # but who knows what AWS does after that point to "finalize" persisted state
+        # and have the file be "ready" for a read, so add a little buffer
+        # TODO: all writes should be local and this wouldn't be a problem
+        time.sleep(15)
+        copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb")
 
     # if len(gdf_fline) > 0:
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
+        # the above command should block until finished writing to remote s3
+        # but who knows what AWS does after that point to "finalize" persisted state
+        # and have the file be "ready" for a read, so add a little buffer
+        # TODO: all writes should be local and this wouldn't be a problem
+        time.sleep(15)
+        copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb")
 
     # if len(gdf_NFP) > 0:
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
+        # the above command should block until finished writing to remote s3
+        # but who knows what AWS does after that point to "finalize" persisted state
+        # and have the file be "ready" for a read, so add a little buffer
+        # TODO: all writes should be local and this wouldn't be a problem
+        time.sleep(15)
+        copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb")
 
     if gdf_nfplist is not None:
         gdf_nfplist.to_file(f"{fnm}/nfplist.fgb", driver="FlatGeobuf")
@@ -2327,3 +2366,32 @@ def pixel2World(gt, Xpixel, Ypixel):
     Ygeo = gt[3] + Xpixel * gt[4] + Ypixel * gt[5]
 
     return (Xgeo, Ygeo)
+
+
+def copy_from_maap_to_veda_s3(from_maap_s3_path):
+    import boto3, re
+    from FireLog import logger
+    s3_client = boto3.client('s3')
+
+    try:
+        fname_regex = r"^https://.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
+        destination_fname = re.compile(fname_regex).match(from_maap_s3_path).groupdict()['fname']
+    except AttributeError:
+        logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
+        return
+
+    if "Largefire" in from_maap_s3_path:
+        s3_client.copy_object(
+            CopySource=from_maap_s3_path,  # full bucket path
+            Bucket='veda-data-store-staging',  # Destination bucket
+            Key=f'EIS/EIS/Largefire/{destination_fname}'  # Destination path/filename
+        )
+    elif "Snapshot" in from_maap_s3_path:
+        s3_client.copy_object(
+            CopySource=from_maap_s3_path,  # full bucket path
+            Bucket='veda-data-store-staging',  # destination bucket
+            Key=f'EIS/EIS/Snapshot/{destination_fname}'  # destination path/filename
+        )
+    else:
+        logger.error(f"[ NO S3 COPY EXPORTED ]: for file f{from_maap_s3_path}")
+

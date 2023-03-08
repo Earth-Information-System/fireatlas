@@ -292,8 +292,7 @@ def CONUSrunNRT():
     from datetime import datetime
     import os
     from time import sleep
-    #import time
-    
+
     if FireConsts.firenrt != True:
         print('Please set firenrt to True')
         return
