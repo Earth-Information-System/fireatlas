@@ -2361,6 +2361,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
             logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
             return
 
+        from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket='veda-data-store-staging',  # Destination bucket
@@ -2377,6 +2378,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
             logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
             return
 
+        from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket='veda-data-store-staging',  # destination bucket
