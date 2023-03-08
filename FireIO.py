@@ -931,6 +931,8 @@ def get_reg_shp(reg):
 
 # https://github.com/ESA-WorldCover/esa-worldcover-datasets/blob/main/notebooks/01-Explore_dataset_STAC.ipynb 
 def download_ESTA_global_direct_alternative(locs):
+    print('WARNING: in global direct ALTERNATIVE')
+    
     import os
     import numpy as np
     import rio_tiler
@@ -962,7 +964,7 @@ def download_ESTA_global_direct_alternative(locs):
     year = esa_year
     assert year == 2021 or year == 2020, "Invalid ESA_year input, check FireConsts.py"
     
-    results = 
+    results = None
     
     # if mul tifs exists, need to sample each -> dict.
     tif_to_points = {}
@@ -981,7 +983,7 @@ def download_ESA_global_direct(locs):
     from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3, dirextdata, diroutdata
     from pystac_client import Client
     from shapely.geometry import Polygon, Point
-    # from rio_tiler.io import STACReader
+    from rio_tiler.io import STACReader
     
     stac_endopoint = 'https://services.terrascope.be/stac/'
     
