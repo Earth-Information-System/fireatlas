@@ -2364,7 +2364,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket='veda-data-store-staging',  # Destination bucket
-            Key=f"EIS/EIS/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
+            Key=f"EIS/FEDSoutput/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
         )
 
     elif "Snapshot" in from_maap_s3_path:
@@ -2380,7 +2380,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket='veda-data-store-staging',  # destination bucket
-            Key=f'EIS/EIS/Snapshot/{destination_fname}'  # destination path/filename
+            Key=f'EIS/FEDSoutput/Snapshot/{destination_fname}'  # destination path/filename
         )
     else:
         logger.error(f"[ NO S3 COPY EXPORTED ]: for file f{from_maap_s3_path}")
