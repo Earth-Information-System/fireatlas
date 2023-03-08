@@ -1673,7 +1673,8 @@ def save_gpkgsfs(
 
     if gdf_nfplist is not None:
         gdf_nfplist.to_file(f"{fnm}/nfplist.fgb", driver="FlatGeobuf")
-        
+        copy_from_maap_to_veda_s3(f"{fnm}/nfplist.fgb")
+
 def load_gpkgobj(t, regnm, layer="perimeter"):
     """ Load geopandas from a gpkg fire object file
     Parameters
@@ -2352,7 +2353,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
 
     if "Largefire" in from_maap_s3_path:
         try:
-            fname_regex = r"^https://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
+            fname_regex = r"^https://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
             # {'fid': 'F1013_20230104PM', 'fname': 'perimeter.fgb'}
             destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
