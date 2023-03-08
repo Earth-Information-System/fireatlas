@@ -2347,7 +2347,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
     # the geopandas writes should block until finished writing to remote s3
     # but who knows what AWS does after that point to "finalize" persisted state
     # and have the file be "ready" for a read, so add a little buffer
-    # TODO: if all writes were local and this wouldn't be a problem
+    # TODO: if all writes were local this wouldn't be a problem
     time.sleep(15)
 
     if "Largefire" in from_maap_s3_path:
