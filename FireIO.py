@@ -2350,20 +2350,28 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
     # TODO: if all writes were local and this wouldn't be a problem
     time.sleep(15)
 
-    try:
-        fname_regex = r"^https://.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
-        destination_fname = re.compile(fname_regex).match(from_maap_s3_path).groupdict()['fname']
-    except AttributeError:
-        logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
-        return
-
     if "Largefire" in from_maap_s3_path:
+        try:
+            fname_regex = r"^https://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
+            destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
+        except AttributeError:
+            logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
+            return
+
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket='veda-data-store-staging',  # Destination bucket
-            Key=f'EIS/EIS/Largefire/{destination_fname}'  # Destination path/filename
+            Key=f"EIS/EIS/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
         )
+
     elif "Snapshot" in from_maap_s3_path:
+        try:
+            fname_regex = r"^https://maap.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
+            destination_fname = re.compile(fname_regex).match(from_maap_s3_path).groupdict()['fname']
+        except AttributeError:
+            logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
+            return
+
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket='veda-data-store-staging',  # destination bucket
