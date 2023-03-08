@@ -2345,28 +2345,23 @@ def pixel2World(gt, Xpixel, Ypixel):
 def copy_from_maap_to_veda_s3(from_maap_s3_path):
     s3_client = boto3.client('s3')
 
-    # the geopandas writes should block until finished writing to remote s3
-    # but who knows what AWS does after that point to "finalize" persisted state
-    # and have the file be "ready" for a read, so add a little buffer
-    # TODO: if all writes were local this wouldn't be a problem
-    time.sleep(15)
-
     if "Largefire" in from_maap_s3_path:
-        try:
-            fname_regex = r"^s3://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
-            # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
-            # {'fid': 'F1013_20230104PM', 'fname': 'perimeter.fgb'}
-            destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
-        except AttributeError:
-            logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
-            return
-
-        from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
-        s3_client.copy_object(
-            CopySource=from_maap_s3_path,  # full bucket path
-            Bucket='veda-data-store-staging',  # Destination bucket
-            Key=f"EIS/FEDSoutput/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
-        )
+        # try:
+        #     fname_regex = r"^s3://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
+        #     # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
+        #     # {'fid': 'F1013_20230104PM', 'fname': 'perimeter.fgb'}
+        #     destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
+        # except AttributeError:
+        #     logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
+        #     return
+        #
+        # from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
+        # s3_client.copy_object(
+        #     CopySource=from_maap_s3_path,  # full bucket path
+        #     Bucket='veda-data-store-staging',  # Destination bucket
+        #     Key=f"EIS/FEDSoutput/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
+        # )
+        pass
 
     elif "Snapshot" in from_maap_s3_path:
         try:
