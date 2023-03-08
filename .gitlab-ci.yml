@@ -30,7 +30,7 @@ dps-run:data-update-checker:
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-8gb
 
-dps-run:fire-atlas-conus
+dps-run:fire-atlas-conus:
   extends: .run_dps_job_base
   only:
     variables:
