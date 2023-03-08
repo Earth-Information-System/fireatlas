@@ -2353,7 +2353,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
 
     if "Largefire" in from_maap_s3_path:
         try:
-            fname_regex = r"^https://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
+            fname_regex = r"^s3://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
             # {'fid': 'F1013_20230104PM', 'fname': 'perimeter.fgb'}
             destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
@@ -2369,7 +2369,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
 
     elif "Snapshot" in from_maap_s3_path:
         try:
-            fname_regex = r"^https://maap.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
+            fname_regex = r"^s3://maap.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
             # note that `destination_fname` should resemble this output with a match if the URL was a perimeter file:
             # {'fname': 'perimeter.fgb'}
             destination_fname = re.compile(fname_regex).match(from_maap_s3_path).groupdict()['fname']
