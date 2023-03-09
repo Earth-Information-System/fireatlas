@@ -1659,21 +1659,17 @@ def save_gpkgsfs(
     # save file
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb")
 
     # if len(gdf_fline) > 0:
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb")
 
     # if len(gdf_NFP) > 0:
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb")
 
     if gdf_nfplist is not None:
         gdf_nfplist.to_file(f"{fnm}/nfplist.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/nfplist.fgb")
 
 def load_gpkgobj(t, regnm, layer="perimeter"):
     """ Load geopandas from a gpkg fire object file
@@ -2346,22 +2342,21 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
     s3_client = boto3.client('s3')
 
     if "Largefire" in from_maap_s3_path:
-        # try:
-        #     fname_regex = r"^s3://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
-        #     # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
-        #     # {'fid': 'F1013_20230104PM', 'fname': 'perimeter.fgb'}
-        #     destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
-        # except AttributeError:
-        #     logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
-        #     return
-        #
-        # from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
-        # s3_client.copy_object(
-        #     CopySource=from_maap_s3_path,  # full bucket path
-        #     Bucket='veda-data-store-staging',  # Destination bucket
-        #     Key=f"EIS/FEDSoutput/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
-        # )
-        pass
+         try:
+             fname_regex = r"^s3://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
+             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
+             # {'fid': 'F1013_20230104PM', 'fname': 'perimeter.fgb'}
+             destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
+         except AttributeError:
+             logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
+             return
+        
+         from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
+         s3_client.copy_object(
+             CopySource=from_maap_s3_path,  # full bucket path
+             Bucket='veda-data-store-staging',  # Destination bucket
+             Key=f"EIS/FEDSoutput/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
+         )
 
     elif "Snapshot" in from_maap_s3_path:
         try:
