@@ -50,10 +50,8 @@ def get_CONNECTIVITY_FIRE(fire):
             v = 0.7
             
         # KAT TAG - Verbose debugging
-        print('VERBOSE: ftype and selected v value')
-        print(ftype)
-        print('is v == 0.7')
-        print(v == 0.7)
+        print('VERBOSE: GLOBAL CONNECTVITIY v')
+        print(v)
         
         return v
 
@@ -165,16 +163,10 @@ def set_ftype(fire):
             # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
             uselocs = random.sample(fire.newlocs_geo, 1000)
 
-        # vLCT = FireIO.get_LCT_Global(
-            # uselocs
-        # )  # call get_LCT to get all LCT for the fire pixels
-        
         # TEST: enter direct download
         vLCT = FireIO.download_ESA_global_direct(
             uselocs
         )
-        
-        assert vLCT is None, "Force stop"
         
         print("Success with ESA Global processing!")
         
@@ -219,6 +211,8 @@ def set_ftype(fire):
             print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
 
+    print('VERBOSE: SELECTED FTYPE')
+    print(ftype)
     return ftype
 
 

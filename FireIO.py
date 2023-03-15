@@ -930,56 +930,14 @@ def get_reg_shp(reg):
 # Alternate download function - utlizie direct downlaod 
 
 # https://github.com/ESA-WorldCover/esa-worldcover-datasets/blob/main/notebooks/01-Explore_dataset_STAC.ipynb 
-def download_ESTA_global_direct_alternative(locs):
-    print('WARNING: in global direct ALTERNATIVE')
     
-    import os
-    import numpy as np
-    import rio_tiler
-    import rasterio
-    from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3, dirextdata, diroutdata
-    from pystac_client import Client
-    from shapely.geometry import Polygon, Point
-
-    # form geometry from locs
-    if 1 <= len(locs) <= 2:
-        locs = locs[0] # potentially change; grab only single point
-        geom = Point(locs[0], locs[1])
-    else:
-        geom = Polygon(locs)
-    
-    assert geom is not None, "Geom empty; invalid dataset"
-    
-    # generate bounding box from geom
-    # locs should already be in WGS 85 / ESPG 4326
-    bounds = geom.bounds
-    # long left -> long right 
-    # lat bottom -> lat top
-    assert len(bounds) == 4, "Bounds misformed, check FireIO.py"
-    bbox = [bounds[0], bounds[1], bounds[2], bounds[3]]
-    
-    print('VERBOSE - print identified bound box')
-    print(bbox)
-    
-    year = esa_year
-    assert year == 2021 or year == 2020, "Invalid ESA_year input, check FireConsts.py"
-    
-    results = None
-    
-    # if mul tifs exists, need to sample each -> dict.
-    tif_to_points = {}
-    [tif_to_points.setdefault(a_result, []) for a_result in results]
-    vLCT = []
-    
-    
-    return vLCT
-    
-
 def download_ESA_global_direct(locs):
     
     import os
+    import copy
     import numpy as np
     import rio_tiler
+    import rasterio
     from FireConsts import s3_url_prefix, esa_year, output_folder, output_folder_s3, dirextdata, diroutdata
     from pystac_client import Client
     from shapely.geometry import Polygon, Point
@@ -997,9 +955,13 @@ def download_ESA_global_direct(locs):
     assert len(locs) != 0, "Locs is len 0; cannot possible locate ftype"
     
     # form geometry from locs
-    if 1 <= len(locs) <= 2:
-        locs = locs[0] # potentially change; grab only single point
-        geom = Point(locs[0], locs[1])
+    if 0 < len(locs) < 4:
+        # point -- bbox will fail
+        # artifically create bbox + small size
+        temp = copy.deepcopy(locs)
+        temp = temp + [tuple([locs[0][0]+0.001,locs[0][1]+0.001]), tuple([locs[0][0]+0.002,locs[0][1]+0.002]), tuple([locs[0][0]-0.001,locs[0][1]-0.001]), tuple([locs[0][0]-0.002,locs[0][1]-0.002])]
+        geom = Polygon(temp)
+        assert not geom.is_empty, "Polygon for < 4 pt extenstion is empty"
     else:
         geom = Polygon(locs)
     
@@ -1008,29 +970,23 @@ def download_ESA_global_direct(locs):
     # generate bounding box from geom
     # locs should already be in WGS 85 / ESPG 4326
     bounds = geom.bounds
-    # long left -> long right 
-    # lat bottom -> lat top
     assert len(bounds) == 4, "Bounds misformed, check FireIO.py"
     bbox = [bounds[0], bounds[1], bounds[2], bounds[3]]
-    
-    print('VERBOSE - print identified bound box')
-    print(bbox)
     
     year = esa_year
     search_results = client.search(
         collections=[collection_ids[year]],
-        bbox=bbox # TODO - does it have to be a box ? or any geom valid?
+        bbox=bbox
     )
     
     # items found in dictionary form 
     results = search_results.get_all_items()
-    
     assert len(results) >= 1, "No results found, check provided regions"
     
-    print('VERBOSE - printing search results')
-    print(results)
-    print('VERBOSE - size of found results:')
-    print(len(results))
+    if len(results) > 1:
+        print("VERBOSE: MULTIPLE TIFS IDENTIFIED")
+    else:
+        print("VERBOSE: SINGLE TIF IDENTIFIED")
     
     # if mul tifs exists, need to sample each -> dict.
     tif_to_points = {}
@@ -1047,15 +1003,45 @@ def download_ESA_global_direct(locs):
         os.environ['AWS_NO_SIGN_REQUEST'] = 'YES'
         
         with STACReader(None, item=item) as stac:
-            img = stac.part(bbox, assets=asset)
-        
-        values, occurences = np.unique(img.data[0], return_counts=True)
-        print('VERBOSE - print identified values')
-        print(values)
-        
-        # overlay coordinates (w/o changing proj)
-        
-        # zip found int data 
+            try:
+                img = stac.part(bbox, assets=asset)
+            except Exception as e: 
+                print('----FAILED DIRECT READING: LCT SET TO NONE----')
+                print(e)
+                print('----VERBOSE: PRINT VERBOSE LOCS----')
+                print(locs)
+                print(len(locs))
+                vLCT = None
+                return vLCT
+    
+        assert len(img.assets) == 1, "Unexpected asset size, check IO"
+        # ATTEMPT DIRECT READ FROM s3 URL
+        with rasterio.open(img.assets[0]) as src:
+            bounds = src.bounds
+            # no reprojection needed - matching 4326
+            locs_crs_x = [l[1] for l in locs] 
+            locs_crs_y = [l[0] for l in locs]
+
+            assert len(locs_crs_x) == len(locs_crs_y), "x,y coords mismatching dimensions, check IO handling"
+
+            for j in range(len(locs_crs_x)):
+
+                # test each set of coords if in bound
+                x = locs_crs_y[j]
+                y = locs_crs_x[j]
+
+                if bounds.left < x < bounds.right and bounds.bottom < y < bounds.top:
+                    # append to associated key in dict.
+                    tif_to_points[item].append(tuple([x,y]))
+                else:
+                    continue
+
+                # with associated coords -> tie data to sample
+                samps = list(src.sample(tif_to_points[item]))
+                new_vLCT = [int(s) for s in samps]
+                vLCT = vLCT + new_vLCT
+            
+            src.close()
     
     return vLCT
         
