@@ -23,18 +23,9 @@ if [ ! -d "/projects/micromamba/envs/rio-tiler-new" ]; then
 fi
 
 # conda prefix check
-# FLAG - CONTRADICTION: conda claiming path DNE...
-
 echo "CONDA_PREFIX: $CONDA_PREFIX"
 echo "$PWD"
-
-# if [ $CONDA_PREFIX != "/projects/micromamba/envs/rio-tiler-new" ]; then
-    # activate env
-    # echo "activating rio-tiler-new..."
-    # micromamba activate rio-tiler-new
-# fi 
-
 echo "Python: $(which python)"
 python --version
 
-micromamba run /projects/micromamba/envs/rio-tiler-new python -u -c "import FireRun; FireRun.CreekSamplerun()"
+micromamba run -p /projects/micromamba/envs/rio-tiler-new python -u -c "import FireRun; FireRun.CreekSamplerun()"
