@@ -144,8 +144,6 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
     from FireConsts import dirextdata
     import os
     import pandas as pd
-    
-    print('VERBOSE: IN read_VNP14IMGML SNPP')
 
     # set monthly file name
     fnmFC = os.path.join(
@@ -166,21 +164,15 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
         "Type",
         "DNFlag",
     ]
-    
-    print('VERBOSE - KAT INSERT - usecols and cols read')
 
     if os_path_exists(fnmFC):
         
         df = pd.read_csv(
             fnmFC,
             parse_dates=[["YYYYMMDD", "HHMM"]],
-            # usecols=usecols,
+            usecols=usecols,
             skipinitialspace=True,
-        ).columns.tolist()
-        
-        
-        print("df read:")
-        print(df)
+        )
         
          # sometimes the FRP value is '*******' and cause incorrect dtype, need to correct this
         df = df.replace('*******',0)
