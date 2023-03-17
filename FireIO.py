@@ -144,6 +144,8 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
     from FireConsts import dirextdata
     import os
     import pandas as pd
+    
+    print('VERBOSE: IN read_VNP14IMGML SNPP')
 
     # set monthly file name
     fnmFC = os.path.join(
@@ -164,15 +166,21 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
         "Type",
         "DNFlag",
     ]
-
     
+    print('VERBOSE - KAT INSERT - usecols and cols read')
+
     if os_path_exists(fnmFC):
+        
         df = pd.read_csv(
             fnmFC,
             parse_dates=[["YYYYMMDD", "HHMM"]],
-            usecols=usecols,
+            # usecols=usecols,
             skipinitialspace=True,
-        )
+        ).columns.tolist()
+        
+        
+        print("df read:")
+        print(df)
         
          # sometimes the FRP value is '*******' and cause incorrect dtype, need to correct this
         df = df.replace('*******',0)
@@ -199,6 +207,7 @@ def read_VNP14IMGTDL(t):
     vlist : list
         (lat,lon) tuple of all daily active fires
     """
+    
     from FireConsts import dirextdata
 
     import pandas as pd
@@ -226,6 +235,7 @@ def read_VNP14IMGTDL(t):
         "acq_time",
     ]
     if os_path_exists(fnmFC):
+        
         # read data
         df = pd.read_csv(
             fnmFC,
@@ -589,6 +599,10 @@ def read_AFPVIIRS(
     # load from pre-saved file
     df = load_AFPtmp(d, head=region[0] + "_" + sathead + ".")
 
+    # forced change
+    print('VERBOSE: forced df to none')
+    df = None
+    
     # if no pre-saved file, read from original VNP14IMGML file and do/save spatial filtering
     if df is None:
         # read or form shape used for filtering active fires

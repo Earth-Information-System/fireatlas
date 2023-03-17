@@ -19,23 +19,22 @@ echo "conda: $(which conda)"
 
 
 if [ ! -d "/projects/micromamba/envs/rio-tiler-new" ]; then
-    micromamba create -f "/projects/rio-tiler-new.yml"
+    micromamba create -f "/projects/rio-tiler-new.yml" -p "/projects/micromamba/envs/rio-tiler-new"
 fi
 
 # conda prefix check
 # FLAG - CONTRADICTION: conda claiming path DNE...
 
-echo $CONDA_PREFIX
-cd -
+echo "CONDA_PREFIX: $CONDA_PREFIX"
 echo "$PWD"
 
-if [ $CONDA_PREFIX != "/projects/micromamba/envs/rio-tiler-new" ]; then
+# if [ $CONDA_PREFIX != "/projects/micromamba/envs/rio-tiler-new" ]; then
     # activate env
-    echo "activating rio-tiler-new..."
-    micromamba activate rio-tiler-new
-fi 
+    # echo "activating rio-tiler-new..."
+    # micromamba activate rio-tiler-new
+# fi 
 
-echo "$PWD"
-cd -
-cd -
-[$CONDA_PREFIX != "/projects/micromamba/envs/rio-tiler-new"] && echo "Env activ failed"
+echo "Python: $(which python)"
+python --version
+
+micromamba run /projects/micromamba/envs/rio-tiler-new python -u -c "import FireRun; FireRun.CreekSamplerun()"
