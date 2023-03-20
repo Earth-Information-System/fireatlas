@@ -8,9 +8,9 @@ echo "Initial working directory: $(pwd -P)"
 
 # install micromamba
 curl micro.mamba.pm/install.sh | bash
-export MAMBA_ROOT_PREFIX="/projects/micromamba"  # optional, defaults to ~/micromamba
-eval "$(/projects/.local/bin/micromamba shell hook -s posix)"
-echo "micromamba version: $(micromamba --version)"
+# export MAMBA_ROOT_PREFIX="/projects/micromamba"  # optional, defaults to ~/micromamba
+eval "$($basedir/.local/bin/micromamba shell hook -s posix)"
+# echo "micromamba version: $(micromamba --version)"
 echo "conda: $(which conda)"
 
 
@@ -19,7 +19,7 @@ echo "conda: $(which conda)"
 
 
 if [ ! -d "/projects/micromamba/envs/rio-tiler-new" ]; then
-    micromamba create -f "/projects/rio-tiler-new.yml" -p "/projects/micromamba/envs/rio-tiler-new"
+    micromamba create -f "$basedir/rio-tiler-new.yml" -p "/projects/micromamba/envs/rio-tiler-new"
 fi
 
 # conda prefix check
