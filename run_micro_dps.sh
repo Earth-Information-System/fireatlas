@@ -18,7 +18,7 @@ mkdir -p "$MICROMAMBA_BIN_DIR"
 MICROMAMBA_EXE="$MICROMAMBA_BIN_DIR/micromamba"
 echo $MICROMAMBA_EXE
 # Download and extract binary to that location
-curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj "$MICROMAMBA_EXE"
+curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
 
 MY_MAMBA_ENV="$basedir/micromamba/envs/rio-tiler-new"
 # MY_MAMBA_ENV="$MICROMAMBA_BIN_DIR/envs/rio-tiler-new"
