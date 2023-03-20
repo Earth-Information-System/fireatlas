@@ -27,14 +27,14 @@ echo $PATH
 echo "micromamba version: $($MICROMAMBA_EXE --version)"
 
 # flag - may need to modify order of arguments
-"$MICROMAMBA_EXE" create -f "$basedir/rio-tiler-new.yml" -p "$MY_MAMBA_ENV"
+"$MICROMAMBA_EXE" create -f "$basedir/rio-tiler-new.yml" -n "rio-tiler-new"
 
 echo "Starting algorithm in subshell"
 (
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
-  "$MICROMAMBA_EXE" run -p "$MY_MAMBA_ENV" python -u -c "import FireRun; FireRun.CreekSamplerun()"
+  "$MICROMAMBA_EXE" run -n "rio-tiler-new" python -u -c "import FireRun; FireRun.CreekSamplerun()"
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
