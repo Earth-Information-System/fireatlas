@@ -1,0 +1,14 @@
+name: rio-tiler-new
+channels:
+  - conda-forge
+  - anaconda
+dependencies:
+  - rio-tiler >=3.1.0
+  - ipykernel
+  - ipywidgets
+  - s3fs
+  - rtree
+  - shapely
+  - scikit-learn
+  - pandas
+  - pystac-client
