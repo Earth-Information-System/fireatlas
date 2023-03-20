@@ -10,8 +10,10 @@ echo "Initial working directory: $(pwd -P)"
 # install micromamba
 curl micro.mamba.pm/install.sh | bash
 # set variables
-MAMBA_EXE="$basedir/micromamba" # path to micromamba binary
+MAMBA_EXE="$basedir/bin/micromamba" # path to micromamba binary
 MY_MAMBA_ENV="$basedir/micromamba/envs/rio-tiler-new"
+echo $PATH
+echo "micromamba version: $($MAMBA_EXE --version)"
 
 # flag - may need to modify order of arguments
 "$MAMBA_EXE" create -f "$basedir/rio-tiler-new.yml" -p "$MY_MAMBA_ENV"
