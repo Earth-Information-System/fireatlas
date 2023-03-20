@@ -10,7 +10,9 @@ echo "Initial working directory: $(pwd -P)"
 # install micromamba
 curl micro.mamba.pm/install.sh | bash
 # set variables
-MAMBA_EXE="$basedir/bin/micromamba" # path to micromamba binary
+# MAMBA_EXE="$basedir/bin/micromamba" # path to micromamba binary
+# ASSUME MAMBA_EXE GETS SET BY PROGRAM AS A DEFAULT ENV VAR
+echo $MAMBA_EXE
 MY_MAMBA_ENV="$basedir/micromamba/envs/rio-tiler-new"
 echo $PATH
 echo "micromamba version: $($MAMBA_EXE --version)"
