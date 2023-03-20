@@ -13,12 +13,12 @@ echo "Initial working directory: $(pwd -P)"
 # micromamba binary dir
 MICROMAMBA_BIN_DIR="$basedir/bin"
 # create that dir if it doesn't exist
-mkdir -p "$MICROMAMBA_BIN_DIR"
+mkdir "$MICROMAMBA_BIN_DIR"
 # set mambda micro exe 
 MICROMAMBA_EXE="$MICROMAMBA_BIN_DIR/micromamba"
 echo $MICROMAMBA_EXE
 # Download and extract binary to that location
-curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj "$MICROMAMBA_EXE"
 
 MY_MAMBA_ENV="$basedir/micromamba/envs/rio-tiler-new"
 # MY_MAMBA_ENV="$MICROMAMBA_BIN_DIR/envs/rio-tiler-new"
