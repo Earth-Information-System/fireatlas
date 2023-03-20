@@ -15,7 +15,7 @@ MICROMAMBA_BIN_DIR="$basedir/bin"
 # create that dir if it doesn't exist
 # mkdir "$MICROMAMBA_BIN_DIR"
 # set mambda micro exe 
-MICROMAMBA_EXE=$(pwd -p)/bin/micromamba
+MICROMAMBA_EXE=$(pwd -P)/bin/micromamba
 echo $MICROMAMBA_EXE
 # Download and extract binary to that location
 curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
