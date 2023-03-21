@@ -12,6 +12,8 @@ echo "Initial working directory: $(pwd -P)"
 
 # micromamba binary dir
 MICROMAMBA_BIN_DIR="$basedir/bin"
+OUTPUT_DIR="$basedir/output"
+mkdir -p OUTPUT_DIR
 # create that dir if it doesn't exist
 # mkdir "$MICROMAMBA_BIN_DIR"
 # set mambda micro exe 
