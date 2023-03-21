@@ -4,11 +4,29 @@ channels:
   - anaconda
 dependencies:
   - rio-tiler >=3.1.0
+  - rio-mucho
+  - rio-color
   - ipykernel
+  - ipython
   - ipywidgets
   - s3fs
   - rtree
   - shapely
+  - scipy
   - scikit-learn
   - pandas
+  - geopandas
   - pystac-client
+  - boto3
+  - botocore
+  - geotiff
+  - hdf4
+  - hdf5
+  - httpcore
+  - numpy
+  - s3fs
+  - rasterio
+  - zlib
+  - sqlite
+  - requests
+  - jedi

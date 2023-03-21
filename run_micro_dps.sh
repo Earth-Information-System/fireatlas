@@ -4,6 +4,10 @@ set -eo pipefail
 
 # base dir set
 basedir=$( cd "$(dirname "$0")"; pwd -P )
+
+# force set for interactive testing 
+# basedir="/projects"
+
 echo "Basedir: $basedir"
 echo "Initial working directory: $(pwd -P)"
 
@@ -23,7 +27,6 @@ echo $MICROMAMBA_EXE
 curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
 
 MY_MAMBA_ENV="$basedir/micromamba/envs/rio-tiler-new"
-# MY_MAMBA_ENV="$MICROMAMBA_BIN_DIR/envs/rio-tiler-new"
 
 echo $PATH
 echo "micromamba version: $($MICROMAMBA_EXE --version)"
@@ -32,20 +35,9 @@ echo "micromamba version: $($MICROMAMBA_EXE --version)"
 "$MICROMAMBA_EXE" create -f "$basedir/rio-tiler-new.yml" -n "rio-tiler-new"
 
 echo "Starting algorithm in subshell"
-(
-pushd "$basedir"
-{ # try
-  echo "Running in directory: $(pwd -P)"
-  "$MICROMAMBA_EXE" run -n "rio-tiler-new" python -u -c "import FireRun; FireRun.CreekSamplerun()"
-  popd
-  echo "Copying log to special output dir"
-  cp "$basedir/running.log" ./output
-} || { # catch
-  popd
-  echo "Copying log to special output dir"
-  cp "$basedir/running.log" ./output
-}
-)
+
+echo "Running in directory: $(pwd -P)"
+"$MICROMAMBA_EXE" run -n "rio-tiler-new" python -u -c "import FireRun; FireRun.CreekSamplerun()"
 echo "Done!"
 
 exit
