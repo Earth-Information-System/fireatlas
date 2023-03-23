@@ -590,10 +590,6 @@ def read_AFPVIIRS(
 
     # load from pre-saved file
     df = load_AFPtmp(d, head=region[0] + "_" + sathead + ".")
-
-    # forced change
-    print('VERBOSE: forced df to none')
-    df = None
     
     # if no pre-saved file, read from original VNP14IMGML file and do/save spatial filtering
     if df is None:
