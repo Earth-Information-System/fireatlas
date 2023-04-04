@@ -10,14 +10,14 @@ echo "conda: $(which conda)"
 
 # Only create conda environment if it's not currently active. This allows for
 # interactive testing of this script.
-# if [[ $CONDA_PREFIX != "/projects/env-feds" ]]; then
+if [[ $CONDA_PREFIX != "/projects/env-feds" ]]; then
   # Trying to resolve conda permissiosn issue
   # https://gitter.im/conda/conda?at=5dc427aa2f8a034357513172
-  #export CONDA_PKGS_DIRS="$basedir/.conda"
-  #mkdir -p "$CONDA_PKGS_DIRS"
-  #conda env create -f "$basedir/env-feds.yml" -p "/projects/env-feds"
-  #source activate "/projects/env-feds"
-#fi
+  export CONDA_PKGS_DIRS="$basedir/.conda"
+  mkdir -p "$CONDA_PKGS_DIRS"
+  conda env create -f "$basedir/env-feds.yml" -p "$basedir/env-feds"
+  source activate "$basedir/env-feds"
+fi
 
 echo "Python: $(which python)"
 python --version
