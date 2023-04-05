@@ -31,12 +31,12 @@ pushd "$basedir"
   echo "Running in directory: $(pwd -P)"
   python combine_largefire.py
   popd
-  echo "Copying log to special output dir"
-  cp "$basedir/running.log" ./output
+  #echo "Copying log to special output dir"
+  #cp "$basedir/running.log" ./output
 } || { # catch
   popd
-  echo "Copying log to special output dir"
-  cp "$basedir/running.log" ./output
+  #echo "Copying log to special output dir"
+  #cp "$basedir/running.log" ./output
 }
 )
 echo "Done!"
