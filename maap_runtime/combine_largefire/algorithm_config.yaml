@@ -13,10 +13,10 @@ queue: "maap-dps-worker-8gb"
 
 # fill out these fields
 # explain what this algorithm does
-description: "Map active fire perimeters."
+description: "Combine FEDS Largefire data into a single file."
 # path to the wrapper script for running the algorithm
 # Command starts with repository name
-run_command: "fireatlas_nrt/maap_runtime/combine_largefire/run_dps.sh"
+run_command: "fireatlas_nrt/run_largefire.sh"
 # build_command: my-build-script.sh
 # set a storage value in GB or MB or KB, e.g. "100GB", "20MB", "10KB"
 disk_space: "10GB"
