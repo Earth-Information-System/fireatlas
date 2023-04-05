@@ -16,7 +16,13 @@ def load_lf(lf_id,file_path,layer='nfplist'):
 
 def main(year):
     # load in NRT Largefire data
-    lf_files = glob.glob(f'{diroutdata}CONUS_NRT_DPS/{year}/Largefire/*')
+    import s3fs
+    s3 = s3fs.S3FileSystem(anon=False)
+    s3path = str(f'{diroutdata}CONUS_NRT_DPS/{year}/Largefire/')
+    lf_files = [f for f in s3.ls(s3path)]
+    
+    #lf_files = glob.glob(f'{diroutdata}/CONUS_NRT_DPS/{year}/Largefire/*')
+    
     lf_files.sort()
     lf_ids = list(set([file.split('Largefire/')[1].split('_')[0] for file in lf_files])) # unique lf ids
 
@@ -24,9 +30,11 @@ def main(year):
     # the latest one has the most up-to-date info for that fire
     largefire_dict = dict.fromkeys(lf_ids)
     for lf_id in lf_ids:
-        most_recent_file = [file for file in lf_files if lf_id in file][-1]
+        
+        most_recent_file = 's3://'+[file for file in lf_files if lf_id in file][-1] # most recent file is last!
+        
         largefire_dict[lf_id] = most_recent_file
-
+    
     all_lf_pixels = pd.concat([load_lf(lf_id,file_path,layer='nfplist') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
     all_lf_firelines = pd.concat([load_lf(lf_id,file_path,layer='fireline') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
     all_lf_perimeters = pd.concat([load_lf(lf_id,file_path,layer='perimeter') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
