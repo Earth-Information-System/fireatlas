@@ -529,7 +529,7 @@ def save_sfts_trng(
     endloop = False  # flag to control the ending olf the loop
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
     
-    client = Client(n_workers=4)
+    client = Client(n_workers=3)
     client.run(gc.disable)
     #client.wait_for_workers(8)
     logger.info(f"workers = {len(client.cluster.workers)}")
