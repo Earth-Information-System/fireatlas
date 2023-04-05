@@ -96,7 +96,7 @@ def CreekSamplerun(firesrc='SNPP'):
 
     tst = (2020, 9, 5, "AM")
     # ted = (2020, 11, 5, "PM")
-    ted = (2020, 10, 29, "AM")
+    ted = (2020, 10, 28, "AM")
     region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
