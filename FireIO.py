@@ -1612,15 +1612,15 @@ def save_gpkgobj(
     # save file
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb")
+        if regnm == 'CONUS_NRT_DPS': copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb")
 
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb")
+        if regnm == 'CONUS_NRT_DPS': copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb")
 
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb")
+        if regnm == 'CONUS_NRT_DPS': copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb")
 
     if gdf_uptonow is not None:
         gdf_uptonow.to_file(f"{fnm}/uptonow.fgb", driver="FlatGeobuf")
