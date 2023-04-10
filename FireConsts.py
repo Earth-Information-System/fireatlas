@@ -125,7 +125,7 @@ FTYP_Glb = {
 # other options
 # ------------------------------------------------------------------------------
 epsg = 9311  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
-remove_static_sources_bool = False  # remove areas with known flaring/gas sources from region
+remove_static_sources_bool = True # remove areas with known flaring/gas sources from region
 remove_static_sources_sourcefile = "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv"
 remove_static_sources_buffer = 0.01 # Buffer around static source points. Units defined by epsg. 
 
