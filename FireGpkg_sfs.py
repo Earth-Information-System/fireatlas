@@ -227,7 +227,7 @@ def make_sf(t, regnm, layer, fids_m, fid):
 
     return gdf_1d
 
-def make_sf_nfplist(allfires, regnm, fids):
+def make_sf_nfplist(allfires, t, regnm, fids):
     """ At a given time step, create single row DataFrame for all newly detected
         pixels associated with fires fids.
     Parameters
@@ -253,8 +253,8 @@ def make_sf_nfplist(allfires, regnm, fids):
     dd = getdd('nfplist')
     sfkeys = list(dd.keys())
 
-
-    t = allfires.t
+    if t != allfires.t:
+        allfires = FireIO.load_fobj(t, regnm, activeonly=True)
     # record all nfps for all fires with fids to make nfplist at t
     gdf_1d = None
     for fid in fids:
@@ -283,7 +283,7 @@ def make_sf_nfplist(allfires, regnm, fids):
                     gdf_1d = gdf_1f
                 else:
                     gdf_1d = gdf_1d.append(gdf_1f)
-
+    del allfires
     return gdf_1d
 
 def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
@@ -317,7 +317,7 @@ def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
     while endloop == False:
 
         if layer == 'nfplist':
-            gdf_1d = make_sf_nfplist(allfires, regnm, fids_m+[fid])
+            gdf_1d = make_sf_nfplist(allfires, t, regnm, fids_m+[fid])
         else:
             gdf_1d = make_sf(t, regnm, layer, fids_m+[fid], fid)
 
@@ -399,7 +399,7 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
 
         # also add current fire record at present time time step (for fid at t only)
         if layer == 'nfplist':
-            gdf_ct = make_sf_nfplist(allfires, regnm, [fid])
+            gdf_ct = make_sf_nfplist(allfires, t, regnm, [fid])
         else:
             gdf_ct = make_sf(t, regnm, layer, [fid], fid)
 
@@ -530,7 +530,7 @@ def save_sfts_trng(
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
     
     client = Client(n_workers=3)
-    client.run(gc.disable)
+    #client.run(gc.disable)
     #client.wait_for_workers(8)
     logger.info(f"workers = {len(client.cluster.workers)}")
     
@@ -546,7 +546,7 @@ def save_sfts_trng(
 
         # TODO: Purge Client! 
         client.restart(wait_for_workers=True)
-        client.run(gc.disable)
+        #client.run(gc.disable)
         #client.wait_for_workers(8)
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop

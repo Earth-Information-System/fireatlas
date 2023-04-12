@@ -39,13 +39,15 @@ def main(year):
         
         largefire_dict[lf_id] = most_recent_file
     
-    all_lf_pixels = pd.concat([load_lf(lf_id,file_path,layer='nfplist') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
+    all_lf_nfplist = pd.concat([load_lf(lf_id,file_path,layer='nfplist') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
     all_lf_firelines = pd.concat([load_lf(lf_id,file_path,layer='fireline') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
     all_lf_perimeters = pd.concat([load_lf(lf_id,file_path,layer='perimeter') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
+    all_lf_newfirepix = pd.concat([load_lf(lf_id,file_path,layer='newfirepix') for lf_id, file_path in largefire_dict.items()],ignore_index=True)
 
-    all_lf_pixels.to_file(f'{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/{year}/lf_pixels_{year}.geojson')
+    all_lf_nfplist.to_file(f'{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/{year}/lf_nfplist_{year}.geojson')
     all_lf_firelines.to_file(f'{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/{year}/lf_firelines_{year}.geojson')
     all_lf_perimeters.to_file(f'{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/{year}/lf_perimeters_{year}.geojson')
+    all_lf_perimeters.to_file(f'{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/{year}/lf_newfirepix_{year}.geojson')
     
     return
 

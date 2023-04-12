@@ -97,8 +97,8 @@ def CreekSamplerun(firesrc='SNPP'):
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
-    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
+    ted = (2020, 9, 19, "AM")
+    region = ("CreekEliTwoWeeks"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
@@ -109,7 +109,7 @@ def CreekSamplerun(firesrc='SNPP'):
     # # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    FireGpkg_sfs.convert_sfts(region[0],2020,[0])
+    #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
 def DixieSamplerun(firesrc='SNPP'):
     """
@@ -320,8 +320,8 @@ def CONUSrunNRT():
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
@@ -497,7 +497,85 @@ def WesternUSYrRun(year):
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    
+    
+def ChileNRT():
+    
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    from datetime import datetime
+    import os
+    from time import sleep
 
+    if FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    tstart = time.time()
+    
+    ctime = datetime.now()
+
+    region = ('CHILE_NRT',[-76.16089280841477,-56.23900136363617,-66.84448655841477,-16.418041333843828])
+    logger.info(f'STARTING RUN FOR {region[0]}')
+
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    #tst = [2022, 1, 1, 'AM']
+    #ted = [2022, 12, 31, 'PM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    tend = time.time()
+    logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
+
+    
+def MidWest_LF_Pix_Test():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    from datetime import datetime
+    import os
+    
+    tstart = time.time()
+    
+    ctime = datetime.now()
+
+    region = ('MidWestLFTest',[-96.87207, 38.07310999, -95.85596163, 39.14789999])
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    tst = [2023, 3, 26, 'AM']
+    #ted = [2022, 12, 31, 'PM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    tend = time.time()
+    logger.info(f"{(tend-tstart)/60.} minutes used for {region[0]} with dask.")
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
