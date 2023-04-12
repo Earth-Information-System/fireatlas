@@ -679,7 +679,7 @@ def convert_sfts(regnm,yr,fids):
     from FireTime import dt_dif
 
     strdir = FireIO.get_gpkgsfs_dir(yr,regnm)
-
+    
     # loop over all fids
     gdf_perim_all, gdf_fline_all, gdf_nfp_all, gdf_nfplist_all = None, None, None, None
     for fid in set(fids):

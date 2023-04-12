@@ -5,13 +5,17 @@ from datetime import datetime
 import time
 from FireConsts import diroutdata
 
-def load_lf(lf_id,file_path,layer='nfplist'):
+def load_lf(lf_id,file_path,layer='nfplist',drop_duplicate_geometries=False):
     '''Load in Largefire data'''
     try: gdf = gpd.read_file(file_path,layer=layer)
     except Exception as e: 
         #print(e)
         return
     gdf['ID'] = lf_id
+    
+    if (drop_duplicate_geometries==True) and (layer != 'nfplist'):
+        gdf.sort_values('t',ascending=True,inplace=True)
+        gdf = gdf.loc[gdf['geometry'].drop_duplicates(keep='first').index]
     return gdf
 
 def main(year):
