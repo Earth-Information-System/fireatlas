@@ -76,25 +76,32 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
             "t": "datetime64",
         }
         dd2 = {
-            "mergeid": "int",  # this is the id in the large fire database
+            "mergeid": "int",
+            "t_st": "datetime64",
+            "t_ed": "datetime64",# this is the id in the large fire database
         }
     elif layer == "newfirepix":
         dd1 = {
             "t": "datetime64",
         }
         dd2 = {
-            "mergeid": "int",  # this is the id in the large fire database
+            "mergeid": "int",
+            "t_st": "datetime64",
+            "t_ed": "datetime64",# this is the id in the large fire database
         }
 
     dd = {**dd1, **dd2}  # or (dd1 | dd2) for Python 3.9.0 or higher
     # read or initialize the gdf
     t_pt = FireTime.t_nb(allfires.t, nb="previous")
-    gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
-    if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
-        gdf = gpd.GeoDataFrame(
+    
+    #gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
+    #gdf = None
+    #if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
+    
+    gdf = gpd.GeoDataFrame(
             columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(epsg), geometry=[]
         )
-        gdf = gdf.set_index("fireID")  # set fid column as the index column
+    gdf = gdf.set_index("fireID")  # set fid column as the index column
 
     # 1. drop rows for fires that are newly invalidated or dead
 
