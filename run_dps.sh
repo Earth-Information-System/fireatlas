@@ -33,10 +33,13 @@ pushd "$basedir"
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
+  cp "$basedir/dask-report.html" ./output
+
 } || { # catch
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
+  cp "$basedir/dask-report.html" ./output
 }
 )
 echo "Done!"

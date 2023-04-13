@@ -12,7 +12,6 @@ import argparse
 # logger.setLevel(logging.INFO)
 from FireLog import logger
 
-
 def DataUpdateChecker():
     """ download data from different satellite sensors at the
     start of every 2nd hour from 1am through 11pm: `0 1-23/2 * * *`
@@ -97,8 +96,8 @@ def CreekSamplerun(firesrc='SNPP'):
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
-    ted = (2020, 9, 19, "AM")
-    region = ("CreekEliTwoWeeks"+firesrc, [-119.5, 36.8, -118.9, 37.7])
+    ted = (2020, 11, 5, "PM")
+    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
@@ -109,7 +108,7 @@ def CreekSamplerun(firesrc='SNPP'):
     # # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
+    FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
 def DixieSamplerun(firesrc='SNPP'):
     """
@@ -177,8 +176,8 @@ def CreekRegionSamplerun():
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 1, "AM")
-    ted = (2020, 9, 10, "PM")
-    region = ("CreekRegion9311", [-120, 36, -118, 38])
+    ted = (2020, 9, 2, "PM")
+    region = ("CreekSnapshotTest", [-120, 36, -118, 38])
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
 
@@ -187,10 +186,10 @@ def CreekRegionSamplerun():
     #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     
     logger.info(f"{(tend-tstart)/60.} minutes used for CreekRegionSamplerun with NO dask.")
@@ -497,89 +496,14 @@ def WesternUSYrRun(year):
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-    
-    
-    
-def ChileNRT():
-    
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
-    from time import sleep
 
-    if FireConsts.firenrt != True:
-        print('Please set firenrt to True')
-        return
-    
-    tstart = time.time()
-    
-    ctime = datetime.now()
-
-    region = ('CHILE_NRT',[-76.16089280841477,-56.23900136363617,-66.84448655841477,-16.418041333843828])
-    logger.info(f'STARTING RUN FOR {region[0]}')
-
-    lts = FireIO.get_lts_serialization(regnm=region[0])
-    if lts == None:
-        tst = [ctime.year, 1, 1, 'AM']
-    else:
-        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
-        tst = lts
-
-    if ctime.hour >= 18:
-        ampm = 'PM'
-    else:
-        ampm = 'AM'
-    #tst = [2022, 1, 1, 'AM']
-    #ted = [2022, 12, 31, 'PM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
-
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-    tend = time.time()
-    logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
-
-    
-def MidWest_LF_Pix_Test():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
-    
-    tstart = time.time()
-    
-    ctime = datetime.now()
-
-    region = ('MidWestLFTest',[-96.87207, 38.07310999, -95.85596163, 39.14789999])
-    logger.info(f'STARTING RUN FOR {region[0]}')
-    
-    lts = FireIO.get_lts_serialization(regnm=region[0])
-    if lts == None:
-        tst = [ctime.year, 1, 1, 'AM']
-    else:
-        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
-        tst = lts
-
-    if ctime.hour >= 18:
-        ampm = 'PM'
-    else:
-        ampm = 'AM'
-    tst = [2023, 4, 5, 'AM']
-    #ted = [2022, 12, 31, 'PM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
-
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-    tend = time.time()
-    logger.info(f"{(tend-tstart)/60.} minutes used for {region[0]} with dask.")
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     """
+    
+    from dask.distributed import performance_report
+    
     parser = argparse.ArgumentParser(description="registered MAAP.DPS jobs call ./run_dps.sh which delegates to this run function")
     parser.add_argument("run_function_name", help="The name of the function in ./FireRun.py to call")
     args = parser.parse_args()
@@ -589,9 +513,12 @@ if __name__ == "__main__":
     try:
         run_func = globals()[args.run_function_name]
         logger.info(f"[ RUNNING ]: {run_func}")
-        run_func()
+        with performance_report(filename="dask-report.html"):
+            run_func()
     except Exception as e:
         logger.exception(e)
 
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code")
+
+        
