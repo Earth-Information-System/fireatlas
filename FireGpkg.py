@@ -94,14 +94,13 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     # read or initialize the gdf
     t_pt = FireTime.t_nb(allfires.t, nb="previous")
     
-    #gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
-    #gdf = None
-    #if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
-    
-    gdf = gpd.GeoDataFrame(
-            columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(epsg), geometry=[]
-        )
-    gdf = gdf.set_index("fireID")  # set fid column as the index column
+    gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
+
+    if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
+        gdf = gpd.GeoDataFrame(
+                columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(epsg), geometry=[]
+            )
+        gdf = gdf.set_index("fireID")  # set fid column as the index column
 
     # 1. drop rows for fires that are newly invalidated or dead
 
