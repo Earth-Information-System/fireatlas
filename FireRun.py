@@ -513,8 +513,8 @@ if __name__ == "__main__":
     try:
         run_func = globals()[args.run_function_name]
         logger.info(f"[ RUNNING ]: {run_func}")
-        with performance_report(filename="dask-report.html"):
-            run_func()
+        #with performance_report(filename="dask-report.html"):
+        run_func()
     except Exception as e:
         logger.exception(e)
 
