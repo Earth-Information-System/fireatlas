@@ -619,15 +619,38 @@ def convert_sfts(regnm,yr,fids):
     from glob import glob
     import pandas as pd
     from FireTime import dt_dif
+    import s3fs
 
     strdir = FireIO.get_gpkgsfs_dir(yr,regnm)
+    print('strdir')
+    print(strdir)
+    # s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/CreekSNPP/2020/Largefire
 
     # loop over all fids
     gdf_perim_all, gdf_fline_all, gdf_nfp_all, gdf_nfplist_all = None, None, None, None
     for fid in set(fids):
-        print(fid,end=',')
+        # print(fid,end=',')
         # for each fire, find the last gpkg file
-        fnmlast = sorted(glob(strdir+'/F'+str(fid)+'_*.gpkg'))[-1]
+        # print('print glob statement')
+        # print(glob(strdir+'/F'+str(fid)+'*'))
+        # print(strdir+'/F'+str(fid)+'*')
+        # s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/CreekSNPP/2020/Largefire/F0
+        s3 = s3fs.S3FileSystem(anon=False)
+        f_try = s3.ls(f'{strdir}')
+        print(f_try)
+        
+        var_f = f'/F{fid}'
+        s3path = str(f'{strdir}')
+        print(f's3 path: {s3path}')
+        # fnmlast = s3.ls(s3path)
+        fnmlast = ['s3://' + f + '/' for f in s3.ls(s3path) if var_f in f][-1]
+        print(f'fnmlast: {fnmlast}')
+        # for last f try the s3 check
+        print('s3 content check of inner dir:')
+        print(s3.ls(fnmlast[0]))
+    
+        # old fnmlast
+        # fnmlast = sorted(glob(strdir+'/F'+str(fid)+'*'))[-1]
 
         # read the data (four layers)
         gdf_perim = FireIO.gpd_read_file(fnmlast,layer='perimeter').to_crs(epsg=4326)
