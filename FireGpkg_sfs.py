@@ -522,7 +522,7 @@ def save_sfts_trng(
         region name
     """
     import FireTime
-    from dask.distributed import Client 
+    from dask.distributed import Client, performance_report
     import gc
     
     # loop over all days during the period
@@ -533,28 +533,28 @@ def save_sfts_trng(
     #client.run(gc.disable)
     #client.wait_for_workers(8)
     logger.info(f"workers = {len(client.cluster.workers)}")
-    
-    while endloop == False:
-        print("Single fire saving", t)
-        logger.info('Single fire saving: '+str(t))
-        
-        tstart = time.time()
-        # create and save all gpkg files at time t
-        save_sfts_all(client, t, regnm, layers=layers)
-        tend = time.time()
-        logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
+    with performance_report(filename="dask-report.html"):
+        while endloop == False:
+            print("Single fire saving", t)
+            logger.info('Single fire saving: '+str(t))
 
-        # TODO: Purge Client! 
-        client.restart(wait_for_workers=True)
-        #client.run(gc.disable)
-        #client.wait_for_workers(8)
-        # time flow control
-        #  - if t reaches ted, set endloop to True to stop the loop
-        if FireTime.t_dif(t, ted) == 0:
-            endloop = True
+            tstart = time.time()
+            # create and save all gpkg files at time t
+            save_sfts_all(client, t, regnm, layers=layers)
+            tend = time.time()
+            logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
 
-        #  - update t with the next time stamp
-        t = FireTime.t_nb(t, nb="next")
+            # TODO: Purge Client! 
+            client.restart(wait_for_workers=True)
+            #client.run(gc.disable)
+            #client.wait_for_workers(8)
+            # time flow control
+            #  - if t reaches ted, set endloop to True to stop the loop
+            if FireTime.t_dif(t, ted) == 0:
+                endloop = True
+
+            #  - update t with the next time stamp
+            t = FireTime.t_nb(t, nb="next")
 
 def combine_sfts(regnm,yr,addFRAP=False):
     ''' Combine all large fire time series to a gpkg data, with the option to add fire name from FRAP data

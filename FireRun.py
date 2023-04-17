@@ -501,9 +501,7 @@ def WesternUSYrRun(year):
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     """
-    
-    from dask.distributed import performance_report
-    
+
     parser = argparse.ArgumentParser(description="registered MAAP.DPS jobs call ./run_dps.sh which delegates to this run function")
     parser.add_argument("run_function_name", help="The name of the function in ./FireRun.py to call")
     args = parser.parse_args()
@@ -513,7 +511,6 @@ if __name__ == "__main__":
     try:
         run_func = globals()[args.run_function_name]
         logger.info(f"[ RUNNING ]: {run_func}")
-        #with performance_report(filename="dask-report.html"):
         run_func()
     except Exception as e:
         logger.exception(e)
