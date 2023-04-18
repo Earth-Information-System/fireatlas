@@ -314,13 +314,13 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2022, 1, 1, 'AM']
-    #ted = [2022, 12, 31, 'PM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    tst = [2023, 4, 1, 'AM']
+    ted = [2023, 4, 3, 'AM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
