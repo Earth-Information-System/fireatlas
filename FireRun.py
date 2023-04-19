@@ -325,6 +325,32 @@ def CONUSrunNRT():
     tend = time.time()
     logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
 
+def CONUSrunARCHIVE():
+    
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    from datetime import datetime
+    import os
+    from time import sleep
+
+    if FireConsts.firenrt == True:
+        print('Please set firenrt to False, this is an archive run.')
+        return
+    
+    region = ('CONUS_ARCHIVE_DPS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    logger.info(f'STARTING RUN FOR {region[0]}')
+
+    tst = [2013, 1, 1, 'AM']
+    ted = [2019, 12, 31, 'PM']
+
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
+
     
 def WesternUSrunNRT():
     

@@ -62,7 +62,7 @@ MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.3127
 
 # fire source data
 firesrc = "VIIRS"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
-firenrt = True # NRT - True, False
+firenrt = False # NRT - True, False
 firessr = "viirs"  # sensor - 'mcd64'
 
 # ------------------------------------------------------------------------------
@@ -125,11 +125,8 @@ FTYP_Glb = {
 # other options
 # ------------------------------------------------------------------------------
 epsg = 9311  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
-#<<<<<<< HEAD
+
 remove_static_sources_bool = True  # remove areas with known flaring/gas sources from region
-#=======
-remove_static_sources_bool = True # remove areas with known flaring/gas sources from region
-#>>>>>>> 4c7a5e349c4bf42049d6c2ed83d3a9fd3508c1a5
 remove_static_sources_sourcefile = "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv"
 remove_static_sources_buffer = 0.01 # Buffer around static source points. Units defined by epsg. 
 
