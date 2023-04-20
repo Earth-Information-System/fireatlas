@@ -296,7 +296,7 @@ def CONUSrunNRT():
         print('Please set firenrt to True')
         return
     
-    tstart = time.time()
+    #tstart = time.time()
     
     ctime = datetime.now()
 
@@ -322,8 +322,9 @@ def CONUSrunNRT():
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-    tend = time.time()
-    logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
+    
+    #tend = time.time()
+    #logger.info(f"{(tned-stast)/60.} minutes used for CONUS with dask.")
 
 def CONUSrunARCHIVE():
     
@@ -341,7 +342,7 @@ def CONUSrunARCHIVE():
     logger.info(f'STARTING RUN FOR {region[0]}')
 
     tst = [2012, 1, 1, 'AM']
-    ted = [2012, 12, 31, 'PM']
+    ted = [2012, 1, 2, 'PM']
 
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
@@ -349,7 +350,7 @@ def CONUSrunARCHIVE():
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
-    logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
+    #logger.info(f"{(ted-ted)/60.} minutes used for CONUS with dask.")
 
     
 def WesternUSrunNRT():
