@@ -341,7 +341,7 @@ def CONUSrunARCHIVE():
     logger.info(f'STARTING RUN FOR {region[0]}')
 
     tst = [2013, 1, 1, 'AM']
-    ted = [2019, 12, 31, 'PM']
+    ted = [2013, 12, 31, 'PM']
 
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
