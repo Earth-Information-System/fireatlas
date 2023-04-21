@@ -531,14 +531,13 @@ def save_sfts_trng(
     
     client = Client(n_workers=3)
     #client.run(gc.disable)
-    #client.wait_for_workers(8)
     logger.info(f"workers = {len(client.cluster.workers)}")
-    with performance_report(filename="dask-report.html"):
-        while endloop == False:
-            print("Single fire saving", t)
-            logger.info('Single fire saving: '+str(t))
+    while endloop == False:
+        print("Single fire saving", t)
+        logger.info('Single fire saving: '+str(t))
 
-            tstart = time.time()
+        tstart = time.time()
+        with performance_report(filename=f"dask-report-{t}.html"):
             # create and save all gpkg files at time t
             save_sfts_all(client, t, regnm, layers=layers)
             tend = time.time()
@@ -547,7 +546,7 @@ def save_sfts_trng(
             # TODO: Purge Client! 
             client.restart(wait_for_workers=True)
             #client.run(gc.disable)
-            #client.wait_for_workers(8)
+
             # time flow control
             #  - if t reaches ted, set endloop to True to stop the loop
             if FireTime.t_dif(t, ted) == 0:
