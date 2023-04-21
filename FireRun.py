@@ -347,7 +347,7 @@ def CONUSrunARCHIVE():
 
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
     #logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
 
