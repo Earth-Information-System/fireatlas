@@ -140,7 +140,7 @@ def combine_by_year(year, s3_maap_input_path, s3_maap_output_prefix_path):
         driver="FlatGeobuf",
     )
 
-    fireline_maap_fgb_path = (f"{s3_maap_output_prefix_path}/{year}/lf_fireline.fgb",)
+    fireline_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_fireline.fgb"
     all_lf_firelines.to_file(
         fireline_maap_fgb_path,
         driver="FlatGeobuf",
