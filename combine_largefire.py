@@ -9,8 +9,15 @@ from FireLog import logger
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
-    """Load in Largefire data"""
+    """
+    :param lf_id: integer
+    :param file_path:
+    :param layer: str
+    :param drop_duplicate_geometries: bool
+    :return: pandas.DataFrame
+    """
     try:
+        logger.info(f"[ READ FILE ]: filepath={file_path} for layer={layer}")
         gdf = gpd.read_file(file_path, layer=layer)
     except Exception as e:
         logger.exception(e)
