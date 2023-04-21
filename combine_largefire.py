@@ -14,7 +14,7 @@ from FireLog import logger
 def copy_from_maap_to_veda_s3(from_maap_s3_path):
     s3_client = boto3.client("s3")
 
-    if "Largefire" in from_maap_s3_path:
+    if "LargeFire" in from_maap_s3_path:
         try:
             fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline.fgb|lf_perimeter.fgb|lf_newfirepix.fgb|nfplist.fgb)$"
             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
