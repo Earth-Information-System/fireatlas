@@ -340,8 +340,8 @@ def CONUSrunARCHIVE():
     region = ('CONUS_ARCHIVE_DPS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
     logger.info(f'STARTING RUN FOR {region[0]}')
 
-    tst = [2018, 1, 1, 'AM']
-    ted = [2018, 1, 16, 'PM']
+    tst = [2017, 1, 1, 'AM']
+    ted = [2017, 1, 16, 'PM']
 
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
