@@ -540,20 +540,19 @@ def save_sfts_trng(
         with performance_report(filename=f"dask-report-{t}.html"):
             # create and save all gpkg files at time t
             save_sfts_all(client, t, regnm, layers=layers)
-            tend = time.time()
-            logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
+        tend = time.time()
+        logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
 
-            # TODO: Purge Client! 
-            client.restart(wait_for_workers=True)
-            #client.run(gc.disable)
+        client.restart(wait_for_workers=True)
+        #client.run(gc.disable)
 
-            # time flow control
-            #  - if t reaches ted, set endloop to True to stop the loop
-            if FireTime.t_dif(t, ted) == 0:
-                endloop = True
+        # time flow control
+        #  - if t reaches ted, set endloop to True to stop the loop
+        if FireTime.t_dif(t, ted) == 0:
+            endloop = True
 
-            #  - update t with the next time stamp
-            t = FireTime.t_nb(t, nb="next")
+        #  - update t with the next time stamp
+        t = FireTime.t_nb(t, nb="next")
 
 def combine_sfts(regnm,yr,addFRAP=False):
     ''' Combine all large fire time series to a gpkg data, with the option to add fire name from FRAP data
