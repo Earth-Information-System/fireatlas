@@ -38,8 +38,8 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
 
 
 def merge_df_years(
-    years_parent_folder_path,
-    output_folder_path,
+    parent_years_folder_input_path,
+    maap_output_folder_path,
     layers=["nlplist.fgb", "newfirepix.fgb", "fireline.fgb", "perimeter.fgb"],
 ):
     """
@@ -49,17 +49,15 @@ def merge_df_years(
     :return:
     """
     for layer in layers:
-        folder = Path(years_parent_folder_path)
+        folder = Path(parent_years_folder_input_path)
         logger.info(f"[ PARENT ]: years folder path: {folder}")
         flatgeobufs_by_layer_and_year = list(folder.glob(f"*/lf_{layer}"))
         logger.info(f"[ CHILD ]: fgb(s) by year: {flatgeobufs_by_layer_and_year}")
         gpd_by_year = [gpd.read_file(fgb) for fgb in flatgeobufs_by_layer_and_year]
         logger.info(f"[ GPD ]: frames by year: {gpd_by_year}")
-        gdf = pd.concat(
-            gpd_by_year
-        ).pipe(gpd.GeoDataFrame)
+        gdf = pd.concat(gpd_by_year).pipe(gpd.GeoDataFrame)
 
-        maap_s3_layer_path = f"{output_folder_path}/lf_{layer}"
+        maap_s3_layer_path = f"{maap_output_folder_path}/lf_{layer}"
         gdf.to_file(
             maap_s3_layer_path,
             driver="FlatGeobuf",
@@ -156,7 +154,9 @@ def combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path):
         driver="FlatGeobuf",
     )
 
-    newfirepix_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_newfirepix.fgb"
+    newfirepix_maap_fgb_path = (
+        f"{local_dir_output_prefix_path}/{year}/lf_newfirepix.fgb"
+    )
     all_lf_newfirepix.to_file(
         newfirepix_maap_fgb_path,
         driver="FlatGeobuf",
@@ -175,7 +175,8 @@ def main(years_range, in_parallel=False):
             s3_maap_input_path = f"{diroutdata}CONUS_NRT_DPS/{year}/Largefire/"
             combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path)
         merge_df_years(
-            local_dir_output_prefix_path, f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/merged",
+            local_dir_output_prefix_path,
+            f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/merged",
         )
         return
 
