@@ -50,9 +50,13 @@ def merge_df_years(
     """
     for layer in layers:
         folder = Path(years_parent_folder_path)
-        flatgeobufs_by_layer_and_year = folder.glob(f"*/lf_{layer}")
+        logger.info(f"[ PARENT ]: years folder path: {folder}")
+        flatgeobufs_by_layer_and_year = list(folder.glob(f"*/lf_{layer}"))
+        logger.info(f"[ CHILD ]: fgb(s) by year: {flatgeobufs_by_layer_and_year}")
+        gpd_by_year = [gpd.read_file(fgb) for fgb in flatgeobufs_by_layer_and_year]
+        logger.info(f"[ GPD ]: frames by year: {gpd_by_year}")
         gdf = pd.concat(
-            [gpd.read_file(fgb) for fgb in flatgeobufs_by_layer_and_year]
+            gpd_by_year
         ).pipe(gpd.GeoDataFrame)
 
         maap_s3_layer_path = f"{output_folder_path}/lf_{layer}"
@@ -85,7 +89,7 @@ def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
     return gdf
 
 
-def combine_by_year(year, s3_maap_input_path, s3_maap_output_prefix_path):
+def combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path):
     s3 = s3fs.S3FileSystem(anon=False)
 
     # load in NRT Largefire data
@@ -165,13 +169,13 @@ def main(years_range, in_parallel=False):
     :param in_parallel: bool
     :return: None
     """
+    local_dir_output_prefix_path = "/tmp/CONUS_NRT_DPS/LargeFire_Outputs"
     if not in_parallel:
         for year in years_range:
             s3_maap_input_path = f"{diroutdata}CONUS_NRT_DPS/{year}/Largefire/"
-            s3_maap_output_prefix_path = f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs"
-            combine_by_year(year, s3_maap_input_path, s3_maap_output_prefix_path)
+            combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path)
         merge_df_years(
-            s3_maap_output_prefix_path, f"{s3_maap_output_prefix_path}/merged"
+            local_dir_output_prefix_path, f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/merged",
         )
         return
 
@@ -190,7 +194,7 @@ def main(years_range, in_parallel=False):
             combine_by_year,
             year,
             f"{diroutdata}CONUS_NRT_DPS/{year}/Largefire/",
-            f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs",
+            local_dir_output_prefix_path,
         )
         for year in years_range
     ]
@@ -203,7 +207,7 @@ def main(years_range, in_parallel=False):
     logger.info(f'"combine_by_year" in parallel: {(tend - tstart) / 60} minutes')
     dask_client.restart()
     merge_df_years(
-        f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs",
+        local_dir_output_prefix_path,
         f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/merged",
     )
 
