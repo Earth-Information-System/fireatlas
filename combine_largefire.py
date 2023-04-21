@@ -2,10 +2,65 @@ import argparse
 import pandas as pd
 import geopandas as gpd
 import s3fs
+import boto3
+import re
 import time
+from pathlib import Path
 from FireConsts import diroutdata
 from dask.distributed import Client
 from FireLog import logger
+
+
+def copy_from_maap_to_veda_s3(from_maap_s3_path):
+    s3_client = boto3.client("s3")
+
+    if "Largefire" in from_maap_s3_path:
+        try:
+            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline.fgb|lf_perimeter.fgb|lf_newfirepix.fgb|nfplist.fgb)$"
+            # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
+            # {'fname': 'lf_perimeter.fgb'}
+            destination_dict = (
+                re.compile(fname_regex).match(from_maap_s3_path).groupdict()
+            )
+        except AttributeError:
+            logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
+            return
+
+        from_maap_s3_path = from_maap_s3_path.replace("s3://", "")
+        s3_client.copy_object(
+            CopySource=from_maap_s3_path,  # full bucket path
+            Bucket="veda-data-store-staging",  # Destination bucket
+            Key=f"EIS/FEDSoutput/LFArchive/{destination_dict['']}/{destination_dict['fname']}"
+            # Destination path/filename
+        )
+    else:
+        logger.error(f"[ NO S3 COPY EXPORTED ]: for file f{from_maap_s3_path}")
+
+
+def merge_df_years(
+    years_parent_folder_path,
+    output_folder_path,
+    layers=["nlplist.fgb", "newfirepix.fgb", "fireline.fgb", "perimeter.fgb"],
+):
+    """
+    :param years_range:
+    :param parent_folder_path:
+    :param layers:
+    :return:
+    """
+    for layer in layers:
+        folder = Path(years_parent_folder_path)
+        flatgeobufs_by_layer_and_year = folder.glob(f"*/lf_{layer}")
+        gdf = pd.concat(
+            [gpd.read_file(fgb) for fgb in flatgeobufs_by_layer_and_year]
+        ).pipe(gpd.GeoDataFrame)
+
+        maap_s3_layer_path = f"{output_folder_path}/lf_{layer}"
+        gdf.to_file(
+            maap_s3_layer_path,
+            driver="FlatGeobuf",
+        )
+        copy_from_maap_to_veda_s3(maap_s3_layer_path)
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
@@ -17,7 +72,7 @@ def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
     :return: pandas.DataFrame
     """
     try:
-        logger.info(f"[ READ FILE ]: filepath={file_path} for layer={layer}")
+        logger.info(f"[ READ FILE ]: {file_path}/{layer}")
         gdf = gpd.read_file(file_path, layer=layer)
     except Exception as e:
         logger.exception(e)
@@ -79,20 +134,27 @@ def combine_by_year(year, s3_maap_input_path, s3_maap_output_prefix_path):
         ignore_index=True,
     )
 
+    nfplist_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_nfplist.fgb"
     all_lf_nfplist.to_file(
-        f"{s3_maap_output_prefix_path}/{year}/lf_nfplist_{year}.fgb",
+        nfplist_maap_fgb_path,
         driver="FlatGeobuf",
     )
+
+    fireline_maap_fgb_path = (f"{s3_maap_output_prefix_path}/{year}/lf_fireline.fgb",)
     all_lf_firelines.to_file(
-        f"{s3_maap_output_prefix_path}/{year}/lf_firelines_{year}.fgb",
+        fireline_maap_fgb_path,
         driver="FlatGeobuf",
     )
+
+    perimeter_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_perimeter.fgb"
     all_lf_perimeters.to_file(
-        f"{s3_maap_output_prefix_path}/{year}/lf_perimeters_{year}.fgb",
+        perimeter_maap_fgb_path,
         driver="FlatGeobuf",
     )
+
+    newfirepix_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_newfirepix.fgb"
     all_lf_newfirepix.to_file(
-        f"{s3_maap_output_prefix_path}/{year}/lf_newfirepix_{year}.fgb",
+        newfirepix_maap_fgb_path,
         driver="FlatGeobuf",
     )
 
@@ -108,6 +170,9 @@ def main(years_range, in_parallel=False):
             s3_maap_input_path = f"{diroutdata}CONUS_NRT_DPS/{year}/Largefire/"
             s3_maap_output_prefix_path = f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs"
             combine_by_year(year, s3_maap_input_path, s3_maap_output_prefix_path)
+        merge_df_years(
+            s3_maap_output_prefix_path, f"{s3_maap_output_prefix_path}/merged"
+        )
         return
 
     #############################################
@@ -135,12 +200,16 @@ def main(years_range, in_parallel=False):
         f"workers after dask_client.gather = {len(dask_client.cluster.workers)}"
     )
     tend = time.time()
-    logger.info(f'"combine_by_year" in parallel: {(tend - tstart) / 60.} minutes')
+    logger.info(f'"combine_by_year" in parallel: {(tend - tstart) / 60} minutes')
     dask_client.restart()
+    merge_df_years(
+        f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs",
+        f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/merged",
+    )
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Combine Largefire Archive")
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "-s", "--start-year", required=True, type=int, help="start year int"
     )
@@ -166,4 +235,4 @@ if __name__ == "__main__":
     logger.info(f"Running algo with year range: '{years_range}'")
     main(years_range, in_parallel=args.parallel)
     total = time.time() - start
-    logger.info("Total runtime is", str(total / 60), "minutes")
+    logger.info(f"Total runtime is {str(total / 60)} minutes")
