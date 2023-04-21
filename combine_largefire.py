@@ -138,25 +138,25 @@ def combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path):
         ignore_index=True,
     )
 
-    nfplist_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_nfplist.fgb"
+    nfplist_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_nfplist.fgb"
     all_lf_nfplist.to_file(
         nfplist_maap_fgb_path,
         driver="FlatGeobuf",
     )
 
-    fireline_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_fireline.fgb"
+    fireline_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_fireline.fgb"
     all_lf_firelines.to_file(
         fireline_maap_fgb_path,
         driver="FlatGeobuf",
     )
 
-    perimeter_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_perimeter.fgb"
+    perimeter_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_perimeter.fgb"
     all_lf_perimeters.to_file(
         perimeter_maap_fgb_path,
         driver="FlatGeobuf",
     )
 
-    newfirepix_maap_fgb_path = f"{s3_maap_output_prefix_path}/{year}/lf_newfirepix.fgb"
+    newfirepix_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_newfirepix.fgb"
     all_lf_newfirepix.to_file(
         newfirepix_maap_fgb_path,
         driver="FlatGeobuf",
