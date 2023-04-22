@@ -133,27 +133,27 @@ def combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path):
         ],
         ignore_index=True,
     )
-    all_lf_firelines = pd.concat(
-        [
-            load_lf(lf_id, file_path, layer="fireline")
-            for lf_id, file_path in largefire_dict.items()
-        ],
-        ignore_index=True,
-    )
-    all_lf_perimeters = pd.concat(
-        [
-            load_lf(lf_id, file_path, layer="perimeter")
-            for lf_id, file_path in largefire_dict.items()
-        ],
-        ignore_index=True,
-    )
-    all_lf_newfirepix = pd.concat(
-        [
-            load_lf(lf_id, file_path, layer="newfirepix")
-            for lf_id, file_path in largefire_dict.items()
-        ],
-        ignore_index=True,
-    )
+    # all_lf_firelines = pd.concat(
+    #     [
+    #         load_lf(lf_id, file_path, layer="fireline")
+    #         for lf_id, file_path in largefire_dict.items()
+    #     ],
+    #     ignore_index=True,
+    # )
+    # all_lf_perimeters = pd.concat(
+    #     [
+    #         load_lf(lf_id, file_path, layer="perimeter")
+    #         for lf_id, file_path in largefire_dict.items()
+    #     ],
+    #     ignore_index=True,
+    # )
+    # all_lf_newfirepix = pd.concat(
+    #     [
+    #         load_lf(lf_id, file_path, layer="newfirepix")
+    #         for lf_id, file_path in largefire_dict.items()
+    #     ],
+    #     ignore_index=True,
+    # )
 
     nfplist_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_nfplist.fgb"
     # create all parent directories for local output (if they don't exist already)
