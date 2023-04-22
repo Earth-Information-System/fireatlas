@@ -34,31 +34,30 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
 
     if "LargeFire" in from_maap_s3_path:
         try:
-            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline.fgb|lf_perimeter.fgb|lf_newfirepix.fgb|nfplist.fgb)$"
+            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline.fgb|lf_perimeter.fgb|lf_newfirepix.fgb|lf_nfplist.fgb)$"
             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
             # {'fname': 'lf_perimeter.fgb'}
             destination_dict = (
                 re.compile(fname_regex).match(from_maap_s3_path).groupdict()
             )
         except AttributeError:
-            logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
+            logger.error(f"[ NO REGEX MATCH FOUND ]: for file {from_maap_s3_path}")
             return
 
         from_maap_s3_path = from_maap_s3_path.replace("s3://", "")
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket="veda-data-store-staging",  # Destination bucket
-            Key=f"EIS/FEDSoutput/LFArchive/{destination_dict['']}/{destination_dict['fname']}"
-            # Destination path/filename
+            Key=f"EIS/FEDSoutput/LFArchive/{destination_dict['fname']}"
         )
     else:
-        logger.error(f"[ NO S3 COPY EXPORTED ]: for file f{from_maap_s3_path}")
+        logger.error(f"[ NO S3 COPY EXPORTED ]: for file {from_maap_s3_path}")
 
 
 def merge_df_years(
     parent_years_folder_input_path,
     maap_output_folder_path,
-    layers=["nlplist.fgb",]
+    layers=["nfplist.fgb",]
     #layers=["nlplist.fgb", "newfirepix.fgb", "fireline.fgb", "perimeter.fgb"],
 ):
     """
@@ -133,27 +132,27 @@ def combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path):
         ],
         ignore_index=True,
     )
-    # all_lf_firelines = pd.concat(
-    #     [
-    #         load_lf(lf_id, file_path, layer="fireline")
-    #         for lf_id, file_path in largefire_dict.items()
-    #     ],
-    #     ignore_index=True,
-    # )
-    # all_lf_perimeters = pd.concat(
-    #     [
-    #         load_lf(lf_id, file_path, layer="perimeter")
-    #         for lf_id, file_path in largefire_dict.items()
-    #     ],
-    #     ignore_index=True,
-    # )
-    # all_lf_newfirepix = pd.concat(
-    #     [
-    #         load_lf(lf_id, file_path, layer="newfirepix")
-    #         for lf_id, file_path in largefire_dict.items()
-    #     ],
-    #     ignore_index=True,
-    # )
+    all_lf_firelines = pd.concat(
+        [
+            load_lf(lf_id, file_path, layer="fireline")
+            for lf_id, file_path in largefire_dict.items()
+        ],
+        ignore_index=True,
+    )
+    all_lf_perimeters = pd.concat(
+        [
+            load_lf(lf_id, file_path, layer="perimeter")
+            for lf_id, file_path in largefire_dict.items()
+        ],
+        ignore_index=True,
+    )
+    all_lf_newfirepix = pd.concat(
+        [
+            load_lf(lf_id, file_path, layer="newfirepix")
+            for lf_id, file_path in largefire_dict.items()
+        ],
+        ignore_index=True,
+    )
 
     nfplist_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_nfplist.fgb"
     # create all parent directories for local output (if they don't exist already)
@@ -164,26 +163,26 @@ def combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path):
         nfplist_maap_fgb_path,
         driver="FlatGeobuf",
     )
-    #
-    # fireline_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_fireline.fgb"
-    # all_lf_firelines.to_file(
-    #     fireline_maap_fgb_path,
-    #     driver="FlatGeobuf",
-    # )
-    #
-    # perimeter_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_perimeter.fgb"
-    # all_lf_perimeters.to_file(
-    #     perimeter_maap_fgb_path,
-    #     driver="FlatGeobuf",
-    # )
-    #
-    # newfirepix_maap_fgb_path = (
-    #     f"{local_dir_output_prefix_path}/{year}/lf_newfirepix.fgb"
-    # )
-    # all_lf_newfirepix.to_file(
-    #     newfirepix_maap_fgb_path,
-    #     driver="FlatGeobuf",
-    # )
+
+    fireline_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_fireline.fgb"
+    all_lf_firelines.to_file(
+        fireline_maap_fgb_path,
+        driver="FlatGeobuf",
+    )
+
+    perimeter_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_perimeter.fgb"
+    all_lf_perimeters.to_file(
+        perimeter_maap_fgb_path,
+        driver="FlatGeobuf",
+    )
+
+    newfirepix_maap_fgb_path = (
+        f"{local_dir_output_prefix_path}/{year}/lf_newfirepix.fgb"
+    )
+    all_lf_newfirepix.to_file(
+        newfirepix_maap_fgb_path,
+        driver="FlatGeobuf",
+    )
 
 
 def main(years_range, in_parallel=False):
