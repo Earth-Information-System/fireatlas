@@ -11,6 +11,24 @@ from dask.distributed import Client
 from FireLog import logger
 
 
+def mkdir_dash_p(parent_output_path):
+    """named after linux bash `mkdir -p`
+
+    this function will create all parent folders
+    for a path if they don't already exist and
+    if they do exist, it will gracefully leave then alone
+
+    Examples:
+        input: /tmp/foo/bar/doobie/README.txt
+        output: all nested parent directories of the file are created "/tmp/foo/bar/doobie"
+
+    :param parent_output_path:
+    :return:
+    """
+    path = Path(parent_output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+
 def copy_from_maap_to_veda_s3(from_maap_s3_path):
     s3_client = boto3.client("s3")
 
@@ -58,6 +76,7 @@ def merge_df_years(
         gdf = pd.concat(gpd_by_year).pipe(gpd.GeoDataFrame)
 
         maap_s3_layer_path = f"{maap_output_folder_path}/lf_{layer}"
+        mkdir_dash_p(maap_s3_layer_path)
         gdf.to_file(
             maap_s3_layer_path,
             driver="FlatGeobuf",
@@ -137,6 +156,10 @@ def combine_by_year(year, s3_maap_input_path, local_dir_output_prefix_path):
     )
 
     nfplist_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_nfplist.fgb"
+    # create all parent directories for local output (if they don't exist already)
+    # we only need to do this once for the first layer since subsequent
+    # layers will have the same parent dirs
+    mkdir_dash_p(nfplist_maap_fgb_path)
     all_lf_nfplist.to_file(
         nfplist_maap_fgb_path,
         driver="FlatGeobuf",
