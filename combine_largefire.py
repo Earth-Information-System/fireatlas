@@ -32,6 +32,10 @@ def mkdir_dash_p(parent_output_path):
 
 
 def copy_from_maap_to_veda_s3(from_maap_s3_path):
+    """
+    :param from_maap_s3_path:
+    :return:
+    """
     s3_client = boto3.client("s3")
 
     if "LargeFire" in from_maap_s3_path:
@@ -109,6 +113,13 @@ def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
 def combine_by_year(
     year, s3_maap_input_path, local_dir_output_prefix_path, layers=LAYERS
 ):
+    """
+    :param year:
+    :param s3_maap_input_path:
+    :param local_dir_output_prefix_path:
+    :param layers:
+    :return:
+    """
     s3 = s3fs.S3FileSystem(anon=False)
 
     # load in NRT Largefire data
@@ -136,65 +147,14 @@ def combine_by_year(
             ],
             ignore_index=True,
         )
-        # all_lf_firelines = pd.concat(
-        #     [
-        #         load_lf(lf_id, file_path, layer="fireline")
-        #         for lf_id, file_path in largefire_dict.items()
-        #     ],
-        #     ignore_index=True,
-        # )
-        # all_lf_perimeters = pd.concat(
-        #     [
-        #         load_lf(lf_id, file_path, layer="perimeter")
-        #         for lf_id, file_path in largefire_dict.items()
-        #     ],
-        #     ignore_index=True,
-        # )
-        # all_lf_newfirepix = pd.concat(
-        #     [
-        #         load_lf(lf_id, file_path, layer="newfirepix")
-        #         for lf_id, file_path in largefire_dict.items()
-        #     ],
-        #     ignore_index=True,
-        # )
 
-        layer_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_{layer}.fgb"
+        layer_output_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_{layer}.fgb"
         # create all parent directories for local output (if they don't exist already)
-        mkdir_dash_p(layer_maap_fgb_path)
+        mkdir_dash_p(layer_output_fgb_path)
         all_lf_per_layer.to_file(
-            layer_maap_fgb_path,
+            layer_output_fgb_path,
             driver="FlatGeobuf",
         )
-
-        # nfplist_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_nfplist.fgb"
-        # # create all parent directories for local output (if they don't exist already)
-        # # we only need to do this once for the first layer since subsequent
-        # # layers will have the same parent dirs
-        # mkdir_dash_p(nfplist_maap_fgb_path)
-        # all_lf_nfplist.to_file(
-        #     nfplist_maap_fgb_path,
-        #     driver="FlatGeobuf",
-        # )
-        #
-        # fireline_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_fireline.fgb"
-        # all_lf_firelines.to_file(
-        #     fireline_maap_fgb_path,
-        #     driver="FlatGeobuf",
-        # )
-        #
-        # perimeter_maap_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_perimeter.fgb"
-        # all_lf_perimeters.to_file(
-        #     perimeter_maap_fgb_path,
-        #     driver="FlatGeobuf",
-        # )
-        #
-        # newfirepix_maap_fgb_path = (
-        #     f"{local_dir_output_prefix_path}/{year}/lf_newfirepix.fgb"
-        # )
-        # all_lf_newfirepix.to_file(
-        #     newfirepix_maap_fgb_path,
-        #     driver="FlatGeobuf",
-        # )
 
 
 def main(years_range, in_parallel=False):
