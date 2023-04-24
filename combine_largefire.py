@@ -226,7 +226,7 @@ if __name__ == "__main__":
         python3 combine_largefire.py -s 2018 -e 2022 -p
         
         # run multiple years in parallel in PRODUCTION MODE
-        python3 combine_largefire.py -s 2018 -e 2022 -p
+        python3 combine_largefire.py -s 2018 -e 2022 -p -x
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
