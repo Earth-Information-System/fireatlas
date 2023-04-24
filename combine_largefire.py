@@ -12,6 +12,7 @@ from FireLog import logger
 
 LAYERS = ["nfplist", "newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
+IS_PRODUCTION_RUN = False
 
 def mkdir_dash_p(parent_output_path):
     """named after linux bash `mkdir -p`
@@ -88,7 +89,8 @@ def merge_lf_years(
             maap_s3_layer_path,
             driver="FlatGeobuf",
         )
-        copy_from_maap_to_veda_s3(maap_s3_layer_path)
+        if IS_PRODUCTION_RUN:
+            copy_from_maap_to_veda_s3(maap_s3_layer_path)
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
@@ -222,6 +224,9 @@ if __name__ == "__main__":
         
         # run multiple years in parallel
         python3 combine_largefire.py -s 2018 -e 2022 -p
+        
+        # run multiple years in parallel in PRODUCTION MODE
+        python3 combine_largefire.py -s 2018 -e 2022 -p
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -236,7 +241,17 @@ if __name__ == "__main__":
         action="store_true",
         help="turn on dask processing years in parallel",
     )
+    parser.add_argument(
+        "-x",
+        "--production-run",
+        action="store_true",
+        help="creates a flag/trap for us to know this is running as the PRODUCTION job to avoid overwrite VEDA s3 data",
+    )
     args = parser.parse_args()
+
+    # set global flag/trap to protect VEDA s3 copy
+    global IS_PRODUCTION_RUN
+    IS_PRODUCTION_RUN = args.production_run
 
     # validate `years_range` construction
     years_range = list(range(args.start_year, args.end_year + 1))

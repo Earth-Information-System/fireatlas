@@ -29,7 +29,7 @@ echo "Starting algorithm in subshell"
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
-  python combine_largefire.py -s 2023 -e 2023 -p
+  python combine_largefire.py -s 2023 -e 2023 -p -x
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
