@@ -12,7 +12,7 @@ from FireLog import logger
 
 LAYERS = ["nfplist", "newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
-IS_PRODUCTION_RUN = False
+
 
 def mkdir_dash_p(parent_output_path):
     """named after linux bash `mkdir -p`
