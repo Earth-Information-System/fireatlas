@@ -9,6 +9,7 @@ from pathlib import Path
 from FireConsts import diroutdata
 from dask.distributed import Client
 from FireLog import logger
+from FireUtils import free_profiler
 
 LAYERS = ["nfplist", "newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
@@ -61,7 +62,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
     else:
         logger.error(f"[ NO S3 COPY EXPORTED ]: for file {from_maap_s3_path}")
 
-
+@free_profiler
 def merge_lf_years(
     parent_years_folder_input_path,
     maap_output_folder_path,
@@ -92,6 +93,7 @@ def merge_lf_years(
             copy_from_maap_to_veda_s3(maap_s3_layer_path)
 
 
+@free_profiler
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
     """find the large fire pickled file by id
 
@@ -115,6 +117,7 @@ def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
     return gdf
 
 
+@free_profiler
 def write_lf_layers_by_year(
     year, s3_maap_input_path, local_dir_output_prefix_path, layers=LAYERS
 ):
