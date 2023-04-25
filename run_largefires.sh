@@ -32,7 +32,7 @@ pushd "$basedir"
   # run the ps command every second in the background with `watch` command
   #cmd="ps -o pid,user,%mem,command ax | sort -b -k3 -r  | grep python >> /app/fireatlas_nrt/running.log"
   #watch -n 1 $cmd &
-  bash run_ps_memory.sh &
+  #bash run_ps_memory.sh &
   python combine_largefire.py -s 2023 -e 2023 -p -x
   popd
   echo "Copying log to special output dir"
