@@ -30,7 +30,6 @@ def mkdir_dash_p(parent_output_path):
     """
     path = Path(parent_output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.chmod(0o0777)
 
 
 def copy_from_maap_to_veda_s3(from_maap_s3_path):
