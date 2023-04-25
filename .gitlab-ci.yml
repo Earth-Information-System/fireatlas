@@ -53,5 +53,5 @@ dps-run:fire-atlas-lf-archive:
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefires
     BRANCH_NAME: conus-dps
-    USERNAME: ashiklom
+    USERNAME: gcorradini
     QUEUE: maap-dps-worker-128gb
