@@ -37,6 +37,7 @@ pushd "$basedir"
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
+  cp "$basedir/memory.log" ./output
 } || { # catch
   popd
   echo "Copying log to special output dir"
