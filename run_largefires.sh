@@ -30,9 +30,9 @@ pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
   # run the ps command every second in the background with `watch` command
-  watch -n 1 "ps -o pid,user,%mem,command ax | sort -b -k3 -r  | grep python >> ./running.log" &
-  #python combine_largefire.py -s 2023 -e 2023 -p -x
-  python combine_largefire.py -s 2023 -e 2023 -x
+  cmd="ps -o pid,user,%mem,command ax | sort -b -k3 -r  | grep python >> ${basedir}/running.log"
+  watch -n 1 $cmd &
+  python combine_largefire.py -s 2023 -e 2023 -p -x
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
