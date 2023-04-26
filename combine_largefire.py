@@ -171,14 +171,14 @@ def main(years_range, in_parallel=False):
     :param in_parallel: bool
     :return: None
     """
-    local_dir_output_prefix_path = "/tmp/CONUS_NRT_DPS/LargeFire_Outputs"
+    local_dir_output_prefix_path = "/tmp/WesternUS_REDO/LargeFire_Outputs"
     if not in_parallel:
         for year in years_range:
-            s3_maap_input_path = f"{diroutdata}CONUS_NRT_DPS/{year}/Largefire/"
+            s3_maap_input_path = f"{diroutdata}WesternUS_REDO/{year}/Largefire/"
             write_lf_layers_by_year(year, s3_maap_input_path, local_dir_output_prefix_path)
         merge_lf_years(
             local_dir_output_prefix_path,
-            f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/merged",
+            f"{diroutdata}WesternUS_REDO/LargeFire_Outputs/merged",
         )
         return
 
@@ -196,7 +196,7 @@ def main(years_range, in_parallel=False):
         dask_client.submit(
             write_lf_layers_by_year,
             year,
-            f"{diroutdata}CONUS_NRT_DPS/{year}/Largefire/",
+            f"{diroutdata}WesternUS_REDO/{year}/Largefire/",
             local_dir_output_prefix_path,
         )
         for year in years_range
@@ -211,7 +211,7 @@ def main(years_range, in_parallel=False):
     dask_client.restart()
     merge_lf_years(
         local_dir_output_prefix_path,
-        f"{diroutdata}CONUS_NRT_DPS/LargeFire_Outputs/merged",
+        f"{diroutdata}WesternUS_REDO/LargeFire_Outputs/merged",
     )
 
 
