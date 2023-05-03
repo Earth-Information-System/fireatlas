@@ -12,6 +12,8 @@ from FireLog import logger
 
 LAYERS = ["nfplist", "newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
+TARGET_MAAP_INPUT_BUCKET_NAME = "WesternUS_REDO"
+LOCAL_DIR_OUTPUT_PREFIX_PATH = f"/tmp/{TARGET_MAAP_INPUT_BUCKET_NAME}/LargeFire_Outputs"
 
 
 def mkdir_dash_p(parent_output_path):
@@ -116,13 +118,13 @@ def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
 
 
 def write_lf_layers_by_year(
-    year, s3_maap_input_path, local_dir_output_prefix_path, layers=LAYERS
+    year, s3_maap_input_path, LOCAL_DIR_OUTPUT_PREFIX_PATH, layers=LAYERS
 ):
     """ for each layer write out the most recent lf layer
 
     :param year: int
     :param s3_maap_input_path: the s3 MAAP path
-    :param local_dir_output_prefix_path: the local dir output prefix
+    :param LOCAL_DIR_OUTPUT_PREFIX_PATH: the local dir output prefix
     :param layers: a list of layer strings
     :return: None
     """
@@ -156,7 +158,7 @@ def write_lf_layers_by_year(
             ignore_index=True,
         )
 
-        layer_output_fgb_path = f"{local_dir_output_prefix_path}/{year}/lf_{layer}.fgb"
+        layer_output_fgb_path = f"{LOCAL_DIR_OUTPUT_PREFIX_PATH}/{year}/lf_{layer}.fgb"
         # create all parent directories for local output (if they don't exist already)
         mkdir_dash_p(layer_output_fgb_path)
         all_lf_per_layer.to_file(
@@ -171,14 +173,13 @@ def main(years_range, in_parallel=False):
     :param in_parallel: bool
     :return: None
     """
-    local_dir_output_prefix_path = "/tmp/WesternUS_REDO/LargeFire_Outputs"
     if not in_parallel:
         for year in years_range:
-            s3_maap_input_path = f"{diroutdata}WesternUS_REDO/{year}/Largefire/"
-            write_lf_layers_by_year(year, s3_maap_input_path, local_dir_output_prefix_path)
+            s3_maap_input_path = f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/{year}/Largefire/"
+            write_lf_layers_by_year(year, s3_maap_input_path, LOCAL_DIR_OUTPUT_PREFIX_PATH)
         merge_lf_years(
-            local_dir_output_prefix_path,
-            f"{diroutdata}WesternUS_REDO/LargeFire_Outputs/merged",
+            LOCAL_DIR_OUTPUT_PREFIX_PATH,
+            f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/LargeFire_Outputs/merged",
         )
         return
 
@@ -196,8 +197,8 @@ def main(years_range, in_parallel=False):
         dask_client.submit(
             write_lf_layers_by_year,
             year,
-            f"{diroutdata}WesternUS_REDO/{year}/Largefire/",
-            local_dir_output_prefix_path,
+            f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/{year}/Largefire/",
+            LOCAL_DIR_OUTPUT_PREFIX_PATH,
         )
         for year in years_range
     ]
@@ -210,8 +211,8 @@ def main(years_range, in_parallel=False):
     logger.info(f'"write_lf_layers_by_year" in parallel: {(tend - tstart) / 60} minutes')
     dask_client.restart()
     merge_lf_years(
-        local_dir_output_prefix_path,
-        f"{diroutdata}WesternUS_REDO/LargeFire_Outputs/merged",
+        LOCAL_DIR_OUTPUT_PREFIX_PATH,
+        f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/LargeFire_Outputs/merged",
     )
 
 
