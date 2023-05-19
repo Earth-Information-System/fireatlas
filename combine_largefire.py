@@ -34,17 +34,18 @@ def mkdir_dash_p(parent_output_path):
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def copy_from_maap_to_veda_s3(from_maap_s3_path):
+def copy_from_maap_to_veda_s3(from_maap_s3_path, is_nrt=False):
     """from MAAP to VEDA s3
 
     :param from_maap_s3_path: s3 MAAP path
+    :param is_nrt: bool that changes output name
     :return: None
     """
     s3_client = boto3.client("s3")
 
     if "LargeFire" in from_maap_s3_path:
         try:
-            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline.fgb|lf_perimeter.fgb|lf_newfirepix.fgb|lf_nfplist.fgb)$"
+            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline.fgb|lf_fireline_nrt.fgb|lf_perimeter.fgb|lf_perimeter_nrt.fgb|lf_newfirepix.fgb|lf_newfirepix_nrt.fgb|lf_nfplist.fgb|lf_nfplist_nrt.fgb)$"
             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
             # {'fname': 'lf_perimeter.fgb'}
             destination_dict = (
@@ -86,12 +87,14 @@ def merge_lf_years(
         gdf = pd.concat(gpd_by_year).pipe(gpd.GeoDataFrame)
 
         maap_s3_layer_path = f"{maap_output_folder_path}/lf_{layer}.fgb"
+        if IS_NRT_RUN:
+            maap_s3_layer_path = f"{maap_output_folder_path}/lf_{layer}_nrt.fgb"
         gdf.to_file(
             maap_s3_layer_path,
             driver="FlatGeobuf",
         )
         if IS_PRODUCTION_RUN:
-            copy_from_maap_to_veda_s3(maap_s3_layer_path)
+            copy_from_maap_to_veda_s3(maap_s3_layer_path, is_nrt=IS_NRT_RUN)
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
@@ -225,8 +228,13 @@ if __name__ == "__main__":
         # run multiple years in parallel
         python3 combine_largefire.py -s 2018 -e 2022 -p
         
-        # run multiple years in parallel in PRODUCTION MODE
+        # run multiple years in parallel in PRODUCTION mode, by default this is the LF archive (not NRT)
+        # PRODUCTION mode means outputs get `aws s3 cp` to s3://veda-data-store-staging
         python3 combine_largefire.py -s 2018 -e 2022 -p -x
+        
+        # run NRT current year in PRODUCTION mode
+        # PRODUCTION mode means outputs get `aws s3 cp` to s3://veda-data-store-staging
+        python3 combine_largefire.py -s 2023 -e 20203 -x --nrt
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -247,11 +255,21 @@ if __name__ == "__main__":
         action="store_true",
         help="creates a flag/trap for us to know this is running as the PRODUCTION job to avoid overwrite VEDA s3 data",
     )
+    parser.add_argument(
+        "-n",
+        "--nrt",
+        action="store_true",
+        help="creates a flag/trap to know if this is LF archive (all years) or LF NRT (current year)",
+    )
     args = parser.parse_args()
 
     # set global flag/trap to protect VEDA s3 copy
     global IS_PRODUCTION_RUN
     IS_PRODUCTION_RUN = args.production_run
+
+    # set global flag/trap for NRT
+    global IS_NRT_RUN
+    IS_NRT_RUN = args.nrt
 
     # validate `years_range` construction
     years_range = list(range(args.start_year, args.end_year + 1))

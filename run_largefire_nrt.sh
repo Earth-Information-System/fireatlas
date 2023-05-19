@@ -29,8 +29,8 @@ echo "Starting algorithm in subshell"
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
-  # run the ps command every second in the background with `watch` command
-  python combine_largefire.py -s 2013 -e 2021 -p -x
+  CURRENT_YEAR=$(date +'%Y')
+  python combine_largefire.py -s $CURRENT_YEAR -e $CURRENT_YEAR -x --nrt
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
