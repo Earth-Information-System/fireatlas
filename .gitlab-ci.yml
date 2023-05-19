@@ -51,7 +51,20 @@ dps-run:fire-atlas-lf-archive:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-combine-largefires
+    ALGO_NAME: eis-fire-feds-combine-largefire-archive
+    BRANCH_NAME: conus-dps
+    USERNAME: gcorradini
+    QUEUE: maap-dps-worker-128gb
+
+dps-run:fire-atlas-lf-nrt:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $LF_NRT
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-feds-combine-largefire-nrt
     BRANCH_NAME: conus-dps
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-128gb
