@@ -34,18 +34,17 @@ def mkdir_dash_p(parent_output_path):
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def copy_from_maap_to_veda_s3(from_maap_s3_path, is_nrt=False):
+def copy_from_maap_to_veda_s3(from_maap_s3_path):
     """from MAAP to VEDA s3
 
     :param from_maap_s3_path: s3 MAAP path
-    :param is_nrt: bool that changes output name
     :return: None
     """
     s3_client = boto3.client("s3")
 
     if "LargeFire" in from_maap_s3_path:
         try:
-            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline.fgb|lf_fireline_nrt.fgb|lf_perimeter.fgb|lf_perimeter_nrt.fgb|lf_newfirepix.fgb|lf_newfirepix_nrt.fgb|lf_nfplist.fgb|lf_nfplist_nrt.fgb)$"
+            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline_archive.fgb|lf_fireline_nrt.fgb|lf_perimeter_archive.fgb|lf_perimeter_nrt.fgb|lf_newfirepix_archive.fgb|lf_newfirepix_nrt.fgb|lf_nfplist_archive.fgb|lf_nfplist_nrt.fgb)$"
             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
             # {'fname': 'lf_perimeter.fgb'}
             destination_dict = (
@@ -86,7 +85,7 @@ def merge_lf_years(
         logger.info(f"[ GPD ]: frames by year: {gpd_by_year}")
         gdf = pd.concat(gpd_by_year).pipe(gpd.GeoDataFrame)
 
-        maap_s3_layer_path = f"{maap_output_folder_path}/lf_{layer}.fgb"
+        maap_s3_layer_path = f"{maap_output_folder_path}/lf_{layer}_archive.fgb"
         if IS_NRT_RUN:
             maap_s3_layer_path = f"{maap_output_folder_path}/lf_{layer}_nrt.fgb"
         gdf.to_file(
@@ -94,7 +93,7 @@ def merge_lf_years(
             driver="FlatGeobuf",
         )
         if IS_PRODUCTION_RUN:
-            copy_from_maap_to_veda_s3(maap_s3_layer_path, is_nrt=IS_NRT_RUN)
+            copy_from_maap_to_veda_s3(maap_s3_layer_path)
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
