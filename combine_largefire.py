@@ -12,7 +12,7 @@ from FireLog import logger
 
 LAYERS = ["nfplist", "newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
-TARGET_MAAP_INPUT_BUCKET_NAME = "WesternUS_REDO"
+TARGET_MAAP_INPUT_BUCKET_NAME = "CONUS_NRT_DPS" #"WesternUS_REDO"
 LOCAL_DIR_OUTPUT_PREFIX_PATH = f"/tmp/{TARGET_MAAP_INPUT_BUCKET_NAME}/LargeFire_Outputs"
 
 
