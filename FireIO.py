@@ -8,6 +8,8 @@ This module include functions used to read and save data
 
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
+import os
+
 import boto3
 import re
 import time
@@ -2341,24 +2343,7 @@ def pixel2World(gt, Xpixel, Ypixel):
 def copy_from_maap_to_veda_s3(from_maap_s3_path):
     s3_client = boto3.client('s3')
 
-    if "Largefire" in from_maap_s3_path:
-         try:
-             fname_regex = r"^s3://maap.*?(/Largefire/)(?P<fid>F[0-9_a-zA-Z]+)/(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb|nfplist.fgb)$"
-             # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
-             # {'fid': 'F1013_20230104PM', 'fname': 'perimeter.fgb'}
-             destination_dict = re.compile(fname_regex).match(from_maap_s3_path).groupdict()
-         except AttributeError:
-             logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
-             return
-        
-         from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
-         s3_client.copy_object(
-             CopySource=from_maap_s3_path,  # full bucket path
-             Bucket='veda-data-store-staging',  # Destination bucket
-             Key=f"EIS/FEDSoutput/Largefire/{destination_dict['fid']}/{destination_dict['fname']}"  # Destination path/filename
-         )
-
-    elif "Snapshot" in from_maap_s3_path:
+    if "Snapshot" in from_maap_s3_path:
         try:
             fname_regex = r"^s3://maap.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
             # note that `destination_fname` should resemble this output with a match if the URL was a perimeter file:
@@ -2368,11 +2353,13 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path):
             logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
             return
 
+        layer_name_no_ext = os.path.splitext(destination_fname)[0]
+        new_key_layer_name = f"snapshot_{layer_name_no_ext}_nrt.fgb"
         from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
         s3_client.copy_object(
             CopySource=from_maap_s3_path,  # full bucket path
             Bucket='veda-data-store-staging',  # destination bucket
-            Key=f'EIS/FEDSoutput/Snapshot/{destination_fname}'  # destination path/filename
+            Key=f'EIS/FEDSoutput/Snapshot/{new_key_layer_name}'  # destination path/filename
         )
     else:
         logger.error(f"[ NO S3 COPY EXPORTED ]: for file f{from_maap_s3_path}")
