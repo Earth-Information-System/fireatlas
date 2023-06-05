@@ -175,24 +175,24 @@ def DixieSamplerun(firesrc='SNPP'):
 def CreekRegionSamplerun():
     import FireMain, FireGpkg, FireGpkg_sfs
 
-    tst = (2020, 9, 1, "AM")
-    ted = (2020, 9, 2, "PM")
-    region = ("CreekSnapshotTest", [-120, 36, -118, 38])
+    tst = (2020, 9, 5, "AM")
+    ted = (2020, 9, 19, "AM")
+    region = ("CreekGlobalTwoWeeksSNPP", [-120, 36, -118, 38])
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
 
     
     # do fire tracking
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
-    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     
-    logger.info(f"{(tend-tstart)/60.} minutes used for CreekRegionSamplerun with NO dask.")
+    logger.info(f"{(tend-tstart)/60.} minutes used for CreekRegionSamplerun with dask.")
 
 def CArun():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
