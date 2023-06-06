@@ -38,7 +38,10 @@ def get_CONNECTIVITY_FIRE(fire):
 
         ftype = FTYP_Glb[fire.ftype]
         print(ftype)
-        fnpix = fire.n_pixels
+        
+        #fnpix = fire.n_pixels
+        fnpix = min(fire.n_pixels, 25)  # set an upper limit 
+        
         if ftype == "Temp Forest":
             v = fnpix * 2 / 25 + 0.8  # 0.8 (0) - 2.8 (25)
         elif ftype == "Trop Forest":
