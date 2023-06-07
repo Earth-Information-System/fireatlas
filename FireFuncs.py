@@ -37,9 +37,7 @@ def get_CONNECTIVITY_FIRE(fire):
         from FireConsts import FTYP_Glb
 
         ftype = FTYP_Glb[fire.ftype]
-        print(ftype)
         
-        #fnpix = fire.n_pixels
         fnpix = min(fire.n_pixels, 25)  # set an upper limit 
         
         if ftype == "Temp Forest":
@@ -184,7 +182,6 @@ def set_ftype(fire):
         else: # begin forested class
             lat_list = [xy[1] for xy in uselocs]
             lat_mean = abs(np.nanmean(lat_list))
-            print('Abs Mean LAT:',lat_mean)
             # Forest Classifications based on: https://ucmp.berkeley.edu/exhibits/biomes/forests.php
             if lat_mean < 23.5:
                 ftype = 2 # tropical
@@ -192,7 +189,6 @@ def set_ftype(fire):
                 ftype = 1 # temperate
             else:
                 ftype = 3 # boreal
-    print('FTYPE:', ftype)
     return ftype
 
 
