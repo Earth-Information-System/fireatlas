@@ -9,6 +9,7 @@ from pathlib import Path
 from FireConsts import diroutdata
 from dask.distributed import Client
 from FireLog import logger
+from FireFuncs import is_valid_output, alert_on_bad_output
 
 LAYERS = ["nfplist", "newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
@@ -93,7 +94,10 @@ def merge_lf_years(
             driver="FlatGeobuf",
         )
         if IS_PRODUCTION_RUN:
-            copy_from_maap_to_veda_s3(maap_s3_layer_path)
+            if is_valid_output(maap_s3_layer_path):
+                copy_from_maap_to_veda_s3(maap_s3_layer_path)
+            else:
+                alert_on_bad_output(maap_s3_layer_path)
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
@@ -229,11 +233,11 @@ if __name__ == "__main__":
         
         # run multiple years in parallel in PRODUCTION mode, by default this is the LF archive (not NRT)
         # PRODUCTION mode means outputs get `aws s3 cp` to s3://veda-data-store-staging
-        python3 combine_largefire.py -s 2018 -e 2022 -p -x
+        python3 combine_largefire.py -s 2018 -e 2021 -p -x
         
         # run NRT current year in PRODUCTION mode
         # PRODUCTION mode means outputs get `aws s3 cp` to s3://veda-data-store-staging
-        python3 combine_largefire.py -s 2023 -e 20203 -x --nrt
+        python3 combine_largefire.py -s 2023 -e 2023 -x --nrt
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(

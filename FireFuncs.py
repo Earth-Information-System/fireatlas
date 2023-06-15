@@ -179,3 +179,32 @@ def set_ftypename(fire):
 
         ftname = FTYP_Glb[fire.ftype]
     return ftname
+
+
+def is_valid_output(from_maap_s3_path):
+    """quality check outputs
+
+    :param from_maap_s3_path:
+    :return: True if valid, else False
+    """
+    import geopandas as gpd
+    gdf = gpd.read_file(from_maap_s3_path)
+
+    # check for zero records
+    if len(gdf.index) == 0:
+        return False
+
+    # check for empty geometries
+    if any(gdf.is_empty):
+        return False
+
+    return True
+
+
+def alert_on_bad_output(from_maap_s3_path):
+    """alert through SNS
+
+    :param from_maap_s3_path:
+    :return:
+    """
+    return False
