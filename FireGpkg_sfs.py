@@ -545,7 +545,7 @@ def save_sfts_trng(
         logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
 
         # TODO: Purge Client! 
-        client.restart(wait_for_workers=True)
+        client.restart(timeout='1000',wait_for_workers=True)
         #client.run(gc.disable)
         #client.wait_for_workers(8)
         # time flow control
