@@ -220,24 +220,45 @@ def ChileSampleRun():
     
 
 def QuebecSampleRun():
-    import FireMain, FireGpkg, FireGpkg_sfs
-
-    tst = (2023, 1, 1, 'AM')
-    ted = (2023, 6, 7, "AM")
-    region = ("QuebecGlobalNRT", [-83.69877641421793, 44.25483911637959, 
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    import FireConsts
+    from datetime import datetime
+    import os
+    
+    ctime = datetime.now()
+    #tst = (2023, 1, 1, 'AM')
+    #ted = (2023, 6, 7, "AM")
+    region = ("QuebecGlobalNRT_DPS", [-83.69877641421793, 44.25483911637959, 
                                   -48.45463578921794, 62.94135765648493])
+    
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
+    
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
 
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    tst = [2023,3,1,'AM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2022,1,10,'AM']
+    print(f"Running code from {tst} to {ted}.")
     
     # do fire tracking
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
 
     # calculate and save snapshot files
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
     tend = time.time()
     
     logger.info(f"{(tend-tstart)/60.} minutes used for QuebecSampleRun with dask.")
