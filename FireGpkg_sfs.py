@@ -451,11 +451,13 @@ def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix
     
     #dask.compute(*saved_fires)
 
-    logger.info(f"workers befor scatter = {len(client.cluster.workers)}")
+    logger.info(f"workers before scatter = {len(client.cluster.workers)}")
     allfires_scattered = client.scatter(allfires,broadcast=True)
     allfires_pt_scattered = client.scatter(allfires_pt,broadcast=True)
     
     futures = [client.submit(save_sfts_1f, allfires_scattered, allfires_pt_scattered, fid, regnm, layers) for fid in large_ids]
+    for f in futures:
+        logger.info(f"[ STORY ]: {client.cluster.scheduler.story(f.key)}")
     client.gather(futures)
     logger.info(f"workers after gather = {len(client.cluster.workers)}")
     #[save_sfts_1f(allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
