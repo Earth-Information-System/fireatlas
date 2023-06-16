@@ -19,6 +19,7 @@ Modules required
 * FireIO
 * FireConsts
 """
+import asyncio
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 # Use a logger to record console output
@@ -455,7 +456,7 @@ def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix
     allfires_scattered = client.scatter(allfires,broadcast=True)
     allfires_pt_scattered = client.scatter(allfires_pt,broadcast=True)
     futures = [client.submit(save_sfts_1f, allfires_scattered, allfires_pt_scattered, fid, regnm, layers) for fid in large_ids]
-    await client.gather(futures)
+    asyncio.run(client.gather(futures))
     logger.info(f"workers after gather = {len(client.cluster.workers)}")
     #[save_sfts_1f(allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
     tend = time.time()
