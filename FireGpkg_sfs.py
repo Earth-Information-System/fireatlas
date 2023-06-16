@@ -450,13 +450,14 @@ def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix
     #saved_fires = [save_sfts_1f(allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
     
     #dask.compute(*saved_fires)
-    
+
+    logger.info(f"workers befor scatter = {len(client.cluster.workers)}")
     allfires_scattered = client.scatter(allfires,broadcast=True)
     allfires_pt_scattered = client.scatter(allfires_pt,broadcast=True)
     
     futures = [client.submit(save_sfts_1f, allfires_scattered, allfires_pt_scattered, fid, regnm, layers) for fid in large_ids]
     client.gather(futures)
-    logger.info(f"workers = {len(client.cluster.workers)}")
+    logger.info(f"workers after gather = {len(client.cluster.workers)}")
     #[save_sfts_1f(allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
     tend = time.time()
     logger.info(f'Full time for time {t} with dask: {(tend-tstart)/60.} minutes')
@@ -545,7 +546,8 @@ def save_sfts_trng(
         logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
 
         # TODO: Purge Client! 
-        client.restart(timeout='1000',wait_for_workers=True)
+        client.restart(timeout='1000',wait_for_workers=False)
+        logger.info(f"workers after restart  = {len(client.cluster.workers)}")
         #client.run(gc.disable)
         #client.wait_for_workers(8)
         # time flow control
