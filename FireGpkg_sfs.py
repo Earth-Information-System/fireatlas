@@ -19,11 +19,13 @@ Modules required
 * FireIO
 * FireConsts
 """
+import os
 import warnings
 import multiprocessing
 warnings.simplefilter(action='ignore', category=FutureWarning)
 # Use a logger to record console output
 from FireLog import logger
+import time
 
 
 def getdd(layer):
@@ -467,6 +469,7 @@ def worker_save_sfts_1f(queue: multiprocessing.Queue):
             break
         # unpack
         allfires, allfires_pt, fid, regnm, layers = payload
+        logger.info(f'[ WORKER {os.getpid()} ]: writing out LF={fid}')
         save_sfts_1f(allfires, allfires_pt, fid, regnm, layers)
 
 
