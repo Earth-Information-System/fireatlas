@@ -25,6 +25,7 @@ import multiprocessing
 warnings.simplefilter(action='ignore', category=FutureWarning)
 # Use a logger to record console output
 from FireLog import logger
+from FireConsts import number_of_multi_proc_workers
 import time
 
 
@@ -436,24 +437,28 @@ def save_sfts_all(queue: multiprocessing.Queue, t, regnm, layers=["perimeter", "
 
     tstart = time.time()
     # read allfires object
+    logger.info(f'Load allfires..')
     allfires = FireIO.load_fobj(t, regnm, activeonly=True)
     
     t_pt = FireTime.t_nb(t, nb="previous")
     
     try:
     # read allfires object at previous time step
+        logger.info(f'Load allfires_pt...')
         allfires_pt = FireIO.load_fobj(t_pt, regnm, activeonly=True)
     except: 
         allfires_pt = FireObj.Allfires(t_pt)
     # find all large active fires and sleepers
+    logger.info(f'Finding largefires...')
     large_ids = find_largefires(allfires)
 
     # loop over all fires, and create/save gpkg files for each single fire
     for fid in large_ids:
+        logger.info(f'Adding {fid} to queue')
         queue.put([allfires, allfires_pt, fid, regnm, layers])
 
     tend = time.time()
-    logger.info(f'Full time for time {t} with multiproc: {(tend-tstart)/60.} minutes')
+    logger.info(f'Time sending to queue for timestep {t} with multiproc: {(tend-tstart)/60.} minutes')
 
 
 def worker_save_sfts_1f(queue: multiprocessing.Queue):
@@ -539,7 +544,7 @@ def save_sfts_trng(
 
     queue = multiprocessing.Queue()
     workers = []
-    for i in range(5):
+    for i in range(number_of_multi_proc_workers):
         p = multiprocessing.Process(target=worker_save_sfts_1f, args=(queue,))
         p.start()
         workers.append(p)
@@ -550,7 +555,10 @@ def save_sfts_trng(
         
         tstart = time.time()
         # create and save all gpkg files at time t
-        save_sfts_all(queue, t, regnm, layers=layers)
+        try:
+            save_sfts_all(queue, t, regnm, layers=layers)
+        except Exception as exc:
+            logger.exception(exc)
         tend = time.time()
         logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
 
@@ -561,7 +569,8 @@ def save_sfts_trng(
         t = FireTime.t_nb(t, nb="next")
 
     # add poison pill to stop work
-    queue.put(None)
+    for i in range(number_of_multi_proc_workers):
+        queue.put(None)
 
     # wait all writer workers
     for p in workers:
