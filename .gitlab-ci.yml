@@ -40,7 +40,7 @@ dps-run:fire-atlas-conus:
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-nrt-dask-dps
     BRANCH_NAME: conus-dps
-    USERNAME: gcorradini
+    USERNAME: ashiklom
     QUEUE: maap-dps-worker-32gb
 
 dps-run:fire-atlas-lf-archive:
@@ -53,7 +53,7 @@ dps-run:fire-atlas-lf-archive:
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-archive
     BRANCH_NAME: conus-dps
-    USERNAME: gcorradini
+    USERNAME: ashiklom
     QUEUE: maap-dps-worker-128gb
 
 dps-run:fire-atlas-lf-nrt:
@@ -66,5 +66,5 @@ dps-run:fire-atlas-lf-nrt:
     IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-nrt
     BRANCH_NAME: conus-dps
-    USERNAME: gcorradini
+    USERNAME: ashiklom
     QUEUE: maap-dps-worker-128gb
