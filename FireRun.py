@@ -229,7 +229,7 @@ def QuebecSampleRun():
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
     region = ("QuebecGlobalNRT_DPS", [-83.69877641421793, 44.25483911637959, 
-                                  -48.45463578921794, 62.94135765648493])
+                                      -48.45463578921794, 62.94135765648493])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
