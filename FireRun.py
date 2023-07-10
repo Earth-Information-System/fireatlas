@@ -177,7 +177,7 @@ def CreekRegionSamplerun():
 
     tst = (2020, 9, 5, "AM")
     ted = (2020, 9, 19, "AM")
-    region = ("CreekGlobalTwoWeeksSNPP", [-120, 36, -118, 38])
+    region = ("CreekEliTwoWeeksSNPP", [-120, 36, -118, 38])
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
 

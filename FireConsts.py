@@ -70,10 +70,10 @@ firessr = "viirs"  # sensor - 'mcd64'
 # ------------------------------------------------------------------------------
 
 # fire type options
-FTYP_opt = 2  # 0: preset ftype for all fires;
+FTYP_opt = 1  # 0: preset ftype for all fires;
 # 1: use CA type classifications
 # 2: proposed global fire types
-CONT_opt = 2  # 0: preset continuity threshold for all fires;
+CONT_opt = 1  # 0: preset continuity threshold for all fires;
 # 1: use CA type classifications dependent values
 # 2: use global fire types and size dependent values
 
@@ -124,7 +124,7 @@ FTYP_Glb = {
 # ------------------------------------------------------------------------------
 # other options
 # ------------------------------------------------------------------------------
-epsg = 6933  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
+epsg = 9311  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
 
 remove_static_sources_bool = True  # remove areas with known flaring/gas sources from region
 remove_static_sources_sourcefile = "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv"
@@ -132,4 +132,4 @@ remove_static_sources_buffer = 0.01 # Buffer around static source points. Units 
 
 opt_rmstatfire = True  # do the removal of small fires with high pixel density
 
-number_of_multi_proc_workers = 2
+number_of_multi_proc_workers = 4
