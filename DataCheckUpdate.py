@@ -246,7 +246,7 @@ def wget(url, **kwargs):
     if "header" in kwargs:
         header = kwargs.pop("header")
         assert header == "NASA", f"Non-standard header is not implemented: {header}"
-        request.add_header("Authorization", "Bearer dHJpbmtldDplV05vWlc0eE4wQjFZMmt1WldSMToxNjIyODMxODExOjg1NDMyYTZiZTFjZDFkNzZkZWIxMjc3ODdlYzY2NGUxMmI1NzYyMTU")
+        request.add_header("Authorization", "Bearer ZW9ybGFuZDpaV3hwYW1Gb0xtOXliR0Z1WkVCdVlYTmhMbWR2ZGc9PToxNjQyNzE4ODAyOjQyYzMzM2ViODViOWI3OTVlYzAyYTdmYWE2ZjYwYjFjZTc5MGJmNDg")
     if len(kwargs) > 0:
         print(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
     with opener.open(request) as response, fsspec.open(target_file, "wb") as f:

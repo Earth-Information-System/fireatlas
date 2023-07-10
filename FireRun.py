@@ -228,8 +228,8 @@ def QuebecSampleRun():
     ctime = datetime.now()
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
-    region = ("QuebecGlobalNRT_DPS", [-83.69877641421793, 44.25483911637959, 
-                                  -48.45463578921794, 62.94135765648493])
+    region = ("QuebecGlobalNRT_ELI", [-83.69877641421793, 44.25483911637959, 
+                                      -48.45463578921794, 62.94135765648493])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
@@ -245,16 +245,16 @@ def QuebecSampleRun():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    tst = [2023,3,1,'AM']
+    #tst = [2023,6,30,'AM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
-    #ted = [2022,1,10,'AM']
+    #ted = [2023,6,28,'AM']
     print(f"Running code from {tst} to {ted}.")
     
     # do fire tracking
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
 
     # calculate and save snapshot files
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
