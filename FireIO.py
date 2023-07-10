@@ -1007,6 +1007,39 @@ def get_LCT_CONUS(locs):
     vLCT = [int(s) for s in samps]
     return vLCT
 
+def get_LCT_Global(locs):
+    """ Get land cover type for active fires - CONUS scale.
+        This is the same function as get_LCT but with global file.
+    
+    Parameters
+    ----------
+    locs : list of lists (nx2)
+        lat and lon values for each active fire detection
+
+    Returns
+    -------
+    vLCT : list of ints
+        land cover types for all input active fires
+    """
+    from FireConsts import dirextdata
+
+    import rasterio
+    import pyproj
+    import os
+    
+    fnmLCT = os.path.join(dirextdata, "GlobalLC", "global_lc_mosaic.tif")
+    dataset = rasterio.open(fnmLCT)
+    #print('LOCS CRS:',locs_crs)
+    
+    # previous LC data sources were in a different crs and needed a transform
+    # the VIIRS and LC data in this case are both in EPSG:4326, so we can sample directly
+    samps = list(dataset.sample(locs))
+    #print('LANDCOVER SAMPLES:',samps)
+    
+    vLCT = [int(s) for s in samps]
+    #print('vLCT SAMPLES:',vLCT)
+    return vLCT
+
 def get_LCT_NLCD(locs):
     """ Get land cover type from NCLD for multiple locations
 

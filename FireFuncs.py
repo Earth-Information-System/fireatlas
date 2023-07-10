@@ -37,7 +37,9 @@ def get_CONNECTIVITY_FIRE(fire):
         from FireConsts import FTYP_Glb
 
         ftype = FTYP_Glb[fire.ftype]
-        fnpix = fire.n_pixels
+        
+        fnpix = min(fire.n_pixels, 25)  # set an upper limit 
+        
         if ftype == "Temp Forest":
             v = fnpix * 2 / 25 + 0.8  # 0.8 (0) - 2.8 (25)
         elif ftype == "Trop Forest":
@@ -84,6 +86,7 @@ def set_ftype(fire):
         the fire associated with the CONNECTIVITY_FIRE_KM
 
     """
+    import numpy as np
     from FireConsts import FTYP_opt
     import FireIO
     from datetime import date
@@ -145,8 +148,47 @@ def set_ftype(fire):
             print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
     elif FTYP_opt == 2:  # global type classification
-        ftype = 1  # need more work here...
-
+         # update or read LCTmax; calculated using all newlocs
+        if fire.n_newpixels < 1000:
+            uselocs = fire.newlocs_geo
+        else:
+            # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+            uselocs = random.sample(fire.newlocs_geo, 1000)
+        
+        vLCT = FireIO.get_LCT_Global(
+            uselocs
+        )  # call get_LCT to get all LCT for the fire pixels
+        
+        try:
+            LCTmax = max(
+            set(vLCT), key=vLCT.count)  # extract the LCT with most pixel counts
+        except:
+            print('No LCT data available, setting ftype to 0...')
+            ftype = 0
+            return ftype
+        
+        #print("LCTMAX:",LCTmax)
+        if LCTmax in [0, 50, 60, 70, 80, 90, 100, 200]:
+            ftype = 0
+        # ^^^ current catch-all for 'Other'. 
+        # See: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_Landcover_100m_Proba-V-C3_Global
+        
+        elif LCTmax in [20]: # Shrub --> Savanna
+            ftype = 4
+        
+        elif LCTmax in [40]: # Agriculture class
+            ftype = 5
+        
+        else: # begin forested class
+            lat_list = [xy[1] for xy in uselocs]
+            lat_mean = abs(np.nanmean(lat_list))
+            # Forest Classifications based on: https://ucmp.berkeley.edu/exhibits/biomes/forests.php
+            if lat_mean < 23.5:
+                ftype = 2 # tropical
+            elif lat_mean < 50:
+                ftype = 1 # temperate
+            else:
+                ftype = 3 # boreal
     return ftype
 
 

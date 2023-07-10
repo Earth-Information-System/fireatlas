@@ -175,9 +175,33 @@ def DixieSamplerun(firesrc='SNPP'):
 def CreekRegionSamplerun():
     import FireMain, FireGpkg, FireGpkg_sfs
 
-    tst = (2020, 9, 1, "AM")
-    ted = (2020, 9, 2, "PM")
-    region = ("CreekSnapshotTest", [-120, 36, -118, 38])
+    tst = (2020, 9, 5, "AM")
+    ted = (2020, 9, 19, "AM")
+    region = ("CreekEliTwoWeeksSNPP", [-120, 36, -118, 38])
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    tstart = time.time()
+
+    
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    tend = time.time()
+    
+    logger.info(f"{(tend-tstart)/60.} minutes used for CreekRegionSamplerun with dask.")
+    
+
+def ChileSampleRun():
+    import FireMain, FireGpkg, FireGpkg_sfs
+
+    tst = (2023, 2, 13, 'AM')
+    ted = (2023, 4, 1, "AM")
+    region = ("ChileGlobalNRT", [-82.39770817214531, -55.54947848623975, 
+                                 -65.87427067214531, -14.895459243377251])
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
 
@@ -186,13 +210,58 @@ def CreekRegionSamplerun():
     #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    tend = time.time()
+    
+    logger.info(f"{(tend-tstart)/60.} minutes used for ChileSampleRun with dask.")
+    
+
+def QuebecSampleRun():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    import FireConsts
+    from datetime import datetime
+    import os
+    
+    ctime = datetime.now()
+    #tst = (2023, 1, 1, 'AM')
+    #ted = (2023, 6, 7, "AM")
+    region = ("QuebecGlobalNRT_ELI", [-83.69877641421793, 44.25483911637959, 
+                                      -48.45463578921794, 62.94135765648493])
+    
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    tstart = time.time()
+    
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    #tst = [2023,6,30,'AM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2023,6,28,'AM']
+    print(f"Running code from {tst} to {ted}.")
+    
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+
+    # calculate and save snapshot files
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
-    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
     tend = time.time()
     
-    logger.info(f"{(tend-tstart)/60.} minutes used for CreekRegionSamplerun with NO dask.")
+    logger.info(f"{(tend-tstart)/60.} minutes used for QuebecSampleRun with dask.")
 
 def CArun():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
@@ -521,4 +590,3 @@ if __name__ == "__main__":
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run the whole code")
 
-        

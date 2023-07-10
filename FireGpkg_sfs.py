@@ -19,12 +19,15 @@ Modules required
 * FireIO
 * FireConsts
 """
+import os
 import warnings
+import multiprocessing
 warnings.simplefilter(action='ignore', category=FutureWarning)
 # Use a logger to record console output
 from FireLog import logger
+from FireConsts import number_of_multi_proc_workers
 import time
-import dask
+
 
 def getdd(layer):
     ''' Get attributes names and formats for different gpkg layers
@@ -420,7 +423,8 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
     # gdf_all = gdf_all.reset_index()
     return gdf_all
 
-def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix", "nfplist"]):
+
+def save_sfts_all(queue: multiprocessing.Queue, t, regnm, layers=["perimeter", "fireline", "newfirepix", "nfplist"]):
     """Wrapper to create and save gpkg files at a time step for all large fires
     Parameters
     ----------
@@ -430,39 +434,51 @@ def save_sfts_all(client, t, regnm, layers=["perimeter", "fireline", "newfirepix
         region name
     """
     import FireTime, FireIO, FireObj
-    import geopandas as gpd
-      
+
     tstart = time.time()
     # read allfires object
+    logger.info(f'Load allfires..')
     allfires = FireIO.load_fobj(t, regnm, activeonly=True)
     
     t_pt = FireTime.t_nb(t, nb="previous")
     
     try:
     # read allfires object at previous time step
+        logger.info(f'Load allfires_pt...')
         allfires_pt = FireIO.load_fobj(t_pt, regnm, activeonly=True)
     except: 
         allfires_pt = FireObj.Allfires(t_pt)
     # find all large active fires and sleepers
+    logger.info(f'Finding largefires...')
     large_ids = find_largefires(allfires)
 
     # loop over all fires, and create/save gpkg files for each single fire
-    #saved_fires = [save_sfts_1f(allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
-    
-    #dask.compute(*saved_fires)
-    
-    allfires_scattered = client.scatter(allfires,broadcast=True)
-    allfires_pt_scattered = client.scatter(allfires_pt,broadcast=True)
-    
-    futures = [client.submit(save_sfts_1f, allfires_scattered, allfires_pt_scattered, fid, regnm, layers) for fid in large_ids]
-    client.gather(futures)
-    logger.info(f"workers = {len(client.cluster.workers)}")
-    #[save_sfts_1f(allfires, allfires_pt, fid, regnm, layers) for fid in large_ids]
+    for fid in large_ids:
+        logger.info(f'Adding {fid} to queue')
+        queue.put([allfires, allfires_pt, fid, regnm, layers])
+
     tend = time.time()
-    logger.info(f'Full time for time {t} with dask: {(tend-tstart)/60.} minutes')
-    
-#@dask.delayed
-def save_sfts_1f(allfires,allfires_pt, fid, regnm, layers=["perimeter", "fireline", "newfirepix", "nfplist"]):
+    logger.info(f'Time sending to queue for timestep {t} with multiproc: {(tend-tstart)/60.} minutes')
+
+
+def worker_save_sfts_1f(queue: multiprocessing.Queue):
+    """pop off the queue and call `save_sfts_1f`
+
+    :param queue:
+    :return:
+    """
+    while True:
+        payload = queue.get()
+        # check for poison pill
+        if payload is None:
+            break
+        # unpack
+        allfires, allfires_pt, fid, regnm, layers = payload
+        logger.info(f'[ WORKER {os.getpid()} ]: writing out LF={fid}')
+        save_sfts_1f(allfires, allfires_pt, fid, regnm, layers)
+
+
+def save_sfts_1f(allfires, allfires_pt, fid, regnm, layers=["perimeter", "fireline", "newfirepix", "nfplist"]):
     """Wrapper to create and save gpkg files at a time step for all large fires
     Parameters
     ----------
@@ -471,9 +487,8 @@ def save_sfts_1f(allfires,allfires_pt, fid, regnm, layers=["perimeter", "firelin
     regnm : str
         region name
     """
-    import FireTime, FireIO
-    import geopandas as gpd
-    
+    import FireIO
+
     logger.info(f'Generating LF data for fid {fid}')
     tstart = time.time()
     f = allfires.fires[fid]
@@ -522,39 +537,44 @@ def save_sfts_trng(
         region name
     """
     import FireTime
-    from dask.distributed import Client 
-    import gc
-    
+
     # loop over all days during the period
     endloop = False  # flag to control the ending olf the loop
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
-    
-    client = Client(n_workers=3)
-    #client.run(gc.disable)
-    #client.wait_for_workers(8)
-    logger.info(f"workers = {len(client.cluster.workers)}")
-    
+
+    queue = multiprocessing.Queue()
+    workers = []
+    for i in range(number_of_multi_proc_workers):
+        p = multiprocessing.Process(target=worker_save_sfts_1f, args=(queue,))
+        p.start()
+        workers.append(p)
+
     while endloop == False:
         print("Single fire saving", t)
         logger.info('Single fire saving: '+str(t))
         
         tstart = time.time()
         # create and save all gpkg files at time t
-        save_sfts_all(client, t, regnm, layers=layers)
+        try:
+            save_sfts_all(queue, t, regnm, layers=layers)
+        except Exception as exc:
+            logger.exception(exc)
         tend = time.time()
         logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
 
-        # TODO: Purge Client! 
-        client.restart(wait_for_workers=True)
-        #client.run(gc.disable)
-        #client.wait_for_workers(8)
-        # time flow control
-        #  - if t reaches ted, set endloop to True to stop the loop
         if FireTime.t_dif(t, ted) == 0:
             endloop = True
 
         #  - update t with the next time stamp
         t = FireTime.t_nb(t, nb="next")
+
+    # add poison pill to stop work
+    for i in range(number_of_multi_proc_workers):
+        queue.put(None)
+
+    # wait all writer workers
+    for p in workers:
+        p.join()
 
 def combine_sfts(regnm,yr,addFRAP=False):
     ''' Combine all large fire time series to a gpkg data, with the option to add fire name from FRAP data
