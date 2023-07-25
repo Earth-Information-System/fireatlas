@@ -217,7 +217,92 @@ def ChileSampleRun():
     tend = time.time()
     
     logger.info(f"{(tend-tstart)/60.} minutes used for ChileSampleRun with dask.")
+
+
+def BorealNA():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    import FireConsts
+    from datetime import datetime
+    import os
     
+    ctime = datetime.now()
+    region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
+    
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    tstart = time.time()
+    
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    #tst = [2023,7,22,'AM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2023,6,28,'AM']
+    print(f"Running code from {tst} to {ted}.")
+    
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    tend = time.time()
+    
+    logger.info(f"{(tend-tstart)/60.} minutes used for BorealNA for {tst} to {ted}.")
+    
+
+def ItalyGreeceNRT():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    import FireConsts
+    from datetime import datetime
+    import os
+    
+    ctime = datetime.now()
+    region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
+    
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    tstart = time.time()
+    
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    #tst = [2023,6,1,'AM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2023,6,28,'AM']
+    print(f"Running code from {tst} to {ted}.")
+    
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    tend = time.time()
+    
+    logger.info(f"{(tend-tstart)/60.} minutes used for Italy and Greece for {tst} to {ted}.")    
+
+
 
 def QuebecSampleRun():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
