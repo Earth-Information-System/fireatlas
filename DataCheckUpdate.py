@@ -246,7 +246,7 @@ def wget(url, **kwargs):
     if "header" in kwargs:
         header = kwargs.pop("header")
         assert header == "NASA", f"Non-standard header is not implemented: {header}"
-        request.add_header("Authorization", "Bearer dHJpbmtldDplV05vWlc0eE4wQjFZMmt1WldSMToxNjIyODMxODExOjg1NDMyYTZiZTFjZDFkNzZkZWIxMjc3ODdlYzY2NGUxMmI1NzYyMTU")
+        request.add_header("Authorization", "Bearer ZW9ybGFuZDpaV3hwYW1Gb0xtOXliR0Z1WkVCdVlYTmhMbWR2ZGc9PToxNjQyNzE4ODAyOjQyYzMzM2ViODViOWI3OTVlYzAyYTdmYWE2ZjYwYjFjZTc5MGJmNDg")
     if len(kwargs) > 0:
         print(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
     with opener.open(request) as response, fsspec.open(target_file, "wb") as f:
@@ -279,7 +279,7 @@ def update_VNP14IMGTDL(local_dir=None):
     dstart = dstart - timedelta(days=1)              # downloaded the last file again to avoid incomplete data
 
     # Do the download process
-    urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
+    urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
         try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
@@ -314,7 +314,7 @@ def update_VJ114IMGTDL(local_dir=None):
     dstart = dstart - timedelta(days=1)              # downloaded the last file again to avoid incomplete data
 
     # Do the download process
-    urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
+    urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
         try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
