@@ -13,6 +13,7 @@ KEY_MAP = {
     "algo_name": "algorithm_name",
     "version": "code_version",
     "environment": "environment_name",
+    "inputs": "algorithm_params",
     "description": "algorithm_description",
     "repository_url": "repo_url",
     "docker_url": "docker_container_url",
