@@ -8,6 +8,7 @@ echo "Initial working directory: $(pwd -P)"
 echo "conda: $(which conda)"
 echo "Python: $(which python)"
 python --version
+source activate /opt/conda/envs/env-feds-dask
 echo "Starting algorithm in subshell"
 (
 pushd "$basedir"
