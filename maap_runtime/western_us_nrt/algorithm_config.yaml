@@ -20,7 +20,7 @@ run_command: "fireatlas_nrt/run_dps.sh 'WesternUSrunNRT'"
 # build_command: my-build-script.sh
 # set a storage value in GB or MB or KB, e.g. "100GB", "20MB", "10KB"
 disk_space: "10GB"
-inputs:
+#inputs:
 # remove below this line if no inputs
 # rename and set algorithm input names accordingly
 #  - name: path-number

@@ -14,10 +14,9 @@ KEY_MAP = {
     "version": "code_version",
     "environment": "environment_name",
     "description": "algorithm_description",
-    "docker_url": "docker_container_url",
-    "inputs": "algorithm_params",
-    "run_command": "script_command",
     "repository_url": "repo_url",
+    "docker_url": "docker_container_url",
+    "run_command": "script_command",
 }
 
 
