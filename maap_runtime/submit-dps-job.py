@@ -16,7 +16,7 @@ parser.add_argument("--params", type=str, help="an optional json serialized stri
 
 
 def submit_job(algo_id, version, username, queue, maap_environment, params={}):
-    maap = MAAP(maap_host='api.ops.maap-project.org')
+    maap = MAAP(maap_host='api.maap-project.org')
     return maap.submitJob(
         identifier=f"job-{algo_id}_{maap_environment}:{version}",
         algo_id=f"{algo_id}_{maap_environment}",  # MAAP seems to expect `submitJob` to identify things this way

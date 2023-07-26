@@ -63,7 +63,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--maap_api_host",
         help="Optional maap api host url",
-        default="api.ops.maap-project.org",
+        default="api.maap-project.org",
     )
     args = parser.parse_args()
     main(args.config_file[0], args.maap_api_host)
