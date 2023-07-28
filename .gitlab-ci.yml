@@ -68,3 +68,16 @@ dps-run:fire-atlas-lf-nrt:
     BRANCH_NAME: conus-dps
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-128gb
+
+dps-run:borealna-nrt:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $BOREAL_NRT
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-borealna-nrt-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-borealna-nrt
+    BRANCH_NAME: eli_global
+    USERNAME: ashiklom
+    QUEUE: maap-dps-worker-128gb
