@@ -225,8 +225,12 @@ def BorealNA():
     from datetime import datetime
     import os
     
+    if FireConsts.epsg!=3571:
+        print('Please set the epsg code to 3571')
+        return
+    
     ctime = datetime.now()
-    region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
+    region = ("BOREAL_NRT_3571_DPS", [-169, 44, -48, 75])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
@@ -267,8 +271,12 @@ def ItalyGreeceNRT():
     from datetime import datetime
     import os
     
+    if FireConsts.epsg!=6933:
+        print('Please set the epsg code to 6933')
+        return
+    
     ctime = datetime.now()
-    region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
+    region = ("ItalyGreeceNRT_DPS2", [11, 36, 28, 42])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
