@@ -4,6 +4,8 @@ running controls
 """
 
 import os
+import FireSettings
+settings = FireSettings.RuntimeSettings()
 
 # ------------------------------------------------------------------------------
 # project directories
