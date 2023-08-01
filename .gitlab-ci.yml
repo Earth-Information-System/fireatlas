@@ -25,7 +25,7 @@ dps-run:data-update-checker:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-dps-data-checker
+    ALGO_NAME: eis-fire-feds-dps-data-checker-v2
     BRANCH_NAME: conus-dps
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-8gb
@@ -38,7 +38,7 @@ dps-run:fire-atlas-conus:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-nrt-dask-dps
+    ALGO_NAME: eis-fire-feds-nrt-dask-dps-v2
     BRANCH_NAME: conus-dps
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-32gb
@@ -51,7 +51,7 @@ dps-run:fire-atlas-lf-archive:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-combine-largefire-archive
+    ALGO_NAME: eis-fire-feds-combine-largefire-archive-v2
     BRANCH_NAME: conus-dps
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-128gb
@@ -64,7 +64,7 @@ dps-run:fire-atlas-lf-nrt:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-combine-largefire-nrt
+    ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v2
     BRANCH_NAME: conus-dps
     USERNAME: ashiklom
     QUEUE: maap-dps-worker-128gb
