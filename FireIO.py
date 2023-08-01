@@ -2373,9 +2373,11 @@ def pixel2World(gt, Xpixel, Ypixel):
     return (Xgeo, Ygeo)
 
 
-def copy_from_maap_to_veda_s3(from_maap_s3_path):
+def copy_from_maap_to_veda_s3(from_maap_s3_path, region_name):
     s3_client = boto3.client('s3')
-
+     
+    region_name = region_name.replace('_','').lower()
+        
     if "Snapshot" in from_maap_s3_path:
         try:
             fname_regex = r"^s3://maap.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"

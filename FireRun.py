@@ -12,6 +12,8 @@ import argparse
 # logger.setLevel(logging.INFO)
 from FireLog import logger
 
+
+
 def DataUpdateChecker():
     """ download data from different satellite sensors at the
     start of every 2nd hour from 1am through 11pm: `0 1-23/2 * * *`
@@ -268,7 +270,7 @@ def ItalyGreeceNRT():
     import os
     
     ctime = datetime.now()
-    region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
+    region = ("ItalyGreeceNRT_DPS2", [11, 36, 28, 42])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
@@ -657,6 +659,8 @@ if __name__ == "__main__":
     """
     
     from dask.distributed import performance_report
+    import FireConsts
+    
     
     parser = argparse.ArgumentParser(description="registered MAAP.DPS jobs call ./run_dps.sh which delegates to this run function")
     parser.add_argument("run_function_name", help="The name of the function in ./FireRun.py to call")
@@ -667,6 +671,8 @@ if __name__ == "__main__":
     try:
         run_func = globals()[args.run_function_name]
         logger.info(f"[ RUNNING ]: {run_func}")
+        logger.info(f"[ RUNNING WITH SETTINGS ]: {FireConsts.settings.dict()}")
+
         #with performance_report(filename="dask-report.html"):
         run_func()
     except Exception as e:
