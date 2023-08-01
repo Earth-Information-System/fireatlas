@@ -223,10 +223,14 @@ def ChileSampleRun():
 
 def BorealNA():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
-    import FireConsts
+    import FireConsts, FireEnums
     from datetime import datetime
-    import os
-    
+
+    # adjust constants for this run
+    FireConsts.epsg = FireEnums.EPSG.HI_LAT
+    FireConsts.FTYP_opt = 2
+    FireConsts.CONT_opt = 2
+
     ctime = datetime.now()
     region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
     
@@ -671,7 +675,6 @@ if __name__ == "__main__":
     try:
         run_func = globals()[args.run_function_name]
         logger.info(f"[ RUNNING ]: {run_func}")
-        logger.info(f"[ RUNNING WITH SETTINGS ]: {FireConsts.settings.dict()}")
 
         #with performance_report(filename="dask-report.html"):
         run_func()
