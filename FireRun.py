@@ -270,7 +270,7 @@ def ItalyGreeceNRT():
     import os
     
     ctime = datetime.now()
-    region = ("ItalyGreeceNRT_DPS2", [11, 36, 28, 42])
+    region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
