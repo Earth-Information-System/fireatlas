@@ -1,4 +1,5 @@
-FROM mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.0.1
+FROM mas.dit.maap-project.org/root/maap-workspaces/base_images/vanilla:dit
+#FROM mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.0.1
 
 COPY ./maap_runtime/submit-dps-job.py submit-dps-job.py
 
