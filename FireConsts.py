@@ -14,9 +14,9 @@ class LazyRuntimeSettings:
     def __getattr__(self, attr):
         """lazily initialize self._settings
 
-        this happens during the first dot attribute lookup so we don't have
+        this happens during the first dot attribute lookup (FireConst.settings.<attr>)so we don't have
         to add our os environment variable overrides before we do a `import FireConsts`.
-        then any `settings.<attr>` lookups proxy through this function to `getattr`
+        then any `FireConsts.settings.<attr>` lookups proxy through this function to `getattr`
         """
         if self._settings is None:
             self._settings = FireSettings.RuntimeSettings()
