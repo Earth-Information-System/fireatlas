@@ -5,7 +5,24 @@ running controls
 
 import os
 import FireSettings
-settings = FireSettings.RuntimeSettings()
+
+
+class LazyRuntimeSettings:
+    def __init__(self):
+        self._settings = None
+
+    def __getattr__(self, attr):
+        """lazily initialize self._settings
+
+        this happens during the first dot attribute lookup so we don't have
+        to add our os environment variable overrides before we do a `import FireConsts`.
+        then any `settings.<attr>` lookups proxy through this function to `getattr`
+        """
+        if self._settings is None:
+            self._settings = FireSettings.RuntimeSettings()
+        return getattr(self._settings, attr)
+
+settings = LazyRuntimeSettings()
 
 # ------------------------------------------------------------------------------
 # project directories
