@@ -1,4 +1,3 @@
-from typing import Optional
 from enum import Enum
 import pydantic
 
@@ -27,7 +26,7 @@ class RuntimeSettings(pydantic.BaseSettings):
 
     firesrc: FireSource.VIIRS
     
-    firenrt: bool = True # NRT - True, False
+    firenrt: bool = True
     
     class Config:
         env_prefix = "FIRE_"

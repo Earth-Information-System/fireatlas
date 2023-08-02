@@ -224,7 +224,7 @@ def ChileSampleRun():
 def BorealNA():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
     import os
-    import FireConsts, FireSettings
+    import FireSettings
     from datetime import datetime
 
     # set os environ variables that will override
@@ -678,7 +678,6 @@ if __name__ == "__main__":
     try:
         run_func = globals()[args.run_function_name]
         logger.info(f"[ RUNNING ]: {run_func}")
-        logger.info(f"[ RUNNING WITH SETTINGS ]: {FireConsts.settings.dict()}")
 
         #with performance_report(filename="dask-report.html"):
         run_func()
