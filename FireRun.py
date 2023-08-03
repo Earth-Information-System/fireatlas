@@ -215,17 +215,17 @@ def ChileSampleRun():
 
 
 def BorealNA():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireEnums
     import os
-    import FireSettings
     from datetime import datetime
 
+    # NOTE: this has to happen before import FireConsts
     # set os environ variables that will override
     # `FireConsts.settings` for all Python interpreters
     # (meaning even those spawned during fork in multiple processes)
-    os.environ['FIRE_EPSG'] = FireSettings.EPSG.HI_LAT
-    os.environ['FIRE_FTYP_OPT'] = 2
-    os.environ['FIRE_CONT_OPT'] = 2
+    os.environ['EPSG_CODE'] = FireEnums.EPSG.HI_LAT
+    os.environ['FTYP_OPT'] = 2
+    os.environ['CONT_OPT'] = 2
 
     ctime = datetime.now()
     region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
@@ -265,10 +265,8 @@ def BorealNA():
 
 def ItalyGreeceNRT():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
-    import FireConsts
     from datetime import datetime
-    import os
-    
+
     ctime = datetime.now()
     region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
     
@@ -308,10 +306,8 @@ def ItalyGreeceNRT():
 
 def QuebecSampleRun():
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
-    import FireConsts
     from datetime import datetime
-    import os
-    
+
     ctime = datetime.now()
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
@@ -410,10 +406,8 @@ def CArun32610():
 
 def CArunNRT():
     
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
+    import FireIO, FireGpkg_sfs
     from datetime import datetime
-    import os
     ctime = datetime.now()
 
     CAshp = FireIO.get_Cal_shp()

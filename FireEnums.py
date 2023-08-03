@@ -1,5 +1,4 @@
 from enum import Enum
-import pydantic
 
 
 class FireSource(Enum):
