@@ -100,7 +100,9 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
         gdf = gpd.GeoDataFrame(
                 columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(epsg), geometry=[]
             )
-        gdf = gdf.set_index("fireID")  # set fid column as the index column
+
+        gdf = gdf.set_index("fireID") # set fid column as the index column
+        
 
     # 1. drop rows for fires that are newly invalidated or dead
 
@@ -175,7 +177,10 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
 
     # # 5. drop the columns with no use
     # if 'invalid' in dd.keys(): gdf = gdf.drop(columns='invalid')
-
+    
+    gdf['region'] = str(regnm)
+    gdf['primarykey'] = gdf['region'] + '-' + gdf.index.map(str)
+    
     return gdf
 
 

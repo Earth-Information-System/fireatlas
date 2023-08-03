@@ -323,7 +323,7 @@ def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
             gdf_1d = make_sf_nfplist(allfires, t, regnm, fids_m+[fid])
         else:
             gdf_1d = make_sf(t, regnm, layer, fids_m+[fid], fid)
-
+        
         # append daily row to gdf_all
         # if FireTime.t_dif(t, f.t_st) == 0:
         if (gdf_1d is not None):
@@ -338,7 +338,10 @@ def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
 
         #  - update t with the next time stamp
         t = FireTime.t_nb(t, nb="next")
-
+    
+    gdf_all['region'] = str(regnm)
+    gdf_all['primarykey'] = gdf_all['region'] + '-' + str(fid)
+    
     return gdf_all
 
 
