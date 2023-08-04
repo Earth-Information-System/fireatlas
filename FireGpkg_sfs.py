@@ -421,7 +421,7 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
         gdf_all['t'] = gdf_all['t'].astype('datetime64')
     
     gdf_all['region'] = str(regnm)
-    gdf_all['primarykey'] = gdf_all['region'] + '-' + str(fid)
+    gdf_all['primarykey'] = gdf_all['region'] + '-' + str(fid) + '-' + str(t[0])
     
     # gdf_all = gdf_all.reset_index()
     return gdf_all

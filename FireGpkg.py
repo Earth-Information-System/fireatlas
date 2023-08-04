@@ -177,9 +177,8 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
 
     # # 5. drop the columns with no use
     # if 'invalid' in dd.keys(): gdf = gdf.drop(columns='invalid')
-    
     gdf['region'] = str(regnm)
-    gdf['primarykey'] = gdf['region'] + '-' + gdf.index.map(str)
+    gdf['primarykey'] = gdf['region'] + '-' + gdf.index.map(str) + '-' + str(allfires.t[0])
     
     return gdf
 
