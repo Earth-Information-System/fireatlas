@@ -338,10 +338,7 @@ def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
 
         #  - update t with the next time stamp
         t = FireTime.t_nb(t, nb="next")
-    
-    gdf_all['region'] = str(regnm)
-    gdf_all['primarykey'] = gdf_all['region'] + '-' + str(fid)
-    
+        
     return gdf_all
 
 
@@ -422,7 +419,10 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
         gdf_all[k] = gdf_all[k].astype(tp)
     if layer == 'nfplist':
         gdf_all['t'] = gdf_all['t'].astype('datetime64')
-
+    
+    gdf_all['region'] = str(regnm)
+    gdf_all['primarykey'] = gdf_all['region'] + '-' + str(fid)
+    
     # gdf_all = gdf_all.reset_index()
     return gdf_all
 
@@ -503,7 +503,6 @@ def save_sfts_1f(allfires, allfires_pt, fid, regnm, layers=["perimeter", "fireli
         tend = time.time()
         logger.info(f"{(tend-tstart)/60.} minutes used for updating perimeter layer.")
 
-        
         tstart = time.time()
         FireIO.save_gpkgsfs(allfires.t, fid, regnm, gdf_fperim=gdf_fperim)
         tend = time.time()
