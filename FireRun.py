@@ -444,7 +444,48 @@ def CArunNRT():
     #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+
+def HawaiiNRT():
     
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    from datetime import datetime
+    import os
+    from time import sleep
+
+    if FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    tstart = time.time()
+    
+    ctime = datetime.now()
+
+    region = ('HawaiiNRT',[-160.84678929137436,17.299992415962166,
+                           -153.46397679137436,22.909533904216087])
+    logger.info(f'STARTING RUN FOR {region[0]}')
+
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    tst = [2023, 8, 7, 'AM']
+    #ted = [2022, 12, 31, 'PM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    tend = time.time()
+    logger.info(f"{(tend-tstart)/60.} minutes used for Hawaii.")
     
 def CONUSrunNRT():
     
