@@ -38,7 +38,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
         the gdf containing half daily fire basic attributes and fire perimeter
     """
     import geopandas as gpd
-
+    import pandas as pd
     # from FireConsts import dd
     import FireIO, FireObj, FireTime
     from FireConsts import epsg
@@ -177,9 +177,16 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
 
     # # 5. drop the columns with no use
     # if 'invalid' in dd.keys(): gdf = gdf.drop(columns='invalid')
-    gdf['region'] = str(regnm)
-    gdf['primarykey'] = gdf['region'] + '-' + gdf.index.map(str) + '-' + str(allfires.t[0])
     
+    gdf['region'] = str(regnm)
+    
+    t = allfires.t
+    ampm = t[-1]
+    if ampm == 'AM':
+        time = pd.to_datetime(str(t[0])+'-'+str(t[1])+'-'+str(t[2])+'T00:00:00')
+    else: 
+        time = pd.to_datetime(str(t[0])+'-'+str(t[1])+'-'+str(t[2])+'T12:00:00')
+    gdf['primarykey'] = gdf['region'] + '|' + gdf.index.map(str) + '|' + time.isoformat()
     return gdf
 
 

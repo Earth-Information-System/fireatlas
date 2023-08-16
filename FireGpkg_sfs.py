@@ -360,6 +360,7 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
     """
     import FireTime, FireIO
     import geopandas as gpd
+    import pandas as pd
 
     # the target single large fire and target time
     f = allfires.fires[fid]
@@ -420,9 +421,19 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
     if layer == 'nfplist':
         gdf_all['t'] = gdf_all['t'].astype('datetime64')
     
-    gdf_all['region'] = str(regnm)
-    gdf_all['primarykey'] = gdf_all['region'] + '-' + str(fid) + '-' + str(t[0])
+#     ampm = t[-1]
+#     if ampm == 'AM':
+#         time = pd.to_datetime(str(t[0])+'-'+str(t[1])+'-'+str(t[2])+'T00:00:00')
+#     else: 
+#         time = pd.to_datetime(str(t[0])+'-'+str(t[1])+'-'+str(t[2])+'T12:00:00')
     
+    gdf_all['region'] = str(regnm)
+    print(gdf_all['t'])
+    if layer == 'nfplist':
+        gdf_all['primarykey'] = gdf_all['region'] + '|' + str(fid) + '|' + gdf_all['t'].apply(lambda x: x.isoformat()) + '|' + gdf_all.index.map(str)
+    else: 
+        gdf_all['primarykey'] = gdf_all['region'] + '|' + str(fid) + '|' + gdf_all['t'].apply(lambda x: x.isoformat())
+
     # gdf_all = gdf_all.reset_index()
     return gdf_all
 
