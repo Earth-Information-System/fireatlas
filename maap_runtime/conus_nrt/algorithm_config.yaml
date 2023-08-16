@@ -1,10 +1,9 @@
 algorithm_description: "Map active fire perimeters."
 algorithm_name: eis-fire-feds-nrt-dask-dps-v2
-algorithm_version: new_ade_and_dps_image
+algorithm_version: conus-dps
 environment: ubuntu
 repository_url: https://repo.ops.maap-project.org/eorland_gee/fireatlas_nrt.git
 docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
-#queue: "maap-dps-worker-32gb"
 queue: "maap-dps-worker-32gb"
 run_command: "fireatlas_nrt/run_dps.sh 'CONUSrunNRT'"
 build_command: ""
