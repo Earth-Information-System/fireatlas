@@ -427,8 +427,10 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
 #     else: 
 #         time = pd.to_datetime(str(t[0])+'-'+str(t[1])+'-'+str(t[2])+'T12:00:00')
     
+    # set region col
     gdf_all['region'] = str(regnm)
-    print(gdf_all['t'])
+    
+    # set primary key col
     if layer == 'nfplist':
         gdf_all['primarykey'] = gdf_all['region'] + '|' + str(fid) + '|' + gdf_all['t'].apply(lambda x: x.isoformat()) + '|' + gdf_all.index.map(str)
     else: 

@@ -178,8 +178,10 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     # # 5. drop the columns with no use
     # if 'invalid' in dd.keys(): gdf = gdf.drop(columns='invalid')
     
+    # Set region col
     gdf['region'] = str(regnm)
     
+    # Set primary key col
     t = allfires.t
     ampm = t[-1]
     if ampm == 'AM':
