@@ -96,19 +96,19 @@ def CreekSamplerun(firesrc='SNPP'):
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
-    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
+    ted = (2020, 9, 11, "PM")
+    region = ("CreekPrimaryKey"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
     #
     # # calculate and save snapshot files
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     #
     # # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    FireGpkg_sfs.convert_sfts(region[0],2020,[0])
+    #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
 def DixieSamplerun(firesrc='SNPP'):
     """
@@ -246,7 +246,7 @@ def BorealNA():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2023,7,22,'AM']
+    #tst = [2023,1,1,'AM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2023,6,28,'AM']
     print(f"Running code from {tst} to {ted}.")
@@ -258,7 +258,7 @@ def BorealNA():
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
     tend = time.time()
     
@@ -321,7 +321,7 @@ def QuebecSampleRun():
     ctime = datetime.now()
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
-    region = ("QuebecGlobalNRT_ELI", [-83.69877641421793, 44.25483911637959, 
+    region = ("QuebecPrimaryKey", [-83.69877641421793, 44.25483911637959, 
                                       -48.45463578921794, 62.94135765648493])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
@@ -338,9 +338,9 @@ def QuebecSampleRun():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2023,6,30,'AM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
-    #ted = [2023,6,28,'AM']
+    tst = [2023,5,31,'AM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
+    ted = [2023,6,5,'AM']
     print(f"Running code from {tst} to {ted}.")
     
     # do fire tracking
