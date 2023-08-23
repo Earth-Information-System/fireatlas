@@ -96,19 +96,19 @@ def CreekSamplerun(firesrc='SNPP'):
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
-    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
+    ted = (2020, 9, 11, "PM")
+    region = ("CreekPrimaryKey"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
     #
     # # calculate and save snapshot files
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     #
     # # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    FireGpkg_sfs.convert_sfts(region[0],2020,[0])
+    #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
 def DixieSamplerun(firesrc='SNPP'):
     """
@@ -225,8 +225,12 @@ def BorealNA():
     from datetime import datetime
     import os
     
+    if FireConsts.epsg!=3571:
+        print('Please set the epsg code to 3571')
+        return
+    
     ctime = datetime.now()
-    region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
+    region = ("BOREAL_NRT_3571_DPS", [-169, 44, -48, 75])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
@@ -242,7 +246,7 @@ def BorealNA():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2023,7,22,'AM']
+    #tst = [2023,1,1,'AM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2023,6,28,'AM']
     print(f"Running code from {tst} to {ted}.")
@@ -254,7 +258,7 @@ def BorealNA():
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
     tend = time.time()
     
@@ -267,8 +271,12 @@ def ItalyGreeceNRT():
     from datetime import datetime
     import os
     
+    if FireConsts.epsg!=6933:
+        print('Please set the epsg code to 6933')
+        return
+    
     ctime = datetime.now()
-    region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
+    region = ("ItalyGreeceNRT_DPS2", [11, 36, 28, 42])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
@@ -313,7 +321,7 @@ def QuebecSampleRun():
     ctime = datetime.now()
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
-    region = ("QuebecGlobalNRT_ELI", [-83.69877641421793, 44.25483911637959, 
+    region = ("QuebecPrimaryKey", [-83.69877641421793, 44.25483911637959, 
                                       -48.45463578921794, 62.94135765648493])
     
     logger.info(f'STARTING RUN FOR {region[0]}')
@@ -330,9 +338,9 @@ def QuebecSampleRun():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2023,6,30,'AM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
-    #ted = [2023,6,28,'AM']
+    tst = [2023,5,31,'AM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
+    ted = [2023,6,5,'AM']
     print(f"Running code from {tst} to {ted}.")
     
     # do fire tracking
@@ -436,7 +444,48 @@ def CArunNRT():
     #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+
+def HawaiiNRT():
     
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import FireConsts
+    from datetime import datetime
+    import os
+    from time import sleep
+
+    if FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    tstart = time.time()
+    
+    ctime = datetime.now()
+
+    region = ('HawaiiNRT',[-160.84678929137436,17.299992415962166,
+                           -153.46397679137436,22.909533904216087])
+    logger.info(f'STARTING RUN FOR {region[0]}')
+
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
+
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    tst = [2023, 8, 7, 'AM']
+    #ted = [2022, 12, 31, 'PM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    tend = time.time()
+    logger.info(f"{(tend-tstart)/60.} minutes used for Hawaii.")
     
 def CONUSrunNRT():
     
