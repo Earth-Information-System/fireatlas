@@ -132,4 +132,4 @@ remove_static_sources_buffer = 0.01 # Buffer around static source points. Units 
 
 opt_rmstatfire = True  # do the removal of small fires with high pixel density
 
-number_of_multi_proc_workers = 3
+number_of_multi_proc_workers = 8
