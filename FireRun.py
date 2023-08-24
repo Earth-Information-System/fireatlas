@@ -252,13 +252,13 @@ def BorealNA():
     print(f"Running code from {tst} to {ted}.")
     
     # do fire tracking
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
 
     # calculate and save snapshot files
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
     tend = time.time()
     
