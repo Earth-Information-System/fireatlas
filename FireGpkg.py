@@ -37,6 +37,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     gdf : geopandas DataFrame
         the gdf containing half daily fire basic attributes and fire perimeter
     """
+    import numpy as np
     import geopandas as gpd
     import pandas as pd
     # from FireConsts import dd
@@ -142,6 +143,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
                 gdf.loc[fid, "geometry"] = gpd.GeoDataFrame(
                     geometry=[fhull]
                 ).geometry.values
+                
             else:
                 gdf.loc[fid, "geometry"] = fhull
 
@@ -188,7 +190,14 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
         time = pd.to_datetime(str(t[0])+'-'+str(t[1])+'-'+str(t[2])+'T00:00:00')
     else: 
         time = pd.to_datetime(str(t[0])+'-'+str(t[1])+'-'+str(t[2])+'T12:00:00')
+    
+    # primary key is: region + fireID + 12hr slice 
     gdf['primarykey'] = gdf['region'] + '|' + gdf.index.map(str) + '|' + time.isoformat()
+    
+    if layer == 'perimeter': # apply filter flag on the perimeter layer
+        gdf['geom_counts'] = gdf["geometry"].explode(index_parts=True).groupby(['fireID']).nunique() # count number of polygons
+        gdf['low_confidence_grouping'] = np.where(gdf['geom_counts']>5, 1, 0) # if more than 5 geometries are present, flag it
+    
     return gdf
 
 

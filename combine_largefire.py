@@ -159,7 +159,18 @@ def write_lf_layers_by_year(
             ],
             ignore_index=True,
         )
-
+        
+        #### APPLY GEOMETRY FLAG ####
+        
+        all_lf_per_layer.set_index(['ID','t'],inplace=True) # set index for each day's observation of each fire ID
+        multip = all_lf_per_layer[all_lf_per_layer['geometry'].geom_type=='MultiPolygon'].index # get index of observations with multipolygons
+        all_lf_per_layer.loc[multip,'max_geom_counts'] = all_lf_per_layer.loc[multip]['geometry'].explode(index_parts=True).groupby(['ID','t']).nunique() # count num polygons
+        all_lf_per_layer['max_geom_counts'].fillna(1,inplace=True) # fill the rest in as 1s bc only one polygon geometry
+        all_lf_per_layer['low_confidence_grouping'] = np.where(all_lf_per_layer['max_geom_counts']>5, 1, 0) # set the flag
+        all_lf_per_layer.reset_index(inplace=True) # reset index for saving
+        
+        #############################
+        
         layer_output_fgb_path = f"{LOCAL_DIR_OUTPUT_PREFIX_PATH}/{year}/lf_{layer}.fgb"
         # create all parent directories for local output (if they don't exist already)
         mkdir_dash_p(layer_output_fgb_path)
