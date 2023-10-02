@@ -4,6 +4,20 @@ running controls
 """
 
 import os
+import FireEnums
+
+
+def get_env_var_as_type(name, cast_to_type=int, default=None):
+    try:
+        if cast_to_type == bool:
+            return os.environ[name].lower() in ['true', '1', 't', 'y', 'yes']
+        return cast_to_type(os.environ[name])
+    except KeyError:
+        if default is not None:
+            return default
+        raise ValueError(f"Environment variable '{name}' not found")
+    except ValueError:
+        raise ValueError(f"Environment variable '{name}' could not be converted to an '{cast_to_type}'")
 
 # ------------------------------------------------------------------------------
 # project directories
@@ -61,8 +75,8 @@ area_VI = 0.141  # km2, area of each 375m VIIRS pixel
 MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.31271653 m/2
 
 # fire source data
-firesrc = "VIIRS"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
-firenrt = True # NRT - True, False
+firesrc = get_env_var_as_type('FIRE_SOURCE', cast_to_type=str, default=FireEnums.FireSource.VIIRS)  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
+firenrt = get_env_var_as_type('FIRE_NRT', cast_to_type=bool, default=True) # NRT - True, False
 firessr = "viirs"  # sensor - 'mcd64'
 
 # ------------------------------------------------------------------------------
@@ -70,10 +84,12 @@ firessr = "viirs"  # sensor - 'mcd64'
 # ------------------------------------------------------------------------------
 
 # fire type options
-FTYP_opt = 1  # 0: preset ftype for all fires;
+FTYP_opt = get_env_var_as_type('FTYP_OPT', cast_to_type=int, default=1)
+# 0: preset ftype for all fires;
 # 1: use CA type classifications
 # 2: proposed global fire types
-CONT_opt = 1  # 0: preset continuity threshold for all fires;
+CONT_opt = get_env_var_as_type('CONT_OPT', cast_to_type=int, default=1)
+# 0: preset continuity threshold for all fires;
 # 1: use CA type classifications dependent values
 # 2: use global fire types and size dependent values
 
@@ -124,7 +140,8 @@ FTYP_Glb = {
 # ------------------------------------------------------------------------------
 # other options
 # ------------------------------------------------------------------------------
-epsg = 9311  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
+epsg = get_env_var_as_type('EPSG_CODE', cast_to_type=int, default=FireEnums.EPSG.CONUS_EQ_AREA)
+# epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
 
 remove_static_sources_bool = True  # remove areas with known flaring/gas sources from region
 remove_static_sources_sourcefile = "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv"
