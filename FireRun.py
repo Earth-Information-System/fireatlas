@@ -309,7 +309,53 @@ def ItalyGreeceNRT():
     tend = time.time()
     
     logger.info(f"{(tend-tstart)/60.} minutes used for Italy and Greece for {tst} to {ted}.")    
+def EQAsiaNRT():
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    import FireConsts
+    from datetime import datetime
+    import os
+    
+    if FireConsts.epsg!=6933:
+        print('Please set the epsg code to 6933')
+        return
+    
+    ctime = datetime.now()
+    region = ("SouthBorneo_NRT", [108.90191926582735, 
+                                  -4.330624162411689, 
+                                  117.77887239082733,
+                                  -0.7971300838360769])
+    
+    logger.info(f'STARTING RUN FOR {region[0]}')
+    tstart = time.time()
+    
+    lts = FireIO.get_lts_serialization(regnm=region[0])
+    if lts == None:
+        tst = [ctime.year, 1, 1, 'AM']
+    else:
+        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
+        tst = lts
 
+    if ctime.hour >= 18:
+        ampm = 'PM'
+    else:
+        ampm = 'AM'
+    tst = [2023,8,1,'AM']
+    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    #ted = [2023,6,28,'AM']
+    print(f"Running code from {tst} to {ted}.")
+    
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    tend = time.time()
+    
+    logger.info(f"{(tend-tstart)/60.} minutes used for Eq Asia for {tst} to {ted}.") 
 
 
 def QuebecSampleRun():
