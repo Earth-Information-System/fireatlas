@@ -7,9 +7,12 @@ stages:
     - conus-dps
   tags:
     - shell
-  script:
-    - docker build -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
-    - docker run ${IMAGE_TAG} ${ALGO_NAME} ${BRANCH_NAME} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV}
+  script: |
+    echo "#############"
+    echo "${IMAGE_TAG}
+    echo "#############"
+    docker build -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
+    docker run ${IMAGE_TAG} ${ALGO_NAME} ${BRANCH_NAME} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV}
 
 ###################################
 # DPS JOBS
