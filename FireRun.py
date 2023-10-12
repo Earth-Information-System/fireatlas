@@ -235,8 +235,7 @@ def BorealNA():
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
     
-    #lts = FireIO.get_lts_serialization(regnm=region[0])
-    lts = None
+    lts = FireIO.get_lts_largefire(regnm=region[0])
     if lts == None:
         tst = [ctime.year, 1, 1, 'AM']
     else:
