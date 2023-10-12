@@ -2286,6 +2286,33 @@ def get_lts_serialization(regnm, year=None):
 
     return lts
 
+def get_lts_largefire(regnm, year=None):
+    """ get the time of the lastest largefire files
+    """
+    if year == None:
+        year = date.today().year
+        
+    if diroutdata.startswith("s3://"):
+        # Can't use glob for S3. Use s3.ls instead.
+        import s3fs
+        s3 = s3fs.S3FileSystem(anon=False)
+        s3path = os.path.join(diroutdata, regnm, str(year), "Largefire")
+        fnms = [f for f in s3.ls(s3path)]
+    else:
+        fnms = glob(os.path.join(diroutdata, regnm, str(year), "Largefire"))
+
+    if len(fnms) > 0:
+        fnms.sort()
+        dates = []
+        for f in fnms:
+            fnm_lts = os.path.basename(f) ## Can't work, no ordering
+            d = [int(fnm_lts[-10:-6]), int(fnm_lts[-6:-4]), int(fnm_lts[-4:-2]), fnm_lts[-2:]]
+            dates.append(d)
+        lts = max(dates)
+    else:
+        lts = None
+        
+    return lts
 
 def read_gpkg(fnm, layer="perimeter"):
     """ read gpkg data
