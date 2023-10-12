@@ -25,10 +25,10 @@ dps-run:data-update-checker:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-dps-data-checker
+    ALGO_NAME: eis-fire-feds-dps-data-checker-v2
     BRANCH_NAME: conus-dps
-    USERNAME: ashiklom
-    QUEUE: maap-dps-worker-8gb
+    USERNAME: tmccabe
+    QUEUE: maap-dps-worker-32gb
 
 dps-run:fire-atlas-conus:
   extends: .run_dps_job_base
@@ -38,9 +38,9 @@ dps-run:fire-atlas-conus:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-nrt-dask-dps
+    ALGO_NAME: eis-fire-feds-nrt-dask-dps-v2
     BRANCH_NAME: conus-dps
-    USERNAME: ashiklom
+    USERNAME: tmccabe
     QUEUE: maap-dps-worker-32gb
 
 dps-run:fire-atlas-lf-archive:
@@ -51,10 +51,10 @@ dps-run:fire-atlas-lf-archive:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-combine-largefire-archive
+    ALGO_NAME: eis-fire-feds-combine-largefire-archive-v2
     BRANCH_NAME: conus-dps
-    USERNAME: ashiklom
-    QUEUE: maap-dps-worker-128gb
+    USERNAME: tmccabe
+    QUEUE: maap-dps-worker-32gb
 
 dps-run:fire-atlas-lf-nrt:
   extends: .run_dps_job_base
@@ -64,7 +64,33 @@ dps-run:fire-atlas-lf-nrt:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-combine-largefire-nrt
+    ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v2
     BRANCH_NAME: conus-dps
-    USERNAME: ashiklom
+    USERNAME: tmccabe
+    QUEUE: maap-dps-worker-32gb
+
+dps-run:fire-atlas-boreal-automate-snapshot:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $BOREAL_SNAP
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-boreal-automate-snapshot-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-borealna-nrt_snap
+    BRANCH_NAME: eli_global_boreal_snap_only
+    USERNAME: tmccabe
+    QUEUE: maap-dps-worker-32gb
+
+dps-run:fire-atlas-boreal-automate-lf:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $BOREAL_LF
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-boreal-automate-lf-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-borealna-nrt_largefire
+    BRANCH_NAME: eli_global_boreal_largefire_only
+    USERNAME: tmccabe
     QUEUE: maap-dps-worker-128gb
