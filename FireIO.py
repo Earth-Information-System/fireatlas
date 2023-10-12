@@ -2289,6 +2289,11 @@ def get_lts_serialization(regnm, year=None):
 def get_lts_largefire(regnm, year=None):
     """ get the time of the lastest largefire files
     """
+    from FireConsts import diroutdata
+    from datetime import date
+    from glob import glob
+    import os
+    
     if year == None:
         year = date.today().year
         
