@@ -1,6 +1,6 @@
 algorithm_description: "Map active fire perimeters."
-algorithm_name: eis_fire_boreal_largefire_jan_8_workers
-algorithm_version: eli_global_boreal_largefire_only_jan_start
+algorithm_name: eis-fire-borealna-nrt_largefire
+algorithm_version: eli_global_boreal_largefire_only
 environment: ubuntu
 repository_url: https://repo.maap-project.org/gcorradini/fireatlas_nrt.git
 docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
