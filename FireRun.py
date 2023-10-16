@@ -220,10 +220,17 @@ def ChileSampleRun():
 
 
 def BorealNA():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
-    import FireConsts
+    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireEnums
     from datetime import datetime
     import os
+    # NOTE: this set up has to happen before `import FireConsts`
+    # so set os environ variables that will override
+    # `FireConsts.settings` for all Python interpreters
+    # (meaning even those spawned during fork in multiple processes)
+    os.environ['EPSG_CODE'] = FireEnums.EPSG.HI_LAT
+    os.environ['FTYP_OPT'] = 2
+    os.environ['CONT_OPT'] = 2
+    import FireConsts
     
     ctime = datetime.now()
     region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
