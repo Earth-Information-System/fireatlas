@@ -15,7 +15,7 @@ pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
   CURRENT_YEAR=$(date +'%Y')
-  python combine_largefire.py -s $CURRENT_YEAR -e $CURRENT_YEAR -x --nrt
+  python combine_largefire.py -s $CURRENT_YEAR -e $CURRENT_YEAR -x --nrt --folder-name $1
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output

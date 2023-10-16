@@ -9,11 +9,12 @@ This module include functions used to read and save data
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
 import os
-
+import fiona
 import boto3
 import re
 import time
 from FireLog import logger
+import geopandas as gpd
 
 
 def gpd_read_file(filename, parquet=False, **kwargs):
@@ -1647,15 +1648,15 @@ def save_gpkgobj(
     # save file
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
-        if regnm == 'CONUS_NRT_DPS': copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb")
+        copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb", regnm)
 
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
-        if regnm == 'CONUS_NRT_DPS': copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb")
+        copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb", regnm)
 
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
-        if regnm == 'CONUS_NRT_DPS': copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb")
+        copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb", regnm)
 
     if gdf_uptonow is not None:
         gdf_uptonow.to_file(f"{fnm}/uptonow.fgb", driver="FlatGeobuf")
@@ -2372,28 +2373,73 @@ def pixel2World(gt, Xpixel, Ypixel):
 
     return (Xgeo, Ygeo)
 
+def copy_from_maap_to_veda_s3(
+    from_maap_s3_path: str, 
+    regnm: str
+):
+    '''
+    inputs:
+    
+    1. maap/s3 copy path
+    2. region name
+    '''
+    filename = os.path.basename(from_maap_s3_path)
+    filename_no_ext = os.path.splitext(filename)[0]
+    
+    if 'fireline.fgb' in from_maap_s3_path:
+        select_cols = ['fireID','mergeid','t','primarykey','region','geometry']
 
-def copy_from_maap_to_veda_s3(from_maap_s3_path):
-    s3_client = boto3.client('s3')
+    elif 'newfirepix.fgb' in from_maap_s3_path:
+        select_cols = ['fireID','mergeid','t','primarykey','region','geometry']
+  
+    elif 'perimeter.fgb' in from_maap_s3_path:
+        select_cols = ['fireID', 'n_pixels', 'n_newpixels', 
+                       'farea', 'fperim', 'flinelen', 
+                       'duration', 'pixden', 'meanFRP', 
+                       'isactive', 't', 'primarykey',
+                       'region','geom_counts','low_confidence_grouping',
+                       'geometry']
 
-    if "Snapshot" in from_maap_s3_path:
-        try:
-            fname_regex = r"^s3://maap.*(?P<fname>fireline.fgb|perimeter.fgb|newfirepix.fgb)$"
-            # note that `destination_fname` should resemble this output with a match if the URL was a perimeter file:
-            # {'fname': 'perimeter.fgb'}
-            destination_fname = re.compile(fname_regex).match(from_maap_s3_path).groupdict()['fname']
-        except AttributeError:
-            logger.error(f"[ NO REGEX MATCH FOUND ]: for file f{from_maap_s3_path}")
-            return
+    # for combine_largefire
+    elif "lf_permimeter" in from_maap_s3_path:
+        select_cols = [
+            "n_pixels", "n_newpixels", "farea", 
+            "fperim", "flinelen", "duration", 
+            "pixden", "meanFRP", "t", 
+            "fireID", "primarykey", "region",
+            "geom_counts", "low_confidence_grouping", "geometry"
+        ]
+    elif "lf_fireline" in from_maap_s3_path:
+        select_cols = [
+            "fireID", "t",
+            "primarykey", "region", "geometry"
+        ]
+    elif "lf_newfirepix" in from_maap_s3_path:
+        select_cols = [
+            "fireID", "t",
+            "primarykey",
+            "region",
+            "geometry"
+        ]
 
-        layer_name_no_ext = os.path.splitext(destination_fname)[0]
-        new_key_layer_name = f"snapshot_{layer_name_no_ext}_nrt.fgb"
-        from_maap_s3_path = from_maap_s3_path.replace('s3://', '')
-        s3_client.copy_object(
-            CopySource=from_maap_s3_path,  # full bucket path
-            Bucket='veda-data-store-staging',  # destination bucket
-            Key=f'EIS/FEDSoutput/Snapshot/{new_key_layer_name}'  # destination path/filename
-        )
     else:
-        logger.error(f"[ NO S3 COPY EXPORTED ]: for file f{from_maap_s3_path}")
+        return
 
+    new_region_name = regnm.lower().replace("_","")
+
+    if "lf_" in from_maap_s3_path:
+        new_key_layer_name = f"{filename_no_ext}_{new_region_name}.fgb"
+        to_veda_s3_path = f"s3://veda-data-store-staging/EIS/FEDSoutput/LFArchive/{new_key_layer_name}"
+    else:
+        new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.fgb"
+        to_veda_s3_path = f"s3://veda-data-store-staging/EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
+    
+    with fiona.Env():
+        gdf = gpd.read_file(from_maap_s3_path)
+
+        # renmae columns for large fires
+        if "lf_" in from_maap_s3_path:
+            gdf = gdf.rename(columns={"id": "fireID"})
+        else:
+            gdf = gdf.rename(columns={"t_ed":"t"})
+        gdf[select_cols].to_file(to_veda_s3_path)

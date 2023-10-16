@@ -1,6 +1,6 @@
 algorithm_description: "Combine FEDS Largefire data into a single file."
 algorithm_name: eis-fire-feds-combine-largefire-archive-v2
-algorithm_version: conus-dps
+algorithm_version: 1.0.0
 environment: ubuntu
 repository_url: https://repo.maap-project.org/gcorradini/fireatlas_nrt.git
 docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
@@ -9,6 +9,9 @@ run_command: "fireatlas_nrt/run_largefire_archive.sh"
 build_command: ""
 disk_space: "10GB"
 inputs:
-  config: []
-  file: []
-  positional: []
+  - name: folder_name # maap output folder name (basename, not actual full path)
+    download: False
+  - name: start # start year
+    download: False
+  - name: end # end year
+    download: False
