@@ -96,8 +96,8 @@ def CreekSamplerun(firesrc='SNPP'):
     import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
-    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
+    ted = (2020, 9, 8, "PM")
+    region = ("CreekMAAPDEMO"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
@@ -108,7 +108,7 @@ def CreekSamplerun(firesrc='SNPP'):
     # # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    FireGpkg_sfs.convert_sfts(region[0],2020,[0])
+    #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
 def DixieSamplerun(firesrc='SNPP'):
     """
@@ -207,10 +207,10 @@ def ChileSampleRun():
 
     
     # do fire tracking
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
@@ -454,7 +454,7 @@ def CONUSrunNRT():
     
     ctime = datetime.now()
 
-    region = ('CONUS_NRT_DPS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    region = ('CONUS_ARCHIVE_P_KEY',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
     logger.info(f'STARTING RUN FOR {region[0]}')
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
@@ -468,14 +468,14 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2022, 1, 1, 'AM']
-    #ted = [2022, 12, 31, 'PM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
+    tst = [2022, 10, 21, 'PM']
+    ted = [2022, 12, 31, 'PM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
 

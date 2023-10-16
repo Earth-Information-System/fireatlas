@@ -9,11 +9,11 @@ from pathlib import Path
 from FireConsts import diroutdata
 from dask.distributed import Client
 from FireLog import logger
+from FireIO import copy_from_maap_to_veda_s3
 
-LAYERS = ["nfplist", "newfirepix", "fireline", "perimeter"]
+LAYERS = ["newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
-TARGET_MAAP_INPUT_BUCKET_NAME = "CONUS_NRT_DPS" #"WesternUS_REDO"
-LOCAL_DIR_OUTPUT_PREFIX_PATH = f"/tmp/{TARGET_MAAP_INPUT_BUCKET_NAME}/LargeFire_Outputs"
+LOCAL_DIR_OUTPUT_PREFIX_PATH = "/tmp/{}/LargeFire_Outputs"
 
 
 def mkdir_dash_p(parent_output_path):
@@ -34,39 +34,10 @@ def mkdir_dash_p(parent_output_path):
     path.parent.mkdir(parents=True, exist_ok=True)
 
 
-def copy_from_maap_to_veda_s3(from_maap_s3_path):
-    """from MAAP to VEDA s3
-
-    :param from_maap_s3_path: s3 MAAP path
-    :return: None
-    """
-    s3_client = boto3.client("s3")
-
-    if "LargeFire" in from_maap_s3_path:
-        try:
-            fname_regex = r"^s3://maap.*?(/LargeFire_Outputs/)merged/(?P<fname>lf_fireline_archive.fgb|lf_fireline_nrt.fgb|lf_perimeter_archive.fgb|lf_perimeter_nrt.fgb|lf_newfirepix_archive.fgb|lf_newfirepix_nrt.fgb|lf_nfplist_archive.fgb|lf_nfplist_nrt.fgb)$"
-            # note that `destination_dict` should resemble this output with a match if the URL was a perimeter file:
-            # {'fname': 'lf_perimeter.fgb'}
-            destination_dict = (
-                re.compile(fname_regex).match(from_maap_s3_path).groupdict()
-            )
-        except AttributeError:
-            logger.error(f"[ NO REGEX MATCH FOUND ]: for file {from_maap_s3_path}")
-            return
-
-        from_maap_s3_path = from_maap_s3_path.replace("s3://", "")
-        s3_client.copy_object(
-            CopySource=from_maap_s3_path,  # full bucket path
-            Bucket="veda-data-store-staging",  # Destination bucket
-            Key=f"EIS/FEDSoutput/LFArchive/{destination_dict['fname']}",
-        )
-    else:
-        logger.error(f"[ NO S3 COPY EXPORTED ]: for file {from_maap_s3_path}")
-
-
 def merge_lf_years(
     parent_years_folder_input_path,
     maap_output_folder_path,
+    folder_name,
     layers=LAYERS,
 ):
     """using `glob` and `concat` merge all large fire layers across years and write back to MAAP s3
@@ -74,6 +45,7 @@ def merge_lf_years(
     :param years_range: a list of year ints
     :param parent_folder_path: local dir path to the folder that houses all output years from `combine_per
     :param layers: a list of layer strings
+    :param folder_name: alias for region
     :return:
     """
     for layer in layers:
@@ -93,7 +65,7 @@ def merge_lf_years(
             driver="FlatGeobuf",
         )
         if IS_PRODUCTION_RUN:
-            copy_from_maap_to_veda_s3(maap_s3_layer_path)
+            copy_from_maap_to_veda_s3(maap_s3_layer_path, folder_name)
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
@@ -120,7 +92,10 @@ def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
 
 
 def write_lf_layers_by_year(
-    year, s3_maap_input_path, LOCAL_DIR_OUTPUT_PREFIX_PATH, layers=LAYERS
+    year, 
+    s3_maap_input_path, 
+    LOCAL_DIR_OUTPUT_PREFIX_PATH,
+    layers=LAYERS
 ):
     """ for each layer write out the most recent lf layer
 
@@ -159,18 +134,18 @@ def write_lf_layers_by_year(
             ],
             ignore_index=True,
         )
-        
+
         #### APPLY GEOMETRY FLAG ####
-        
+
         all_lf_per_layer.set_index(['ID','t'],inplace=True) # set index for each day's observation of each fire ID
         multip = all_lf_per_layer[all_lf_per_layer['geometry'].geom_type=='MultiPolygon'].index # get index of observations with multipolygons
         all_lf_per_layer.loc[multip,'max_geom_counts'] = all_lf_per_layer.loc[multip]['geometry'].explode(index_parts=True).groupby(['ID','t']).nunique() # count num polygons
         all_lf_per_layer['max_geom_counts'].fillna(1,inplace=True) # fill the rest in as 1s bc only one polygon geometry
         all_lf_per_layer['low_confidence_grouping'] = np.where(all_lf_per_layer['max_geom_counts']>5, 1, 0) # set the flag
         all_lf_per_layer.reset_index(inplace=True) # reset index for saving
-        
+
         #############################
-        
+
         layer_output_fgb_path = f"{LOCAL_DIR_OUTPUT_PREFIX_PATH}/{year}/lf_{layer}.fgb"
         # create all parent directories for local output (if they don't exist already)
         mkdir_dash_p(layer_output_fgb_path)
@@ -180,19 +155,29 @@ def write_lf_layers_by_year(
         )
 
 
-def main(years_range, in_parallel=False):
+def main(
+    years_range: list, 
+    folder_name: str, 
+    in_parallel: bool = False
+):
     """
     :param years_range: a list of year integers
     :param in_parallel: bool
     :return: None
     """
+
     if not in_parallel:
         for year in years_range:
-            s3_maap_input_path = f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/{year}/Largefire/"
-            write_lf_layers_by_year(year, s3_maap_input_path, LOCAL_DIR_OUTPUT_PREFIX_PATH)
+            s3_maap_input_path = f"{diroutdata}{folder_name}/{year}/Largefire/"
+            write_lf_layers_by_year(
+                year, 
+                s3_maap_input_path, 
+                LOCAL_DIR_OUTPUT_PREFIX_PATH.format(folder_name)
+            )
         merge_lf_years(
             LOCAL_DIR_OUTPUT_PREFIX_PATH,
-            f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/LargeFire_Outputs/merged",
+            f"{diroutdata}{LOCAL_DIR_OUTPUT_PREFIX_PATH.format(folder_name)}/LargeFire_Outputs/merged",
+            folder_name
         )
         return
 
@@ -210,7 +195,7 @@ def main(years_range, in_parallel=False):
         dask_client.submit(
             write_lf_layers_by_year,
             year,
-            f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/{year}/Largefire/",
+            f"{diroutdata}{folder_name}/{year}/Largefire/",
             LOCAL_DIR_OUTPUT_PREFIX_PATH,
         )
         for year in years_range
@@ -225,7 +210,8 @@ def main(years_range, in_parallel=False):
     dask_client.restart()
     merge_lf_years(
         LOCAL_DIR_OUTPUT_PREFIX_PATH,
-        f"{diroutdata}{TARGET_MAAP_INPUT_BUCKET_NAME}/LargeFire_Outputs/merged",
+        f"{diroutdata}{folder_name}/LargeFire_Outputs/merged",
+        folder_name
     )
 
 
@@ -271,6 +257,15 @@ if __name__ == "__main__":
         action="store_true",
         help="creates a flag/trap to know if this is LF archive (all years) or LF NRT (current year)",
     )
+    # parser argument for maap s3 bucket folder name mapped to folder_name
+    parser.add_argument(
+        "--folder-name",
+        required=True,
+        type=str,
+        default="CONUS_NRT_DPS",
+        help="maap s3 bucket folder name",
+    )
+
     args = parser.parse_args()
 
     # set global flag/trap to protect VEDA s3 copy
@@ -290,6 +285,6 @@ if __name__ == "__main__":
 
     start = time.time()
     logger.info(f"Running algo with year range: '{years_range}'")
-    main(years_range, in_parallel=args.parallel)
+    main(years_range, args.folder_name, in_parallel=args.parallel)
     total = time.time() - start
     logger.info(f"Total runtime is {str(total / 60)} minutes")
