@@ -1,6 +1,6 @@
 algorithm_description: "Combine FEDS Largefire data into a single file."
-algorithm_name: eis-fire-feds-combine-largefire-archive-v2
-algorithm_version: 1.0.0
+algorithm_name: eis-fire-feds-combine-largefire-archive-v3test
+algorithm_version: 0.99.0
 environment: ubuntu
 repository_url: https://repo.maap-project.org/gcorradini/fireatlas_nrt.git
 docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
