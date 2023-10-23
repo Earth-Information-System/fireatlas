@@ -2386,13 +2386,13 @@ def copy_from_maap_to_veda_s3(
     filename = os.path.basename(from_maap_s3_path)
     filename_no_ext = os.path.splitext(filename)[0]
     
-    if 'fireline.fgb' in from_maap_s3_path:
+    if 'fireline.fgb' == filename:
         select_cols = ['fireID','mergeid','t','primarykey','region','geometry']
 
-    elif 'newfirepix.fgb' in from_maap_s3_path:
+    elif 'newfirepix.fgb' == filename:
         select_cols = ['fireID','mergeid','t','primarykey','region','geometry']
   
-    elif 'perimeter.fgb' in from_maap_s3_path:
+    elif 'perimeter.fgb' == filename:
         select_cols = ['fireID', 'n_pixels', 'n_newpixels', 
                        'farea', 'fperim', 'flinelen', 
                        'duration', 'pixden', 'meanFRP', 
@@ -2428,14 +2428,17 @@ def copy_from_maap_to_veda_s3(
     new_region_name = regnm.lower().replace("_","")
 
     if "lf_" in from_maap_s3_path:
-        new_key_layer_name = f"{filename_no_ext}_{new_region_name}.fgb"
+        new_key_layer_name = f"{filename_no_ext}_{new_region_name}.gpkg"
         to_veda_s3_path = f"s3://veda-data-store-staging/EIS/FEDSoutput/LFArchive/{new_key_layer_name}"
     else:
-        new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.fgb"
+        new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.gpkg"
         to_veda_s3_path = f"s3://veda-data-store-staging/EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
     
     with fiona.Env():
         gdf = gpd.read_file(from_maap_s3_path)
+        # for -upsert to work in ogr2ogr we need to make sure our primarykey column is set to FID
+        # https://gdal.org/programs/ogr2ogr.html#cmdoption-ogr2ogr-upsert
+        gdf['FID'] = gdf['primarykey']
 
         # renmae columns for large fires
         if "lf_" in from_maap_s3_path:
