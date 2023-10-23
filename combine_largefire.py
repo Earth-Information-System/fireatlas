@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 import geopandas as gpd
+import numpy as np
 import s3fs
 import boto3
 import re
