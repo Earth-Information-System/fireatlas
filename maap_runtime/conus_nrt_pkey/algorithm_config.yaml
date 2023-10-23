@@ -9,11 +9,13 @@ run_command: "fireatlas_nrt/run_dps_v2.sh"
 build_command: ""
 disk_space: "100GB"
 inputs:
- - name: regnm # name of output folder
-   download: False
- - name: bbox # xmin, ymin, xmax, ymax of region bbox in lat/lon
-   download: False
- - name: tst # [year, month, day, ampm]
-   download: False
- - name: ted # [year, month, day, ampm]
-   download: False
+  config: [ ]
+  positional:
+  - name: regnm # name of output folder
+    download: False
+  - name: bbox # xmin, ymin, xmax, ymax of region bbox in lat/lon
+    download: False
+  - name: tst # [year, month, day, ampm]
+    download: False
+  - name: ted # [year, month, day, ampm]
+    download: False
