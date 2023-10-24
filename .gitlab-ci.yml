@@ -43,12 +43,7 @@ dps-run:fire-atlas-conus:
     VERSION: 0.99.1
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
-    PARAMS: '{
-      "regnm": "CONUS_ARCHIVE_P_KEY",
-      "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]",
-      "tst": "[2022, 1, 1, \"AM\"]",
-      "ted": "[2022, 12, 31, \"PM\"]"
-    }'
+    PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]"}'
 
 dps-run:fire-atlas-boreal-automate-snapshot:
   extends: .run_dps_job_base
@@ -63,12 +58,7 @@ dps-run:fire-atlas-boreal-automate-snapshot:
     USERNAME: tmccabe
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{}'
-#    PARAMS: '{
-#      "regnm": "BOREAL_NRT_3571_DPS",
-#      "bbox": [-169, 44, -48, 75],
-#      "tst": '',
-#      "ted": ''
-#    }'
+    #PARAMS: '{"regnm": "BOREAL_NRT_3571_DPS", "bbox": "[-169, 44, -48, 75]", "tst": "", "ted": ""}'
 
 dps-run:fire-atlas-boreal-automate-lf:
   extends: .run_dps_job_base
@@ -83,12 +73,7 @@ dps-run:fire-atlas-boreal-automate-lf:
     USERNAME: tmccabe
     QUEUE: maap-dps-worker-128gb
     PARAMS: '{}'
-#    PARAMS: '{
-#      "regnm": "BOREAL_NRT_3571_DPS",
-#      "bbox": [-169, 44, -48, 75],
-#      "tst": '',
-#      "ted": ''
-#    }'
+    #PARAMS: '{"regnm": "BOREAL_NRT_3571_DPS", "bbox": "[-169, 44, -48, 75]", "tst": "", "ted": ""}'
 
 dps-run:fire-atlas-lf-archive:
   extends: .run_dps_job_base
@@ -102,11 +87,7 @@ dps-run:fire-atlas-lf-archive:
     VERSION: 0.99.1
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
-    PARAMS: '{
-      "folder_name": "WesternUS_REDO",
-      "start": 2013,
-      "end": 2021
-    }'
+    PARAMS: '{"folder_name": "WesternUS_REDO", "start": 2013, "end": 2021}'
 
 dps-run:fire-atlas-lf-nrt:
   extends: .run_dps_job_base
@@ -120,6 +101,4 @@ dps-run:fire-atlas-lf-nrt:
     VERSION: 0.99.1
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
-    PARAMS: '{
-      "folder_name": "CONUS_NRT_DPS",
-    }'
+    PARAMS: '{"folder_name": "CONUS_NRT_DPS"}'
