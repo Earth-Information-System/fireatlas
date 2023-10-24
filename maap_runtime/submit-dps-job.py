@@ -2,7 +2,6 @@
 import uuid
 import argparse
 import json
-import sys
 from maap.maap import MAAP
 
 parser = argparse.ArgumentParser()
