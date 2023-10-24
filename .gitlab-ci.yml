@@ -43,7 +43,7 @@ dps-run:fire-atlas-conus:
     VERSION: 0.99.1
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
-    PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]"}'
+    PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \\"AM\\"]", "ted": "[2022, 12, 31, \\"PM\\"]"}'
 
 dps-run:fire-atlas-boreal-automate-snapshot:
   extends: .run_dps_job_base
