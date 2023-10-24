@@ -9,7 +9,7 @@ stages:
     - shell
   script:
     - docker build -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
-    - docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params=${PARAMS}
+    - docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params ${PARAMS}
 
 ###################################
 # DPS JOBS
@@ -45,9 +45,9 @@ dps-run:fire-atlas-conus:
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{
       "regnm": "CONUS_ARCHIVE_P_KEY",
-      "bbox": [-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647],
-      "tst": [2022, 1, 1, "AM"],
-      "ted": [2022, 12, 31, "PM"]
+      "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]",
+      "tst": "[2022, 1, 1, \"AM\"]",
+      "ted": "[2022, 12, 31, \"PM\"]"
     }'
 
 dps-run:fire-atlas-boreal-automate-snapshot:
@@ -62,6 +62,7 @@ dps-run:fire-atlas-boreal-automate-snapshot:
     VERSION: eli_global_boreal_snap_only
     USERNAME: tmccabe
     QUEUE: maap-dps-worker-32gb
+    PARAMS: '{}'
 #    PARAMS: '{
 #      "regnm": "BOREAL_NRT_3571_DPS",
 #      "bbox": [-169, 44, -48, 75],
@@ -81,6 +82,7 @@ dps-run:fire-atlas-boreal-automate-lf:
     VERSION: eli_global_boreal_largefire_only
     USERNAME: tmccabe
     QUEUE: maap-dps-worker-128gb
+    PARAMS: '{}'
 #    PARAMS: '{
 #      "regnm": "BOREAL_NRT_3571_DPS",
 #      "bbox": [-169, 44, -48, 75],
