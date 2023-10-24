@@ -40,7 +40,7 @@ dps-run:fire-atlas-conus:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-dps-main-v3test
-    VERSION: 0.99.0
+    VERSION: 0.99.1
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{
@@ -99,7 +99,7 @@ dps-run:fire-atlas-lf-archive:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-archive-v3test
-    VERSION: 0.99.0
+    VERSION: 0.99.1
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{
@@ -117,7 +117,7 @@ dps-run:fire-atlas-lf-nrt:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v3test
-    VERSION: 0.99.0
+    VERSION: 0.99.1
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{
