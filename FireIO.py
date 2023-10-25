@@ -2377,12 +2377,7 @@ def copy_from_maap_to_veda_s3(
     from_maap_s3_path: str, 
     regnm: str
 ):
-    '''
-    inputs:
-    
-    1. maap/s3 copy path
-    2. region name
-    '''
+    s3_client = boto3.client('s3')
     filename = os.path.basename(from_maap_s3_path)
     filename_no_ext = os.path.splitext(filename)[0]
     
@@ -2429,10 +2424,12 @@ def copy_from_maap_to_veda_s3(
 
     if "lf_" in from_maap_s3_path:
         new_key_layer_name = f"{filename_no_ext}_{new_region_name}.gpkg"
-        to_veda_s3_path = f"s3://veda-data-store-staging/EIS/FEDSoutput/LFArchive/{new_key_layer_name}"
+        local_tmp_filepath = f"/tmp/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput/LFArchive/{new_key_layer_name}"
     else:
         new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.gpkg"
-        to_veda_s3_path = f"s3://veda-data-store-staging/EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
+        local_tmp_filepath = f"/tmp/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
     
     with fiona.Env():
         gdf = gpd.read_file(from_maap_s3_path)
@@ -2445,4 +2442,13 @@ def copy_from_maap_to_veda_s3(
             gdf = gdf.rename(columns={"id": "fireID"})
         else:
             gdf = gdf.rename(columns={"t_ed":"t"})
-        gdf[select_cols].to_file(to_veda_s3_path, driver="GPKG")
+
+        # fiona has a serious but where it cannot write GPKG files to s3 even though FileGeobuf work fine
+        # so to work around this issue we just write them locally to /tmp first
+        gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
+        s3_client.copy_object(
+            CopySource=local_tmp_filepath,
+            Bucket='veda-data-store-staging',
+            Key=to_veda_s3_path
+        )
+
