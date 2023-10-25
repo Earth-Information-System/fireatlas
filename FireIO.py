@@ -2445,4 +2445,4 @@ def copy_from_maap_to_veda_s3(
             gdf = gdf.rename(columns={"id": "fireID"})
         else:
             gdf = gdf.rename(columns={"t_ed":"t"})
-        gdf[select_cols].to_file(to_veda_s3_path)
+        gdf[select_cols].to_file(to_veda_s3_path, driver="GPKG")
