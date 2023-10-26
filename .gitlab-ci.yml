@@ -45,6 +45,22 @@ dps-run:fire-atlas-conus:
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]"}'
 
+
+dps-run:fire-atlas-conus-calitest:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $CALITEST
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-fire-feds-dps-main-v3test
+    VERSION: 0.99.3
+    USERNAME: gsfc_landslides
+    QUEUE: maap-dps-worker-32gb
+    PARAMS: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
+
+
 dps-run:fire-atlas-boreal-automate-snapshot:
   extends: .run_dps_job_base
   only:
