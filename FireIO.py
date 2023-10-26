@@ -2441,6 +2441,10 @@ def copy_from_maap_to_veda_s3(
         if "lf_" in from_maap_s3_path:
             gdf = gdf.rename(columns={"id": "fireID"})
         else:
+            try:
+                gdf = gdf.drop(columns=["t"])
+            except:
+                pass
             gdf = gdf.rename(columns={"t_ed":"t"})
 
         # fiona has a serious but where it cannot write GPKG files to s3 even though FileGeobuf work fine
