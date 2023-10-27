@@ -2382,13 +2382,13 @@ def copy_from_maap_to_veda_s3(
     filename_no_ext = os.path.splitext(filename)[0]
     
     if 'fireline.fgb' == filename:
-        select_cols = ['fireID','mergeid','t','primarykey','region','geometry']
+        select_cols = ['FID', 'fireID','mergeid','t','primarykey','region','geometry']
 
     elif 'newfirepix.fgb' == filename:
-        select_cols = ['fireID','mergeid','t','primarykey','region','geometry']
+        select_cols = ['FID', 'fireID','mergeid','t','primarykey','region','geometry']
   
     elif 'perimeter.fgb' == filename:
-        select_cols = ['fireID', 'n_pixels', 'n_newpixels', 
+        select_cols = ['FID', 'fireID', 'n_pixels', 'n_newpixels',
                        'farea', 'fperim', 'flinelen', 
                        'duration', 'pixden', 'meanFRP', 
                        'isactive', 't', 'primarykey',
@@ -2398,7 +2398,7 @@ def copy_from_maap_to_veda_s3(
     # for combine_largefire
     elif "lf_permimeter" in from_maap_s3_path:
         select_cols = [
-            "n_pixels", "n_newpixels", "farea", 
+            "FID", "n_pixels", "n_newpixels", "farea",
             "fperim", "flinelen", "duration", 
             "pixden", "meanFRP", "t", 
             "fireID", "primarykey", "region",
@@ -2406,12 +2406,12 @@ def copy_from_maap_to_veda_s3(
         ]
     elif "lf_fireline" in from_maap_s3_path:
         select_cols = [
-            "fireID", "t",
+            "FID", "fireID", "t",
             "primarykey", "region", "geometry"
         ]
     elif "lf_newfirepix" in from_maap_s3_path:
         select_cols = [
-            "fireID", "t",
+            "FID", "fireID", "t",
             "primarykey",
             "region",
             "geometry"
@@ -2431,28 +2431,27 @@ def copy_from_maap_to_veda_s3(
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
         to_veda_s3_path = f"EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
     
-    with fiona.Env():
-        gdf = gpd.read_file(from_maap_s3_path)
-        # for -upsert to work in ogr2ogr we need to make sure our primarykey column is set to FID
-        # https://gdal.org/programs/ogr2ogr.html#cmdoption-ogr2ogr-upsert
-        gdf['FID'] = gdf['primarykey']
+    gdf = gpd.read_file(from_maap_s3_path)
+    # for -upsert to work in ogr2ogr we need to make sure our primarykey column is set to FID
+    # https://gdal.org/programs/ogr2ogr.html#cmdoption-ogr2ogr-upsert
+    gdf['FID'] = gdf['primarykey']
 
-        # renmae columns for large fires
-        if "lf_" in from_maap_s3_path:
-            gdf = gdf.rename(columns={"id": "fireID"})
-        else:
-            try:
-                gdf = gdf.drop(columns=["t"])
-            except:
-                pass
-            gdf = gdf.rename(columns={"t_ed":"t"})
+    # renmae columns for large fires
+    if "lf_" in from_maap_s3_path:
+        gdf = gdf.rename(columns={"id": "fireID"})
+    else:
+        try:
+            gdf = gdf.drop(columns=["t"])
+        except:
+            pass
+        gdf = gdf.rename(columns={"t_ed":"t"})
 
-        # fiona has a serious but where it cannot write GPKG files to s3 even though FileGeobuf work fine
-        # so to work around this issue we just write them locally to /tmp first
-        gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
-        s3_client.copy_object(
-            CopySource=local_tmp_filepath,
-            Bucket='veda-data-store-staging',
-            Key=to_veda_s3_path
+    # fiona has a serious but where it cannot write GPKG files to s3 even though FileGeobuf work fine
+    # so to work around this issue we just write them locally to /tmp first
+    gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
+    s3_client.copy_object(
+        CopySource=local_tmp_filepath,
+        Bucket='veda-data-store-staging',
+        Key=to_veda_s3_path
         )
 
