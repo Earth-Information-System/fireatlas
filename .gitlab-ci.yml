@@ -56,7 +56,7 @@ dps-run:fire-atlas-conus-calitest:
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-dps-main-v3test
     VERSION: 0.99.3
-    USERNAME: gsfc_landslides
+    USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
 
