@@ -40,7 +40,7 @@ dps-run:fire-atlas-conus:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-dps-main-v3test
-    VERSION: 0.99.4
+    VERSION: 0.99.5
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]"}'
@@ -50,15 +50,16 @@ dps-run:fire-atlas-conus-calitest:
   extends: .run_dps_job_base
   only:
     variables:
-      - $CALITEST
+      - $TEST
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-dps-main-v3test
-    VERSION: 0.99.4
-    USERNAME: gcorradini
+    VERSION: $VERSION_TAG
+    USERNAME: $USERNAME
     QUEUE: maap-dps-worker-32gb
-    PARAMS: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
+    PARAMS: $PARAMS_STRING
+    #PARAMS: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
 
 
 dps-run:fire-atlas-boreal-automate-snapshot:
@@ -100,7 +101,7 @@ dps-run:fire-atlas-lf-archive:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-archive-v3test
-    VERSION: 0.99.4
+    VERSION: 0.99.5
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{"folder_name": "WesternUS_REDO", "start": 2013, "end": 2021}'
@@ -114,7 +115,7 @@ dps-run:fire-atlas-lf-nrt:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v3test
-    VERSION: 0.99.4
+    VERSION: 0.99.5
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{"folder_name": "CONUS_NRT_DPS"}'
