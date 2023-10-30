@@ -58,8 +58,9 @@ dps-run:fire-atlas-conus-calitest:
     VERSION: $VERSION_TAG
     USERNAME: $USERNAME
     QUEUE: maap-dps-worker-32gb
-    #PARAMS: $PARAMS_STRING
-    PARAMS: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
+    PARAMS: |
+      $PARAMS_STRING
+    #PARAMS: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
 
 
 dps-run:fire-atlas-boreal-automate-snapshot:
