@@ -2448,9 +2448,5 @@ def copy_from_maap_to_veda_s3(
     # fiona has a bug where it cannot write GPKG files to s3 even though FileGeobuf work fine
     # so to work around this issue we just write them locally to /tmp first
     gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
-    s3_client.copy_object(
-        CopySource=local_tmp_filepath,
-        Bucket='veda-data-store-staging',
-        Key=to_veda_s3_path
-    )
-
+    with open(local_tmp_filepath, 'rb') as file_object:
+        s3_client.upload_fileobj(file_object, 'veda-data-store-staging', to_veda_s3_path)
