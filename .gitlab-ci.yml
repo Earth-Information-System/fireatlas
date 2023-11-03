@@ -10,6 +10,7 @@ stages:
   script:
     - docker build -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
     - docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
+    - docker system prune -a -f
 
 ###################################
 # DPS JOBS
