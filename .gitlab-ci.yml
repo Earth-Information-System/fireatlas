@@ -10,7 +10,7 @@ stages:
   script:
     - docker build -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
     - docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
-    - docker system prune -a -f
+    - docker images | grep 'fire-atlas-' | awk '{print $3}' | xargs docker rmi -f
 
 ###################################
 # DPS JOBS
@@ -47,7 +47,7 @@ dps-run:fire-atlas-conus:
     PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]"}'
 
 
-dps-run:fire-atlas-conus-calitest:
+dps-run:fire-atlas-conus-manual:
   extends: .run_dps_job_base
   only:
     variables:
