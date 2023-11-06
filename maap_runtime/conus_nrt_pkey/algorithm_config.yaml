@@ -19,3 +19,6 @@ inputs:
     download: False
   - name: ted # [year, month, day, ampm]
     download: False
+  - name: export # true/false
+    default: "false"
+    download: False

@@ -1628,6 +1628,7 @@ def save_gpkgobj(
         the year, month, day and 'AM'|'PM'
     """
     from datetime import date
+    import FireConsts
 
     # date of the time step
     d = date(*t[:-1])
@@ -1648,15 +1649,15 @@ def save_gpkgobj(
     # save file
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb", regnm)
+        if FireConsts.export_to_veda: copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb", regnm)
 
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb", regnm)
+        if FireConsts.export_to_veda: copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb", regnm)
 
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
-        copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb", regnm)
+        if FireConsts.export_to_veda: copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb", regnm)
 
     if gdf_uptonow is not None:
         gdf_uptonow.to_file(f"{fnm}/uptonow.fgb", driver="FlatGeobuf")

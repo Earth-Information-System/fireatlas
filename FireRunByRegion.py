@@ -5,7 +5,7 @@ import time
 import argparse
 from FireLog import logger
 from datetime import datetime
-
+import FireConsts
 
 def validate_json(s):
     try:
@@ -23,7 +23,7 @@ def RegionRun(regnm, bbox, tst=None, ted=None):
     # os.environ['EPSG_CODE'] = FireEnums.EPSG.HI_LAT
     # os.environ['FTYP_OPT'] = 2
     # os.environ['CONT_OPT'] = 2
-    import FireConsts
+    # import FireConsts
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     ctime = datetime.now()
@@ -64,9 +64,11 @@ if __name__ == "__main__":
     parser.add_argument("--bbox", type=validate_json)
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
+    parser.add_argument("--export", action="store_true", help="export to veda or not")
     args = parser.parse_args()
     t1 = time.time()
     try:
+        FireConsts.export_to_veda = args.export
         RegionRun(args.regnm, args.bbox, args.tst, args.ted)
     except Exception as e:
         logger.exception(e)
