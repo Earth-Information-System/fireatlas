@@ -21,4 +21,5 @@ inputs:
     download: False
   - name: export # true/false
     default: "false"
+    required: false
     download: False
