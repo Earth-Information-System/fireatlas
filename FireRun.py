@@ -246,19 +246,19 @@ def BorealNA():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2023,1,1,'AM']
-    ted = [ctime.year, ctime.month, ctime.day, ampm]
-    #ted = [2023,6,28,'AM']
+    tst = [2023,8,31,'AM']
+    #ted = [ctime.year, ctime.month, ctime.day, ampm]
+    ted = [2023,9,2,'AM']
     print(f"Running code from {tst} to {ted}.")
     
     # do fire tracking
     #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
 
     # calculate and save snapshot files
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
     tend = time.time()
     
