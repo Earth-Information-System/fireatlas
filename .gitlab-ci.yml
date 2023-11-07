@@ -32,6 +32,7 @@ dps-run:data-update-checker:
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{}'
 
+
 dps-run:fire-atlas-conus:
   extends: .run_dps_job_base
   only:
@@ -40,11 +41,11 @@ dps-run:fire-atlas-conus:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-dps-main-v3test
-    VERSION: 0.99.6
+    ALGO_NAME: eis-fire-feds-dps-main-v3
+    VERSION: 1.0.0
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
-    PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]"}'
+    PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]", "export":"true"}'
 
 
 dps-run:fire-atlas-conus-manual:
@@ -61,8 +62,7 @@ dps-run:fire-atlas-conus-manual:
     QUEUE: maap-dps-worker-32gb
     PARAMS: |
       $PARAMS_STRING
-    #PARAMS: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
-
+    # EXAMPLE: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]", "export": "true"}'
 
 dps-run:fire-atlas-boreal-automate-snapshot:
   extends: .run_dps_job_base
@@ -102,8 +102,8 @@ dps-run:fire-atlas-lf-archive:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-combine-largefire-archive-v3test
-    VERSION: 0.99.6
+    ALGO_NAME: eis-fire-feds-combine-largefire-archive-v3
+    VERSION: 1.0.0
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{"folder_name": "WesternUS_REDO", "start": 2013, "end": 2021}'
@@ -116,8 +116,8 @@ dps-run:fire-atlas-lf-nrt:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v3test
-    VERSION: 0.99.6
+    ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v3
+    VERSION: 1.0.0
     USERNAME: gcorradini
     QUEUE: maap-dps-worker-32gb
     PARAMS: '{"folder_name": "CONUS_NRT_DPS"}'
