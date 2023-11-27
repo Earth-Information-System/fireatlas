@@ -56,6 +56,9 @@ def RegionRun(regnm, bbox, tst=None, ted=None):
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
+    
+    Example:
+    python3 FireRunByRegion.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]" --export
     """
     from dask.distributed import performance_report
     

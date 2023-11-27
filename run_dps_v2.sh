@@ -15,6 +15,9 @@ pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
   export_flag="$5"
+
+  # EXAMPLE:
+  # python3 FireRunByRegion.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]" --export
   if [[ -n "$export_flag" && ( "$export_flag" == "true" ) ]]; then
     # these need to be double quoted to pass along strings correctly formatted
     python FireRunByRegion.py --regnm=$1 --bbox="$2" --tst="$3" --ted="$4" --export
