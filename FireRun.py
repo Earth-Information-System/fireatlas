@@ -651,6 +651,77 @@ def WesternUSYrRun(year):
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
+    
+    
+    
+####### TESTS #######
+
+# Archive Test(s)
+def CreekRegionTest():
+    import FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from datetime import datetime
+    
+    if FireConsts.firesrc != 'SNPP':
+        print('Please set firesrc to SNPP')
+        return
+    
+    elif FireConsts.firenrt != False:
+        print('Please set firenrt to False')
+        return
+    
+    tst = (2020, 9, 5, "AM")
+    ted = (2020, 9, 12, "PM")
+    region = ("CreekRegionTest-{date:%Y-%m-%d_%H:%M:%S}".format(date=datetime.now()), [-120, 36, -118, 38])
+    
+    print(f'Starting run for {region[0]}')
+    tstart = time.time()
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    tend = time.time()
+    print(f"{(tend-tstart)/60.} minutes used for {region[0]}")
+    
+
+# NRT Test(s)
+def CONUS_NRT_Test():
+    import FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from datetime import datetime
+    
+    if FireConsts.firesrc != 'VIIRS':
+        print('Please set firesrc to VIIRS')
+        return
+    
+    elif FireConsts.firenrt != True:
+        print('Please set firenrt to True')
+        return
+    
+    tst = (2023, 9, 1, "AM")
+    ted = (2023, 9, 2, "PM")
+    region = ("CONUS_NRT_Test-{date:%Y-%m-%d_%H:%M:%S}".format(date=datetime.now()), 
+              [-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    
+    print(f'Starting run for {region[0]}')
+    tstart = time.time()
+
+    # do fire tracking
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+
+    # calculate and save snapshot files
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+
+    # calculate and save single fire files
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    
+    tend = time.time()
+    print(f"{(tend-tstart)/60.} minutes used for {region[0]}")
+
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
