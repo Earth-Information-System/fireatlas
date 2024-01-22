@@ -47,6 +47,8 @@ EARTH_RADIUS_KM = 6371.0  # earth radius, km
 # temporal parameters for fire object definition
 maxoffdays = 5  # fire becomes inactive after this number of consecutive days without active fire detection
 limoffdays = 20  # fire keeps sleeper status even at inactive but with inactive dates smaller than this value
+CONNECTIVITY_CLUSTER_KM = 0.7  # the connectivity spatial threshold for initial clustering, km
+CONNECTIVITY_SLEEPER_KM = 1  # the connectivity spatial threshold (to previous fire line), km
 
 # fire tracking options
 expand_only = (

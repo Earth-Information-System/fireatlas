@@ -203,8 +203,7 @@ def cal_hull(fp_locs, sensor="viirs"):
     hull : object
         calculated hull (a buffer of VIIRS half pixel size included)
     """
-    from FireConsts import valpha, VIIRSbuf  # ,MCD64buf
-    import numpy as np
+    from FireConsts import valpha, VIIRSbuf
 
     # set buffer according to sensor
     if sensor == "viirs":
@@ -214,7 +213,7 @@ def cal_hull(fp_locs, sensor="viirs"):
     else:
         print('please set sensor to viirs or mcd64')
 
-    # number of points
+    # number of pixels
     nfp = len(fp_locs)
 
     # For cluster with 1-2 pixel, calculate hull using buffered points (MultiPolygon)

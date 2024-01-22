@@ -537,7 +537,7 @@ class Fire:
         """ List of new fire pixels attributes
         """
         return [
-            (p.lon, p.lat, p.frp, p.DS, p.DT, p.datetime, p.ampm, p.sat)
+            (p.lon, p.lat, p.FRP, p.DS, p.DT, p.YYYYMMDD_HHMM, p.ampm, p.at)
             for p in self.newpixels
         ]
 
@@ -658,7 +658,7 @@ class Fire:
     def meanFRP(self):
         """ Mean FRP of the new fire pixels
         """
-        frps = [p.frp for p in self.newpixels]
+        frps = [p.FRP for p in self.newpixels]
         if len(frps) > 0:
             m = sum(frps) / len(frps)
         else:
@@ -907,18 +907,18 @@ class FirePixel:
         origin : the fire id originally recorded (before merging)
     """
 
-    def __init__(self, x, y, lon, lat, frp, DS, DT, ampm, t, Sat, origin):
+    def __init__(self, x, y, lon, lat, FRP, DS, DT, ampm, YYYYMMDD_HHMM, Sat, origin):
         self.x = x
         self.y = y
         self.lat = lat
         self.lon = lon
-        self.frp = frp  # frp
+        self.FRP = FRP  # frp
         # self.t = list(t)      # (year,month,day,ampm)
         self.DS = DS
         self.DT = DT
         self.ampm = ampm
-        self.datetime = t  # YYYYMMDD_HHMM
-        self.sat = Sat  # satellite
+        self.YYYYMMDD_HHMM = YYYYMMDD_HHMM  # YYYYMMDD_HHMM
+        self.Sat = Sat  # satellite
         self.origin = origin  # intially assigned fire id
 
     @property

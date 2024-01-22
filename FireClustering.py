@@ -2,36 +2,6 @@
 This module include all functions used for doing fire clustering
 """
 
-
-def remove_self(inds, dist):
-    """ Remove self from the index and distance arrays
-
-    Parameters
-    ----------
-    inds : np array of np array
-        indices of neighbors for each point (self included)
-    dist : np array of np array
-        distance of neighbors for each point (self included)
-
-    Returns
-    -------
-    new_inds : np array of np array
-        indices of neighbors (self excluded)
-    new_dist : np array of np array
-        distance of neighbors (self excluded)
-    """
-    import numpy as np
-
-    new_inds = []
-    new_dist = []
-    for i in range(len(inds)):
-        pos = np.where(inds[i] == i)
-        new_inds.append(np.delete(inds[i], pos))
-        new_dist.append(np.delete(dist[i], pos))
-
-    return np.array(new_inds, dtype=object), np.array(new_dist, dtype=object)
-
-
 def build_rtree(geoms, fids=False):
     """Builds Rtree from a shapely multipolygon shape
     and optionally uses list of fids as identifier"""
@@ -60,7 +30,7 @@ def idx_intersection(idx, bbox):
 
 
 def compute_all_spatial_distances(data, max_thresh_km):
-    """ Derive neighbors (and distances) for each point (with lat/lon)
+    """ Derive neighbors for each point (with x,y)
 
     Parameters
     ----------
@@ -72,54 +42,24 @@ def compute_all_spatial_distances(data, max_thresh_km):
     Returns
     -------
     inds : np array of np array
-        indices of neighbors (self exluded)
-    dist : np array of np array
-        distance (km) of neighbors (self excluded)
+        indices of neighbors (self excluded)
     """
     import numpy as np
     from sklearn.neighbors import BallTree
 
-    x = data.x.values
-    y = data.y.values
-
-    X = np.stack([x, y], axis=-1)
+    X = data[["x", "y"]].values
 
     bt = BallTree(X, leaf_size=20)
 
-    inds, dist = bt.query_radius(X, r=max_thresh_km * 1000, return_distance=True)
-    inds, dist = remove_self(inds, dist)
-    return inds, dist * 1000
-
-
-def sort_neighbors(inds, dists):
-    """ Do neighbor sorting (based on distance) for all points
-
-    Parameters
-    ----------
-    inds : np array of np array
-        indices of neighbors (self exluded)
-    dist : np array of np array
-        distance (km) of neighbors (self excluded)
-
-    Returns
-    -------
-    sorted_inds : np array of np array
-        indices of neighbors (self exluded)
-    sorted_dists : np array of np array
-        distance (km) of neighbors (self excluded)
-    """
-    import numpy as np
-
-    sorted_inds = []
-    sorted_dists = []
-
+    inds = bt.query_radius(X, r=max_thresh_km * 1000, return_distance=False)
+    
+    # remove self from neighbors
+    new_inds = []
     for i in range(len(inds)):
-        new_order = np.argsort(dists[i])
+        pos = np.where(inds[i] == i)
+        new_inds.append(np.delete(inds[i], pos))
 
-        sorted_inds.append(inds[i][new_order])
-        sorted_dists.append(dists[i][new_order])
-
-    return sorted_inds, sorted_dists
+    return np.array(new_inds, dtype=object)
 
 
 def do_clustering(data, max_thresh_km):
@@ -127,8 +67,8 @@ def do_clustering(data, max_thresh_km):
 
     Parameters
     ----------
-    data : list (nx2)
-        latitude and longitude values of all fire pixels
+    data : dataframe
+        dataframe containing x and y values of all fire pixels
     max_thresh_km : float
         maximum distance threshold (km) used for classifying neighbors
 
@@ -138,7 +78,9 @@ def do_clustering(data, max_thresh_km):
         cluster id for each fire point
     """
     import numpy as np
-    import pandas as pd
+
+    # copy the dataframe so the we don't modify it inplace
+    data = data.copy()
 
     # value to fill in pixels without clustering
     NO_CLUSTER_VAL = -1
@@ -149,18 +91,12 @@ def do_clustering(data, max_thresh_km):
         cluster_id = list(range(num_points))
         return cluster_id
 
-    # convert list to pd DataFrame
-    dfdata = pd.DataFrame(data, columns=["x", "y"])
-
     # initialization
     cluster_id_counter = 0
     point_to_cluster_id = np.full(num_points, fill_value=NO_CLUSTER_VAL, dtype=np.int64)
 
-    # compute and sort neighbor pixels for each pixel
-    neighbor_inds, neighbor_spatial_dists = compute_all_spatial_distances(
-        dfdata, max_thresh_km
-    )
-    # neighbor_inds, neighbor_spatial_dists = sort_neighbors(neighbor_inds, neighbor_spatial_dists)
+    # compute neighbor pixels for each pixel
+    neighbor_inds = compute_all_spatial_distances(data, max_thresh_km)
 
     # include all possible pixels in cluster
     to_check = np.full(num_points, fill_value=1, dtype=np.int8)
@@ -194,7 +130,10 @@ def do_clustering(data, max_thresh_km):
             cluster_id_counter += 1
             to_check[all_neighbors] = 0
 
-    return point_to_cluster_id.tolist()
+    data["initial_cid"] = point_to_cluster_id
+    data["origin"] = -1
+
+    return data
 
 
 def cal_distance(loc1, loc2):

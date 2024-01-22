@@ -53,30 +53,6 @@ def get_CONNECTIVITY_FIRE(fire):
         return v
 
 
-def get_CONNECTIVITY_CLUSTER():
-    """ get the connectivity spatial threshold for initial clustering
-
-    Returns:
-    --------
-    CONNECTIVITY_CLUSTER_KM : float
-        the connectivity spatial threshold for initial clustering, km
-    """
-    CONNECTIVITY_CLUSTER_KM = 0.7
-    return CONNECTIVITY_CLUSTER_KM
-
-
-def get_CONNECTIVITY_SLEEPER():
-    """ get the CONNECTIVITY_SLEEPER_KM value
-
-    Returns:
-    --------
-    CONNECTIVITY_SLEEPER_KM : float
-        the connectivity spatial threshold (to previous fire line), km
-    """
-    CONNECTIVITY_SLEEPER_KM = 1  # 1km
-    return CONNECTIVITY_SLEEPER_KM
-
-
 def set_ftype(fire):
     """ set fire type and dominant LCT for newly activated fires
 

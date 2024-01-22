@@ -20,6 +20,7 @@ Modules required
 
 # Use a logger to record console output
 from FireLog import logger
+import preprocess
 
 # Functions
 def correct_nested_ids(mergetuple):
@@ -84,14 +85,13 @@ def set_eafirerngs(allfires, fids):
     eafirerngs : list
         the list of fire connecting ranges corresponding to the sequence of fids
     """
-    import FireFuncs, FireVector
+    import FireConsts, FireVector
 
     # extract existing active fire data (use extending ranges)
     firerngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        CONNECTIVITY_FIRE_KM = FireFuncs.get_CONNECTIVITY_FIRE(f)
-        rng = FireVector.addbuffer(f.hull, CONNECTIVITY_FIRE_KM * 1000)
+        rng = FireVector.addbuffer(f.hull, FireConsts.CONNECTIVITY_FIRE_KM * 1000)
         firerngs.append(rng)
     return firerngs
 
@@ -111,14 +111,13 @@ def set_sleeperrngs(allfires, fids):
     eafirerngs : list
         the list of fire connecting ranges corresponding to the sequence of fids
     """
-    import FireFuncs, FireVector
+    import FireConsts, FireVector
 
     # extract existing active fire data (use extending ranges)
     sleeperrngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        CONNECTIVITY_SLEEPER_KM = FireFuncs.get_CONNECTIVITY_SLEEPER()
-        rng = FireVector.addbuffer(f.hull, CONNECTIVITY_SLEEPER_KM * 1000)
+        rng = FireVector.addbuffer(f.hull, FireConsts.CONNECTIVITY_SLEEPER_KM * 1000)
         sleeperrngs.append(rng)
     return sleeperrngs
 
@@ -154,31 +153,29 @@ def Fobj_init(tst, regnm, restart=False):
     return allfires
 
 
-def remove_static_sources(region, source):
+def maybe_remove_static_sources(region, input_data_dir):
     """ Modify region to exclude static sources
 
     Parameters
     ----------
     region : the run region. 
-    source : str
-        Name of the file in dirextdata that containts statics sources with a Longitude and Latitude column.  
 
     Returns
     -------
     region : region obj
-        A region that is the diference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
+        A region that is the difference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
     """
-    # import
     import os
     from FireIO import get_reg_shp, gpd_read_file
-    from FireConsts import dirextdata, epsg, remove_static_sources_buffer
-    import shapely
-    import shapely.geometry
-    from shapely.geometry import Point, Polygon
+    from FireConsts import epsg, remove_static_sources_bool, remove_static_sources_sourcefile, remove_static_sources_buffer
+
     import geopandas as gpd
     
+    if not remove_static_sources_bool:
+        return region
+    
     # get source data geometry
-    global_flaring = gpd_read_file(os.path.join(dirextdata,'static_sources', source))
+    global_flaring = gpd_read_file(os.path.join(input_data_dir, 'static_sources', remove_static_sources_sourcefile))
     global_flaring = global_flaring.drop_duplicates()
     global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
 
@@ -198,7 +195,7 @@ def remove_static_sources(region, source):
     diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
     
     region = (diff.name[0], diff.geometry[0])
-    return(region)
+    return region
     
 
 def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
@@ -208,8 +205,8 @@ def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
     ----------
     allfires : Allfires obj
         the existing Allfires object for the time step
-    afp : 5-element list
-        (lat, lon, line, sample, FRP) of new active fire pixels
+    afp : pandas.DataFrame
+        preprocessed dataframe of new active fire pixels
     fids_ea : list
         fire ids of existing active fires at previous time step
 
@@ -219,7 +216,7 @@ def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
         updated Allfires object for the day with new formed/expanded fire objects
     """
     # import time
-    import FireObj, FireClustering, FireVector, FireFuncs
+    import FireObj, FireClustering
     from FireConsts import expand_only, firessr
 
     # initializations
@@ -235,41 +232,27 @@ def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
     # create a spatial index based on geometry bounds of fire connecting ranges
     ea_idx = FireClustering.build_rtree(eafirerngs)
 
-    # do preliminary clustering using new active fire locations (assign cid to each pixel)
-    afp_loc = list(zip(afp.x, afp.y))
-    CONNECTIVITY_CLUSTER = FireFuncs.get_CONNECTIVITY_CLUSTER()
-    cid = FireClustering.do_clustering(
-        afp_loc, CONNECTIVITY_CLUSTER
-    )  # cluster id for each afp_loc
-    if log:
-        logger.info(f"New fire clusters of {max(cid)} at this time step")
-
     # loop over all new clusters (0:cid-1) and determine its fate
-    FP2expand = {}  # a diction to record {fid : Firepixel objects} pairs
-    for ic in range(max(cid) + 1):
-        # create cluster object using all newly detected active fires within a cluster
-        #   (-1 means no source fireid)
+    FP2expand = {}  # a dict to record {fid : Firepixel objects} pairs
+    for ic, subset in afp.groupby("initial_cid"):
         pixels = [
             FireObj.FirePixel(
-                afp.iloc[i].x,
-                afp.iloc[i].y,
-                afp.iloc[i].Lon,
-                afp.iloc[i].Lat,
-                afp.iloc[i].FRP,
-                afp.iloc[i].DS,
-                afp.iloc[i].DT,
-                afp.iloc[i].ampm,
-                afp.iloc[i].YYYYMMDD_HHMM,
-                afp.iloc[i].Sat,
-                -1,
+                row.x,
+                row.y,
+                row.Lon,
+                row.Lat,
+                row.FRP,
+                row.DS,
+                row.DT,
+                row.ampm,
+                row.YYYYMMDD_HHMM,
+                row.Sat,
+                row.origin,
             )
-            for i, v in enumerate(cid)
-            if v == ic
-        ]  # pixels
-        cluster = FireObj.Cluster(
-            ic, pixels, allfires.t, sensor=firessr
-        )  # form cluster
-        hull = cluster.hull  # save hull to reduce computational cost
+            for row in subset.itertuples()
+        ]
+        cluster = FireObj.Cluster(ic, pixels, allfires.t, sensor=firessr)
+        hull = cluster.hull
 
         # if the cluster is close enough to an existing active fire object
         #   record all pixels to be added to the existing object (no actuall changes on existing fire objects)
@@ -289,7 +272,6 @@ def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
                         id_cf
                     ]  # this is the fire id of the existing active fire
                     # record pixels from target cluster (locs and time) along with the existing active fire object id
-                    # newFPs = [FireObj.FirePixel(p.x,p.y,p.lon,p.lat,p.frp,p.DS,p.DT,p.ampm,p.datetime,p.sat,fmid) for p in pixels] # new FirePixels from the cluster
                     if (
                         fmid in FP2expand.keys()
                     ):  # single existing object, can have multiple new clusters to append
@@ -574,10 +556,6 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     # initialize allfires object
     allfires = Fobj_init(tst, region[0], restart=restart)
     
-    # remove static sources
-    if remove_static_sources_bool: 
-        region = remove_static_sources(region, remove_static_sources_sourcefile)
-
     # loop over all days during the period
     endloop = False  # flag to control the ending of the loop
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
@@ -595,11 +573,11 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         # 2. update t of allfires, clean up allfires and fire object
         allfires.cleanup(t)
 
-        # 3. read active fire pixels from VIIRS dataset
+        # 3. read active fire pixels from preprocessed dataset
         i = 0
         while i < 5:
             try: 
-                afp = FireIO.read_AFP(t, src=firesrc, nrt=firenrt, region=region)
+                afp = preprocess.read_preprocessed(t, sat=firesrc, region=region)
                 break
             except Exception as e:
                 print(f"Attempt {i}/5 failed.")
@@ -607,7 +585,6 @@ def Fire_Forward(tst, ted, restart=False, region=None):
                 i += 1
                 if not i < 5:
                     raise e
-        
         # 4.5. if active fire pixels are detected, do fire expansion/merging
         if len(afp) > 0:
             # 4. do fire expansion/creation using afp
