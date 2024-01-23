@@ -710,15 +710,14 @@ class Fire:
                 # otherwise, extract the pixels nearl the hull
                 # if hull is a polygon, return new pixels near the hull
                 if fhull.type == "Polygon":
-                    # lr = fhull.exterior.buffer(fpbuffer)
-                    lr = FireVector.addbuffer(fhull.exterior, fpbuffer)
+                    lr = fhull.exterior.buffer(fpbuffer)
                     return [p for p in nps if lr.contains(Point(p.loc[0], p.loc[1]))]
 
                 # if hull is a multipolygon, return new pixels near the hull
                 elif fhull.type == "MultiPolygon":
                     # mlr = MultiLineString([x.exterior for x in fhull]).buffer(fpbuffer)
                     mlr = MultiLineString([x.exterior for x in fhull])
-                    mlr = FireVector.addbuffer(mlr, fpbuffer)
+                    mlr = mlr.buffer(fpbuffer)
                     return [p for p in nps if mlr.contains(Point(p.loc[0], p.loc[1]))]
             
             except Exception as e:
@@ -773,16 +772,12 @@ class Fire:
             if fhull.type == "MultiPolygon":
                 # extract exterior of fire perimeter
                 mls = MultiLineString([plg.exterior for plg in fhull])
-                # return the part which intersects with  bufferred flinelocsMP
-                # return mls.intersection(flinelocsMP.buffer(flbuffer))
-                flinelocsMP_buf = FireVector.addbuffer(flinelocsMP, flbuffer)
-                fline = mls.intersection(flinelocsMP_buf)
+                # set fline to the part which intersects with  bufferred flinelocsMP
+                fline = mls.intersection(flinelocsMP.buffer(flbuffer))
 
             elif fhull.type == "Polygon":
                 mls = fhull.exterior
-                # return mls.intersection(flinelocsMP.buffer(flbuffer))
-                flinelocsMP_buf = FireVector.addbuffer(flinelocsMP, flbuffer)
-                fline = mls.intersection(flinelocsMP_buf)
+                fline = mls.intersection(flinelocsMP.buffer(flbuffer))
             else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
                 fline = flinelocsMP
 

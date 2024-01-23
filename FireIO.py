@@ -387,7 +387,7 @@ def AFP_regfilter(df, shp_Reg):
     df_filtered : pandas DataFrame
         the filtered fire pixels
     """
-    from FireConsts import epsg, remove_static_sources_bool
+    from FireConsts import epsg
     from shapely.geometry import Point
     import geopandas as gpd
 
@@ -402,11 +402,8 @@ def AFP_regfilter(df, shp_Reg):
     point_data = [Point(xy) for xy in zip(newfirepixels["Lon"], newfirepixels["Lat"])]
     gdf_filtered = gpd.GeoDataFrame(newfirepixels, geometry=point_data, crs=4326)
 
-    # if shp_Reg is not a rectangle, do detailed filtering (within shp_Reg)
-    import math
-
-    if ((not math.isclose(shp_Reg.minimum_rotated_rectangle.area, shp_Reg.area)) | remove_static_sources_bool):
-        gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
+    # Do detailed filtering (within shp_Reg)
+    gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
 
     # drop geometry column
     df_filtered = AFP_toprj(gdf_filtered, epsg=epsg)

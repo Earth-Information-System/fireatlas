@@ -85,13 +85,13 @@ def set_eafirerngs(allfires, fids):
     eafirerngs : list
         the list of fire connecting ranges corresponding to the sequence of fids
     """
-    import FireConsts, FireVector
+    import FireConsts
 
     # extract existing active fire data (use extending ranges)
     firerngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        rng = FireVector.addbuffer(f.hull, FireConsts.CONNECTIVITY_FIRE_KM * 1000)
+        rng = f.hull.buffer(FireConsts.CONNECTIVITY_FIRE_KM * 1000)
         firerngs.append(rng)
     return firerngs
 
@@ -111,13 +111,13 @@ def set_sleeperrngs(allfires, fids):
     eafirerngs : list
         the list of fire connecting ranges corresponding to the sequence of fids
     """
-    import FireConsts, FireVector
+    import FireConsts
 
     # extract existing active fire data (use extending ranges)
     sleeperrngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        rng = FireVector.addbuffer(f.hull, FireConsts.CONNECTIVITY_SLEEPER_KM * 1000)
+        rng = f.hull.buffer(FireConsts.CONNECTIVITY_SLEEPER_KM * 1000)
         sleeperrngs.append(rng)
     return sleeperrngs
 
@@ -255,7 +255,7 @@ def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
         hull = cluster.hull
 
         # if the cluster is close enough to an existing active fire object
-        #   record all pixels to be added to the existing object (no actuall changes on existing fire objects)
+        #   record all pixels to be added to the existing object (no actual changes on existing fire objects)
         id_cfs = FireClustering.idx_intersection(
             ea_idx, cluster.b_box
         )  # potential neighbours using spatial index
@@ -322,10 +322,8 @@ def Fire_expand_rtree(allfires, afp, fids_ea, log=True):
             #     f.actpixels = newFPs
 
             # update the hull using previous hull and previous exterior pixels
-            # phull = f.hull   # previous hull
             pextlocs = [p.loc for p in f.extpixels]  # previous external pixels
             newlocs = [p.loc for p in newFPs]  # new added pixels
-            # f.hull = FireVector.update_hull(phull,pextlocs+newlocs)  # use update_hull function to save time
             f.updatefhull(pextlocs + newlocs)
 
             # update exterior pixels
@@ -428,9 +426,6 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
 
         # create a spatial index based on geometry bounds of ne fire sleeper ranges
         ne_idx = FireClustering.build_rtree(nefiresleeperrangs)
-
-        # nefirebuf  = [FireVector.addbuffer(hull,sleeperthresh*1000) for hull in nefirehulls]
-        # ne_idx = FireClustering.build_rtree(nefirebuf)
 
         # do the check analoguous to above; loop over each sleeper fire
         firedone = {

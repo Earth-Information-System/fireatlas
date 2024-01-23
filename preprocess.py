@@ -6,6 +6,7 @@ from FireConsts import CONNECTIVITY_CLUSTER_KM
 from FireClustering import do_clustering
 from FireIO import read_VNP14IMGTDL, read_VJ114IMGTDL, read_VNP14IMGML, read_VJ114IMGML, get_reg_shp, AFP_regfilter, AFP_setampm
 from FireMain import maybe_remove_static_sources
+from FireVector import cal_hull
 
 # INPUT_DIR = "/projects/shared-buckets/gsfc_landslides/FEDSinput/VIIRS/"
 # OUTPUT_DIR = "/projects/shared-buckets/jsignell/processed/"
@@ -32,26 +33,16 @@ def read_region(region):
     return (region[0], shape)
 
 
-def preprocessed_NRT_filename(t, region, sat, preprocessed_data_dir):
+def preprocessed_filename(t, sat, *, region=None, suffix="", preprocessed_data_dir=OUTPUT_DIR):
     return os.path.join(
         preprocessed_data_dir,
         sat,
-        region[0],
-        f"NRT_{t[0]}{t[1]:02}{t[2]:02}_{t[3]}.txt"
+        *([] if region is None else [region[0]]),
+        f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}{suffix}.txt"
     )
 
-
-def preprocessed_filename(t, region, sat, preprocessed_data_dir):
-    return os.path.join(
-        preprocessed_data_dir,
-        sat,
-        region[0],
-        f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}.txt"
-    )
-
-
-def preprocess_NRT_file(t, region, sat):
-    print(f"preprocessing NRT file for {t[0]}-{t[1]}-{t[2]}, {region[0]}, {sat}")
+def preprocess_NRT_file(t, sat):
+    print(f"preprocessing NRT file for {t[0]}-{t[1]}-{t[2]}, {sat}")
     
     if sat == "SNPP":
         df = read_VNP14IMGTDL(t, input_data_dir=INPUT_DIR)
@@ -60,10 +51,6 @@ def preprocess_NRT_file(t, region, sat):
     else:
         print("please set SNPP or NOAA20 for sat")
 
-    # do regional filtering
-    shp_Reg = get_reg_shp(region[1])
-    df = AFP_regfilter(df, shp_Reg)
-
     # set ampm
     df = AFP_setampm(df)
     
@@ -71,15 +58,12 @@ def preprocess_NRT_file(t, region, sat):
     df["Sat"] = sat
 
     # return selected columns
-    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]]
+    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm"]]
 
     for ampm in ["AM", "PM"]:
         time_filtered_df = df.loc[df["ampm"] == ampm]
 
-        # do preliminary clustering using new active fire locations (assign cid to each pixel)
-        time_filtered_df = do_clustering(time_filtered_df, CONNECTIVITY_CLUSTER_KM)
-
-        output_filepath = preprocessed_NRT_filename((*t[:3], ampm), region, sat, OUTPUT_DIR)
+        output_filepath = preprocessed_filename((*t[:3], ampm), sat, suffix="_NRT")
 
         # make nested path if necessary
         os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -88,9 +72,9 @@ def preprocess_NRT_file(t, region, sat):
         time_filtered_df.to_csv(output_filepath, index=False)
 
 
-def preprocess_monthly_file(t, region, sat):
-    """Preprocess a monthly file for a given region and satellite"""
-    print(f"preprocessing monthly file for {t[0]}-{t[1]}, {region[0]}, {sat}")
+def preprocess_monthly_file(t, sat):
+    """Preprocess a monthly file for a given satellite"""
+    print(f"preprocessing monthly file for {t[0]}-{t[1]}, {sat}")
 
     df = None
     if sat in ["SNPP", "VIIRS"]:
@@ -105,13 +89,7 @@ def preprocess_monthly_file(t, region, sat):
         df = pd.concat([df_SNPP, df_NOAA20], ignore_index=True)
     if df is None:
         print("please set SNPP or NOAA20 for sat")
-    
-    print("filtering...")
-    # do regional filtering
-    shp_Reg = get_reg_shp(region[1])
-    df = AFP_regfilter(df, shp_Reg)
 
-    print("setting ap and pm...")
     # set ampm
     df = AFP_setampm(df)
 
@@ -119,19 +97,14 @@ def preprocess_monthly_file(t, region, sat):
     df["Sat"] = sat
 
     # return selected columns
-    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]]
+    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm"]]
 
     days = df["YYYYMMDD_HHMM"].dt.date.unique()
     for day in days:
         for ampm in ["AM", "PM"]:
             time_filtered_df = df.loc[(df["YYYYMMDD_HHMM"].dt.date == day) & (df["ampm"] == ampm)]
 
-            print("clustering...")
-            # do preliminary clustering using new active fire locations (assign cid to each pixel)
-            time_filtered_df = do_clustering(time_filtered_df, CONNECTIVITY_CLUSTER_KM)
-
-            output_filepath = preprocessed_filename((day.year, day.month, day.day, ampm), region, sat, OUTPUT_DIR)
-            print(f"writing {output_filepath}")
+            output_filepath = preprocessed_filename((day.year, day.month, day.day, ampm), sat)
             
             # make nested path if necessary
             os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -140,6 +113,24 @@ def preprocess_monthly_file(t, region, sat):
             time_filtered_df.to_csv(output_filepath, index=False)
 
 
-def read_preprocessed(t, region, sat):
-    output_filepath = preprocessed_filename(t, region, sat, OUTPUT_DIR)
+def read_preprocessed(t, sat, *, region=None):
+    output_filepath = preprocessed_filename(t, sat ,region=region)
     return pd.read_csv(output_filepath)
+
+
+def preprocess_region_t(t, sat, region):
+    print(f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sat}, {region[0]}")
+    df = read_preprocessed(t, sat)
+
+    # do regional filtering
+    shp_Reg = get_reg_shp(region[1])
+    df = AFP_regfilter(df, shp_Reg)
+
+    # return selected columns
+    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]]
+
+    # do preliminary clustering using new active fire locations (assign cid to each pixel)
+    df = do_clustering(df, CONNECTIVITY_CLUSTER_KM)
+
+    output_filepath = preprocessed_filename(t, sat, region=region)
+    df.to_csv(output_filepath, index=False)
