@@ -19,7 +19,7 @@ def build_rtree(geoms, fids=False):
 
 def idx_intersection(idx, bbox):
     """
-    Finds all objects in an index whcih bounding boxes intersect with a geometry's bounding box
+    Finds all objects in an index where bounding boxes intersect with a geometry's bounding box
     """
     intersections = list(idx.intersection(bbox, objects=True))
     if len(intersections) > 0:
@@ -193,46 +193,3 @@ def cal_mindist(c1, c2):
     mindist = min([cal_distance(l1, l2) for l1, l2 in itertools.product(c1, c2)])
 
     return mindist
-
-
-# def filter_centroid(loc_tgt,locs,MAX_THRESH_CENT_KM=50):
-#     ''' Get cluster ids if centroid is close to the target cluster centroid
-#
-#     Parameters
-#     ----------
-#     loc_tgt : list, [lat,lon]
-#         target centroid
-#     locs : list of [lat,lon]
-#         all existing fire centroid
-#     MAX_THRESH_CENT_KM : float
-#         maximum threshold to determine close clusters
-#
-#     Returns
-#     -------
-#     closeindices : list
-#         ids of existing clusters that are close to the target cluster
-#     '''
-#     closeornot = [cal_distance(loc_tgt,loc) < MAX_THRESH_CENT_KM for loc in locs]
-#     closeindices = [i for i, x in enumerate(closeornot) if x == True]
-#     return closeindices
-
-
-def cal_centroid(data):
-    """ Calculate the centroid of a list of points
-    Parameters
-    ----------
-    data : list of [lat,lon]
-        point location
-
-    Returns
-    -------
-    xct : float
-        lat of centroid
-    yct : float
-        lon of centroid
-    """
-    x, y = zip(*(data))
-    l = len(x)
-    xct, yct = sum(x) / l, sum(y) / l
-
-    return xct, yct

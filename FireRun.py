@@ -11,6 +11,7 @@ import argparse
 # logger.addHandler(stdout_handler)
 # logger.setLevel(logging.INFO)
 from FireLog import logger
+from utils import timed
 
 def DataUpdateChecker():
     """ download data from different satellite sensors at the
@@ -444,49 +445,27 @@ def CArunNRT():
     #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
-    
+
+@timed
 def CONUSrunNRT():
     
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
+    import preprocess
+    import FireMain
     import FireConsts
-    from datetime import datetime
-    import os
-    from time import sleep
 
     if FireConsts.firenrt != True:
-        print('Please set firenrt to True')
-        return
+        raise ValueError('Please set FireConsts.firenrt to True')
     
-    tstart = time.time()
-    
-    ctime = datetime.now()
-
-    region = ('CONUS_ARCHIVE_P_KEY',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    region = ('CONUS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
     logger.info(f'STARTING RUN FOR {region[0]}')
 
-    lts = FireIO.get_lts_serialization(regnm=region[0])
-    if lts == None:
-        tst = [ctime.year, 1, 1, 'AM']
-    else:
-        #tst = FireObj.t_nb(lts, nb="previous") <-- this returns an error
-        tst = lts
+    tst = [2023, 9, 1, 'AM']
+    ted = [2023, 9, 6, 'PM']
 
-    if ctime.hour >= 18:
-        ampm = 'PM'
-    else:
-        ampm = 'AM'
-    tst = [2022, 10, 21, 'PM']
-    ted = [2022, 12, 31, 'PM']
-    #ted = [ctime.year, ctime.month, ctime.day, ampm]
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
-
-    FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
-    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
-    tend = time.time()
-    logger.info(f"{(tend-tstart)/60.} minutes used for CONUS with dask.")
-
+    region = preprocess.read_region(region)
     
+    return FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+
 def WesternUSrunNRT():
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj

@@ -53,6 +53,11 @@ def t_nb(t, nb="next"):
             t_out = [d_out.year, d_out.month, d_out.day, "PM"]
     return t_out
 
+def t_generator(t_st, t_ed):
+    t = t_st
+    while t_ed != t:
+        yield t
+        t = t_nb(t, nb="next")
 
 def t_dif(t1, t2):
     """ calculate the time difference between two time steps

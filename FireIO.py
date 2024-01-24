@@ -710,7 +710,7 @@ def get_LCT_CONUS(locs):
     
     Parameters
     ----------
-    locs : list of lists (nx2)
+    locs : np.array (nx2)
         lat and lon values for each active fire detection
 
     Returns
@@ -721,23 +721,13 @@ def get_LCT_CONUS(locs):
     from FireConsts import dirextdata
 
     import rasterio
-    import pyproj
     import os
 
     # read NLCD 500m data
-    fnmLCT = os.path.join(dirextdata, "NLCD", "nlcd_export_510m_simplified.tif")
+    fnmLCT = os.path.join(dirextdata, "NLCD", "nlcd_export_510m_simplified_latlon.tif")
     dataset = rasterio.open(fnmLCT)
-    transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
-    locs_crs_x, locs_crs_y = transformer.transform(
-        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
-        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
-        # here.
-        [l[1] for l in locs],
-        [l[0] for l in locs]
-    )
-    locs_crs = list(zip(locs_crs_x, locs_crs_y))
-    samps = list(dataset.sample(locs_crs))
-    vLCT = [int(s) for s in samps]
+    vLCT = dataset.sample(locs, indexes=1)
+    vLCT = [lc[0] for lc in vLCT]
     return vLCT
 
 def get_LCT_Global(locs):
@@ -746,7 +736,7 @@ def get_LCT_Global(locs):
     
     Parameters
     ----------
-    locs : list of lists (nx2)
+    locs : np.array (nx2)
         lat and lon values for each active fire detection
 
     Returns
@@ -757,20 +747,15 @@ def get_LCT_Global(locs):
     from FireConsts import dirextdata
 
     import rasterio
-    import pyproj
     import os
     
     fnmLCT = os.path.join(dirextdata, "GlobalLC", "global_lc_mosaic.tif")
     dataset = rasterio.open(fnmLCT)
-    #print('LOCS CRS:',locs_crs)
     
     # previous LC data sources were in a different crs and needed a transform
     # the VIIRS and LC data in this case are both in EPSG:4326, so we can sample directly
-    samps = list(dataset.sample(locs))
-    #print('LANDCOVER SAMPLES:',samps)
-    
-    vLCT = [int(s) for s in samps]
-    #print('vLCT SAMPLES:',vLCT)
+    samps = list(dataset.sample(locs))  
+    vLCT = [s[0] for s in samps]
     return vLCT
 
 def get_LCT_NLCD(locs):
@@ -778,7 +763,7 @@ def get_LCT_NLCD(locs):
 
     Parameters
     ----------
-    locs : list of lists (nx2)
+    locs : np.array (nx2)
         lon and lat values for each active fire detection
 
     Returns
@@ -796,23 +781,23 @@ def get_LCT_NLCD(locs):
     # read NLCD 500m data
     fnmLCT = os.path.join(dirextdata, "CA", "nlcd_510m_latlon.tif")
     dataset = rasterio.open(fnmLCT)
-    # locs = [(x,y) for (y,x) in locs]
     vLCT = dataset.sample(locs, indexes=1)
     vLCT = [lc[0] for lc in vLCT]  # list values
 
     return vLCT
 
 
-def get_FM1000(t, loc):
+def get_FM1000(t, lon, lat):
     """ Get fm1000 for a point at t
 
     Parameters
     ----------
     t : datetime date
         date
-    loc : tuple
-        (lat,lon) value
-
+    lon : float
+        longitude value
+    lat : float
+        latitude value
     Returns
     -------
     FM1000_loc : list of floats
@@ -840,45 +825,9 @@ def get_FM1000(t, loc):
         FM1000_day = FM1000_all.isel(day=-1)
 
     # extract data near the given location
-    FM1000_loc = FM1000_day.sel(lon=loc[0], lat=loc[1], method="nearest").item()
+    FM1000_loc = FM1000_day.sel(lon=lon, lat=lat, method="nearest").item()
 
     return FM1000_loc
-
-
-# def get_stFM1000(fhull,locs,t):
-#     ''' get FM1000 for a fire at a time
-#
-#     Parameters
-#     ----------
-#     fhull : geometry
-#         the hull of the fire
-#     locs : list of lists (nx2)
-#         lat and lon values for each active fire detection
-#     t : tuple, (int,int,int,str)
-#         the year, month, day and 'AM'|'PM'
-#
-#     Returns
-#     -------
-#     FM1000 : list of floats
-#         fm1000 value for all input active fires
-#     '''
-#     import FireClustering
-#
-#     from datetime import date
-#
-#     # centroid (lat,lon) is defined as that of hull (faster) or locs
-#     if fhull is not None:
-#         cent = (fhull.centroid.y,fhull.centroid.x)
-#     else:
-#         cent = FireClustering.cal_centroid(locs)
-#
-#     # datetime date of the time tuple
-#     d_st = date(*t[:-1])
-#
-#     # call get_FM1000 function to extract fm1000 for the centroid at a time
-#     FM1000 = get_FM1000(d_st, cent)
-#
-#     return FM1000
 
 # ------------------------------------------------------------------------------
 #%% read and load object, gdf and summary related files

@@ -7,8 +7,13 @@ def doConcH(points, alpha):
     """
     Compute the alpha shape (concave hull) of a set
     of points.
-    @param points: Iterable container of points.
-    @param alpha: alpha value to influence the
+
+    Parameters
+    ----------
+    locs : np.array (nx2)
+        x, y values of all fire pixels
+    alpha : 
+        alpha value to influence the
         gooeyness of the border. Smaller numbers
         don't fall inward as much as larger numbers.
         Too large, and you lose everything!
@@ -16,7 +21,6 @@ def doConcH(points, alpha):
     """
     from shapely.ops import unary_union, polygonize
     from scipy.spatial import Delaunay
-    import numpy as np
     import math
     import shapely.geometry as geometry
 
@@ -76,8 +80,8 @@ def doConvH(locs):
     """ derive the convex hull given fire locations
     Parameters
     ----------
-    locs : list (nx2)
-        latitude and longitude values of all fire pixels
+    locs : np.array (nx2)
+        x, y values of all fire pixels
     Returns
     -------
     hull : Polygon object
@@ -98,12 +102,12 @@ def doConvH(locs):
     return hull
 
 
-def cal_hull(fp_locs, sensor="viirs"):
+def cal_hull(locs, sensor="viirs"):
     """ wrapper to calculate the hull given fire locations.
         the returned hull type depends on the pixel number
     Parameters
     ----------
-    fp_locs : np.array (nx2)
+    locs : np.array (nx2)
         x, y values of all fire pixels
     Returns
     -------
@@ -122,59 +126,78 @@ def cal_hull(fp_locs, sensor="viirs"):
         print('please set sensor to viirs or mcd64')
 
     # number of pixels
-    nfp = len(fp_locs)
+    nfp = len(locs)
     hull = None
 
     # if there are more than 3 points: try using concave hull
     if nfp > 3:
-        hull = doConcH(fp_locs, alpha=valpha)
+        hull = doConcH(locs, alpha=valpha)
     
     # if you don't have a good hull yet and there are more 
     # than 2 points: try using convex hull
     if nfp > 2 and (hull is None or hull.area == 0):
-        hull = doConvH(fp_locs)
+        hull = doConvH(locs)
 
     # if you don't have a good hull yet: make a MultiPoint
     if hull is None or hull.area == 0:
-        hull = MultiPoint(fp_locs)
+        hull = MultiPoint(locs)
         
     hull = hull.buffer(buf)
     
     return hull
 
 
-def cal_extpixels(fps, hull, alpha=100):
+def get_is_exterior(pixels, hull):
     """ calculate the exterior pixels around a hull
     Parameters
     ----------
-    fps : list (nx3)
-        list of all fire pixels
-    hull : geometry, 'Polygon' | 'MultiPoint'
+    pixels : df
+        dataframe containing x and y of all pixels
+    hull : geometry, 'Polygon' | 'MultiPolygon'
         the existing hull for the fire
-    alpha : int
-        alpha value (1/deg) to define the inward buffer
     Returns
     -------
-    fps_ext : list (nx2)
-        the exterior fire pixels for the fire
+    boolean np.array
+        whether each pixel is part of the exterior
     """
-    from shapely.geometry import Point
+    import geopandas as gpd
     from FireConsts import extbuffer
 
-    # use alpha to define an inward buffer and an interior part of the hull
-    # hts_buf = hull.buffer(-1/alpha)
     hts_buf = hull.buffer(-extbuffer)
+    pixel_arr = gpd.points_from_xy(pixels["x"], pixels["y"])
 
-    # loop over all pixel locations in fps to determine exterior pixels
-    fps_ext = []
-    for fp in fps:
-        # point locations of each pixel (fp.oc[0]:lat, fp.loc[1]:lon)
-        pt = Point(fp.loc[0], fp.loc[1])
+    return ~pixel_arr.intersects(hts_buf)
 
-        # exclude points in interior part of the hull
-        if not hts_buf.contains(pt):
-            fps_ext.append(fp)
-    return fps_ext
+
+def get_fline_pixels(pixels, hull):
+    """ calculate the fline pixels around a hull
+    Parameters
+    ----------
+    pixels : df
+        dataframe containing x and y of all pixels
+    hull : geometry, 'Polygon' | 'MultiPolygon'
+        the existing hull for the fire
+    Returns
+    -------
+    boolean np.array
+        whether each pixel is part of the fline
+    """
+    import geopandas as gpd
+    from shapely.geometry import MultiLineString
+    from FireConsts import fpbuffer
+
+    pixel_arr = gpd.points_from_xy(pixels["x"], pixels["y"])
+
+    # extract the pixels near the hull
+    # if hull is a polygon, find new pixels near the hull
+    if hull.geom_type == "Polygon":
+        lr = hull.exterior.buffer(fpbuffer)
+        return pixel_arr.intersects(lr)
+    
+    # if hull is a multipolygon, find new pixels near the outer shell
+    elif hull.geom_type == "MultiPolygon":
+        mlr = MultiLineString([x.exterior for x in hull.geoms]).buffer(fpbuffer)
+        return pixel_arr.intersects(mlr)
 
 
 def calConcHarea(hull):

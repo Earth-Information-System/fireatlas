@@ -31,7 +31,8 @@ dirdata = './'  # project directory -- only used For logging location
 # run at MacBook
 # dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
 
-dirextdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/'  # exterior input data directory
+dirextdata = 'data/'  # exterior input data directory
+dirprpdata = 'processed/'
 dirtmpdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDStemp-s3-conus/'     # temporary data directory
 diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/'   # output data directory
 
