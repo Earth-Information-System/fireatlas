@@ -1,6 +1,7 @@
 """ FireClustering
 This module include all functions used for doing fire clustering
 """
+from utils import timed
 
 def build_rtree(geoms, fids=False):
     """Builds Rtree from a shapely multipolygon shape
@@ -62,6 +63,7 @@ def compute_all_spatial_distances(data, max_thresh_km):
     return np.array(new_inds, dtype=object)
 
 
+@timed
 def do_clustering(data, max_thresh_km):
     """ Do initial clustering for fire pixels
 
@@ -131,7 +133,6 @@ def do_clustering(data, max_thresh_km):
             to_check[all_neighbors] = 0
 
     data["initial_cid"] = point_to_cluster_id
-    data["origin"] = -1
 
     return data
 

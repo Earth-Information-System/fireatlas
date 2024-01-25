@@ -33,8 +33,8 @@ dirdata = './'  # project directory -- only used For logging location
 
 dirextdata = 'data/'  # exterior input data directory
 dirprpdata = 'processed/'
-dirtmpdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDStemp-s3-conus/'     # temporary data directory
-diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/'   # output data directory
+dirtmpdata = "tmp/"
+diroutdata = "out/"
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 

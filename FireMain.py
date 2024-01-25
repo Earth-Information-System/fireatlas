@@ -445,11 +445,76 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
 
     return allfires
 
+@timed
+def Fire_Forward_one_step(allfires, t, region):
+    import FireTime, FireGpkg
+    from FireConsts import firesrc, opt_rmstatfire
+    
+    logger.info("--------------------")
+    logger.info(f"Fire tracking at {t}")
+
+    if FireTime.isyearst(t):
+        allfires.newyear_reset(region[0])
+
+    # 1. record existing active fire ids (before fire tracking at t)
+    fids_ea = allfires.fids_active
+
+    # 2. update t of allfires, clean up allfires and fire object
+    allfires.cleanup(t)
+
+    # 3. read active fire pixels from preprocessed dataset
+    afp = preprocess.read_preprocessed(t, sat=firesrc, region=region)
+
+    # 4.5. if active fire pixels are detected, do fire expansion/merging
+    if len(afp) > 0:
+        # 4. do fire expansion/creation using afp
+        allfires = Fire_expand_rtree(allfires, afp, fids_ea)
+
+        # 5. do fire merging using updated fids_ne, fid_ea, fid_sleep
+        fids_ne = allfires.fids_ne  # new or expanded fires id
+        fids_ea = sorted(set(fids_ea + allfires.fids_new))  # existing active fires (new fires included)
+        fids_sleep = allfires.fids_sleeper
+        if len(fids_ne) > 0:
+            allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep)
+
+    # 7. manualy invalidate static fires (with exceptionally large fire density)
+    if opt_rmstatfire:
+        allfires.invalidate_statfires()
+
+    # 8. log changes
+    #  - record fid_updated (the fid of fires that change in the time step) to allfires object and logger
+    logger.info(f"fids_expand: {len(allfires.fids_expanded)}")
+    logger.info(f"fids_new: {len(allfires.fids_new)}")
+    logger.info(f"fids_merged: {len(allfires.fids_merged)}")
+    logger.info(f"fids_invalid: {len(allfires.fids_invalid)}")
+
+    # 9. correct heritages at each time step?
+    if len(allfires.heritages) > 0:
+        allfires.heritages = correct_nested_ids(allfires.heritages)
+
+    return allfires
+
+
+@timed
+def Fire_save_t(allfires, allfires_pt, region):
+    import FireGpkg, FireGpkg_sfs
+
+    # 10. save allfires snapshot at this time
+    FireGpkg.save_gdf_1t(allfires, region[0])
+
+    # 11. find large fires and save those
+    # find all large active fires and sleepers
+    logger.info(f'Finding largefires...')
+    large_ids = FireGpkg_sfs.find_largefires(allfires)
+    
+    # loop over all fires, and create/save gpkg files for each single fire
+    for fid in large_ids:
+        FireGpkg_sfs.save_sfts_1f(allfires, allfires_pt, fid, region[0])
+
 
 @timed
 def Fire_Forward(tst, ted, restart=False, region=None):
     """ The wrapper function to progressively track all fire events for a time period
-           and save fire object to pkl file and gpd to geojson files
 
     Parameters
     ----------
@@ -465,68 +530,15 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     allfires : FireObj allfires object
         the allfires object at end date
     """
-    import FireIO, FireTime, FireObj
-    from FireConsts import firesrc, opt_rmstatfire
+    import FireTime, FireObj
 
     # initialize allfires object
+    allfires_pt = FireObj.Allfires(FireTime.t_nb(tst, nb="previous"))
     allfires = FireObj.Allfires(tst)
     
-    # loop over all days during the period
-    endloop = False  # flag to control the ending of the loop
-    t = list(tst)  # t is the time (year,month,day,ampm) for each step
-    while endloop == False:
-        logger.info("--------------------")
-        logger.info(f"Fire tracking at {t}")
-
-        if FireTime.isyearst(t):
-            allfires.newyear_reset(region[0])
-
-        # 1. record existing active fire ids (before fire tracking at t)
-        fids_ea = allfires.fids_active
-
-        # 2. update t of allfires, clean up allfires and fire object
-        allfires.cleanup(t)
-
-        # 3. read active fire pixels from preprocessed dataset
-        afp = preprocess.read_preprocessed(t, sat=firesrc, region=region)
-
-        # 4.5. if active fire pixels are detected, do fire expansion/merging
-        if len(afp) > 0:
-            # 4. do fire expansion/creation using afp
-            allfires = Fire_expand_rtree(allfires, afp, fids_ea)
-
-            # 5. do fire merging using updated fids_ne, fid_ea, fid_sleep
-            fids_ne = allfires.fids_ne  # new or expanded fires id
-            fids_ea = sorted(set(fids_ea + allfires.fids_new))  # existing active fires (new fires included)
-            fids_sleep = allfires.fids_sleeper
-            if len(fids_ne) > 0:
-                allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep)
-
-        # 7. manualy invalidate static fires (with exceptionally large fire density)
-        if opt_rmstatfire:
-            allfires.invalidate_statfires()
-
-        # 8. log and save
-        #  - record fid_updated (the fid of fires that change in the time step) to allfires object and logger
-        logger.info(f"fids_expand: {len(allfires.fids_expanded)}")
-        logger.info(f"fids_new: {len(allfires.fids_new)}")
-        logger.info(f"fids_merged: {len(allfires.fids_merged)}")
-        logger.info(f"fids_invalid: {len(allfires.fids_invalid)}")
-
-        # correct heritages at each time step?
-        if len(allfires.heritages) > 0:
-            allfires.heritages = correct_nested_ids(allfires.heritages)
-
-        # 9. loop control
-        #  - if t reaches ted, set endloop to True to stop the next loop
-        if FireTime.t_dif(t, ted) == 0:
-            endloop = True
-
-        # 10. fire object save
-        # TODO
-
-        # 11. update t with the next time stamp
-        t = FireTime.t_nb(t, nb="next")
+    # loop over every t during the period and mutate allfires
+    for t in FireTime.t_generator(tst, ted):
+        allfires = Fire_Forward_one_step(allfires, t, region)
 
     return allfires
 

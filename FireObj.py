@@ -488,7 +488,7 @@ class Fire:
         """ List of new fire pixels attributes
         """
         return [
-            (p.lon, p.lat, p.FRP, p.DS, p.DT, p.YYYYMMDD_HHMM, p.ampm, p.at)
+            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.YYYYMMDD_HHMM, p.ampm, p.Sat)
             for p in self.newpixels
         ]
 
@@ -498,7 +498,7 @@ class Fire:
         """ List of new fire pixels attributes
         """
         return [
-            (p.lon, p.lat, p.FRP, p.DS, p.DT, p.YYYYMMDD_HHMM, p.ampm, p.at)
+            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.YYYYMMDD_HHMM, p.ampm, p.Sat)
             for p in self.newpixels
         ]
 
@@ -587,13 +587,19 @@ class Fire:
     def flplocs(self):
         """ List of fire line pixel locations (lat,lon)
         """
-        return [(p.x, p.y) for p in self.flinepixels]
+        return self.flinepixels[["x", "y"]].values
 
     @property
     def n_flinepixels(self):
         """ Total number of fire line pixels
         """
         return len(self.flinepixels)
+    
+    @property
+    def meanFRP(self):
+        """Mean FRP of the new fire pixels
+        """
+        return self.newpixels.FRP.mean()
 
     @property
     def fline(self):
@@ -617,7 +623,7 @@ class Fire:
         else:  # otherwise, create shape of the active fire line
             if fhull.type == "MultiPolygon":
                 # extract exterior of fire perimeter
-                mls = MultiLineString([plg.exterior for plg in fhull])
+                mls = MultiLineString([plg.exterior for plg in fhull.geoms])
                 # set fline to the part which intersects with  bufferred flinelocsMP
                 fline = mls.intersection(flinelocsMP.buffer(flbuffer))
 

@@ -448,10 +448,8 @@ def CArunNRT():
 
 @timed
 def CONUSrunNRT():
-    
     import preprocess
-    import FireMain
-    import FireConsts
+    import FireConsts, FireMain, FireGpkg, FireGpkg_sfs
 
     if FireConsts.firenrt != True:
         raise ValueError('Please set FireConsts.firenrt to True')
@@ -459,12 +457,13 @@ def CONUSrunNRT():
     region = ('CONUS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
     logger.info(f'STARTING RUN FOR {region[0]}')
 
-    tst = [2023, 9, 1, 'AM']
-    ted = [2023, 9, 6, 'PM']
+    tst = [2023, 8, 28, 'AM']
+    ted = [2023, 9, 6, 'AM']
 
     region = preprocess.read_region(region)
     
     return FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+
 
 def WesternUSrunNRT():
     

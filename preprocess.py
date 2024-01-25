@@ -1,4 +1,5 @@
 import os
+import uuid
 import pandas as pd
 from shapely import to_geojson, from_geojson
 
@@ -167,6 +168,9 @@ def preprocess_region_t(t, sat, region):
 
     # do preliminary clustering using new active fire locations (assign cid to each pixel)
     df = do_clustering(df, CONNECTIVITY_CLUSTER_KM)
+
+    # assign a uuid to each pixel
+    df['uuid'] = [uuid.uuid4() for _ in range(len(df.index))]
 
     output_filepath = preprocessed_filename(t, sat, region=region)
     

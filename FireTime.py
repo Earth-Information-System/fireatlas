@@ -58,6 +58,7 @@ def t_generator(t_st, t_ed):
     while t_ed != t:
         yield t
         t = t_nb(t, nb="next")
+    yield t
 
 def t_dif(t1, t2):
     """ calculate the time difference between two time steps
