@@ -206,7 +206,7 @@ def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
     
 
 @timed
-def Fire_expand_rtree(allfires, afp, fids_ea):
+def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
     """ Use daily new AF pixels to create new Fobj or combine with existing Fobj
 
     Parameters
@@ -241,7 +241,7 @@ def Fire_expand_rtree(allfires, afp, fids_ea):
 
     # loop over all new clusters (0:cid-1) and determine its fate
     FP2expand = {}  # a dict to record {fid : Firepixel objects} pairs
-    for ic, pixels in afp.groupby("initial_cid"):
+    for ic, pixels in tpixels.groupby("initial_cid"):
         hull = cal_hull(pixels[["x", "y"]].values, sensor=firessr)
 
         # if the cluster is close enough to an existing active fire object
@@ -263,7 +263,7 @@ def Fire_expand_rtree(allfires, afp, fids_ea):
                     # record pixels from target cluster (locs and time) along with the existing active fire object id
                     # single existing object, can have multiple new clusters to append
                     if fmid in FP2expand.keys():
-                        FP2expand[fmid] = pd.concat([FP2expand[fmid], pixels], ignore_index=True)  # new pixels
+                        FP2expand[fmid] = pd.concat([FP2expand[fmid], pixels])  # new pixels
                     else:
                         FP2expand[fmid] = pixels  # new pixels
                     
@@ -284,7 +284,7 @@ def Fire_expand_rtree(allfires, afp, fids_ea):
                 fids_new.append(id_newfire)  # record id_newfire to fid_new
 
                 # use the fire id and new fire pixels to create a new Fire object
-                newfire = FireObj.Fire(id_newfire, allfires.t, pixels, sensor=firessr)
+                newfire = FireObj.Fire(id_newfire, allfires.t, pixels, allpixels, sensor=firessr)
                 newfire.updateftype()  # update the fire type
 
                 # add the new fire object to the fires list in the Allfires object
@@ -304,9 +304,8 @@ def Fire_expand_rtree(allfires, afp, fids_ea):
             # update end time
             f.t_ed = allfires.t
 
-            # add new_at time and extend pixels with newpixels
-            newpixels["new_at"] = FireTime.t2dt(allfires.t)
-            f.pixels = pd.concat([f.pixels, newpixels], ignore_index=True)
+            # extend pixels with newpixels
+            f.pixels = pd.concat([f.pixels, newpixels])
 
             f.updatefhull(newpixels[["x", "y"]].values)
 
@@ -458,7 +457,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             f_target.invalid = False
 
             # - target fire add source pixels to pixels and newpixels
-            f_target.pixels = pd.concat([f_target.pixels, f_source.pixels], ignore_index=True)
+            f_target.pixels = pd.concat([f_target.pixels, f_source.pixels])
 
             # - update the hull using previous hull and new pixels
             f_target.updatefhull(f_source.pixels[["x", "y"]].values)
@@ -482,7 +481,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
     return allfires
 
 @timed
-def Fire_Forward_one_step(allfires, t, region):
+def Fire_Forward_one_step(allfires, allpixels, t, region):
     import FireTime, FireGpkg
     from FireConsts import firesrc, opt_rmstatfire
     
@@ -498,13 +497,12 @@ def Fire_Forward_one_step(allfires, t, region):
     # 2. update t of allfires, clean up allfires and fire object
     allfires.cleanup(t)
 
-    # 3. read active fire pixels from preprocessed dataset
-    afp = preprocess.read_preprocessed(t, sat=firesrc, region=region)
+    tpixels = allpixels[allpixels["t"] == FireTime.t2dt(t)]
 
     # 4.5. if active fire pixels are detected, do fire expansion/merging
-    if len(afp) > 0:
-        # 4. do fire expansion/creation using afp
-        allfires = Fire_expand_rtree(allfires, afp, fids_ea)
+    if len(tpixels) > 0:
+        # 4. do fire expansion/creation using allpixels
+        allfires = Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea)
 
         # 5. do fire merging using updated fids_ne, fid_ea, fid_sleep
         fids_ne = allfires.fids_ne  # new or expanded fires id
@@ -566,17 +564,28 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     allfires : FireObj allfires object
         the allfires object at end date
     """
-    import FireTime, FireObj
+    import FireTime, FireObj, FireConsts
+    import pandas as pd
 
     # initialize allfires object
-    allfires_pt = FireObj.Allfires(FireTime.t_nb(tst, nb="previous"))
     allfires = FireObj.Allfires(tst)
     
-    # loop over every t during the period and mutate allfires
-    for t in FireTime.t_generator(tst, ted):
-        allfires = Fire_Forward_one_step(allfires, t, region)
+    allpixels = pd.concat([
+        (
+            preprocess
+                .read_preprocessed(t, sat=FireConsts.firesrc, region=region)
+                .set_index("uuid")
+                .assign(t=FireTime.t2dt(t))
+        )
+        for t in FireTime.t_generator(tst, ted)
+    ])
+    allpixels["fid"] = -1
 
-    return allfires
+    # loop over every t during the period and mutate allfires, allpixels
+    for t in FireTime.t_generator(tst, ted):
+        allfires = Fire_Forward_one_step(allfires, allpixels, t, region)
+
+    return allfires, allpixels
 
 
 if __name__ == "__main__":

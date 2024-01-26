@@ -300,7 +300,7 @@ class Fire:
     """ Class of a single fire event at a particular time step
     """
 
-    def __init__(self, id, t, pixels, sensor="viirs"):
+    def __init__(self, id, t, pixels, allpixels, sensor="viirs"):
         """ Initialize Fire class with active fire pixels locations and t. This
             is only called when fire clusters forming a new Fire object.
         Parameters
@@ -311,6 +311,8 @@ class Fire:
             the year, month, day and 'AM'|'PM'
         pixels : list (nx5)
             latitude, longitude, line, sample, and FRP values of active fire pixels
+        allpixels : dataframe
+            all fire pixels for the period of interest
         sensor : str
             the remote sensing instrument, 'viirs' | 'modis'; no differentiation
             between SNPP and NOAA20
@@ -319,9 +321,10 @@ class Fire:
         import FireVector, FireTime, FireIO
 
         # initialize fire id and sensor
-        self.fireID = id
+        self._fid = id
         self.mergeid = id  # mergeid is the final fire id the current fire being merged; use current fire id at initialization
-        self.sensor = sensor  #
+        self.sensor = sensor
+        self.allpixels = allpixels
 
         # initialize current time, fire start time, and fire final time
         tlist = list(t)  # convert (y,m,d,ampm) to [y,m,d,ampm]
@@ -329,9 +332,7 @@ class Fire:
         self.t_st = tlist
         self.t_ed = tlist
 
-        # initialize pixels
-        self.pixels = pixels  # all pixels
-        self.pixels["new_at"] = FireTime.t2dt(t)
+        self.pixels = pixels
 
         # initialize hull using the pixels
         hull = FireVector.cal_hull(pixels[["x", "y"]].values, sensor)  # the hull from all locs
@@ -429,6 +430,18 @@ class Fire:
         when start time == end time; and new pixel > 0
         """
         return self.t == self.t_st
+    
+    @property
+    def fireID(self):
+        return self._fid
+
+    @property
+    def pixels(self):
+        return self.allpixels[self.allpixels["fid"] == self.fireID]
+
+    @pixels.setter
+    def pixels(self, pixels):
+        self.allpixels.loc[pixels.index, "fid"] = self.fireID
 
     @property
     def locs(self):
@@ -459,7 +472,7 @@ class Fire:
     @property
     def newpixels(self):
         import FireTime
-        return self.pixels[self.pixels["new_at"] == FireTime.t2dt(self.t)]
+        return self.pixels[self.pixels["t"] == FireTime.t2dt(self.t)]
 
     @property
     def newlocs(self):
@@ -511,7 +524,7 @@ class Fire:
     @property
     def ignpixels(self):
         import FireTime
-        return self.pixels[self.pixels["new_at"] == FireTime.t2dt(self.t_st)]
+        return self.pixels[self.pixels["t"] == FireTime.t2dt(self.t_st)]
     
     @property
     def ignition_center_geo(self):

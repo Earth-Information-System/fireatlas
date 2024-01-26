@@ -166,8 +166,7 @@ def read_preprocessed(
     *,
     region: Optional[Region] = None,
 ):
-    output_filepath = preprocessed_filename(t, sat, region=region)
-    return pd.read_csv(output_filepath)
+    return preprocessed_filename(t, sat, region=region)
 
 
 @timed
