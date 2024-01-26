@@ -300,7 +300,7 @@ class Fire:
     """ Class of a single fire event at a particular time step
     """
 
-    def __init__(self, id, t, pixels, allpixels, sensor="viirs"):
+    def __init__(self, id, t, allpixels, sensor="viirs"):
         """ Initialize Fire class with active fire pixels locations and t. This
             is only called when fire clusters forming a new Fire object.
         Parameters
@@ -309,16 +309,13 @@ class Fire:
             fire id
         t : tuple, (int,int,int,str)
             the year, month, day and 'AM'|'PM'
-        pixels : list (nx5)
-            latitude, longitude, line, sample, and FRP values of active fire pixels
         allpixels : dataframe
-            all fire pixels for the period of interest
+            a mutating dataframe of all fire pixels for the period of interest
         sensor : str
             the remote sensing instrument, 'viirs' | 'modis'; no differentiation
             between SNPP and NOAA20
         """
         from FireConsts import FTYP_opt
-        import FireVector, FireTime, FireIO
 
         # initialize fire id and sensor
         self._fid = id
@@ -332,12 +329,6 @@ class Fire:
         self.t_st = tlist
         self.t_ed = tlist
 
-        self.pixels = pixels
-
-        # initialize hull using the pixels
-        hull = FireVector.cal_hull(pixels[["x", "y"]].values, sensor)  # the hull from all locs
-        self.hull = hull  # note fire.hull is not automatically updated (need explicit calculation if changes occur)
-
         # fline of latest active timestep, used for sleeper threshold
         self.fline_prior = None
 
@@ -349,6 +340,9 @@ class Fire:
             # lon, lat = self.ignition_center_geo
             # self.stFM1000 = FireIO.get_stFM1000(FireTime.t2d(t), lon=lon, lat=lat)
             self.stFM1000 = 0
+    
+    def __repr__(self):
+        return f"<Fire {self.fireID} at={self.t} with n_pixels={self.n_pixels}"
 
     @property
     def cday(self):
@@ -408,7 +402,7 @@ class Fire:
 
         # invalidated fires are always inactive
         if self.invalid:
-            return True
+            return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
         return self.t_inactive > limoffdays
 
@@ -434,10 +428,12 @@ class Fire:
     @property
     def fireID(self):
         return self._fid
-
+    
     @property
     def pixels(self):
-        return self.allpixels[self.allpixels["fid"] == self.fireID]
+        import FireTime
+
+        return self.allpixels[(self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] <= FireTime.t2dt(self.t))]
 
     @pixels.setter
     def pixels(self, pixels):
@@ -472,7 +468,7 @@ class Fire:
     @property
     def newpixels(self):
         import FireTime
-        return self.pixels[self.pixels["t"] == FireTime.t2dt(self.t)]
+        return self.allpixels[(self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] == FireTime.t2dt(self.t))]
 
     @property
     def newlocs(self):
@@ -524,7 +520,7 @@ class Fire:
     @property
     def ignpixels(self):
         import FireTime
-        return self.pixels[self.pixels["t"] == FireTime.t2dt(self.t_st)]
+        return self.allpixels[(self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] == FireTime.t2dt(self.t_st))]
     
     @property
     def ignition_center_geo(self):
@@ -583,18 +579,15 @@ class Fire:
 
     @property
     def flinepixels(self):
-        """ List of all fire pixels near the fire perimeter (fine line pixels)
+        """ All fire pixels near the fire perimeter (fine line pixels)
         """
-        import FireVector
-        
-        if self.hull is None:
-            return []
-        try:
-            indices = FireVector.get_fline_pixels(self.newpixels, self.hull)
-            return self.newpixels[indices]
-        except Exception as e:
-            print(e)
-            return []
+        return self.newpixels[self.newpixels["in_fline"] == True] 
+
+    @flinepixels.setter
+    def flinepixels(self, flinepixels):
+        """ Set flinepixels based on hull and newpixels
+        """
+        self.allpixels.loc[flinepixels.index, "in_fline"] = True
 
     @property
     def flplocs(self):
@@ -671,12 +664,21 @@ class Fire:
 
         self.ftype = FireFuncs.set_ftype(self)
 
-    def updatefhull(self, newlocs):
+    def updatefhull(self):
         """ Update the hull using old hull and new locs
         """
         import FireVector
 
-        hull = FireVector.cal_hull(newlocs, sensor=self.sensor)
+        hull = FireVector.cal_hull(self.newlocs, sensor=self.sensor)
+        
         # use the union to include hull in past time step
-        phull = self.hull
-        self.hull = phull.union(hull)
+        if hasattr(self, "hull"):
+            phull = self.hull
+            self.hull = phull.union(hull)
+        else:
+            self.hull = hull
+
+    def updateflinepixels(self):
+        import FireVector
+        
+        self.flinepixels = self.newpixels[FireVector.get_fline_pixels(self.newpixels, self.hull)]

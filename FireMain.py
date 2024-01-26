@@ -20,11 +20,8 @@ Modules required
 
 # Use a logger to record console output
 from FireLog import logger
-from FireTypes import (
-    Region,
-    TimeStep
-)
-import preprocess
+
+from FireTypes import Region, TimeStep
 from utils import timed
 
 
@@ -284,7 +281,10 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
                 fids_new.append(id_newfire)  # record id_newfire to fid_new
 
                 # use the fire id and new fire pixels to create a new Fire object
-                newfire = FireObj.Fire(id_newfire, allfires.t, pixels, allpixels, sensor=firessr)
+                newfire = FireObj.Fire(id_newfire, allfires.t, allpixels, sensor=firessr)
+                newfire.pixels = pixels
+                newfire.hull = hull
+                newfire.updateflinepixels()
                 newfire.updateftype()  # update the fire type
 
                 # add the new fire object to the fires list in the Allfires object
@@ -301,13 +301,15 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
             # the target existing fire object
             f = allfires.fires[fmid]
 
-            # update end time
+            # update current time, end time
+            f.t = allfires.t
             f.t_ed = allfires.t
 
             # extend pixels with newpixels
             f.pixels = pd.concat([f.pixels, newpixels])
 
-            f.updatefhull(newpixels[["x", "y"]].values)
+            f.updatefhull()
+            f.updateflinepixels()
 
             # update the fire type
             f.updateftype()
@@ -451,6 +453,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             f_target = allfires.fires[fid2]
 
             # - target fire t_ed set to current time
+            f_target.t = allfires.t
             f_target.t_ed = allfires.t
 
             # just in case: set target to valid (is this needed?)
@@ -460,7 +463,8 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             f_target.pixels = pd.concat([f_target.pixels, f_source.pixels])
 
             # - update the hull using previous hull and new pixels
-            f_target.updatefhull(f_source.pixels[["x", "y"]].values)
+            f_target.updatefhull()
+            f_target.updateflinepixels()
 
             # invalidate and deactivate source object
             f_source.invalid = True
@@ -565,6 +569,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         the allfires object at end date
     """
     import FireTime, FireObj, FireConsts
+    import preprocess
     import pandas as pd
 
     # initialize allfires object
@@ -580,6 +585,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         for t in FireTime.t_generator(tst, ted)
     ])
     allpixels["fid"] = -1
+    allpixels["in_fline"] = None
 
     # loop over every t during the period and mutate allfires, allpixels
     for t in FireTime.t_generator(tst, ted):
