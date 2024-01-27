@@ -8,9 +8,10 @@ stages:
   tags:
     - shell
   script:
-    - docker build -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
+    - docker build --build-arg BUILD_MAPP_PGT_ARG=$MAAP_PGT -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
     - docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
     - docker images | grep 'fire-atlas-' | awk '{print $3}' | xargs docker rmi -f
+
 
 ###################################
 # DPS JOBS
