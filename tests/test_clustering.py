@@ -101,4 +101,4 @@ def test_do_clustering(data, max_thresh_km, should_cluster):
     else:
         # each pixel is a cluster
         cluster_series = clustered_df.groupby('initial_cid').size()
-        assert cluster_series.count() == 0
+        assert cluster_series.count() == 3
