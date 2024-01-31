@@ -71,7 +71,7 @@ def preprocessed_filename(
     *,
     region: Optional[Region] = None,
     suffix="",
-    preprocessed_data_dir=OUTPUT_DIR,
+    preprocessed_data_dir=FireConsts.dirprpdata,
 ):
     return os.path.join(
         preprocessed_data_dir,
