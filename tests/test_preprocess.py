@@ -134,7 +134,7 @@ def test_preprocess_region_t(
     monkeypatch.setattr(preprocess, "OUTPUT_DIR", test_data_dir)
 
     # return a preprocessed SNPP file fixture with a couple pixels
-    input_df = pd.open_csv(preprocessed_nrt_snpp_tmpfile)
+    input_df = pd.read_csv(preprocessed_nrt_snpp_tmpfile)
 
     monkeypatch.setattr(preprocess, "read_preprocessed", lambda x, sat=None: input_df)
 
@@ -158,4 +158,4 @@ def test_preprocess_region_t(
 
     # assert
     assert os.path.exists(outfile_df_path)
-    assert len(pd.open_csv(outfile_df_path)) > 0
+    assert len(pd.read_csv(outfile_df_path)) > 0
