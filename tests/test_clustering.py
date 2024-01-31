@@ -96,9 +96,9 @@ def test_do_clustering(data, max_thresh_km, should_cluster):
             # FireCluster.do_clustering will send back indices of all pixels as a list when number of pixels < 3
             assert len(clustered_df) == 2
         else:
-            cluster_count = df.groupby('initial_cid').size()
+            cluster_count = clustered_df.groupby('initial_cid').size()
             assert cluster_count == 2
     else:
         # each pixel is a cluster
-        cluster_count = df.groupby('initial_cid').size()
+        cluster_count = clustered_df.groupby('initial_cid').size()
         assert cluster_count == 2
