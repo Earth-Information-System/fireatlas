@@ -97,6 +97,12 @@ class Allfires:
         return len(self.fids_active)
 
     @property
+    def burningfires(self):
+        """ dict of active fires
+        """
+        return {i: f for i, f in self.fires.items() if f.isburning}
+    
+    @property
     def activefires(self):
         """ dict of active fires
         """
@@ -383,6 +389,12 @@ class Fire:
         return t_inactive
 
     @property
+    def isburning(self):
+        if self.invalid:
+            return False
+        return self.t_inactive == 0
+
+    @property
     def isactive(self):
         """ Fire active status
         """
@@ -483,7 +495,7 @@ class Fire:
         return self.newpixels[["Lon", "Lat"]].values
 
     @property
-    def newlocsMP(self):
+    def nfp(self):
         """ MultiPoint shape of newlocs
         """
         from shapely.geometry import MultiPoint
@@ -608,43 +620,6 @@ class Fire:
         return self.newpixels.FRP.mean()
 
     @property
-    def fline(self):
-        """ Active fire line MultiLineString shape (segment of fire perimeter with active fires nearby)
-        """
-        from shapely.geometry import MultiLineString, MultiPoint
-        from FireConsts import flbuffer, VIIRSbuf
-
-        # this happens if last active pixels are within the fire scar
-        if self.n_flinepixels == 0:
-            return None
-
-        flinelocsMP = MultiPoint(self.flplocs).buffer(VIIRSbuf)
-
-        # get the hull
-        fhull = self.hull
-
-        # calculate the fire line
-        if fhull is None:  # if no hull, return None
-            return None
-        else:  # otherwise, create shape of the active fire line
-            if fhull.type == "MultiPolygon":
-                # extract exterior of fire perimeter
-                mls = MultiLineString([plg.exterior for plg in fhull.geoms])
-                # set fline to the part which intersects with  bufferred flinelocsMP
-                fline = mls.intersection(flinelocsMP.buffer(flbuffer))
-
-            elif fhull.type == "Polygon":
-                mls = fhull.exterior
-                fline = mls.intersection(flinelocsMP.buffer(flbuffer))
-            else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
-                fline = flinelocsMP
-
-            # we save the fire line to a new property (this is only updated when fline not None)
-            self.fline_prior = fline
-
-            return fline
-
-    @property
     def flinelen(self):
         """ The length of active fire line
         """
@@ -678,7 +653,38 @@ class Fire:
         else:
             self.hull = hull
 
-    def updateflinepixels(self):
+    def updatefline(self):
         import FireVector
+        from shapely.geometry import MultiLineString, MultiPoint
+        from FireConsts import flbuffer, VIIRSbuf
         
-        self.flinepixels = self.newpixels[FireVector.get_fline_pixels(self.newpixels, self.hull)]
+        flinepixels = self.newpixels[FireVector.get_fline_pixels(self.newpixels, self.hull)]
+        self.flinepixels = flinepixels
+
+        # this happens if last active pixels are within the fire scar
+        if len(flinepixels) == 0:
+            self.fline = None
+            return
+
+        flinelocsMP = MultiPoint(flinepixels[["x", "y"]].values).buffer(VIIRSbuf)
+
+        # get the hull
+        fhull = self.hull
+
+        # calculate the fire line
+        if fhull is None:  # if no hull, return None
+            raise ValueError(f"hull is not set on this fire {self.fireID} at {self.t}")
+        if fhull.geom_type == "MultiPolygon":
+            # extract exterior of fire perimeter
+            mls = MultiLineString([plg.exterior for plg in fhull.geoms])
+            # set fline to the part which intersects with  bufferred flinelocsMP
+            self.fline = mls.intersection(flinelocsMP.buffer(flbuffer))
+
+        elif fhull.geom_type == "Polygon":
+            mls = fhull.exterior
+            self.fline = mls.intersection(flinelocsMP.buffer(flbuffer))
+        else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
+            self.fline = flinelocsMP
+
+        # we save the fire line to a new property (this is only updated when fline not None)
+        self.fline_prior = self.fline

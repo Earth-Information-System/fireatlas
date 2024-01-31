@@ -226,7 +226,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
     from FireVector import cal_hull
 
     # initializations
-    idmax = allfires.number_of_fires - 1  # maximum id of existing fires
+    idmax = max([*allfires.fires.keys(), 0])  # maximum id of existing fires
     fids_expanded = []  # a list of fire ids that is expanded at t
     fids_new = []  # a list of fire ids that is created at t
 
@@ -284,7 +284,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
                 newfire = FireObj.Fire(id_newfire, allfires.t, allpixels, sensor=firessr)
                 newfire.pixels = pixels
                 newfire.hull = hull
-                newfire.updateflinepixels()
+                newfire.updatefline()
                 newfire.updateftype()  # update the fire type
 
                 # add the new fire object to the fires list in the Allfires object
@@ -309,7 +309,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
             f.pixels = pd.concat([f.pixels, newpixels])
 
             f.updatefhull()
-            f.updateflinepixels()
+            f.updatefline()
 
             # update the fire type
             f.updateftype()
@@ -464,7 +464,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
 
             # - update the hull using previous hull and new pixels
             f_target.updatefhull()
-            f_target.updateflinepixels()
+            f_target.updatefline()
 
             # invalidate and deactivate source object
             f_source.invalid = True
@@ -532,23 +532,30 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
 
     return allfires
 
-
 @timed
-def Fire_save_t(allfires, allfires_pt, region):
-    import FireGpkg, FireGpkg_sfs
+def Fire_to_gdf_one_step(allfires, t, gdf, dd):
+    import FireTime
 
-    # 10. save allfires snapshot at this time
-    FireGpkg.save_gdf_1t(allfires, region[0])
+    dt = FireTime.t2dt(t)
 
-    # 11. find large fires and save those
-    # find all large active fires and sleepers
-    logger.info(f'Finding largefires...')
-    large_ids = FireGpkg_sfs.find_largefires(allfires)
+    for fid, f in allfires.burningfires.items():
+        if (fid, dt) in gdf.index:
+            raise ValueError(f"Error writing gdf: {fid} already at {t}")
+        
+        for k, tp in dd.items():
+            if tp == "datetime64[ns]":
+                gdf.loc[(fid, dt), k] = FireTime.t2dt(getattr(f, k))
+            else:
+                gdf.loc[(fid, dt), k] = getattr(f, k)
+
+    for k, tp in dd.items():
+        gdf[k] = gdf[k].astype(tp)
     
-    # loop over all fires, and create/save gpkg files for each single fire
-    for fid in large_ids:
-        FireGpkg_sfs.save_sfts_1f(allfires, allfires_pt, fid, region[0])
+    for h0, h1 in allfires.heritages:
+        if h0 in gdf.index:
+            gdf.loc[h0, "mergeid"] = h1
 
+    return gdf
 
 @timed
 def Fire_Forward(tst, ted, restart=False, region=None):
@@ -570,6 +577,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     """
     import FireTime, FireObj, FireConsts
     import preprocess
+    import geopandas as gpd
     import pandas as pd
 
     # initialize allfires object
@@ -587,11 +595,41 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
 
+    dd = {
+        "mergeid": "int",  # this is the id in the large fire database
+        "ftype": "int",  # fire type
+        "n_pixels": "int",  # number of total pixels
+        "n_newpixels": "int",  # number of new pixels
+        "farea": "float",  # fire size
+        "fperim": "float",  # fire perimeter length
+        "flinelen": "float",  # active fire front line length
+        "duration": "float",  # fire duration
+        "pixden": "float",  # fire pixel density
+        "meanFRP": "float",  # mean FRP of the new fire pixels
+        "t_st": "datetime64[ns]",
+        "t_ed": "datetime64[ns]",
+        "hull": "geometry",
+        "fline": "geometry",
+        "nfp": "geometry",
+    }
+
+    gdf = gpd.GeoDataFrame(
+        columns=[
+            *dd.keys(),
+            "fireID",
+            "t",            
+        ], 
+        crs=f"epsg:{FireConsts.epsg}", 
+        geometry="hull"
+    )
+    gdf = gdf.set_index(["fireID", "t"])
+
     # loop over every t during the period and mutate allfires, allpixels
     for t in FireTime.t_generator(tst, ted):
         allfires = Fire_Forward_one_step(allfires, allpixels, t, region)
+        gdf = Fire_to_gdf_one_step(allfires, t, gdf, dd)
 
-    return allfires, allpixels
+    return allfires, allpixels, gdf
 
 
 if __name__ == "__main__":
