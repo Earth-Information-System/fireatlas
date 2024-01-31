@@ -153,7 +153,7 @@ def test_preprocess_region_t(
     # act
     # NOTE: we pass a fake sensor here so we can easily mock the else branch of and handle a single `read_preprocessed`
     outfile_df_path = preprocess.preprocess_region_t(
-        (2023, 11, 9, "AM"), "TESTING123", test_region
+        (2023, 11, 9, "AM"), "TESTING123", region
     )
 
     # assert
