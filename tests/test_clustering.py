@@ -36,6 +36,8 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
                 {
                     "Lon": [1, 20000],
                     "Lat": [1, 20000],
+                    "x": [1, 20000],
+                    "y": [1, 20000],
                     "FRP": [0.5, 0.7],
                     "Sat": ["SNPP", "SNPP"],
                     "DT": [0.47, 0.44],
@@ -53,6 +55,8 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
                 {
                     "Lon": [1, 2, 300000],
                     "Lat": [1, 2, 300000],
+                    "x": [1, 2, 300000],
+                    "y": [1, 2, 300000],
                     "FRP": [0.5, 0.7, 0.9],
                     "Sat": ["SNPP", "SNPP", "SNPP"],
                     "DT": [0.47, 0.44, 0.5],
@@ -69,7 +73,9 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
             pd.DataFrame(
                 {
                     "Lon": [1, 200000, 300000],
-                    "Lat": [1, 200000, 300000],
+                    "Lat": [1, 200000, 30000],
+                    "x": [1, 200000, 300000],
+                    "y": [1, 200000, 300000],
                     "FRP": [0.5, 0.7, 0.9],
                     "Sat": ["SNPP", "SNPP", "SNPP"],
                     "DT": [0.47, 0.44, 0.5],
