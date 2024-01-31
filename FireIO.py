@@ -11,6 +11,7 @@ This module include functions used to read and save data
 import os
 
 import geopandas as gpd
+from FireTypes import Region, TimeStep
 
 
 def gpd_read_file(filename, parquet=False, **kwargs):
@@ -131,16 +132,13 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
     return gdf
 
 
-def read_VNP14IMGML(t, input_data_dir, ver="C1.05"):
+def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
     """ read monthly VNP14IMGML data
 
     Parameters
     ----------
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' during the initialization
-
-    input_data_dir : str
-        path to input data directory
 
     Returns
     -------
@@ -152,7 +150,6 @@ def read_VNP14IMGML(t, input_data_dir, ver="C1.05"):
 
     year, month = t[0], t[1]
 
-    # set monthly file name
     fnmFC = os.path.join(
         input_data_dir,
         "VIIRS",
@@ -191,15 +188,13 @@ def read_VNP14IMGML(t, input_data_dir, ver="C1.05"):
         return None
 
 
-def read_VNP14IMGTDL(t, input_data_dir):
+def read_VNP14IMGTDL(t: TimeStep, input_data_dir: str):
     """ Read daily NRT S-NPP VIIRS fire location data
 
     Parameters
     ----------
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' during the initialization
-    input_data_dir : str
-        path to input data directory
 
     Returns
     -------
@@ -253,15 +248,13 @@ def read_VNP14IMGTDL(t, input_data_dir):
         return None
 
 
-def read_VJ114IMGML(t, input_data_dir):
+def read_VJ114IMGML(t: TimeStep, input_data_dir: str):
     """ read monthly VNP14IMGML data
 
     Parameters
     ----------
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' during the initialization
-    input_data_dir : str
-        path to input data directory
 
     Returns
     -------
@@ -324,15 +317,13 @@ def read_VJ114IMGML(t, input_data_dir):
         return None
 
 
-def read_VJ114IMGTDL(t, input_data_dir):
+def read_VJ114IMGTDL(t: TimeStep, input_data_dir: str):
     """ Read daily NRT NOAA20 VIIRS fire location data
 
     Parameters
     ----------
     t : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' during the initialization
-    input_data_dir : str
-        path to input data directory
 
     Returns
     -------

@@ -20,8 +20,13 @@ Modules required
 
 # Use a logger to record console output
 from FireLog import logger
+from FireTypes import (
+    Region,
+    TimeStep
+)
 import preprocess
 from utils import timed
+
 
 # Functions
 def correct_nested_ids(mergetuple):
@@ -124,7 +129,38 @@ def set_sleeperrngs(allfires, fids):
     return sleeperrngs
 
 
-def maybe_remove_static_sources(region, input_data_dir):
+def Fobj_init(tst, regnm, restart=False):
+    """ Initialize the fire object for a given time. This can be from the object
+    saved at previous time, or can be initialized using Allfires().
+
+    Parameters
+    ----------
+    tst : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the intialization
+    restart : bool
+        if set to true, force to initiate an object
+
+    Returns
+    -------
+    allfires : Allfires obj
+        the fire object for the previous time step
+    """
+    import FireObj, FireIO, FireTime
+
+    pst = FireTime.t_nb(tst, nb="previous")  # previous time step
+    if FireIO.check_fobj(pst, regnm, activeonly=False) & (restart == False):
+        allfires = FireIO.load_fobj(pst, regnm, activeonly=False) # load all fires (including dead)
+        allfires.cleanup(tst)  # update time and reset lists
+        # # if it's the first time step of a calendar year, reset all fires id
+        # if (tst[1]==1 & tst[2]==1 & tst[3]=='AM'):
+        #     allfires.newyear_reset()
+    else:  # if no pkl file at previous time step or restart is set to True
+        allfires = FireObj.Allfires(tst)
+
+    return allfires
+
+
+def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
     """ Modify region to exclude static sources
 
     Parameters

@@ -1,0 +1,22 @@
+name: fire
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - xarray
+  - pandas
+  - geopandas
+  - shapely
+  - fsspec
+  - jupyterlab
+  - fiona
+  - rtree
+  - scikit-learn
+  - pyarrow
+  - rasterio
+  - pyproj
+  - ipykernel
+  - ca-certificates
+  - certifi
+  - openssl
+prefix: /opt/conda/envs/fire
