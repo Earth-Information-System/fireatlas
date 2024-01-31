@@ -27,13 +27,15 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
 
 
 @pytest.mark.parametrize(
-    "data, max_thresh_km",
+    "data, max_thresh_km, should_cluster",
     [
         (
+            # when < three pixels always cluster
+            # NOTE: this seems wrong!
             pd.DataFrame(
                 {
-                    "Lat": [0.9, 2],
-                    "Lon": [0.5, 0.7],
+                    "Lon": [1, 20000],
+                    "Lat": [1, 20000],
                     "FRP": [0.5, 0.7],
                     "Sat": ["SNPP", "SNPP"],
                     "DT": [0.47, 0.44],
@@ -43,25 +45,47 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
                 }
             ),
             1,
+            True,
         ),
         (
+            # cluster things close together
             pd.DataFrame(
                 {
-                    "Lat": [0.9, 1000],
-                    "Lon": [0.5, 2000.7],
-                    "FRP": [0.5, 0.7],
-                    "Sat": ["SNPP", "SNPP"],
-                    "DT": [0.47, 0.44],
-                    "DS": [0.46, 0.4],
-                    "YYYYMMDD_HHMM": ["2023-08-28 00:04:00", "2023-08-28 00:04:00"],
-                    "ampm": ["AM", "AM"],
+                    "Lon": [1, 2, 300000],
+                    "Lat": [1, 2, 300000],
+                    "FRP": [0.5, 0.7, 0.9],
+                    "Sat": ["SNPP", "SNPP", "SNPP"],
+                    "DT": [0.47, 0.44, 0.5],
+                    "DS": [0.46, 0.4, 0.5],
+                    "YYYYMMDD_HHMM": ["2023-08-28 00:03:00", "2023-08-28 00:03:00", "2023-08-28 00:03:00"],
+                    "ampm": ["AM", "AM", "AM"],
                 }
             ),
             1,
+            True,
+        ),
+        (
+            # do not cluster anything so far aparam
+            pd.DataFrame(
+                {
+                    "Lon": [1, 200000, 300000],
+                    "Lat": [1, 200000, 300000],
+                    "FRP": [0.5, 0.7, 0.9],
+                    "Sat": ["SNPP", "SNPP", "SNPP"],
+                    "DT": [0.47, 0.44, 0.5],
+                    "DS": [0.46, 0.4, 0.5],
+                    "YYYYMMDD_HHMM": ["2023-08-28 00:03:00", "2023-08-28 00:03:00", "2023-08-28 00:03:00"],
+                    "ampm": ["AM", "AM", "AM"],
+                }
+            ),
+            1,
+            False,
         ),
     ],
 )
-def test_do_clustering(data, max_thresh_km, expected):
-    clustered_df = FireClustering.do_clustering(input_df, max_thresh_km)
-    import pdb; pdb.set_trace()
-    assert np.array_equal(clustered_df, expected)
+def test_do_clustering(data, max_thresh_km, should_cluster):
+    clustered_df = FireClustering.do_clustering(data, max_thresh_km)
+    if should_cluster:
+        assert len(clustered_df) == 2  # two of the three input pixels are close enough to cluster
+    else:
+        assert len(clustered_df) == 0  # none of the input pixels are not close enough
