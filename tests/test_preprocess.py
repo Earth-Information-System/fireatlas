@@ -144,7 +144,9 @@ def test_preprocess_region_t(
         monkeypatch.setattr(FireClustering, "do_clustering", mock_do_clustering)
 
         monkeypatch.setattr(
-            preprocess, "preprocessed_filename", lambda x, y, region=None: 'force_exit.txt'
+            preprocess,
+            "preprocessed_filename",
+            lambda x, y, region=None: "force_exit.txt",
         )
 
         monkeypatch.setattr(os.path, "exists", lambda x: True)
