@@ -129,9 +129,7 @@ def test_preprocess_region_t(
 ):
     # arrange
     monkeypatch.setattr(FireConsts, "dirextdata", str(inputdirs))
-    monkeypatch.setattr(preprocess, "INPUT_DIR", str(inputdirs))
     monkeypatch.setattr(FireConsts, "dirprpdata", str(inputdirs / "processed"))
-    monkeypatch.setattr(preprocess, "OUTPUT_DIR", str(inputdirs / "processed"))
 
     # return a preprocessed SNPP file fixture with a couple pixels
     input_df = pd.read_csv(preprocessed_nrt_snpp_tmpfile)

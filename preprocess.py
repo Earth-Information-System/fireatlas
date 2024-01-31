@@ -6,7 +6,7 @@ from shapely import to_geojson, from_geojson
 
 import rasterio
 import FireConsts
-from FireConsts import CONNECTIVITY_CLUSTER_KM, dirextdata, dirprpdata
+from FireConsts import CONNECTIVITY_CLUSTER_KM
 import FireClustering
 from FireLog import logger
 import FireIO
@@ -18,8 +18,8 @@ from utils import timed
 # INPUT_DIR = "/projects/shared-buckets/gsfc_landslides/FEDSinput/VIIRS/"
 # OUTPUT_DIR = "/projects/shared-buckets/jsignell/processed/"
 
-INPUT_DIR = dirextdata
-OUTPUT_DIR = dirprpdata
+INPUT_DIR = FireConsts.dirextdata
+OUTPUT_DIR = FireConsts.dirprpdata
 
 
 @timed
