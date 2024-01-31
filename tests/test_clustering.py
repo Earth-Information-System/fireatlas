@@ -92,6 +92,13 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
 def test_do_clustering(data, max_thresh_km, should_cluster):
     clustered_df = FireClustering.do_clustering(data, max_thresh_km)
     if should_cluster:
-        assert len(clustered_df) == 2  # two of the three input pixels are close enough to cluster
+        if isinstance(clustered_df, list):
+            # FireCluster.do_clustering will send back indices of all pixels as a list when number of pixels < 3
+            assert len(clustered_df) == 2
+        else:
+            cluster_count = df.groupby('initial_cid').size()
+            assert cluster_count == 2
     else:
-        assert len(clustered_df) == 0  # none of the input pixels are not close enough
+        # each pixel is a cluster
+        cluster_count = df.groupby('initial_cid').size()
+        assert cluster_count == 2
