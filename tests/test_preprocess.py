@@ -108,12 +108,12 @@ def test_preprocess_NRT_file(timestep: TimeStep, sat: str, monkeypatch, test_dat
     "region, region_shape_to_filter, output_should_already_exist",
     [
         (
-            ["Testing123", Polygon([(0, 0), (0, 2), (2, 2), (2, 0), (0, 0)])],
+            ["TestRegion", Polygon([(0, 0), (0, 2), (2, 2), (2, 0), (0, 0)])],
             Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)]),
             False,
         ),  # preprocessed_nrt_snpp_tmpfile fixture should only have one pixel that fits in this region shape
         (
-            ["Testing123", Polygon([(0, 0), (0, 2), (2, 2), (2, 0), (0, 0)])],
+            ["TestRegion", Polygon([(0, 0), (0, 2), (2, 2), (2, 0), (0, 0)])],
             Polygon([(0, 0), (0, 3), (3, 3), (3, 0), (0, 0)]),
             True,
         ),  # preprocessed_nrt_snpp_tmpfile fixture should have two pixels that fix in this region shape
@@ -138,22 +138,29 @@ def test_preprocess_region_t(
 
     monkeypatch.setattr(FireIO, "get_reg_shp", lambda x: region_shape_to_filter)
 
-    # we should have separate unit tests that really exercise `FireClustering.do_clustering`
-    # and `FireClustering.compute_all_spatial_distances` so just return the input DataFrame for now
-    monkeypatch.setattr(FireClustering, "do_clustering", lambda x, y: input_df)
+    if output_should_already_exist:
+        # mock `FireClustering.do_clustering` so we can assert it is not called
+        mock_do_clustering = MagicMock()
+        monkeypatch.setattr(FireClustering, "do_clustering", mock_do_clustering)
 
-    # TODO: handle output already exists branching
-    # monkeypatch.setattr(
-    #     preprocess, "preprocessed_filename", lambda x, y, region=None: MagicMock()
-    # )
-    # monkeypatch.setattr(os, "makedirs", lambda x, exist_ok=None: MagicMock())
+        monkeypatch.setattr(
+            preprocess, "preprocessed_filename", lambda x, y, region=None: 'force_exit.txt'
+        )
 
-    # act
-    # NOTE: we pass a fake sensor here so we can easily mock the else branch of and handle a single `read_preprocessed`
-    outfile_df_path = preprocess.preprocess_region_t(
-        (2023, 11, 9, "AM"), "TESTING123", region
-    )
+        monkeypatch.setattr(os.path, "exists", lambda x: True)
 
-    # assert
-    assert os.path.exists(outfile_df_path)
-    assert len(pd.read_csv(outfile_df_path)) > 0
+        mock_do_clustering.assert_not_called()
+
+    else:
+        # we should have separate unit tests that really exercise `FireClustering.do_clustering`
+        # and `FireClustering.compute_all_spatial_distances` so just return the input DataFrame for now
+        monkeypatch.setattr(FireClustering, "do_clustering", lambda x, y: input_df)
+
+        # we pass a fake sat/sensor so we can trigger the `else` branch for a single `read_preprocessed` mock
+        outfile_df_path = preprocess.preprocess_region_t(
+            (2023, 11, 9, "AM"), "TESTING123", region
+        )
+
+        # assert
+        assert os.path.exists(outfile_df_path)
+        assert len(pd.read_csv(outfile_df_path)) > 0
