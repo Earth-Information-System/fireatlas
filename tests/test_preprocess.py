@@ -120,7 +120,7 @@ def test_preprocess_NRT_file(timestep: TimeStep, sat: str, monkeypatch, test_dat
     ],
 )
 def test_preprocess_region_t(
-    test_data_dir,
+    inputdirs,
     preprocessed_nrt_snpp_tmpfile,
     monkeypatch,
     region,
@@ -128,10 +128,10 @@ def test_preprocess_region_t(
     output_should_already_exist,
 ):
     # arrange
-    monkeypatch.setattr(FireConsts, "dirextdata", test_data_dir)
-    monkeypatch.setattr(FireConsts, "dirprpdata", test_data_dir)
-    monkeypatch.setattr(preprocess, "INPUT_DIR", test_data_dir)
-    monkeypatch.setattr(preprocess, "OUTPUT_DIR", test_data_dir)
+    monkeypatch.setattr(FireConsts, "dirextdata", str(inputdirs))
+    monkeypatch.setattr(preprocess, "INPUT_DIR", str(inputdirs))
+    monkeypatch.setattr(FireConsts, "dirprpdata", str(inputdirs / "processed"))
+    monkeypatch.setattr(preprocess, "OUTPUT_DIR", str(inputdirs / "processed"))
 
     # return a preprocessed SNPP file fixture with a couple pixels
     input_df = pd.read_csv(preprocessed_nrt_snpp_tmpfile)
@@ -144,11 +144,11 @@ def test_preprocess_region_t(
     # and `FireClustering.compute_all_spatial_distances` so just return the input DataFrame for now
     monkeypatch.setattr(FireClustering, "do_clustering", lambda x, y: input_df)
 
+    # TODO: handle output already exists branching
     # monkeypatch.setattr(
     #     preprocess, "preprocessed_filename", lambda x, y, region=None: MagicMock()
     # )
-
-    monkeypatch.setattr(os, "makedirs", lambda x, exist_ok=None: MagicMock())
+    # monkeypatch.setattr(os, "makedirs", lambda x, exist_ok=None: MagicMock())
 
     # act
     # NOTE: we pass a fake sensor here so we can easily mock the else branch of and handle a single `read_preprocessed`

@@ -32,15 +32,17 @@ def inputdirs(tmpdir):
     :param tmpdir:
     :return:
     """
-    first_level_subdirs = ["NLCD", "static_sources", "VIIRS"]
-    second_level_subdirs = ["VNP14IMGML", "VNP14IMGTDL", "VJ114IMGML", "VJ114IMGTDL"]
+    first_level_subdirs = ["NLCD", "static_sources", "VIIRS", "processed"]
+    viirs_subdirs = ["VNP14IMGML", "VNP14IMGTDL", "VJ114IMGML", "VJ114IMGTDL"]
+
     for subdir in first_level_subdirs:
         newdir = tmpdir / subdir
         newdir.mkdir()
         if subdir == "VIIRS":
-            for subdir2 in second_level_subdirs:
+            for subdir2 in viirs_subdirs:
                 newdir = tmpdir / subdir / subdir2
                 newdir.mkdir()
+
     return tmpdir
 
 
