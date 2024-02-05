@@ -1,0 +1,17 @@
+channels:
+- conda-forge
+- defaults
+dependencies:
+- numpy=1.23.2
+- pandas=1.4.4
+- geopandas=0.11.1
+- xarray=2022.6.0
+- scikit-learn=1.1.2
+- scipy=1.9.1
+- Shapely=1.8.4
+- gdal=3.5.1
+- pyproj=3.3.1
+- fiona=1.8.21
+- h5py=3.7.0
+- netcdf4=1.6.0
+name: env-feds-small
