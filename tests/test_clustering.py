@@ -61,7 +61,11 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
                     "Sat": ["SNPP", "SNPP", "SNPP"],
                     "DT": [0.47, 0.44, 0.5],
                     "DS": [0.46, 0.4, 0.5],
-                    "YYYYMMDD_HHMM": ["2023-08-28 00:03:00", "2023-08-28 00:03:00", "2023-08-28 00:03:00"],
+                    "YYYYMMDD_HHMM": [
+                        "2023-08-28 00:03:00",
+                        "2023-08-28 00:03:00",
+                        "2023-08-28 00:03:00",
+                    ],
                     "ampm": ["AM", "AM", "AM"],
                 }
             ),
@@ -80,7 +84,11 @@ def test_compute_all_spatial_distances(data, max_thresh_km, expected):
                     "Sat": ["SNPP", "SNPP", "SNPP"],
                     "DT": [0.47, 0.44, 0.5],
                     "DS": [0.46, 0.4, 0.5],
-                    "YYYYMMDD_HHMM": ["2023-08-28 00:03:00", "2023-08-28 00:03:00", "2023-08-28 00:03:00"],
+                    "YYYYMMDD_HHMM": [
+                        "2023-08-28 00:03:00",
+                        "2023-08-28 00:03:00",
+                        "2023-08-28 00:03:00",
+                    ],
                     "ampm": ["AM", "AM", "AM"],
                 }
             ),
@@ -96,9 +104,9 @@ def test_do_clustering(data, max_thresh_km, should_cluster):
             # FireCluster.do_clustering will send back indices of all pixels as a list when number of pixels < 3
             assert len(clustered_df) == 2
         else:
-            cluster_series = clustered_df.groupby('initial_cid').size()
+            cluster_series = clustered_df.groupby("initial_cid").size()
             assert cluster_series.count() == 2
     else:
         # each pixel is a cluster
-        cluster_series = clustered_df.groupby('initial_cid').size()
+        cluster_series = clustered_df.groupby("initial_cid").size()
         assert cluster_series.count() == 3
