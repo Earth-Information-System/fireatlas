@@ -167,5 +167,6 @@ def test_preprocess_region_t(
         assert outfile_df_path
         assert os.path.exists(outfile_df_path)
         assert len(pd.read_csv(outfile_df_path)) > 0
+        os.remove(outfile_df_path)
 
 
