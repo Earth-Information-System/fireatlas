@@ -19,4 +19,5 @@ dependencies:
   - ca-certificates
   - certifi
   - openssl
+  - pytest
 prefix: /opt/conda/envs/fire
