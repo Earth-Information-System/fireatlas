@@ -189,7 +189,7 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     # if regional output already exists, exit early so we don't reprocess
     output_filepath = preprocessed_filename(t, sensor, region=region)
     if os.path.exists(output_filepath):
-        return
+        return output_filepath
 
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
