@@ -332,7 +332,6 @@ class Fire:
         # initialize current time, fire start time, and fire final time
         tlist = list(t)  # convert (y,m,d,ampm) to [y,m,d,ampm]
         self.t = tlist  # current time
-        self.t_st = tlist
         self.t_ed = tlist
 
         # fline of latest active timestep, used for sleeper threshold
@@ -390,8 +389,6 @@ class Fire:
 
     @property
     def isburning(self):
-        if self.invalid:
-            return False
         return self.t_inactive == 0
 
     @property

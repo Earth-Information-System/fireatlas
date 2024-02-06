@@ -33,7 +33,26 @@ def getdd(layer):
     ''' Get attributes names and formats for different gpkg layers
     '''
     # # attributes name and data  types (in addition to geometries)
-    if layer == "perimeter":
+    if layer == "all":
+        dd = {
+            "mergeid": "int",  # this is the id in the large fire database
+            "invalid": "bool",
+            "ftype": "int",  # fire type
+            "n_pixels": "int",  # number of total pixels
+            "n_newpixels": "int",  # number of new pixels
+            "farea": "float",  # fire size
+            "fperim": "float",  # fire perimeter length
+            "flinelen": "float",  # active fire front line length
+            "duration": "float",  # fire duration
+            "pixden": "float",  # fire pixel density
+            "meanFRP": "float",  # mean FRP of the new fire pixels
+            "t_st": "datetime64[ns]",
+            "t_ed": "datetime64[ns]",
+            "hull": "geometry",
+            "fline": "geometry",
+            "nfp": "geometry",
+        }
+    elif layer == "perimeter":
         dd = {
             "n_pixels": "int",  # number of total pixels
             "n_newpixels": "int",  # number of new pixels

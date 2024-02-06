@@ -282,6 +282,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
 
                 # use the fire id and new fire pixels to create a new Fire object
                 newfire = FireObj.Fire(id_newfire, allfires.t, allpixels, sensor=firessr)
+                newfire.t_st = newfire.t
                 newfire.pixels = pixels
                 newfire.hull = hull
                 newfire.updatefline()
@@ -595,29 +596,12 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
 
-    dd = {
-        "mergeid": "int",  # this is the id in the large fire database
-        "ftype": "int",  # fire type
-        "n_pixels": "int",  # number of total pixels
-        "n_newpixels": "int",  # number of new pixels
-        "farea": "float",  # fire size
-        "fperim": "float",  # fire perimeter length
-        "flinelen": "float",  # active fire front line length
-        "duration": "float",  # fire duration
-        "pixden": "float",  # fire pixel density
-        "meanFRP": "float",  # mean FRP of the new fire pixels
-        "t_st": "datetime64[ns]",
-        "t_ed": "datetime64[ns]",
-        "hull": "geometry",
-        "fline": "geometry",
-        "nfp": "geometry",
-    }
-
+    dd = FireGpkg_sfs.getdd("all")
     gdf = gpd.GeoDataFrame(
         columns=[
             *dd.keys(),
             "fireID",
-            "t",            
+            "t",
         ], 
         crs=f"epsg:{FireConsts.epsg}", 
         geometry="hull"
