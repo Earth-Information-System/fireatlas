@@ -9,6 +9,8 @@ FOUR LAYERS OF OBJECTS
 """
 from utils import timed
 from FireLog import logger
+import geopandas as gpd
+
 
 # a. Object - Allfires
 class Allfires:
@@ -43,6 +45,9 @@ class Allfires:
             []
         )  # a list of ids for fires invalidated at current time step
 
+        # initialize a geodataframe to hold the accumulated burning fire information
+        self.init_gdf()
+
         # cumulative recordings
         self.heritages = []  # a list of fire heritage relationships (source, target)
         self.id_dict = (
@@ -53,6 +58,86 @@ class Allfires:
     def __repr__(self):
         return f"<Allfires at t={self.t} with n_fires={len(self.fires)}>"
     
+    def init_gdf(self):
+        import FireConsts
+        from FireGpkg_sfs import getdd
+
+        gdf = gpd.GeoDataFrame(
+            columns=[
+                *getdd("all").keys(),
+                "fireID",
+                "t",
+            ], 
+            crs=f"epsg:{FireConsts.epsg}", 
+            geometry="hull"
+        )
+        self.gdf = gdf.set_index(["fireID", "t"])
+    
+    @classmethod
+    @timed 
+    def rehydrate(cls, t, region, include_dead=False):
+        import datetime
+        import FireConsts, FireTime, postprocess
+
+        allfires_gdf = postprocess.read_allfires_gdf(t, region)
+        allpixels = postprocess.read_allpixels(t, region)
+
+        dt = FireTime.t2dt(t)
+
+        has_started = (allfires_gdf.t_st <= dt)
+        if not include_dead:
+            dt_dead = dt - datetime.timedelta(days=FireConsts.limoffdays)
+            not_dead = (allfires_gdf.t_ed >= dt_dead)
+            gdf = allfires_gdf[has_started & not_dead]
+        else:
+            gdf = allfires_gdf[has_started]
+        
+        allfires = cls(t)
+        allfires.gdf = allfires_gdf
+        for fid, gdf_fid in gdf.groupby(level=0):
+            f = Fire(fid, t, allpixels)
+            dt_st = gdf_fid.t_st.min()
+            dt_ed = gdf_fid.t_ed.max()
+            
+            f.t_st = FireTime.dt2t(dt_st)
+            f.t_ed = FireTime.dt2t(dt_ed)
+            
+            gdf_fid_t = gdf_fid.loc[(fid, dt_ed)]
+            for k, v in gdf_fid_t.items():
+                if k in ["hull", "ftype", "fline", "invalid"]:
+                    setattr(f, k, v)
+            if f.isignition:
+                allfires.fids_new.append(fid)
+            else:
+                allfires.fids_expanded.append(fid)
+            allfires.fires[fid] = f
+        return allfires
+    
+    @timed
+    def update_gdf(self):
+        from FireGpkg_sfs import getdd
+        import FireTime
+        
+        dd = getdd("all")
+        dt = FireTime.t2dt(self.t)
+
+        for fid, f in self.burningfires.items():
+            if (fid, dt) in self.gdf.index:
+                raise ValueError(f"Error writing gdf: {fid} already at {t}")
+            
+            for k, tp in dd.items():
+                if tp == "datetime64[ns]":
+                    self.gdf.loc[(fid, dt), k] = FireTime.t2dt(getattr(f, k))
+                else:
+                    self.gdf.loc[(fid, dt), k] = getattr(f, k)
+
+        for k, tp in dd.items():
+            self.gdf[k] = self.gdf[k].astype(tp)
+        
+        for h0, h1 in self.heritages:
+            if h0 in self.gdf.index:
+                self.gdf.loc[h0, "mergeid"] = h1
+
     # properties
     @property
     def cday(self):

@@ -126,37 +126,6 @@ def set_sleeperrngs(allfires, fids):
     return sleeperrngs
 
 
-def Fobj_init(tst, regnm, restart=False):
-    """ Initialize the fire object for a given time. This can be from the object
-    saved at previous time, or can be initialized using Allfires().
-
-    Parameters
-    ----------
-    tst : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the intialization
-    restart : bool
-        if set to true, force to initiate an object
-
-    Returns
-    -------
-    allfires : Allfires obj
-        the fire object for the previous time step
-    """
-    import FireObj, FireIO, FireTime
-
-    pst = FireTime.t_nb(tst, nb="previous")  # previous time step
-    if FireIO.check_fobj(pst, regnm, activeonly=False) & (restart == False):
-        allfires = FireIO.load_fobj(pst, regnm, activeonly=False) # load all fires (including dead)
-        allfires.cleanup(tst)  # update time and reset lists
-        # # if it's the first time step of a calendar year, reset all fires id
-        # if (tst[1]==1 & tst[2]==1 & tst[3]=='AM'):
-        #     allfires.newyear_reset()
-    else:  # if no pkl file at previous time step or restart is set to True
-        allfires = FireObj.Allfires(tst)
-
-    return allfires
-
-
 def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
     """ Modify region to exclude static sources
 
@@ -487,8 +456,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
 
 @timed
 def Fire_Forward_one_step(allfires, allpixels, t, region):
-    import FireTime, FireGpkg
-    from FireConsts import firesrc, opt_rmstatfire
+    import FireConsts, FireTime
     
     logger.info("--------------------")
     logger.info(f"Fire tracking at {t}")
@@ -517,7 +485,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
             allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep)
 
     # 7. manualy invalidate static fires (with exceptionally large fire density)
-    if opt_rmstatfire:
+    if FireConsts.opt_rmstatfire:
         allfires.invalidate_statfires()
 
     # 8. log changes
@@ -531,32 +499,10 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
     if len(allfires.heritages) > 0:
         allfires.heritages = correct_nested_ids(allfires.heritages)
 
+    # 10. update allfires gdf
+    allfires.update_gdf()
+
     return allfires
-
-@timed
-def Fire_to_gdf_one_step(allfires, t, gdf, dd):
-    import FireTime
-
-    dt = FireTime.t2dt(t)
-
-    for fid, f in allfires.burningfires.items():
-        if (fid, dt) in gdf.index:
-            raise ValueError(f"Error writing gdf: {fid} already at {t}")
-        
-        for k, tp in dd.items():
-            if tp == "datetime64[ns]":
-                gdf.loc[(fid, dt), k] = FireTime.t2dt(getattr(f, k))
-            else:
-                gdf.loc[(fid, dt), k] = getattr(f, k)
-
-    for k, tp in dd.items():
-        gdf[k] = gdf[k].astype(tp)
-    
-    for h0, h1 in allfires.heritages:
-        if h0 in gdf.index:
-            gdf.loc[h0, "mergeid"] = h1
-
-    return gdf
 
 @timed
 def Fire_Forward(tst, ted, restart=False, region=None):
@@ -567,7 +513,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     tst : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' at start time
     ted : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' at end time
+    the year, month, day and 'AM'|'PM' at end time
     restart : bool
         if set to true, force to initiate an object
 
@@ -578,12 +524,12 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     """
     import FireTime, FireObj, FireConsts
     import preprocess
-    import geopandas as gpd
     import pandas as pd
 
     # initialize allfires object
     allfires = FireObj.Allfires(tst)
-    
+
+    # read in all preprocessed pixel data
     allpixels = pd.concat([
         (
             preprocess
@@ -594,26 +540,13 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         for t in FireTime.t_generator(tst, ted)
     ])
     allpixels["fid"] = -1
-    allpixels["in_fline"] = None
-
-    dd = FireGpkg_sfs.getdd("all")
-    gdf = gpd.GeoDataFrame(
-        columns=[
-            *dd.keys(),
-            "fireID",
-            "t",
-        ], 
-        crs=f"epsg:{FireConsts.epsg}", 
-        geometry="hull"
-    )
-    gdf = gdf.set_index(["fireID", "t"])
+    allpixels["in_fline"] = None    
 
     # loop over every t during the period and mutate allfires, allpixels
     for t in FireTime.t_generator(tst, ted):
         allfires = Fire_Forward_one_step(allfires, allpixels, t, region)
-        gdf = Fire_to_gdf_one_step(allfires, t, gdf, dd)
 
-    return allfires, allpixels, gdf
+    return allfires, allpixels
 
 
 if __name__ == "__main__":

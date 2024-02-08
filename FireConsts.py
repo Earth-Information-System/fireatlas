@@ -51,6 +51,9 @@ limoffdays = 20  # fire keeps sleeper status even at inactive but with inactive 
 CONNECTIVITY_CLUSTER_KM = 0.7  # the connectivity spatial threshold for initial clustering, km
 CONNECTIVITY_SLEEPER_KM = 1  # the connectivity spatial threshold (to previous fire line), km
 
+# fire area threshold for determining large fires.
+LARGEFIRE_FAREA = 4
+
 # fire tracking options
 expand_only = (
     False  # if set to true, only expand existing fires (no new fire objects created)

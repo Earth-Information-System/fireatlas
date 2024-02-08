@@ -1,39 +1,48 @@
 import os
 import uuid
 import pandas as pd
-
+from typing import Literal, Optional
 from shapely import to_geojson, from_geojson
 
 import rasterio
+import rasterio.warp
+
 import FireConsts
-from FireConsts import CONNECTIVITY_CLUSTER_KM
 import FireClustering
 from FireLog import logger
 import FireIO
-from FireVector import cal_hull
-from typing import Literal, Optional
 from FireTypes import Region, TimeStep
 from utils import timed
 
-# INPUT_DIR = "/projects/shared-buckets/gsfc_landslides/FEDSinput/VIIRS/"
-# OUTPUT_DIR = "/projects/shared-buckets/jsignell/processed/"
 
 INPUT_DIR = FireConsts.dirextdata
 OUTPUT_DIR = FireConsts.dirprpdata
+
+
+def preprocessed_region_filename(region: Region):
+    return os.path.join(OUTPUT_DIR, f"{region[0]}.json")
 
 
 @timed
 def preprocess_region(region: Region):
     from FireMain import maybe_remove_static_sources
 
+    output_filepath = preprocessed_region_filename(region)
+    
+    # make path if necessary
+    os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
+
     region = maybe_remove_static_sources(region, INPUT_DIR)
-    with open(f"{OUTPUT_DIR}{region[0]}.json", "w") as f:
+
+    with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
 
 
 @timed
 def read_region(region: Region):
-    with open(f"{OUTPUT_DIR}{region[0]}.json", "r") as f:
+    filepath = preprocessed_region_filename(region)
+
+    with open(filepath, "r") as f:
         shape = from_geojson(f.read())
     return (region[0], shape)
 
@@ -166,7 +175,8 @@ def read_preprocessed(
     *,
     region: Optional[Region] = None,
 ):
-    return preprocessed_filename(t, sat, region=region)
+    filename = preprocessed_filename(t, sat, region=region)
+    return pd.read_csv(filename)
 
 
 @timed
@@ -198,7 +208,7 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]]
 
     # do preliminary clustering using new active fire locations (assign cid to each pixel)
-    df = FireClustering.do_clustering(df, CONNECTIVITY_CLUSTER_KM)
+    df = FireClustering.do_clustering(df, FireConsts.CONNECTIVITY_CLUSTER_KM)
 
     # assign a uuid to each pixel
     df["uuid"] = [uuid.uuid4() for _ in range(len(df.index))]
