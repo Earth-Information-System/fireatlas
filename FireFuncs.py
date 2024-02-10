@@ -81,10 +81,11 @@ def set_ftype(fire):
         ftype = FTYP_preset[0]
     elif FTYP_opt == 1:  # use CA type classifications (determined using LCTmax)
         # update or read LCTmax; calculated using all newlocs
-        if fire.n_newpixels < 1000:
+        if fire.n_newpixels < 1000000000:
             uselocs = fire.newlocs_geo
         else:
             # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+            # FIXME: currently fire.newlocs_geo is a ndarray and we need a straight sequence
             uselocs = random.sample(fire.newlocs_geo, 1000)
 
         # get all LCT for the fire pixels

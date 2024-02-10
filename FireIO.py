@@ -154,7 +154,7 @@ def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
         input_data_dir,
         "VIIRS",
         "VNP14IMGML",
-        f"VNP14IMGML.{year}{month:02}.{ver}.txt.gz"
+        f"VNP14IMGML.{year}{month:02}.{ver}.txt"
     )
     
     # read

@@ -98,16 +98,16 @@ def CreekSamplerun(firesrc='SNPP'):
 
     tst = (2020, 9, 5, "AM")
     ted = (2020, 9, 8, "PM")
-    region = ("CreekMAAPDEMO"+firesrc, [-119.5, 36.8, -118.9, 37.7])
+    region = (f"Creek{firesrc}Preprocess", [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
     #
     # # calculate and save snapshot files
-    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     #
     # # calculate and save single fire files
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
     #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
@@ -447,17 +447,15 @@ def CArunNRT():
     
 
 @timed
-def CONUSrunNRT():
+def ProcessNRT(region_name, tst, ted, timestep_skips=[]):
     import preprocess
     import FireConsts, FireMain, FireGpkg, FireGpkg_sfs
 
-    region = ["CONUS",]
-    tst = [2023, 8, 28, 'AM']
-    ted = [2023, 9, 6, 'AM']
+    region = [region_name,]
 
     logger.info(f'STARTING RUN FOR {region[0]}')    
     
-    return FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    return FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region, timestep_skips=timestep_skips)
 
 
 def WesternUSrunNRT():

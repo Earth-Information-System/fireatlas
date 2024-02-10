@@ -505,7 +505,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
     return allfires
 
 @timed
-def Fire_Forward(tst, ted, restart=False, region=None):
+def Fire_Forward(tst, ted, restart=False, region=None, timestep_skips=[]):
     """ The wrapper function to progressively track all fire events for a time period
 
     Parameters
@@ -529,6 +529,8 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     # initialize allfires object
     allfires = FireObj.Allfires(tst)
 
+    timesteps = [t for t in FireTime.t_generator(tst, ted) if t not in timestep_skips]
+
     # read in all preprocessed pixel data
     allpixels = pd.concat([
         (
@@ -537,7 +539,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
                 .set_index("uuid")
                 .assign(t=FireTime.t2dt(t))
         )
-        for t in FireTime.t_generator(tst, ted)
+        for t in timesteps
     ])
     allpixels["fid"] = -1
     allpixels["in_fline"] = None    

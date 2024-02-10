@@ -151,6 +151,7 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm"]]
 
     days = df["YYYYMMDD_HHMM"].dt.date.unique()
+    filtered_df_paths = []
     for day in days:
         for ampm in ["AM", "PM"]:
             time_filtered_df = df.loc[
@@ -166,6 +167,9 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 
             # save active pixels at this time step (day and ampm filter)
             time_filtered_df.to_csv(output_filepath, index=False)
+            filtered_df_paths.append(output_filepath)
+
+    return filtered_df_paths
 
 
 @timed
@@ -188,7 +192,7 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
         df = pd.concat(
             [
                 read_preprocessed(t, sat="SNPP"),
-                read_preprocessed(t, sat="NOAA20"),
+                #read_preprocessed(t, sat="NOAA20"),
             ],
             ignore_index=True,
         )
@@ -203,6 +207,8 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
     df = FireIO.AFP_regfilter(df, shp_Reg)
+    if df.empty:
+        return None
 
     # return selected columns
     df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]]
