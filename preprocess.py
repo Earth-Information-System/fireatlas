@@ -214,6 +214,9 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
     df = FireIO.AFP_regfilter(df, shp_Reg)
+    # sometimes we won't find fire pixels for 't' value
+    # that's okay we just need to send back None
+    # so we know this timestep shoudl be skipped in Fire_Forward
     if df.empty:
         return None
 
