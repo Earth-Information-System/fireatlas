@@ -81,6 +81,8 @@ def set_ftype(fire):
         ftype = FTYP_preset[0]
     elif FTYP_opt == 1:  # use CA type classifications (determined using LCTmax)
         # update or read LCTmax; calculated using all newlocs
+        # TODO: not sure why we need the `else` branch here to sample
+        # so just increasing this so we don't have to sample 1000 points
         if fire.n_newpixels < 1000000000:
             uselocs = fire.newlocs_geo
         else:
