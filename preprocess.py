@@ -184,16 +184,23 @@ def read_preprocessed(
 
 
 @timed
-def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region):
+def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region, use_monthly=False):
     logger.info(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
     )
-    if sensor == "VIIRS":
+
+    # MONTHLY preprocessed files are not using NOAA
+    processed_files = [
+        read_preprocessed(t, sat="SNPP"),
+    ]
+    if not use_monthly:
+        processed_files = [
+            read_preprocessed(t, sat="SNPP"),
+            read_preprocessed(t, sat="NOAA20"),
+        ]
+    if sensor =="VIIRS":
         df = pd.concat(
-            [
-                read_preprocessed(t, sat="SNPP"),
-                #read_preprocessed(t, sat="NOAA20"),
-            ],
+            processed_files,
             ignore_index=True,
         )
     else:
@@ -225,3 +232,5 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     df.to_csv(output_filepath, index=False)
 
     return output_filepath
+
+
