@@ -458,6 +458,21 @@ def ProcessNRT(region_name, tst, ted, timestep_skips=[]):
     return FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region, timestep_skips=timestep_skips)
 
 
+@timed
+def CONUSrunNRT():
+    import preprocess
+    import FireConsts, FireMain, FireGpkg, FireGpkg_sfs
+
+    region = ["CONUS",]
+    tst = [2023, 8, 28, 'AM']
+    ted = [2023, 9, 6, 'AM']
+
+
+    logger.info(f'STARTING RUN FOR {region[0]}')    
+    
+    return FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+
+
 def WesternUSrunNRT():
     
     import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
