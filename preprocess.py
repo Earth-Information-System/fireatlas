@@ -33,7 +33,6 @@ def preprocess_region(region: Region):
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
     region = maybe_remove_static_sources(region, INPUT_DIR)
-
     with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
 
@@ -184,30 +183,22 @@ def read_preprocessed(
 
 
 @timed
-def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region, use_monthly=False):
+def preprocess_region_t(t: TimeStep, sat: Literal["VIIRS", "SNPP", "NOAA20", "TESTING123"], region: Region):
     logger.info(
-        f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
+        f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sat}, {region[0]}"
     )
 
-    # MONTHLY preprocessed files are not using NOAA
-    processed_files = [
-        read_preprocessed(t, sat="SNPP"),
-    ]
-    if not use_monthly:
-        processed_files = [
+    if sat =="VIIRS":
+        df = pd.concat(
             read_preprocessed(t, sat="SNPP"),
             read_preprocessed(t, sat="NOAA20"),
-        ]
-    if sensor =="VIIRS":
-        df = pd.concat(
-            processed_files,
             ignore_index=True,
         )
     else:
-        df = read_preprocessed(t, sat=sensor)
+        df = read_preprocessed(t, sat=sat)
 
     # if regional output already exists, exit early so we don't reprocess
-    output_filepath = preprocessed_filename(t, sensor, region=region)
+    output_filepath = preprocessed_filename(t, sat, region=region)
     if os.path.exists(output_filepath):
         return output_filepath
 

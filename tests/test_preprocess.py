@@ -31,17 +31,16 @@ def test_preprocess_region(tmpdir, monkeypatch):
     preprocess.preprocess_region(test_region)
 
     # assert
-    with open(f"{tmpdir}{test_region[0]}.json", "r") as f:
+    with open(f"{tmpdir}/{test_region[0]}.json", "r") as f:
         assert test_region[1] == from_geojson(f.read())
 
 
 def test_read_region(tmpdir, monkeypatch):
     # arrange
     monkeypatch.setattr(FireConsts, "dirprpdata", tmpdir)
-    monkeypatch.setattr(preprocess, "OUTPUT_DIR", tmpdir)
     expected_region = ("Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)]))
-    with open(f"{tmpdir}{expected_region[0]}.json", "w") as f:
-        f.write(to_geojson(expected_region[1]))
+    tmpfile = tmpdir.join(f"{expected_region[0]}.json")
+    tmpfile.write(to_geojson(expected_region[1]))
 
     # act
     actual_region = preprocess.read_region(expected_region)
@@ -53,7 +52,6 @@ def test_read_region(tmpdir, monkeypatch):
 def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
     # arrange
     monkeypatch.setattr(FireConsts, "dirextdata", tmpdir)
-    monkeypatch.setattr(preprocess, "INPUT_DIR", tmpdir)
 
     tmpdir = tmpdir.join("NLCD")
     tmpdir.mkdir()
