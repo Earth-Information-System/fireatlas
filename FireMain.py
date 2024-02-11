@@ -529,6 +529,8 @@ def Fire_Forward(tst, ted, restart=False, region=None, timestep_skips=[]):
     # initialize allfires object
     allfires = FireObj.Allfires(tst)
 
+    # sometimes our regional filtering will not find fire pixels
+    # in the input dataframe so we skip these in the analysis
     timesteps = [t for t in FireTime.t_generator(tst, ted) if t not in timestep_skips]
 
     # read in all preprocessed pixel data

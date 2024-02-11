@@ -98,16 +98,18 @@ def CreekSamplerun(firesrc='SNPP'):
 
     tst = (2020, 9, 5, "AM")
     ted = (2020, 9, 8, "PM")
-    region = (f"Creek{firesrc}Preprocess", [-119.5, 36.8, -118.9, 37.7])
+    # not sure why Jamison changed this but I'm assuming that's an error
+    # so returning it to what it was before
+    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
     #
     # # calculate and save snapshot files
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     #
     # # calculate and save single fire files
-    #FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
     #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 

@@ -150,6 +150,7 @@ def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
 
     year, month = t[0], t[1]
 
+    # only the > 2022 years are gzipped
     fnmFC = os.path.join(
         input_data_dir,
         "VIIRS",
