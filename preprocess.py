@@ -33,6 +33,7 @@ def preprocess_region(region: Region):
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
     region = maybe_remove_static_sources(region, INPUT_DIR)
+
     with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
 
@@ -150,7 +151,6 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm"]]
 
     days = df["YYYYMMDD_HHMM"].dt.date.unique()
-    filtered_df_paths = []
     for day in days:
         for ampm in ["AM", "PM"]:
             time_filtered_df = df.loc[
@@ -166,9 +166,6 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 
             # save active pixels at this time step (day and ampm filter)
             time_filtered_df.to_csv(output_filepath, index=False)
-            filtered_df_paths.append(output_filepath)
-
-    return filtered_df_paths
 
 
 @timed
@@ -187,11 +184,12 @@ def preprocess_region_t(t: TimeStep, sat: Literal["VIIRS", "SNPP", "NOAA20", "TE
     logger.info(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sat}, {region[0]}"
     )
-
-    if sat =="VIIRS":
+    if sensor == "VIIRS":
         df = pd.concat(
-            read_preprocessed(t, sat="SNPP"),
-            read_preprocessed(t, sat="NOAA20"),
+            [
+                read_preprocessed(t, sat="SNPP"),
+                read_preprocessed(t, sat="NOAA20"),
+            ],
             ignore_index=True,
         )
     else:
@@ -205,9 +203,9 @@ def preprocess_region_t(t: TimeStep, sat: Literal["VIIRS", "SNPP", "NOAA20", "TE
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
     df = FireIO.AFP_regfilter(df, shp_Reg)
-    # sometimes we won't find fire pixels for 't' value
+    # sometimes our filter will not return pixels for 't' value
     # that's okay we just need to send back None
-    # so we know this timestep shoudl be skipped in Fire_Forward
+    # so we know this timestep should be skipped in Fire_Forward
     if df.empty:
         return None
 
@@ -226,5 +224,3 @@ def preprocess_region_t(t: TimeStep, sat: Literal["VIIRS", "SNPP", "NOAA20", "TE
     df.to_csv(output_filepath, index=False)
 
     return output_filepath
-
-
