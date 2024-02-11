@@ -15,6 +15,7 @@ dependencies:
   - pyarrow
   - rasterio
   - pyproj
+  - pyogrio
   - ipykernel
   - ca-certificates
   - certifi
