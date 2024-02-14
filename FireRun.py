@@ -198,25 +198,25 @@ def CreekRegionSamplerun():
 def ChileSampleRun():
     import FireMain, FireGpkg, FireGpkg_sfs
 
-    tst = (2023, 2, 13, 'AM')
-    ted = (2023, 4, 1, "AM")
-    region = ("ChileGlobalNRT", [-82.39770817214531, -55.54947848623975, 
-                                 -65.87427067214531, -14.895459243377251])
+    tst = (2024, 2, 6, 'AM')
+    ted = (2024, 2, 8, "AM")
+    region = ("ChileNRTv4", [-82.39770817214531, -55.54947848623975, 
+                           -65.87427067214531, -14.895459243377251])
     logger.info(f'STARTING RUN FOR {region[0]}')
     tstart = time.time()
 
     
     # do fire tracking
-    #FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
+    FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
 
     # calculate and save snapshot files
-    #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
+    FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
 
     # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     tend = time.time()
     
-    logger.info(f"{(tend-tstart)/60.} minutes used for ChileSampleRun with dask.")
+    logger.info(f"{(tend-tstart)/60.} minutes used for ChileSampleRun.")
 
 
 def BorealNA():
