@@ -9,7 +9,7 @@ echo "conda: $(which conda)"
 echo "Python: $(which python)"
 python --version
 source activate /opt/conda/envs/env-feds-dask
-conda install --solver=libmamba -c conda-forge scalene
+conda install -c conda-forge scalene
 echo "Starting algorithm in subshell"
 (
 pushd "$basedir"
