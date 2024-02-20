@@ -87,14 +87,15 @@ def Yearbatchrun(year, tst=None, ted=None, restart=False):
     print(f"{(t2-t1)/60.} minutes to run code")
 
 
-def CreekSamplerun(firesrc='SNPP'):
+def CreekSamplerun():
     """
     - Run Creek fire tracking
     - firesrc options: 'SNPP', 'NOAA20', 'VIIRS'
     - before running, need to set corresponding firesrc in FireConsts.py
     """
     import FireMain, FireGpkg, FireGpkg_sfs
-
+    firesrc='SNPP'
+    
     tst = (2020, 9, 5, "AM")
     ted = (2020, 9, 7, "PM")
     #ted = (2020, 11, 5, "PM")
