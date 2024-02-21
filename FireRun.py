@@ -94,12 +94,17 @@ def CreekSamplerun():
     - before running, need to set corresponding firesrc in FireConsts.py
     """
     import FireMain, FireGpkg, FireGpkg_sfs
+    import FireConsts
     firesrc='SNPP'
+    #firesrc='NOAA20'
+    #firesrc='VIIRS'
+    firenrt = False
+    #firessr = 'mcd64'
     
     tst = (2020, 9, 5, "AM")
     ted = (2020, 9, 7, "PM")
     #ted = (2020, 11, 5, "PM")
-    region = ("Creek"+firesrc, [-119.5, 36.8, -118.9, 37.7])
+    region = ("Creek"+firesrc+"_tmp_test", [-119.5, 36.8, -118.9, 37.7])
 
     # # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
@@ -110,7 +115,7 @@ def CreekSamplerun():
     # # calculate and save single fire files
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
-    FireGpkg_sfs.convert_sfts(region[0],2020,[0])
+    #FireGpkg_sfs.convert_sfts(region[0],2020,[0])
 
 def DixieSamplerun(firesrc='SNPP'):
     """
