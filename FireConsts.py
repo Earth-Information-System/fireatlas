@@ -10,18 +10,28 @@ import os
 # ------------------------------------------------------------------------------
 
 projnm = "FEDStest"  # project name
-dirhome = os.environ.get("HOME")  # get system home directory
 
-# run at iMac
-dirdata = './'  # project directory -- only used For logging location
-# run at MacBook
-# dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
+# dirhome = os.environ.get("HOME")  # get system home directory
 
-dirextdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/'  # exterior input data directory
-dirtmpdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDStemp-s3-conus/'     # temporary data directory
-diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/'   # output data directory
+# # run at iMac
+# dirdata = './'  # project directory -- only used For logging location
+# # run at MacBook
+# # dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
 
-# lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
+
+# dirextdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/'  # exterior input data directory
+# dirtmpdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDStemp-s3-conus/'     # temporary data directory
+# diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/'   # output data directory
+
+# # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
+
+# for running locally on my machine
+dirhome = 'D:/FEDS/'
+
+dirdata = dirhome
+dirextdata = dirhome + 'FEDSinput/'  
+dirtmpdata = dirhome + 'FEDStemp/'
+diroutdata = dirhome + 'FEDSoutput/'
 
 # ------------------------------------------------------------------------------
 # spatiotemporal constraints of fire objects
@@ -61,8 +71,8 @@ area_VI = 0.141  # km2, area of each 375m VIIRS pixel
 MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.31271653 m/2
 
 # fire source data
-firesrc = "VIIRS"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
-firenrt = True # NRT - True, False
+firesrc = "SNPP"  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
+firenrt = False # NRT - True, False
 firessr = "viirs"  # sensor - 'mcd64'
 
 # ------------------------------------------------------------------------------
@@ -126,7 +136,7 @@ FTYP_Glb = {
 # ------------------------------------------------------------------------------
 epsg = 9311  # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
 
-remove_static_sources_bool = True  # remove areas with known flaring/gas sources from region
+remove_static_sources_bool = False # True  # remove areas with known flaring/gas sources from region
 remove_static_sources_sourcefile = "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv"
 remove_static_sources_buffer = 0.01 # Buffer around static source points. Units defined by epsg. 
 
