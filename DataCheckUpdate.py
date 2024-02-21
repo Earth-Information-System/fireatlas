@@ -324,7 +324,7 @@ def update_VJ114IMGTDL(local_dir=None):
             continue
         
         
-def update_GridMET_fm1000(local_dir=None):
+def update_GridMET_fm1000(local_dir=None, year=None):
     ''' Get updated GridMET data (including fm1000)
     '''
     import os
@@ -335,14 +335,15 @@ def update_GridMET_fm1000(local_dir=None):
     if local_dir == None:
         local_dir = dirextdata+'GridMET/'
 
-    today = date.today()
+    if year == None:
+        year = date.today().year
 
     # Do the download process
     urldir = "http://www.northwestknowledge.net/metdata/data/"
     # strvars = ['vpd','pr','tmmn','tmmx','vs','fm100','fm1000','bi','pdsi']
     strvars = ['fm1000']
     for strvar in strvars:
-        target_file = strvar + '_' + str(today.year) + '.nc'
+        target_file = strvar + '_' + str(year) + '.nc'
         urlfnm = urldir + target_file
         with tempfile.TemporaryDirectory() as tempdir:
             wget(urlfnm, locdir=tempdir)
