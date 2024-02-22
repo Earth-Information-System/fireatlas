@@ -539,7 +539,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
     return allfires
 
 
-def Fire_Forward(tst, ted, restart=False, region=None):
+def Fire_Forward(tst, ted, restart=False, region=None, polygon=None):
     """ The wrapper function to progressively track all fire events for a time period
            and save fire object to pkl file and gpd to geojson files
 
@@ -551,6 +551,16 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         the year, month, day and 'AM'|'PM' at end time
     restart : bool
         if set to true, force to initiate an object
+    region : 2-element tuple
+        the region name and its boundary (lonmin,latmin,lonmax,latmax)
+    polygon : panda series or geopandas dataframe of a single fire that constrains the active fire pixels
+        - contains 5 indices (FIRE_NAME, INC_NUM, ALARM_DATE, CONT_DATE, geometry)
+        - names come from the CALFIRE FRAP perimeter dataset, but it can accommodate other datasets 
+        as long as they follow those names
+        - crs of geometry should already be EPGS:4326
+        - to pre-process, use FireIO.process_polygon()
+
+
 
     Returns
     -------
@@ -567,6 +577,16 @@ def Fire_Forward(tst, ted, restart=False, region=None):
 
     # used to record time of script running
     import time
+
+    # test to see if polygon is a geopandas dataframe. if it is, convert to a series. 
+    # And overwrite region based off the polygon.
+    if polygon is not None:
+        import geopandas as gpd
+        if isinstance(polygon, gpd.GeoDataFrame):
+            polygon = polygon.iloc[0]
+            region = (f"firename.{polygon['FIRE_NAME']}-incnum.{polygon['INC_NUM']}", # name
+                  list(polygon['geometry'].bounds) # square bounds
+                  )
 
     t1 = time.time()
     t0 = t1
@@ -599,7 +619,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         i = 0
         while i < 5:
             try: 
-                afp = FireIO.read_AFP(t, src=firesrc, nrt=firenrt, region=region)
+                afp = FireIO.read_AFP(t, src=firesrc, nrt=firenrt, region=region, polygon=polygon)
                 break
             except Exception as e:
                 print(f"Attempt {i}/5 failed.")
