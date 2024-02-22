@@ -15,6 +15,76 @@ import re
 import time
 from FireLog import logger
 
+def preprocess_polygon(polygon_gdf, 
+                    firename_col = None, incnum_col = None, startdate_col = None, enddate_col = None, geometry = None,
+                    colnames = ['FIRE_NAME', 'INC_NUM', 'ALARM_DATE', 'CONT_DATE', 'geometry'], 
+                    crs = 'EPSG:4326'):
+    """
+    Process a geodataframe to ensure it has the correct column names, date types, and crs.
+    I expect a geodataframe with columns for fire name, incident number, start date, end date, and geometry.
+    Names come from CALFIRE's FRAP fire perimeter dataset.
+    If any column names differ from expected, user should specify which columns to use. 
+
+    Parameters
+    ----------
+    polygon_gdf : geopandas.GeoDataFrame
+        A geodataframe containing fire perimeters.
+    firename_col : str, column name for fire name if different from expected
+    incnum_col : str, column name for incident number if different from expected
+    startdate_col : str, column name for start date if different from expected
+    enddate_col : str, column name for end date if different from expected
+    geometry : str, column name for geometry if different from expected
+    colnames : list of str, column names to use in the output geodataframe
+    crs : str, coordinate reference system. should be same as VIIRS crs (epsg 4326)
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        A geodataframe with the correct column names, date types, and crs.
+    """
+
+    import geopandas as gpd
+    import pandas as pd
+
+    # test if it is a geodataframe, if not return an error message
+    if not isinstance(polygon_gdf, gpd.GeoDataFrame):
+        raise TypeError("Input should be a GeoDataFrame")
+    
+    # make sure the crs is correct. if not, transform it.
+    if not polygon_gdf.crs == crs:
+        polygon_gdf = polygon_gdf.to_crs(crs)
+
+    # check if colnames already match expected colnames
+    dict = {colnames[0]: firename_col, colnames[1]: incnum_col, colnames[2]: startdate_col, colnames[3]: enddate_col, colnames[4]: geometry}
+    colnames_correct = all([col in list(polygon_gdf.keys()) for col in colnames])
+    colnames_none = all([v is None for v in dict.values()])
+    
+    if not(colnames_correct & colnames_none):
+        # Create a new geodataframe with the selected columns
+        new_df = gpd.GeoDataFrame()
+        for key, value in dict.items():
+            if value is None:
+                # If the value is None, use the key as the column name
+                if key in polygon_gdf.columns:
+                    new_df[key] = polygon_gdf[key]
+            else:
+                # If the value is not None, use it as the column name
+                if value in polygon_gdf.columns:
+                    new_df[key] = polygon_gdf[value]
+        polygon_gdf = new_df
+    else:
+        # still select subset of columns in df
+        polygon_gdf = polygon_gdf[colnames]
+
+    # finally, make sure the date columns are formatted correctly
+    polygon_gdf = polygon_gdf.copy()
+    date_cols = colnames[2:4]
+    for d in date_cols:
+        if polygon_gdf[d].dtype != 'datetime64[ns]':
+            polygon_gdf[d] = pd.to_datetime(polygon_gdf[d])
+
+    return polygon_gdf
+
 
 def gpd_read_file(filename, parquet=False, **kwargs):
     import geopandas as gpd
@@ -691,7 +761,7 @@ def read_AFPVIIRSNRT(
     return df_AFP
 
 
-def read_AFP(t, src="SNPP", nrt=False, region=None):
+def read_AFP(t, src="SNPP", nrt=False, region=None, polygon=None):
     """ The wrapper function used to read and extract half-daily active fire
     pixels in a region.
 
@@ -708,6 +778,11 @@ def read_AFP(t, src="SNPP", nrt=False, region=None):
          - a geometry
          - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
          - a country name
+    polygon : pd.series
+        - contains 5 indices (FIRE_NAME, INC_NUM, ALARM_DATE, CONT_DATE, geometry)
+        - names come from the CALFIRE FRAP perimeter dataset, but it can accommodate other datasets 
+        as long as they follow those names
+        - crs of geometry should already be EPGS:4326
     Returns
     -------
     vlist : pandas DataFrame
@@ -715,35 +790,35 @@ def read_AFP(t, src="SNPP", nrt=False, region=None):
     """
     import pandas as pd
 
-    if src == "VIIRS":
-        if nrt:
-            vlist_SNPP = read_AFPVIIRSNRT(t, region, sat="SNPP")
-            vlist_NOAA20 = read_AFPVIIRSNRT(t, region, sat="NOAA20")
-            vlist = pd.concat([vlist_NOAA20, vlist_SNPP], ignore_index=True)
-        else:
-            vlist_SNPP = read_AFPVIIRS(t, region, sat="SNPP")
-            vlist_NOAA20 = read_AFPVIIRS(t, region, sat="NOAA20")
-            vlist = pd.concat([vlist_NOAA20, vlist_SNPP], ignore_index=True)
-    elif src == "SNPP":
-        if nrt:
-            vlist = read_AFPVIIRSNRT(t, region, sat="SNPP")
-        else:
-            vlist = read_AFPVIIRS(t, region, sat="SNPP")
-    elif src == "NOAA20":
-        if nrt:
-            vlist = read_AFPVIIRSNRT(t, region, sat="NOAA20")
-        else:
-            vlist = read_AFPVIIRS(t, region, sat="NOAA20")
+    # Making this more succinct
+    if src in ["VIIRS", "SNPP", "NOAA20"]:
+        sat_list = ["SNPP", "NOAA20"] if src == "VIIRS" else [src]
+        vlist = []
+        for sat in sat_list:
+            if nrt:
+                vlist.append(read_AFPVIIRSNRT(t, region, sat))
+            else:
+                vlist.append(read_AFPVIIRS(t, region, sat))
+        vlist = pd.concat(vlist, ignore_index=True)
     elif src == "BAMOD":
         vlist = read_BAMOD(t, region)
     else:
-        print("Please set src to SNPP, NOAA20, or BAMOD")
+        print("Please set src to SNPP, NOAA20, VIIRS, or BAMOD")
         return None
     
     if vlist is None: 
         print("No data available for this source for time",t) 
         return
     
+    if polygon is not None:
+        from shapely.geometry import Point
+        import geopandas as gpd
+
+        # spatially filter df to the perim, convert gdf to df
+        gdf = gpd.GeoDataFrame(vlist, geometry = [Point(x, y) for x, y in zip(vlist.Lon, vlist.Lat)])
+        gdf_filtered = gdf[gdf.geometry.within(polygon.geometry)]
+        vlist = gdf_filtered.drop(columns = 'geometry')
+
     return vlist.reset_index(drop=True)
 
 
