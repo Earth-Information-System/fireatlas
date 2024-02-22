@@ -580,13 +580,25 @@ def Fire_Forward(tst, ted, restart=False, region=None, polygon=None):
 
     # test to see if polygon is a geopandas dataframe. if it is, convert to a series. 
     # And overwrite region based off the polygon.
+    # and update tst/ted so they don't extend outside the time window of the fire. 
     if polygon is not None:
         import geopandas as gpd
+        
+        # update region
         if isinstance(polygon, gpd.GeoDataFrame):
             polygon = polygon.iloc[0]
             region = (f"firename.{polygon['FIRE_NAME']}-incnum.{polygon['INC_NUM']}", # name
                   list(polygon['geometry'].bounds) # square bounds
                   )
+        
+        # update tst/ted
+        dt = polygon['ALARM_DATE']
+        tst_ = (dt.year, dt.month, dt.day, "AM")
+        tst = max(tst, tst_)
+        dt = polygon['CONT_DATE']
+        ted_ = (dt.year, dt.month, dt.day, "AM")
+        ted = min(ted, ted_)  
+
 
     t1 = time.time()
     t0 = t1
