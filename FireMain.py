@@ -584,10 +584,14 @@ def Fire_Forward(tst, ted, restart=False, region=None, polygon=None):
     if polygon is not None:
         import geopandas as gpd
         
-        # update region
+        logger.info(f"================ {polygon['FIRE_NAME']} ================")
+        print(f"================ {polygon['FIRE_NAME']} ================")
+
+        # make sure you're working with a series
         if isinstance(polygon, gpd.GeoDataFrame):
             polygon = polygon.iloc[0]
-            region = (f"firename.{polygon['FIRE_NAME']}-incnum.{polygon['INC_NUM']}", # name
+        # update region
+        region = (f"firename.{polygon['FIRE_NAME']}-incnum.{polygon['INC_NUM']}", # name
                   list(polygon['geometry'].bounds) # square bounds
                   )
         
@@ -597,7 +601,11 @@ def Fire_Forward(tst, ted, restart=False, region=None, polygon=None):
         tst = max(tst, tst_)
         dt = polygon['CONT_DATE']
         ted_ = (dt.year, dt.month, dt.day, "AM")
-        ted = min(ted, ted_)  
+        ted = min(ted, ted_)
+        if(tst[:-1] > ted[:-1]):
+            print("ERROR with fire", polygon['FIRE_NAME'], "see log.")
+            raise ValueError(f"The end date ({ted}) is before the start date ({tst}). This needs to be adjusted. Ending run.")
+        print(f"tst: {tst}, ted: {ted}")
 
 
     t1 = time.time()
