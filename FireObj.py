@@ -123,7 +123,7 @@ class Allfires:
 
         for fid, f in self.burningfires.items():
             if (fid, dt) in self.gdf.index:
-                raise ValueError(f"Error writing gdf: {fid} already at {t}")
+                raise ValueError(f"Error writing gdf: {fid} already at {self.t}")
             
             for k, tp in dd.items():
                 if tp == "datetime64[ns]":

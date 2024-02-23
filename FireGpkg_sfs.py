@@ -62,15 +62,15 @@ def getdd(layer):
             "duration": "float",  # fire duration
             "pixden": "float",  # fire pixel density
             "meanFRP": "float",  # mean FRP of the new fire pixels
-            "t": "datetime64",
+            "t": "datetime64[ns]",
         }
     elif layer == "fireline":
         dd = {
-            "t": "datetime64",
+            "t": "datetime64[ns]",
         }
     elif layer == "newfirepix":
         dd = {
-            "t": "datetime64",
+            "t": "datetime64[ns]",
         }
     elif layer == "nfplist":
         dd = {
@@ -80,7 +80,7 @@ def getdd(layer):
             "DS": "float",
             "DT": "float",
             "ampm": "str",
-            "datetime": "datetime64",
+            "datetime": "datetime64[ns]",
             "sat": "str",
         }
 

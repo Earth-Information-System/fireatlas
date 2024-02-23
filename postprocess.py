@@ -1,11 +1,14 @@
 import os
 
-import geopandas as gpd
+import numpy as np
 import pandas as pd
+import geopandas as gpd
+
 from FireTypes import Region, TimeStep
-import FireConsts
+import FireConsts, FireTime
 from utils import timed
 
+import warnings; warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
 def allpixels_filepath(t: TimeStep, region: Region):
     filename = f"allpixels_{t[0]}{t[1]:02}{t[2]:02}_{t[3]}.csv"
@@ -51,6 +54,73 @@ def read_allfires_gdf(ted: TimeStep, region: Region):
     return gpd.read_parquet(filepath)
 
 
+def snapshot_folder(region: Region, t: TimeStep):
+    return os.path.join(FireConsts.diroutdata, region[0], "Snapshot", f"{t[0]}{t[1]:02}{t[2]:02}{t[3]}")
+
+
+@timed
+def save_snapshot_layers(allfires_gdf_t, region: Region, t: TimeStep):
+    from FireGpkg import getdd
+
+    output_dir = snapshot_folder(region, t)
+    os.makedirs(output_dir, exist_ok=True)
+
+    dt = FireTime.t2dt(t)
+
+    for layer in ["perimeter", "fireline", "newfirepix"]:
+        columns = [col for col in getdd(layer)]
+        data = allfires_gdf_t[[*columns, "invalid", "fireID"]].copy()
+        
+        if layer == "perimeter":
+            data["geometry"] = allfires_gdf_t["hull"]
+        if layer == "newfirepix":
+            data["geometry"] = allfires_gdf_t["nfp"]
+        if layer == "fireline":
+            data["geometry"] = allfires_gdf_t["fline"]
+        
+        data = data.set_geometry("geometry")
+        data = data[data.geometry.notna() & ~data.geometry.is_empty]
+
+        if layer == "perimeter":
+            # figure out the fire state given current t
+            data["isignition"] = dt == data["t_st"]
+            data["t_inactive"] = (dt - data["t_ed"]).dt.days
+            
+            data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= FireConsts.maxoffdays)
+            data["isdead"] = ~data["invalid"] & (data["t_inactive"] > FireConsts.limoffdays)
+            data["mayreactivate"] = ~data["invalid"] & (FireConsts.maxoffdays < data["t_inactive"]) & (data["t_inactive"] <= FireConsts.limoffdays)
+
+            # map booleans to integers
+            for col in ["isignition", "isactive", "isdead", "mayreactivate"]:
+                data[col] = data[col].astype(int)
+
+            # apply filter flag
+            data['geom_counts'] = data[["fireID", "geometry"]].explode(index_parts=True).groupby(['fireID']).nunique()["geometry"] # count number of polygons
+            data['low_confidence_grouping'] = np.where(data['geom_counts']>5, 1, 0) # if more than 5 geometries are present, flag it
+
+        
+        data["region"] = str(region[0])
+        
+        # primary key is: region + fireID + 12hr slice 
+        data['primarykey'] = data['region'] + '|' + data["fireID"].astype(str) + '|' + dt.isoformat()
+
+        # drop the columns we don't actually need
+        data = data.drop(columns=["invalid", "fireID"])
+
+        data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
+
+
+
+@timed
+def save_snapshots(allfires_gdf, region, tst, ted):
+    gdf = allfires_gdf.reset_index()
+
+    for t in FireTime.t_generator(tst, ted):
+        dt = FireTime.t2dt(t)
+        data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last")
+        save_snapshot_layers(data, region, t)
+
+
 @timed
 def find_largefires(allfires_gdf):
     gdf = allfires_gdf.reset_index()
@@ -63,7 +133,7 @@ def find_largefires(allfires_gdf):
 
 
 def fire_folder(region: Region, fid):
-    return os.path.join(FireConsts.diroutdata, region[0], "fires", str(fid))
+    return os.path.join(FireConsts.diroutdata, region[0], "Largefire", str(fid))
 
 
 @timed
@@ -72,12 +142,12 @@ def save_fire_nplist(allpixels_fid, region, fid):
     output_dir = fire_folder(region, fid)
     os.makedirs(output_dir, exist_ok=True)
 
-    subset = allpixels_fid[["x", "y", "FRP", "DS", "DT", "ampm", 'YYYYMMDD_HHMM', "Sat"]].copy()
-    subset.columns = ["x", "y", "frp", "DS", "DT", "ampm", 'datetime', "sat"]
-    subset["geometry"] = gpd.points_from_xy(subset.x, subset.y)
-    subset = subset.set_geometry("geometry")
+    data = allpixels_fid[["x", "y", "FRP", "DS", "DT", "ampm", 'YYYYMMDD_HHMM', "Sat"]].copy()
+    data.columns = ["x", "y", "frp", "DS", "DT", "ampm", 'datetime', "sat"]
+    data["geometry"] = gpd.points_from_xy(data.x, data.y)
+    data = data.set_geometry("geometry")
     
-    subset.to_file(os.path.join(output_dir, "nfplist.fgb"), driver="FlatGeobuf")
+    data.to_file(os.path.join(output_dir, "nfplist.fgb"), driver="FlatGeobuf")
 
 
 @timed
@@ -96,17 +166,18 @@ def save_fire_layers(allfires_gdf_fid, region, fid):
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
         columns = [col for col in getdd(layer)]
-        subset = allfires_gdf_fid[columns].copy()
+        data = allfires_gdf_fid[columns].copy()
         if layer == "perimeter":
-            subset["geometry"] = allfires_gdf_fid["hull"]
+            data["geometry"] = allfires_gdf_fid["hull"]
         elif layer == "newfirepix":
-            subset["geometry"] = allfires_gdf_fid["nfp"]
+            data["geometry"] = allfires_gdf_fid["nfp"]
         elif layer == "fireline":
-            subset["geometry"] = allfires_gdf_fid["fline"]
-            subset = subset.dropna(subset=["geometry"])
-        subset = subset.set_geometry("geometry")
+            data["geometry"] = allfires_gdf_fid["fline"]
+            
+        data = data.set_geometry("geometry")
+        data = data[data.geometry.notna() & ~data.geometry.is_empty]
         
-        subset.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
+        data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 
 
 @timed
