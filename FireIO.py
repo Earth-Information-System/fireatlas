@@ -723,7 +723,7 @@ def get_LCT_CONUS(locs):
     import rasterio
 
     # read NLCD 500m data
-    fnmLCT = preprocessed_landcover_filename("nlcd_export_510m_simplified_latlon")
+    fnmLCT = preprocessed_landcover_filename("nlcd_export_510m_simplified")
     dataset = rasterio.open(fnmLCT)
     vLCT = dataset.sample(locs, indexes=1)
     vLCT = [lc[0] for lc in vLCT]
