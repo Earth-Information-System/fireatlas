@@ -505,7 +505,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
     return allfires
 
 @timed
-def Fire_Forward(tst, ted, restart=False, region=None):
+def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=None):
     """ The wrapper function to progressively track all fire events for a time period
 
     Parameters
@@ -514,6 +514,8 @@ def Fire_Forward(tst, ted, restart=False, region=None):
         the year, month, day and 'AM'|'PM' at start time
     ted : tuple, (int,int,int,str)
     the year, month, day and 'AM'|'PM' at end time
+    sat : str, 'SNPP', 'NOAA20', 'VIIRS', 'BAMOD
+        if set, overrides `FireConsts.firesrc`
     restart : bool
         if set to true, force to initiate an object
 
@@ -526,12 +528,15 @@ def Fire_Forward(tst, ted, restart=False, region=None):
     import preprocess
     import pandas as pd
 
+    if sat is None:
+        sat = FireConsts.firesrc
+
     # initialize allfires object
     allfires = FireObj.Allfires(tst)
 
     # read in all preprocessed pixel data
     allpixels = pd.concat([
-        preprocess.read_preprocessed(t, sat=FireConsts.firesrc, region=region)
+        preprocess.read_preprocessed(t, sat=sat, region=region)
         for t in FireTime.t_generator(tst, ted)
     ])
     allpixels["fid"] = -1
