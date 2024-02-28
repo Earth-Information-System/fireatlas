@@ -48,9 +48,19 @@ def read_region(region: Region):
     return (region[0], shape)
 
 
+def preprocessed_landcover_filename(filename="nlcd_export_510m_simplified"):
+    return os.path.join(OUTPUT_DIR, f"{filename}_latlon.tif")
+
+
 @timed
-def preprocess_landcover(filename="nlcd_export_510m_simplified.tif"):
-    fnmLCT = os.path.join(FireConsts.dirextdata, "NLCD", filename)
+def preprocess_landcover(filename="nlcd_export_510m_simplified"):
+    fnmLCT = os.path.join(FireConsts.dirextdata, "NLCD", f"{filename}.tif")
+    
+    output_filepath = preprocessed_landcover_filename(filename)
+    
+    # make nested path if necessary
+    os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
+
     dst_crs = f"EPSG:4326"
 
     with rasterio.open(fnmLCT) as src:
@@ -62,7 +72,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified.tif"):
             {"crs": dst_crs, "transform": transform, "width": width, "height": height}
         )
 
-        with rasterio.open(fnmLCT.replace(".tif", "_latlon.tif"), "w", **kwargs) as dst:
+        with rasterio.open(output_filepath, "w", **kwargs) as dst:
             for i in range(1, src.count + 1):
                 rasterio.warp.reproject(
                     source=rasterio.band(src, i),

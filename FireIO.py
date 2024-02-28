@@ -718,13 +718,12 @@ def get_LCT_CONUS(locs):
     vLCT : list of ints
         land cover types for all input active fires
     """
-    from FireConsts import dirextdata
+    from preprocess import preprocessed_landcover_filename
 
     import rasterio
-    import os
 
     # read NLCD 500m data
-    fnmLCT = os.path.join(dirextdata, "NLCD", "nlcd_export_510m_simplified_latlon.tif")
+    fnmLCT = preprocessed_landcover_filename("nlcd_export_510m_simplified_latlon")
     dataset = rasterio.open(fnmLCT)
     vLCT = dataset.sample(locs, indexes=1)
     vLCT = [lc[0] for lc in vLCT]
