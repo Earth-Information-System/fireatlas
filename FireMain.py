@@ -531,12 +531,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
 
     # read in all preprocessed pixel data
     allpixels = pd.concat([
-        (
-            preprocess
-                .read_preprocessed(t, sat=FireConsts.firesrc, region=region)
-                .set_index("uuid")
-                .assign(t=FireTime.t2dt(t))
-        )
+        preprocess.read_preprocessed(t, sat=FireConsts.firesrc, region=region)
         for t in FireTime.t_generator(tst, ted)
     ])
     allpixels["fid"] = -1

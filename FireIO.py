@@ -150,12 +150,21 @@ def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
 
     year, month = t[0], t[1]
 
-    fnmFC = os.path.join(
+    file_dir = os.path.join(
         input_data_dir,
         "VIIRS",
         "VNP14IMGML",
+    )
+    
+    fnmFC = os.path.join(
+        file_dir, 
         f"VNP14IMGML.{year}{month:02}.{ver}.txt.gz"
     )
+    if not os.path.exists(fnmFC):
+        fnmFC = os.path.join(
+            file_dir, 
+            f"VNP14IMGML.{year}{month:02}.{ver}.txt"
+        )
     
     # read
     usecols = [

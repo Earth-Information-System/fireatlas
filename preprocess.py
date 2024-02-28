@@ -11,6 +11,7 @@ import FireConsts
 import FireClustering
 from FireLog import logger
 import FireIO
+import FireTime
 from FireTypes import Region, TimeStep
 from utils import timed
 
@@ -176,8 +177,11 @@ def read_preprocessed(
     region: Optional[Region] = None,
 ):
     filename = preprocessed_filename(t, sat, region=region)
-    return pd.read_csv(filename)
-
+    if os.path.exists(filename):
+        df = pd.read_csv(filename)
+        if region:
+            df = df.set_index("uuid").assign(t=FireTime.t2dt(t))
+        return df
 
 @timed
 def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region):
@@ -203,6 +207,9 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
     df = FireIO.AFP_regfilter(df, shp_Reg)
+
+    if df.empty:
+        return
 
     # return selected columns
     df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]]

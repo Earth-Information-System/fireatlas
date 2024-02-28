@@ -31,10 +31,10 @@ dirdata = './'  # project directory -- only used For logging location
 # run at MacBook
 # dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
 
-dirextdata = '/projects/shared-buckets/gsfc_landslides/FEDSinput/'  # exterior input data directory
-dirprpdata = 'tests/data/processed/'
-dirtmpdata = "tests/data/tmp/"
-diroutdata = "tests/data/out/"
+dirextdata = "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/"  # exterior input data directory
+dirprpdata = "data/processed/"
+dirtmpdata = "data/tmp/"
+diroutdata = "data/out/"
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 
