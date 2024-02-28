@@ -69,7 +69,7 @@ def set_ftype(fire):
     from FireConsts import FTYP_opt
     import FireIO
     from datetime import date
-    import random
+    import numpy as np
 
     # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
     # 1 - use the CA type classification (dtermined using LCTmax)
@@ -85,7 +85,7 @@ def set_ftype(fire):
             uselocs = fire.newlocs_geo
         else:
             # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
-            uselocs = random.sample(fire.newlocs_geo, 1000)
+            uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
 
         # get all LCT for the fire pixels
         vLCT = FireIO.get_LCT_CONUS(uselocs)
@@ -122,8 +122,8 @@ def set_ftype(fire):
         if fire.n_newpixels < 1000:
             uselocs = fire.newlocs_geo
         else:
-            # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
-            uselocs = random.sample(fire.newlocs_geo, 1000)
+           # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+            uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
         
         vLCT = FireIO.get_LCT_Global(
             uselocs
