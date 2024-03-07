@@ -16,19 +16,22 @@ from FireTypes import Region, TimeStep
 from utils import timed
 
 
-OUTPUT_DIR = FireConsts.dirprpdata
-
-
 def preprocessed_region_filename(region: Region):
-    return os.path.join(OUTPUT_DIR, f"{region[0]}.json")
+    return os.path.join(FireConsts.dirprpdata, f"{region[0]}.json")
 
 
 @timed
-def preprocess_region(region: Region):
+def preprocess_region(region: Region, force=False):
     from FireMain import maybe_remove_static_sources
 
     output_filepath = preprocessed_region_filename(region)
-    
+    if os.path.exists(output_filepath) and not force:
+        logger.info(
+            f"Preprocessing has already occurred for this region."
+            "Use `force=True` to rerun this preprocessing step."
+        )
+        return output_filepath
+
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
@@ -36,7 +39,8 @@ def preprocess_region(region: Region):
 
     with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
-
+    
+    return output_filepath
 
 @timed
 def read_region(region: Region):
@@ -48,14 +52,21 @@ def read_region(region: Region):
 
 
 def preprocessed_landcover_filename(filename="nlcd_export_510m_simplified"):
-    return os.path.join(OUTPUT_DIR, f"{filename}_latlon.tif")
+    return os.path.join(FireConsts.dirprpdata, f"{filename}_latlon.tif")
 
 
 @timed
-def preprocess_landcover(filename="nlcd_export_510m_simplified"):
-    fnmLCT = os.path.join(FireConsts.dirextdata, "NLCD", f"{filename}.tif")
-    
+def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
+    # if landcover output already exists, exit early so we don't reprocess
     output_filepath = preprocessed_landcover_filename(filename)
+    if os.path.exists(output_filepath) and not force:
+        logger.info(
+            f"Preprocessing has already occurred for this landcover file."
+            "Use `force=True` to rerun this preprocessing step."
+        )
+        return output_filepath
+    
+    fnmLCT = os.path.join(FireConsts.dirextdata, "NLCD", f"{filename}.tif")
     
     # make nested path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -82,6 +93,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified"):
                     dst_crs=dst_crs,
                     resampling=rasterio.warp.Resampling.nearest,
                 )
+    return output_filepath
 
 
 def preprocessed_filename(
@@ -90,10 +102,9 @@ def preprocessed_filename(
     *,
     region: Optional[Region] = None,
     suffix="",
-    preprocessed_data_dir=FireConsts.dirprpdata,
 ):
     return os.path.join(
-        preprocessed_data_dir,
+        FireConsts.dirprpdata,
         sat,
         *([] if region is None else [region[0]]),
         f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}{suffix}.txt",
@@ -238,6 +249,7 @@ def preprocess_input_file(filepath: str):
     
     return output_paths
 
+
 @timed
 def read_preprocessed(
     t: TimeStep,
@@ -252,8 +264,18 @@ def read_preprocessed(
             df = df.set_index("uuid").assign(t=FireTime.t2dt(t))
         return df
 
+
 @timed
-def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region):
+def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region, force: False):
+    # if regional output already exists, exit early so we don't reprocess
+    output_filepath = preprocessed_filename(t, sensor, region=region)
+    if os.path.exists(output_filepath) and not force:
+        logger.info(
+            f"Preprocessing has already occurred for this combination of timestep, sensor, and region."
+            "Use `force=True` to rerun this preprocessing step."
+        )
+        return output_filepath
+    
     logger.info(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
     )
@@ -270,11 +292,6 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
 
     # read in the preprocessed region
     region = read_region(region)
-
-    # if regional output already exists, exit early so we don't reprocess
-    output_filepath = preprocessed_filename(t, sensor, region=region)
-    if os.path.exists(output_filepath):
-        return output_filepath
 
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
