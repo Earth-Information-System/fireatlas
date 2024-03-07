@@ -257,12 +257,15 @@ def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
     if os_path_exists(fnmFC):
         df = pd.read_csv(
             fnmFC,
-            parse_dates=[["YYYYMMDD", "HHMM"]],
+            dtype={"YYYYMMDD": "string", "HHMM": "string"},
             usecols=usecols,
             skipinitialspace=True,
             na_values={"FRP": '*******'}
         )
-        
+        df["YYYYMMDD_HHMM"] = pd.to_datetime(
+            df["YYYYMMDD"] + " " + df["HHMM"], 
+            format="%Y%m%d %H%M"
+        )
         df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
         df = df.drop(columns=["Sample", "Line"])
         return df
@@ -311,9 +314,13 @@ def read_VNP14IMGTDL(t: TimeStep, input_data_dir: str):
     if os_path_exists(fnmFC):
         df = pd.read_csv(
             fnmFC,
-            parse_dates=[["acq_date", "acq_time"]],
+            dtype={"acq_date": "string", "acq_time": "string"},
             usecols=usecols,
             skipinitialspace=True,
+        )
+        df["acq_date_acq_time"] = pd.to_datetime(
+            df["acq_date"] + " " + df["acq_time"], 
+            format="%Y-%m-%d %H:%M"
         )
         df = df.rename(
             columns={
@@ -371,18 +378,16 @@ def read_VJ114IMGML(t: TimeStep, input_data_dir: str):
         "frp",
     ]
 
-    def parser(yr, mo, dy, h, m):
-        return pd.to_datetime(
-            yr + "-" + mo + "-" + dy + " " + h + ":" + m, format="%Y-%m-%d %H:%M"
-        )
-
     if os_path_exists(fnmFC):
         df = pd.read_csv(
             fnmFC,
-            parse_dates={"YYYYMMDD_HHMM": ["year", "month", "day", "hh", "mm"]},
-            date_parser=parser,
+            dtype={col: 'string' for col in ["year", "month", "day", "hh", "mm"]},
             usecols=usecols,
             skipinitialspace=True,
+        )
+        df["YYYYMMDD_HHMM"] = pd.to_datetime(
+            df["year"] + "-" + df["month"] + "-" + df["day"] + " " + df["hh"] + ":" + df["mm"], 
+            format="%Y-%m-%d %H:%M"
         )
         df = df.rename(
             columns={
