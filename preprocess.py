@@ -27,7 +27,7 @@ def preprocess_region(region: Region, force=False):
     output_filepath = preprocessed_region_filename(region)
     if os.path.exists(output_filepath) and not force:
         logger.info(
-            f"Preprocessing has already occurred for this region."
+            f"Preprocessing has already occurred for this region. "
             "Use `force=True` to rerun this preprocessing step."
         )
         return output_filepath
@@ -61,7 +61,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
     output_filepath = preprocessed_landcover_filename(filename)
     if os.path.exists(output_filepath) and not force:
         logger.info(
-            f"Preprocessing has already occurred for this landcover file."
+            f"Preprocessing has already occurred for this landcover file. "
             "Use `force=True` to rerun this preprocessing step."
         )
         return output_filepath
@@ -266,12 +266,12 @@ def read_preprocessed(
 
 
 @timed
-def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region, force: False):
+def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region, force=False):
     # if regional output already exists, exit early so we don't reprocess
     output_filepath = preprocessed_filename(t, sensor, region=region)
     if os.path.exists(output_filepath) and not force:
         logger.info(
-            f"Preprocessing has already occurred for this combination of timestep, sensor, and region."
+            f"Preprocessing has already occurred for this combination of timestep, sensor, and region. "
             "Use `force=True` to rerun this preprocessing step."
         )
         return output_filepath
