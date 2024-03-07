@@ -142,7 +142,7 @@ def save_fire_nplist(allpixels_fid, region, fid, tst):
     output_dir = fire_folder(region, fid, tst)
     os.makedirs(output_dir, exist_ok=True)
 
-    data = allpixels_fid[["x", "y", "FRP", "DS", "DT", "ampm", 'YYYYMMDD_HHMM', "Sat"]].copy()
+    data = allpixels_fid[["x", "y", "FRP", "DS", "DT", "ampm", 'datetime', "Sat"]].copy()
     data.columns = ["x", "y", "frp", "DS", "DT", "ampm", 'datetime', "sat"]
     data["geometry"] = gpd.points_from_xy(data.x, data.y)
     data = data.set_geometry("geometry")

@@ -135,7 +135,7 @@ def preprocessed_nrt_snpp_tmpfile(tmpdir):
         "Sat": ["SNPP", "SNPP"],
         "DT": [0.47, 0.44],
         "DS": [0.46, 0.4],
-        "YYYYMMDD_HHMM": ["2023-08-28 00:03:00", "2023-08-28 00:03:00"],
+        "datetime": ["2023-08-28 00:03:00", "2023-08-28 00:03:00"],
         "ampm": ["AM", "AM"],
     }
 
@@ -159,7 +159,7 @@ def preprocessed_nrt_noaa20_tmpfile(tmpdir):
         "Sat": [1, 2],
         "DT": [1, 1],
         "DS": [1, 2],
-        "YYYYMMDD_HHMM": ["flare", "flare"],
+        "datetime": ["flare", "flare"],
         "ampm": ["T1", "T2"],
     }
 

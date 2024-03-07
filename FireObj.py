@@ -591,7 +591,7 @@ class Fire:
         """ List of new fire pixels attributes
         """
         return [
-            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.YYYYMMDD_HHMM, p.ampm, p.Sat)
+            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
             for p in self.newpixels
         ]
 
@@ -601,7 +601,7 @@ class Fire:
         """ List of new fire pixels attributes
         """
         return [
-            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.YYYYMMDD_HHMM, p.ampm, p.Sat)
+            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
             for p in self.newpixels
         ]
 

@@ -262,7 +262,7 @@ def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
             skipinitialspace=True,
             na_values={"FRP": '*******'}
         )
-        df["YYYYMMDD_HHMM"] = pd.to_datetime(
+        df["datetime"] = pd.to_datetime(
             df["YYYYMMDD"] + " " + df["HHMM"], 
             format="%Y%m%d %H%M"
         )
@@ -318,7 +318,7 @@ def read_VNP14IMGTDL(t: TimeStep, input_data_dir: str):
             usecols=usecols,
             skipinitialspace=True,
         )
-        df["acq_date_acq_time"] = pd.to_datetime(
+        df["datetime"] = pd.to_datetime(
             df["acq_date"] + " " + df["acq_time"], 
             format="%Y-%m-%d %H:%M"
         )
@@ -329,7 +329,6 @@ def read_VNP14IMGTDL(t: TimeStep, input_data_dir: str):
                 "frp": "FRP",
                 "scan": "DS",
                 "track": "DT",
-                "acq_date_acq_time": "YYYYMMDD_HHMM",
             }
         )
         return df
@@ -385,7 +384,7 @@ def read_VJ114IMGML(t: TimeStep, input_data_dir: str):
             usecols=usecols,
             skipinitialspace=True,
         )
-        df["YYYYMMDD_HHMM"] = pd.to_datetime(
+        df["datetime"] = pd.to_datetime(
             df["year"] + "-" + df["month"] + "-" + df["day"] + " " + df["hh"] + ":" + df["mm"], 
             format="%Y-%m-%d %H:%M"
         )
@@ -434,7 +433,7 @@ def read_VJ114IMGTDL(t: TimeStep, input_data_dir: str):
     if os_path_exists(fnmFC):
         df = pd.read_csv(fnmFC)
         df['acq_date'] = str(d)
-        df["acq_date_acq_time"] = pd.to_datetime(df['acq_date'] +' '+ df['acq_time'])
+        df["datetime"] = pd.to_datetime(df['acq_date'] +' '+ df['acq_time'])
         df = df.rename(
             columns={
                 "latitude": "Lat",
@@ -442,7 +441,6 @@ def read_VJ114IMGTDL(t: TimeStep, input_data_dir: str):
                 "frp": "FRP",
                 "scan": "DS",
                 "track": "DT",
-                "acq_date_acq_time": "YYYYMMDD_HHMM",
             }
         )
         return df
@@ -520,7 +518,7 @@ def AFP_setampm(df):
     Parameters
     ----------
     df : pandas DataFrame
-        fire pixel data, with 'Lon' and 'YYYYMMDD_HHMM' column
+        fire pixel data, with 'Lon' and 'datetime' column
 
     Returns
     -------
@@ -530,9 +528,9 @@ def AFP_setampm(df):
     import pandas as pd
     import numpy as np
 
-    # calculate local hour using the longitude and YYYYMMDD_HHMM column
+    # calculate local hour using the longitude and datetime column
     localhour = (
-        pd.to_timedelta(df.Lon / 15, unit="hours") + df["YYYYMMDD_HHMM"]
+        pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"]
     ).dt.hour
 
     # set am/pm flag based on local hour

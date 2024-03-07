@@ -119,7 +119,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     df["Sat"] = sat
 
     # return selected columns
-    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm"]]
+    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "datetime", "ampm"]]
 
     filtered_df_paths = []
     for ampm in ["AM", "PM"]:
@@ -183,13 +183,13 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     df["Sat"] = sat
 
     # return selected columns
-    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm"]]
+    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "datetime", "ampm"]]
 
-    days = df["YYYYMMDD_HHMM"].dt.date.unique()
+    days = df["datetime"].dt.date.unique()
     for day in days:
         for ampm in ["AM", "PM"]:
             time_filtered_df = df.loc[
-                (df["YYYYMMDD_HHMM"].dt.date == day) & (df["ampm"] == ampm)
+                (df["datetime"].dt.date == day) & (df["ampm"] == ampm)
             ]
 
             output_filepath = preprocessed_filename(
@@ -245,7 +245,7 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     shp_Reg = FireIO.get_reg_shp(region[1])
     df = FireIO.AFP_regfilter(df, shp_Reg)
 
-    columns = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]
+    columns = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "datetime", "ampm", "x", "y"]
 
     if not df.empty:
         # return selected columns
