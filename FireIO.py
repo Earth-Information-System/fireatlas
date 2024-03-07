@@ -9,7 +9,9 @@ This module include functions used to read and save data
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
 import os
+import pandas as pd
 
+import FireConsts, FireTime
 import geopandas as gpd
 from FireTypes import Region, TimeStep
 
@@ -205,10 +207,9 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
 
     return gdf
 
-
-def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
-    """ read monthly VNP14IMGML data
-
+def VNP14IMGML_filepath(t: TimeStep, ver="C1.05"):
+    """ Filepath for monthly S-NPP VIIRS data
+    
     Parameters
     ----------
     t : tuple, (int,int,int,str)
@@ -216,31 +217,45 @@ def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
 
     Returns
     -------
-    df : pandas.DataFrame
-        monthly DataFrame containing standardized columns of VIIRS active fires
+    filepath : str | None
+        Path to input data or None if file does not exist
     """
-    import os
-    import pandas as pd
-
     year, month = t[0], t[1]
 
     file_dir = os.path.join(
-        input_data_dir,
+        FireConsts.dirextdata,
         "VIIRS",
         "VNP14IMGML",
     )
     
-    fnmFC = os.path.join(
+    filepath = os.path.join(
         file_dir, 
         f"VNP14IMGML.{year}{month:02}.{ver}.txt.gz"
     )
-    if not os.path.exists(fnmFC):
-        fnmFC = os.path.join(
+    if not os_path_exists(filepath):
+        filepath = os.path.join(
             file_dir, 
             f"VNP14IMGML.{year}{month:02}.{ver}.txt"
         )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
     
-    # read
+    return filepath
+
+def read_VNP14IMGML(filepath: str):
+    """ read monthly S-NPP VIIRS data
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        monthly DataFrame containing standardized columns of VIIRS active fires
+    """
     usecols = [
         "YYYYMMDD",
         "HHMM",
@@ -254,29 +269,25 @@ def read_VNP14IMGML(t: TimeStep, input_data_dir: str, ver="C1.05"):
         "DNFlag",
     ]
 
-    if os_path_exists(fnmFC):
-        df = pd.read_csv(
-            fnmFC,
-            dtype={"YYYYMMDD": "string", "HHMM": "string"},
-            usecols=usecols,
-            skipinitialspace=True,
-            na_values={"FRP": '*******'}
-        )
-        df["datetime"] = pd.to_datetime(
-            df["YYYYMMDD"] + " " + df["HHMM"], 
-            format="%Y%m%d %H%M"
-        )
-        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-        df = df.drop(columns=["Sample", "Line"])
-        return df
-    else:
-        print('No data available for file', fnmFC)
-        return None
+    df = pd.read_csv(
+        filepath,
+        dtype={"YYYYMMDD": "string", "HHMM": "string"},
+        usecols=usecols,
+        skipinitialspace=True,
+        na_values={"FRP": '*******'}
+    )
+    df["datetime"] = pd.to_datetime(
+        df["YYYYMMDD"] + " " + df["HHMM"], 
+        format="%Y%m%d %H%M"
+    )
+    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    df = df.drop(columns=["Sample", "Line"])
+    return df
 
 
-def read_VNP14IMGTDL(t: TimeStep, input_data_dir: str):
-    """ Read daily NRT S-NPP VIIRS fire location data
-
+def VNP14IMGTDL_filepath(t: TimeStep):
+    """ Filepath for NRT S-NPP VIIRS data
+    
     Parameters
     ----------
     t : tuple, (int,int,int,str)
@@ -284,22 +295,37 @@ def read_VNP14IMGTDL(t: TimeStep, input_data_dir: str):
 
     Returns
     -------
-    df : pandas.DataFrame
-        DataFrame containing standardized columns of daily active fires
+    filepath : str
+        Path to input data or None if file does not exist
     """
-    import os
-    import pandas as pd
-    from datetime import date
+    d = FireTime.t2dt(t)
 
-    d = date(*t[:3])
-
-    fnmFC = os.path.join(
-        input_data_dir,
+    filepath = os.path.join(
+        FireConsts.dirextdata,
         "VIIRS",
         "VNP14IMGTDL",
         f"SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{d.strftime('%Y%j')}.txt"
     )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
 
+    return filepath
+
+
+def read_VNP14IMGTDL(filepath: str):
+    """ Read daily NRT S-NPP VIIRS fire location data
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of daily active fires
+    """
     usecols = [
         "latitude",
         "longitude",
@@ -311,34 +337,30 @@ def read_VNP14IMGTDL(t: TimeStep, input_data_dir: str):
         "acq_date",
         "acq_time",
     ]
-    if os_path_exists(fnmFC):
-        df = pd.read_csv(
-            fnmFC,
-            dtype={"acq_date": "string", "acq_time": "string"},
-            usecols=usecols,
-            skipinitialspace=True,
-        )
-        df["datetime"] = pd.to_datetime(
-            df["acq_date"] + " " + df["acq_time"], 
-            format="%Y-%m-%d %H:%M"
-        )
-        df = df.rename(
-            columns={
-                "latitude": "Lat",
-                "longitude": "Lon",
-                "frp": "FRP",
-                "scan": "DS",
-                "track": "DT",
-            }
-        )
-        return df
-    else:
-        print('No data available for file', fnmFC)
-        return None
+    df = pd.read_csv(
+        filepath,
+        dtype={"acq_date": "string", "acq_time": "string"},
+        usecols=usecols,
+        skipinitialspace=True,
+    )
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], 
+        format="%Y-%m-%d %H:%M"
+    )
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "frp": "FRP",
+            "scan": "DS",
+            "track": "DT",
+        }
+    )
+    return df
 
 
-def read_VJ114IMGML(t: TimeStep, input_data_dir: str):
-    """ read monthly VNP14IMGML data
+def VJ114IMGML_filepath(t: TimeStep):
+    """ Filepath for monthly NOAA20 VIIRS data
 
     Parameters
     ----------
@@ -347,22 +369,36 @@ def read_VJ114IMGML(t: TimeStep, input_data_dir: str):
 
     Returns
     -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    filepath = os.path.join(
+        FireConsts.dirextdata,
+        "VIIRS",
+        "VJ114IMGML",
+        str(t[0]),
+        f"VJ114IMGML_{t[0]}{t[1]:02}.txt"
+    )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
+
+    return filepath
+
+
+def read_VJ114IMGML(filepath: str):
+    """ read monthly NOAA20 VIIRS fire location data
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
     df : pandas.DataFrame
         monthly DataFrame containing standardized columns of VIIRS active fires
     """
-    import os
-    import pandas as pd
-
-    year, month = t[0], t[1]
-
-    fnmFC = os.path.join(
-        input_data_dir,
-        "VJ114IMGML",
-        str(year),
-        f"VJ114IMGML_{year}{month:02}.txt",
-    )
-
-    # read
     usecols = [
         "year",
         "month",
@@ -377,35 +413,31 @@ def read_VJ114IMGML(t: TimeStep, input_data_dir: str):
         "frp",
     ]
 
-    if os_path_exists(fnmFC):
-        df = pd.read_csv(
-            fnmFC,
-            dtype={col: 'string' for col in ["year", "month", "day", "hh", "mm"]},
-            usecols=usecols,
-            skipinitialspace=True,
-        )
-        df["datetime"] = pd.to_datetime(
-            df["year"] + "-" + df["month"] + "-" + df["day"] + " " + df["hh"] + ":" + df["mm"], 
-            format="%Y-%m-%d %H:%M"
-        )
-        df = df.rename(
-            columns={
-                "lat": "Lat",
-                "lon": "Lon",
-                "frp": "FRP",
-                "line": "Line",
-                "sample": "Sample",
-            }
-        )
-        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-        return df
-    else:
-        print('No data available for file', fnmFC)
-        return None
+    df = pd.read_csv(
+        filepath,
+        dtype={col: 'string' for col in ["year", "month", "day", "hh", "mm"]},
+        usecols=usecols,
+        skipinitialspace=True,
+    )
+    df["datetime"] = pd.to_datetime(
+        df["year"] + "-" + df["month"] + "-" + df["day"] + " " + df["hh"] + ":" + df["mm"], 
+        format="%Y-%m-%d %H:%M"
+    )
+    df = df.rename(
+        columns={
+            "lat": "Lat",
+            "lon": "Lon",
+            "frp": "FRP",
+            "line": "Line",
+            "sample": "Sample",
+        }
+    )
+    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    return df
 
 
-def read_VJ114IMGTDL(t: TimeStep, input_data_dir: str):
-    """ Read daily NRT NOAA20 VIIRS fire location data
+def VJ114IMGTDL_filepath(t: TimeStep):
+    """ Filepath for daily NRT NOAA20 VIIRS data
 
     Parameters
     ----------
@@ -414,39 +446,63 @@ def read_VJ114IMGTDL(t: TimeStep, input_data_dir: str):
 
     Returns
     -------
-    df : pandas.DataFrame
-        DataFrame containing standardized columns of daily active fires
+    filepath : str
+        Path to input data or None if file does not exist
     """
-    import pandas as pd
-    import os
-    from datetime import date
+    d = FireTime.t2dt(t)
 
-    d = date(*t[:3])
-
-    fnmFC = os.path.join(
-        input_data_dir,
+    filepath = os.path.join(
+        FireConsts.dirextdata,
         "VIIRS",
         "VJ114IMGTDL",
         f"J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_{d.strftime('%Y%j')}.txt"
     )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
 
-    if os_path_exists(fnmFC):
-        df = pd.read_csv(fnmFC)
-        df['acq_date'] = str(d)
-        df["datetime"] = pd.to_datetime(df['acq_date'] +' '+ df['acq_time'])
-        df = df.rename(
-            columns={
-                "latitude": "Lat",
-                "longitude": "Lon",
-                "frp": "FRP",
-                "scan": "DS",
-                "track": "DT",
-            }
-        )
-        return df
-    else:
-        print('No data available for file', fnmFC)
-        return None
+    return filepath
+
+
+def read_VJ114IMGTDL(filepath: str):
+    """ Read daily NRT NOAA20 VIIRS fire location data
+
+    NOTE: this function expects julian date to be encoded in the filename
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of daily active fires
+    """
+    from datetime import datetime
+
+    # strip the julian date out of the filepath
+    julian_date = filepath.split("_")[-1].split(".")[0]
+
+    # convert to a datetime.date object
+    d = datetime.strptime(julian_date, "%Y%j").date()
+
+    df = pd.read_csv(filepath)
+    df["acq_date"] = str(d)
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], 
+        format="%Y-%m-%d %H:%M"
+    )
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "frp": "FRP",
+            "scan": "DS",
+            "track": "DT",
+        }
+    )
+    return df
 
 
 def AFP_regfilter(df, shp_Reg):
