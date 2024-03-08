@@ -3,7 +3,9 @@ import uuid
 import pandas as pd
 from typing import Literal, Optional
 from shapely import to_geojson, from_geojson
+import sys
 
+from tqdm import tqdm
 import rasterio
 import rasterio.warp
 
@@ -26,10 +28,8 @@ def preprocess_region(region: Region, force=False):
 
     output_filepath = preprocessed_region_filename(region)
     if os.path.exists(output_filepath) and not force:
-        logger.info(
-            f"Preprocessing has already occurred for this region. "
-            "Use `force=True` to rerun this preprocessing step."
-        )
+        logger.info("Preprocessing has already occurred for this region.")
+        logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
 
     # make path if necessary
@@ -60,10 +60,8 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
     # if landcover output already exists, exit early so we don't reprocess
     output_filepath = preprocessed_landcover_filename(filename)
     if os.path.exists(output_filepath) and not force:
-        logger.info(
-            f"Preprocessing has already occurred for this landcover file. "
-            "Use `force=True` to rerun this preprocessing step."
-        )
+        logger.info("Preprocessing has already occurred for this landcover file.")
+        logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
     
     fnmLCT = os.path.join(FireConsts.dirextdata, "NLCD", f"{filename}.tif")
@@ -158,6 +156,7 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
         raise ValueError("please set SNPP or NOAA20 for sat")
     return filepath
 
+
 def check_preprocessed_file(list_of_ts, sat):
     """Before running preprocess_monthly_file, check if the file already exists
     for that satellite using a list of time steps
@@ -183,10 +182,13 @@ def check_preprocessed_file(list_of_ts, sat):
     unique_ym = sorted(unique_ym, key=lambda x: (x[0], x[1]))
     return unique_ym
 
+
 @timed
 def preprocess_input_file(filepath: str):
     """
-    Preprocess monthly or daily NRT file of fire location data
+    Preprocess monthly or daily NRT file of fire location data.
+
+    NOTE: Satellite is deduced from the filepath.
 
     Parameters
     ----------
@@ -231,7 +233,12 @@ def preprocess_input_file(filepath: str):
 
     output_paths = []
 
-    for day, data in df.groupby(df["datetime"].dt.date):
+    # groupby days and if there are more than 1 days, include a progress bar
+    gb = df.groupby(df["datetime"].dt.date)
+    if gb.ngroups > 1:
+        gb = tqdm(gb, "Processing days", file=sys.stdout)
+
+    for day, data in gb:
         for ampm in ["AM", "PM"]:
             time_filtered_df = data.loc[df["ampm"] == ampm]
 
@@ -248,6 +255,16 @@ def preprocess_input_file(filepath: str):
             output_paths.append(output_filepath)
     
     return output_paths
+
+
+def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
+    filepath = monthly_filepath(t, sat)
+    return preprocess_input_file(filepath)
+
+
+def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
+    filepath = NRT_filepath(t, sat)
+    return preprocess_input_file(filepath)
 
 
 @timed
@@ -271,9 +288,10 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     output_filepath = preprocessed_filename(t, sensor, region=region)
     if os.path.exists(output_filepath) and not force:
         logger.info(
-            f"Preprocessing has already occurred for this combination of timestep, sensor, and region. "
-            "Use `force=True` to rerun this preprocessing step."
+            "Preprocessing has already occurred for this combination of "
+            "timestep, sensor, and region." 
         )
+        logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
     
     logger.info(
