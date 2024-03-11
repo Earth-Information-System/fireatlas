@@ -139,16 +139,17 @@ def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
         A region that is the difference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
     """
     import os
-    from FireIO import get_reg_shp, gpd_read_file
+    from FireIO import get_reg_shp
     from FireConsts import epsg, remove_static_sources_bool, remove_static_sources_sourcefile, remove_static_sources_buffer
 
     import geopandas as gpd
+    import pandas as pd
     
     if not remove_static_sources_bool:
         return region
     
     # get source data geometry
-    global_flaring = gpd_read_file(os.path.join(input_data_dir, 'static_sources', remove_static_sources_sourcefile))
+    global_flaring = pd.read_csv(os.path.join(input_data_dir, 'static_sources', remove_static_sources_sourcefile))
     global_flaring = global_flaring.drop_duplicates()
     global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
 
