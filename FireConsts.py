@@ -26,15 +26,15 @@ def get_env_var_as_type(name, cast_to_type=int, default=None):
 projnm = "FEDStest"  # project name
 dirhome = os.environ.get("HOME")  # get system home directory
 
-# run at iMac
 dirdata = './'  # project directory -- only used For logging location
-# run at MacBook
-# dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
-
-dirextdata = "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/"  # exterior input data directory
+dirdata_s3_bucket = "maap-ops-workspace"
+dirdata_subpath = "shared/gsfc_landslides"
+dirextdata_subpath = f"{dirdata_subpath}/FEDSinput"
+dirextdata = f"s3://{dirdata_s3_bucket}/{dirextdata_subpath}/"  # exterior input data directory
+dirprpdata_subpath = f"{dirdata_subpath}/FEDSpreprocessed"
 dirprpdata = "data/processed/"
-dirtmpdata = "data/tmp/"
-diroutdata = "data/out/"
+dirtmpdata = f"s3://{dirdata_s3_bucket}/{dirdata_subpath}/FEDStemp-s3-conus/"
+dirtmpdata = f"s3://{dirdata_s3_bucket}/{dirdata_subpath}/FEDSoutput-s3-conus/"
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 

@@ -2266,3 +2266,10 @@ def copy_from_maap_to_veda_s3(
     gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
     with open(local_tmp_filepath, 'rb') as file_object:
         s3_client.upload_fileobj(file_object, 'veda-data-store-staging', to_veda_s3_path)
+
+
+def copy_from_local_to_s3(local_filepath: str, s3_filepath: str):
+    import boto3
+
+    s3_client = boto3.client('s3')
+    s3_client.upload_file(local_filepath, FireConsts.dirdata_s3_bucket, s3_filepath)

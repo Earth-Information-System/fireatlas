@@ -5,6 +5,7 @@ from FireConsts import dirextdata
 import subprocess
 from datetime import date, timedelta
 import pandas as pd
+import preprocess
 
 from FireIO import os_path_exists
 
@@ -287,6 +288,7 @@ def update_VNP14IMGTDL(local_dir=None):
             print("\nCould not download VNP14IMGTDL data for",d)
             print('Error message:',e)
             continue
+        preprocess.preprocess_input_file(urlfnm)
 
 def update_VJ114IMGTDL(local_dir=None):
 
@@ -322,8 +324,8 @@ def update_VJ114IMGTDL(local_dir=None):
             print("\nCould not download VJ114IMGTDL data for",d)
             print('Error message:',e)
             continue
-        
-        
+        preprocess.preprocess_input_file(urlfnm)
+
 def update_GridMET_fm1000(local_dir=None):
     ''' Get updated GridMET data (including fm1000)
     '''

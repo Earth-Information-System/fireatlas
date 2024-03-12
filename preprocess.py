@@ -27,7 +27,7 @@ def preprocess_region(region: Region, force=False):
     from FireMain import maybe_remove_static_sources
 
     output_filepath = preprocessed_region_filename(region)
-    if os.path.exists(output_filepath) and not force:
+    if not force and os.path.exists(output_filepath):
         logger.info("Preprocessing has already occurred for this region.")
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
@@ -59,7 +59,7 @@ def preprocessed_landcover_filename(filename="nlcd_export_510m_simplified"):
 def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
     # if landcover output already exists, exit early so we don't reprocess
     output_filepath = preprocessed_landcover_filename(filename)
-    if os.path.exists(output_filepath) and not force:
+    if not force and os.path.exists(output_filepath):
         logger.info("Preprocessing has already occurred for this landcover file.")
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
@@ -103,8 +103,8 @@ def preprocessed_filename(
 ):
     return os.path.join(
         FireConsts.dirprpdata,
-        sat,
         *([] if region is None else [region[0]]),
+        sat,
         f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}{suffix}.txt",
     )
 
@@ -227,9 +227,10 @@ def preprocess_input_file(filepath: str):
 
     # add the satellite information
     df["Sat"] = sat
+    df["input_filename"] = filepath.split("/")[-1]
 
     # return selected columns
-    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "datetime", "ampm"]]
+    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]]
 
     output_paths = []
 
@@ -268,25 +269,32 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 
 
 @timed
-def read_preprocessed(
+def read_preprocessed_input(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
-    *,
-    region: Optional[Region] = None,
 ):
-    filename = preprocessed_filename(t, sat, region=region)
-    if os.path.exists(filename):
-        df = pd.read_csv(filename)
-        if region:
-            df = df.set_index("uuid").assign(t=FireTime.t2dt(t))
-        return df
+    filename = preprocessed_filename(t, sat)
+    df = pd.read_csv(filename)
+    return df
 
 
 @timed
-def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], region: Region, force=False):
+def read_preprocessed(
+    t: TimeStep,
+    sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
+    region: Region,
+):
+    filename = preprocessed_filename(t, sat, region=region)
+    df = pd.read_csv(filename).set_index("uuid").assign(t=FireTime.t2dt(t))
+    return df
+
+
+@timed
+def preprocess_region_t(t: TimeStep, sensor: Literal['SNPP', 'NOAA20', 'VIIRS', "TESTING123"], region: Region, force=False):
+    
     # if regional output already exists, exit early so we don't reprocess
     output_filepath = preprocessed_filename(t, sensor, region=region)
-    if os.path.exists(output_filepath) and not force:
+    if not force and os.path.exists(output_filepath):
         logger.info(
             "Preprocessing has already occurred for this combination of "
             "timestep, sensor, and region." 
@@ -294,19 +302,20 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
     
+    region = read_region(region)
     logger.info(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
     )
     if sensor == "VIIRS":
         df = pd.concat(
             [
-                read_preprocessed(t, sat="SNPP"),
-                read_preprocessed(t, sat="NOAA20"),
+                read_preprocessed_input(t, sat="SNPP"),
+                read_preprocessed_input(t, sat="NOAA20"),
             ],
             ignore_index=True,
         )
     else:
-        df = read_preprocessed(t, sat=sensor)
+        df = read_preprocessed_input(t, sat=sensor)
 
     # read in the preprocessed region
     region = read_region(region)
@@ -315,7 +324,7 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     shp_Reg = FireIO.get_reg_shp(region[1])
     df = FireIO.AFP_regfilter(df, shp_Reg)
 
-    columns = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "datetime", "ampm", "x", "y"]
+    columns = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm", "x", "y"]
 
     if not df.empty:
         # return selected columns

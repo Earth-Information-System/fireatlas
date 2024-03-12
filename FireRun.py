@@ -2,14 +2,17 @@
 Module to control different runs
 """
 import sys
+import os
 import time
 import argparse
+import glob
  
 # import logging
 # stdout_handler = logging.StreamHandler(sys.stdout)
 # logger = logging.getLogger(__name__)
 # logger.addHandler(stdout_handler)
 # logger.setLevel(logging.INFO)
+import FireConsts
 from FireLog import logger
 from utils import timed
 
@@ -21,6 +24,7 @@ def DataUpdateChecker():
 
     :return: None
     """
+    import FireIO
     from FireLog import logger
     import DataCheckUpdate
 
@@ -33,6 +37,10 @@ def DataUpdateChecker():
         DataCheckUpdate.update_GridMET_fm1000()
     except Exception as exc:
         logger.exception(exc)
+    finally:
+        for filepath in glob.glob(os.path.join(FireConsts.dirprpdata, "*", "*.txt")):
+            dst = os.path.join(FireConsts.dirextdata_subpath, "VIIRS", "NRT_preprocessed", *filepath.split("/")[-2:])
+            FireIO.copy_from_local_to_s3(filepath, dst)
 
 
 def Yearbatchrun(year, tst=None, ted=None, restart=False):
