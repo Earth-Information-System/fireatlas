@@ -4,7 +4,7 @@ algorithm_version: 1.0.0
 environment: ubuntu
 repository_url: https://repo.maap-project.org/gcorradini/fireatlas_nrt.git
 docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
-queue: "maap-dps-worker-32gb"
+queue: "maap-dps-eis-worker-32gb"
 run_command: "fireatlas_nrt/run_largefire_archive.sh"
 build_command: ""
 disk_space: "10GB"
