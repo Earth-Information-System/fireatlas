@@ -30,9 +30,8 @@ dps-run:data-update-checker:
     ALGO_NAME: eis-fire-feds-dps-data-checker-v2
     VERSION: 1.0.0
     USERNAME: tmccabe
-    QUEUE: maap-dps-worker-32gb
+    QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{}'
-
 
 dps-run:fire-atlas-conus:
   extends: .run_dps_job_base
@@ -45,9 +44,8 @@ dps-run:fire-atlas-conus:
     ALGO_NAME: eis-fire-feds-dps-main-v3
     VERSION: 1.0.0
     USERNAME: gcorradini
-    QUEUE: maap-dps-worker-32gb
+    QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]", "export":"true"}'
-
 
 dps-run:fire-atlas-conus-manual:
   extends: .run_dps_job_base
@@ -60,7 +58,7 @@ dps-run:fire-atlas-conus-manual:
     ALGO_NAME: eis-fire-feds-dps-main-v3test
     VERSION: $VERSION_TAG
     USERNAME: $USERNAME
-    QUEUE: maap-dps-worker-32gb
+    QUEUE: maap-dps-eis-worker-32gb
     PARAMS: |
       $PARAMS_STRING
     # EXAMPLE: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]", "export": "true"}'
@@ -76,7 +74,7 @@ dps-run:fire-atlas-boreal-automate-snapshot:
     ALGO_NAME: eis-fire-borealna-nrt_snap
     VERSION: eli_global_boreal_snap_only
     USERNAME: tmccabe
-    QUEUE: maap-dps-worker-128gb
+    QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{}'
     #PARAMS: '{"regnm": "BOREAL_NRT_3571_DPS", "bbox": "[-169, 44, -48, 75]", "tst": "", "ted": ""}'
 
@@ -91,7 +89,7 @@ dps-run:fire-atlas-boreal-automate-lf:
     ALGO_NAME: eis-fire-borealna-nrt_largefire
     VERSION: eli_global_boreal_largefire_only
     USERNAME: tmccabe
-    QUEUE: maap-dps-worker-128gb
+    QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{}'
     #PARAMS: '{"regnm": "BOREAL_NRT_3571_DPS", "bbox": "[-169, 44, -48, 75]", "tst": "", "ted": ""}'
 
@@ -106,7 +104,7 @@ dps-run:fire-atlas-lf-archive:
     ALGO_NAME: eis-fire-feds-combine-largefire-archive-v3
     VERSION: 1.0.0
     USERNAME: gcorradini
-    QUEUE: maap-dps-worker-32gb
+    QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{"folder_name": "WesternUS_REDO", "start": 2013, "end": 2021}'
 
 dps-run:fire-atlas-lf-nrt:
@@ -120,5 +118,5 @@ dps-run:fire-atlas-lf-nrt:
     ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v3
     VERSION: 1.0.0
     USERNAME: gcorradini
-    QUEUE: maap-dps-worker-32gb
+    QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{"folder_name": "CONUS_NRT_DPS"}'
