@@ -2,7 +2,7 @@
 This is the module containing all constants used in this project as well as the
 running controls
 """
-
+from typing import Literal
 import os
 import FireEnums
 
@@ -31,10 +31,26 @@ dirdata_s3_bucket = "maap-ops-workspace"
 dirdata_subpath = "shared/gsfc_landslides"
 dirextdata_subpath = f"{dirdata_subpath}/FEDSinput"
 dirextdata = f"s3://{dirdata_s3_bucket}/{dirextdata_subpath}/"  # exterior input data directory
+
 dirprpdata_subpath = f"{dirdata_subpath}/FEDSpreprocessed"
-dirprpdata = "data/processed/"
-dirtmpdata = f"s3://{dirdata_s3_bucket}/{dirdata_subpath}/FEDStemp-s3-conus/"
-dirtmpdata = f"s3://{dirdata_s3_bucket}/{dirdata_subpath}/FEDSoutput-s3-conus/"
+
+
+def get_dirdata(
+        dirname: Literal["FEDSinput", "FEDSpreprocessed", "FEDSoutput-s3-conus"], 
+        location: Literal["s3", "local"], 
+        strip_protocol: bool = False
+    ): 
+    if location == "local":
+        return f"data/{dirname}/"
+    else:
+        subdir = f"{dirdata_subpath}/{dirname}/"
+        if strip_protocol:
+            return subdir
+        else: 
+            return f"s3://{subdir}"
+
+dirprpdata = get_dirdata(dirname="FEDSpreprocessed", location="local")
+diroutdata = get_dirdata(dirname="FEDSoutput-s3-conus", location="s3")
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 

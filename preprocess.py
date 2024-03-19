@@ -18,15 +18,19 @@ from FireTypes import Region, TimeStep
 from utils import timed
 
 
-def preprocessed_region_filename(region: Region):
-    return os.path.join(FireConsts.dirprpdata, f"{region[0]}.json")
+def preprocessed_region_filename(region: Region, location: Literal["s3", "local"]):
+    return os.path.join(
+        FireConsts.get_dirdata("FEDSpreprocessed", location=location), 
+        region[0],
+        f"{region[0]}.json"
+    )
 
 
 @timed
 def preprocess_region(region: Region, force=False):
     from FireMain import maybe_remove_static_sources
 
-    output_filepath = preprocessed_region_filename(region)
+    output_filepath = preprocessed_region_filename(region, location="local")
     if not force and os.path.exists(output_filepath):
         logger.info("Preprocessing has already occurred for this region.")
         logger.debug("Use `force=True` to rerun this preprocessing step.")
@@ -100,9 +104,10 @@ def preprocessed_filename(
     *,
     region: Optional[Region] = None,
     suffix="",
+    location: Literal["local", "s3"]
 ):
     return os.path.join(
-        FireConsts.dirprpdata,
+        FireConsts.get_dirdata(dirname="FEDSpreprocessed", location=location),
         *([] if region is None else [region[0]]),
         sat,
         f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}{suffix}.txt",
@@ -244,7 +249,7 @@ def preprocess_input_file(filepath: str):
             time_filtered_df = data.loc[df["ampm"] == ampm]
 
             output_filepath = preprocessed_filename(
-                (day.year, day.month, day.day, ampm), sat
+                (day.year, day.month, day.day, ampm), sat, location="local"
             )
 
             # make nested path if necessary
@@ -272,8 +277,9 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def read_preprocessed_input(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
+    location: Literal["local", "s3"] = "local"
 ):
-    filename = preprocessed_filename(t, sat)
+    filename = preprocessed_filename(t, sat, location=location)
     df = pd.read_csv(filename)
     return df
 
@@ -283,17 +289,24 @@ def read_preprocessed(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
     region: Region,
+    location: Literal["local", "s3"] = "local"
 ):
-    filename = preprocessed_filename(t, sat, region=region)
+    filename = preprocessed_filename(t, sat, region=region, location=location)
     df = pd.read_csv(filename).set_index("uuid").assign(t=FireTime.t2dt(t))
     return df
 
 
 @timed
-def preprocess_region_t(t: TimeStep, sensor: Literal['SNPP', 'NOAA20', 'VIIRS', "TESTING123"], region: Region, force=False):
-    
+def preprocess_region_t(
+    t: TimeStep, 
+    sensor: Literal['SNPP', 'NOAA20', 'VIIRS', "TESTING123"], 
+    region: Region, 
+    force: bool = False,
+    read_location: Literal["local", "s3"] = "local"
+):
+
     # if regional output already exists, exit early so we don't reprocess
-    output_filepath = preprocessed_filename(t, sensor, region=region)
+    output_filepath = preprocessed_filename(t, sensor, region=region, location="local")
     if not force and os.path.exists(output_filepath):
         logger.info(
             "Preprocessing has already occurred for this combination of "
@@ -309,13 +322,13 @@ def preprocess_region_t(t: TimeStep, sensor: Literal['SNPP', 'NOAA20', 'VIIRS', 
     if sensor == "VIIRS":
         df = pd.concat(
             [
-                read_preprocessed_input(t, sat="SNPP"),
-                read_preprocessed_input(t, sat="NOAA20"),
+                read_preprocessed_input(t, sat="SNPP", location=read_location),
+                read_preprocessed_input(t, sat="NOAA20", location=read_location),
             ],
             ignore_index=True,
         )
     else:
-        df = read_preprocessed_input(t, sat=sensor)
+        df = read_preprocessed_input(t, sat=sensor, location=read_location)
 
     # read in the preprocessed region
     region = read_region(region)
