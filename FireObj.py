@@ -724,16 +724,23 @@ class Fire:
     def updatefhull(self):
         """ Update the hull using old hull and new locs
         """
-        import FireVector
+        import pandas as pd
+        import FireVector, FireTime
 
-        hull = FireVector.cal_hull(self.newlocs, sensor=self.sensor)
+        # get previous hull and pixels from all previous timesteps
+        phull = self.hull
+        ppixels = self.allpixels[
+            (self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] < FireTime.t2dt(self.t))
+        ]
+        # find the pixels that are near the previous hull
+        extpixels = ppixels[FireVector.get_ext_pixels(ppixels, phull)]
+
+        # combine those with the new pixels and calculate the hull
+        locs = pd.concat([extpixels, self.newpixels])[["x", "y"]].values
+        hull = FireVector.cal_hull(locs, sensor=self.sensor)
         
-        # use the union to include hull in past time step
-        if hasattr(self, "hull"):
-            phull = self.hull
-            self.hull = phull.union(hull)
-        else:
-            self.hull = hull
+        # use the union of the newly calculated hull and the previous hull
+        self.hull = phull.union(hull)
 
     def updatefline(self):
         import FireVector

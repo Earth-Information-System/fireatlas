@@ -147,7 +147,7 @@ def cal_hull(locs, sensor="viirs"):
     return hull
 
 
-def get_is_exterior(pixels, hull):
+def get_ext_pixels(pixels, hull):
     """ calculate the exterior pixels around a hull
     Parameters
     ----------
