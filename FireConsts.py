@@ -5,7 +5,7 @@ running controls
 from typing import Literal
 import os
 import FireEnums
-
+from functools import partial
 
 def get_env_var_as_type(name, cast_to_type=int, default=None):
     try:
@@ -28,12 +28,6 @@ dirhome = os.environ.get("HOME")  # get system home directory
 
 dirdata = './'  # project directory -- only used For logging location
 dirdata_s3_bucket = "maap-ops-workspace"
-dirdata_subpath = "shared/gsfc_landslides"
-dirextdata_subpath = f"{dirdata_subpath}/FEDSinput"
-dirextdata = f"s3://{dirdata_s3_bucket}/{dirextdata_subpath}/"  # exterior input data directory
-
-dirprpdata_subpath = f"{dirdata_subpath}/FEDSpreprocessed"
-
 
 def get_dirdata(
         dirname: Literal["FEDSinput", "FEDSpreprocessed", "FEDSoutput-s3-conus"], 
@@ -43,14 +37,21 @@ def get_dirdata(
     if location == "local":
         return f"data/{dirname}/"
     else:
-        subdir = f"{dirdata_subpath}/{dirname}/"
+        subdir = f"shared/gsfc_landslides/{dirname}/"
         if strip_protocol:
             return subdir
         else: 
-            return f"s3://{subdir}"
+            return f"s3://{dirdata_s3_bucket}/{subdir}"
 
-dirprpdata = get_dirdata(dirname="FEDSpreprocessed", location="local")
-diroutdata = get_dirdata(dirname="FEDSoutput-s3-conus", location="s3")
+get_dirextdata = partial(get_dirdata, dirname="FEDSinput")
+get_dirprpdata = partial(get_dirdata, dirname="FEDSpreprocessed")
+get_diroutdata = partial(get_dirdata, dirname="FEDSoutput-s3-conus")
+
+# final storage place for written files. This is where everything reads from
+READ_LOCATION = "s3"
+dirextdata = get_dirextdata(location=READ_LOCATION)
+dirprpdata = get_dirprpdata(location=READ_LOCATION)
+diroutdata = get_diroutdata(location=READ_LOCATION)
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 

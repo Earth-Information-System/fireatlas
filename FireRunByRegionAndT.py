@@ -24,7 +24,7 @@ def RegionAndTRun(region: Region, t: TimeStep):
 
     output_filepaths = preprocess.preprocess_region_t(t, FireConsts.firesrc, region=region)
     for filepath in output_filepaths:
-        dst = os.path.join(FireConsts.dirprpdata_subpath, *filepath.split("/")[-3:])
+        dst = os.path.join(FireConsts.get_dirprpdata(location="s3", strip_protocol=True), *filepath.split("/")[-3:])
 
         FireIO.copy_from_local_to_s3(filepath, dst)
 

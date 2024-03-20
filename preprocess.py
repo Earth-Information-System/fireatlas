@@ -18,9 +18,12 @@ from FireTypes import Region, TimeStep
 from utils import timed
 
 
-def preprocessed_region_filename(region: Region, location: Literal["s3", "local"]):
+def preprocessed_region_filename(
+    region: Region, 
+    location: Literal["s3", "local"] = FireConsts.READ_LOCATION
+):
     return os.path.join(
-        FireConsts.get_dirdata("FEDSpreprocessed", location=location), 
+        FireConsts.get_dirprpdata(location=location), 
         region[0],
         f"{region[0]}.json"
     )
@@ -55,14 +58,17 @@ def read_region(region: Region):
     return (region[0], shape)
 
 
-def preprocessed_landcover_filename(filename="nlcd_export_510m_simplified"):
-    return os.path.join(FireConsts.dirprpdata, f"{filename}_latlon.tif")
+def preprocessed_landcover_filename(
+    filename="nlcd_export_510m_simplified", 
+    location: Literal["s3", "local"] = FireConsts.READ_LOCATION
+):
+    return os.path.join(FireConsts.get_dirprpdata(location=location), f"{filename}_latlon.tif")
 
 
 @timed
 def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
     # if landcover output already exists, exit early so we don't reprocess
-    output_filepath = preprocessed_landcover_filename(filename)
+    output_filepath = preprocessed_landcover_filename(filename, location="local")
     if not force and os.path.exists(output_filepath):
         logger.info("Preprocessing has already occurred for this landcover file.")
         logger.debug("Use `force=True` to rerun this preprocessing step.")
@@ -104,10 +110,10 @@ def preprocessed_filename(
     *,
     region: Optional[Region] = None,
     suffix="",
-    location: Literal["local", "s3"]
+    location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
 ):
     return os.path.join(
-        FireConsts.get_dirdata(dirname="FEDSpreprocessed", location=location),
+        FireConsts.get_dirprpdata(location=location),
         *([] if region is None else [region[0]]),
         sat,
         f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}{suffix}.txt",
@@ -277,7 +283,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def read_preprocessed_input(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
-    location: Literal["local", "s3"] = "local"
+    location: Literal["local", "s3"] = FireConsts.READ_LOCATION
 ):
     filename = preprocessed_filename(t, sat, location=location)
     df = pd.read_csv(filename)
@@ -289,7 +295,7 @@ def read_preprocessed(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
     region: Region,
-    location: Literal["local", "s3"] = "local"
+    location: Literal["local", "s3"] = FireConsts.READ_LOCATION
 ):
     filename = preprocessed_filename(t, sat, region=region, location=location)
     df = pd.read_csv(filename).set_index("uuid").assign(t=FireTime.t2dt(t))
@@ -302,7 +308,7 @@ def preprocess_region_t(
     sensor: Literal['SNPP', 'NOAA20', 'VIIRS', "TESTING123"], 
     region: Region, 
     force: bool = False,
-    read_location: Literal["local", "s3"] = "local"
+    read_location: Literal["local", "s3"] = FireConsts.READ_LOCATION
 ):
 
     # if regional output already exists, exit early so we don't reprocess
