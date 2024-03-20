@@ -209,6 +209,9 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     else:
         df = read_preprocessed(t, sat=sensor)
 
+    # read in the preprocessed region
+    region = read_region(region)
+
     # if regional output already exists, exit early so we don't reprocess
     output_filepath = preprocessed_filename(t, sensor, region=region)
     if os.path.exists(output_filepath):
@@ -218,17 +221,21 @@ def preprocess_region_t(t: TimeStep, sensor: Literal["VIIRS", "TESTING123"], reg
     shp_Reg = FireIO.get_reg_shp(region[1])
     df = FireIO.AFP_regfilter(df, shp_Reg)
 
-    if df.empty:
-        return
+    columns = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]
 
-    # return selected columns
-    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"]]
+    if not df.empty:
+        # return selected columns
+        df = df[columns]
 
-    # do preliminary clustering using new active fire locations (assign cid to each pixel)
-    df = FireClustering.do_clustering(df, FireConsts.CONNECTIVITY_CLUSTER_KM)
-
-    # assign a uuid to each pixel
-    df["uuid"] = [uuid.uuid4() for _ in range(len(df.index))]
+        # do preliminary clustering using new active fire locations (assign cid to each pixel)
+        df = FireClustering.do_clustering(df, FireConsts.CONNECTIVITY_CLUSTER_KM)
+        
+        # assign a uuid to each pixel and put it as the first column
+        df.insert(0, "uuid" , [uuid.uuid4() for _ in range(len(df.index))])
+    else: 
+        # make a dummy DataFrame with the right columns so that we know later that 
+        # we don't need to do this step again.
+        df = pd.DataFrame(columns = ["uuid", *columns, "initial_cid"])
 
     # make nested path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
