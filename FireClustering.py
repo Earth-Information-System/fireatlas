@@ -90,8 +90,8 @@ def do_clustering(data, max_thresh_km):
     # if number of points is 1 or 2, each point is one cluster
     num_points = len(data)
     if num_points < 3:
-        cluster_id = list(range(num_points))
-        return cluster_id
+        data["initial_cid"] = list(range(num_points))
+        return data
 
     # initialization
     cluster_id_counter = 0
