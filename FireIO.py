@@ -14,6 +14,80 @@ import geopandas as gpd
 from FireTypes import Region, TimeStep
 
 
+def preprocess_polygon(polygon_gdf, data_source, id_col, 
+                       firename_col = None, startdate_col = None, enddate_col = None, geometry_col = None):
+    """
+    Process a geodataframe to ensure it has the correct column names, date types, and crs. 
+    Also buffers geometry by 375m to account for VIIRS pixel size.
+    Need to specify data source and column used for ID. Each fire dataset has a potentially different ID so need to 
+    include this to make the ID meaningful. 
+    I expect a geodataframe with columns for fire name, start date, end date, and geometry.
+    Names come from CALFIRE's FRAP fire perimeter dataset.
+    If any column names differ from expected, user should specify which columns to use. 
+
+    Parameters
+    ----------
+    polygon_gdf : geopandas.GeoDataFrame
+        A geodataframe containing fire perimeters.
+    data_source : str, data source e.g. "FRAP", "NIFC WFIGS", etc.
+    id_col : str, name of the id column used to record id e.g. "INC_NUM", "IRWIN", etc.
+    firename_col : str, column name for fire name if different from expected
+    startdate_col : str, column name for start date if different from expected
+    enddate_col : str, column name for end date if different from expected
+    geometry : str, column name for geometry if different from expected
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        A geodataframe with the correct column names, date types, and crs.
+    """
+
+    import geopandas as gpd
+    import pandas as pd
+    import FireConsts, FireEnums
+
+    # test if it is a geodataframe, if not return an error message
+    if not isinstance(polygon_gdf, gpd.GeoDataFrame):
+        raise TypeError("Input should be a GeoDataFrame")
+    
+    # buffer polygon by VIIRS res. need to convert to crs in meters
+    polygon_m = polygon_gdf.geometry.to_crs(FireEnums.EPSG.CONUS_EQ_AREA.value)
+    polygon_m = polygon_m.buffer(FireConsts.VIIRSbuf)
+    
+    # reset geometry and convert to lat/lon
+    polygon_gdf = polygon_gdf.set_geometry(polygon_m).to_crs(4326)
+
+    # select the columns that are needed
+    colnames = ['FIRE_NAME', 'ALARM_DATE', 'CONT_DATE', 'geometry']
+    updated_colnames = [firename_col, startdate_col, enddate_col, geometry_col]
+
+    # coalesces the updated column names with the original column names, taking the non-None values, select cols
+    updated_colnames = [new_colname or orig_colname for new_colname, orig_colname in zip(updated_colnames, colnames)]
+    perim_processed = polygon_gdf[updated_colnames]
+    # renames columns to what you want
+    perim_processed.columns = colnames
+
+    # add in data source, id name, and fire id
+    if id_col in polygon_gdf.columns:
+        fire_id = polygon_gdf[id_col]
+    else:
+        raise ValueError(f"The column {id_col} does not exist in the data")
+    perim_processed.insert(1, 'FIRE_ID', fire_id)
+    perim_processed.insert(2, 'ID_NAME', id_col)
+    perim_processed.insert(3, 'DATA_SOURCE', data_source)    
+    
+    # finally, make sure the date columns are formatted correctly
+    perim_processed = perim_processed.copy()
+    date_cols = colnames[1:3]
+    for d in date_cols:
+        if perim_processed[d].dtype != 'datetime64[ns, UTC]':
+            perim_processed[d] = pd.to_datetime(perim_processed[d])
+
+    return perim_processed
+
+
+
+
 def gpd_read_file(filename, parquet=False, **kwargs):
     import geopandas as gpd
     itry = 0
