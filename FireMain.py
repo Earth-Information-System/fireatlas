@@ -541,7 +541,8 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
         for t in FireTime.t_generator(tst, ted)
     ])
     allpixels["fid"] = -1
-    allpixels["in_fline"] = None    
+    allpixels["in_fline"] = None
+    allpixels["ext_until"] = None
 
     # loop over every t during the period and mutate allfires, allpixels
     for t in FireTime.t_generator(tst, ted):

@@ -672,6 +672,25 @@ class Fire:
         return perim
 
     @property
+    def extpixels(self):
+        """ External pixels at the previous timestep + new pixels"""
+        import FireTime
+
+        pdt = FireTime.t2dt(FireTime.t_nb(self.t, "previous"))
+        return self.allpixels[
+            (self.allpixels["fid"] == self.fireID) & (
+                (self.allpixels["ext_until"] == pdt) | (self.allpixels["t"] == FireTime.t2dt(self.t))
+            )
+        ]
+
+    @extpixels.setter
+    def extpixels(self, extpixels):
+        """ Set extpixels """
+        import FireTime
+
+        self.allpixels.loc[extpixels.index, "ext_until"] = FireTime.t2dt(self.t)
+    
+    @property
     def flinepixels(self):
         """ All fire pixels near the fire perimeter (fine line pixels)
         """
@@ -725,22 +744,21 @@ class Fire:
         """ Update the hull using old hull and new locs
         """
         import pandas as pd
-        import FireVector, FireTime
+        import FireVector
 
-        # get previous hull and pixels from all previous timesteps
+        # get previous hull, and nex pixels + external pixels from previous timesteps
         phull = self.hull
-        ppixels = self.allpixels[
-            (self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] < FireTime.t2dt(self.t))
-        ]
-        # find the pixels that are near the previous hull
-        extpixels = ppixels[FireVector.get_ext_pixels(ppixels, phull)]
+        pixels = self.extpixels
 
         # combine those with the new pixels and calculate the hull
-        locs = pd.concat([extpixels, self.newpixels])[["x", "y"]].values
-        hull = FireVector.cal_hull(locs, sensor=self.sensor)
+        hull = FireVector.cal_hull(pixels[["x", "y"]].values, sensor=self.sensor)
         
         # use the union of the newly calculated hull and the previous hull
         self.hull = phull.union(hull)
+
+        # find the pixels that are near the hull and record findings
+        self.extpixels = pixels[FireVector.get_ext_pixels(pixels, hull)]
+        
 
     def updatefline(self):
         import FireVector
