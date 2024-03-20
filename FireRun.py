@@ -39,13 +39,7 @@ def DataUpdateChecker():
         logger.exception(exc)
     finally:
         for filepath in glob.glob(os.path.join(FireConsts.get_dirprpdata(location="local"), "*", "*.txt")):
-            dst = os.path.join(
-                FireConsts.get_dirextdata(location="s3", strip_protocol=True), 
-                "VIIRS",
-                "NRT_preprocessed",
-                *filepath.split("/")[-2:]
-            )
-            FireIO.copy_from_local_to_s3(filepath, dst)
+            FireIO.copy_from_local_to_s3(filepath)
 
 
 def Yearbatchrun(year, tst=None, ted=None, restart=False):

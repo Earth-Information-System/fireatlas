@@ -2268,8 +2268,11 @@ def copy_from_maap_to_veda_s3(
         s3_client.upload_fileobj(file_object, 'veda-data-store-staging', to_veda_s3_path)
 
 
-def copy_from_local_to_s3(local_filepath: str, s3_filepath: str):
+def copy_from_local_to_s3(filepath: str):
     import boto3
 
     s3_client = boto3.client('s3')
-    s3_client.upload_file(local_filepath, FireConsts.dirdata_s3_bucket, s3_filepath)
+
+    dst = filepath.replace(FireConsts.dirdata_local_path, FireConsts.dirdata_s3_path)
+
+    s3_client.upload_file(filepath, FireConsts.dirdata_s3_bucket, dst)

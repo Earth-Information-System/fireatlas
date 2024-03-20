@@ -1,4 +1,5 @@
 import os
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -10,14 +11,15 @@ from utils import timed
 
 import warnings; warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
-def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region):
+
+def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
     filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
-    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], filename)
+    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], filename)
 
 
 @timed
 def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
-    output_filepath = allpixels_filepath(tst, ted, region)
+    output_filepath = allpixels_filepath(tst, ted, region, location="local")
 
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -39,7 +41,7 @@ def allfires_filepath(tst: TimeStep, ted: TimeStep, region: Region):
 
 @timed
 def save_allfires_gdf(allfires_gdf, tst: TimeStep, ted: TimeStep, region: Region):
-    output_filepath = allfires_filepath(tst, ted, region)
+    output_filepath = allfires_filepath(tst, ted, region, location="local")
 
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -54,15 +56,15 @@ def read_allfires_gdf(tst: TimeStep, ted: TimeStep, region: Region):
     return gpd.read_parquet(filepath)
 
 
-def snapshot_folder(region: Region, tst: TimeStep, ted: TimeStep):
-    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}")
+def snapshot_folder(region: Region, tst: TimeStep, ted: TimeStep, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}")
 
 
 @timed
 def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: TimeStep):
     from FireGpkg import getdd
 
-    output_dir = snapshot_folder(region, tst, ted)
+    output_dir = snapshot_folder(region, tst, ted, location="local")
     os.makedirs(output_dir, exist_ok=True)
 
     dt = FireTime.t2dt(ted)
@@ -132,14 +134,13 @@ def find_largefires(allfires_gdf):
     return last_large.fireID.values
 
 
-def fire_folder(region: Region, fid, tst: TimeStep):
-    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], "Largefire", str(fid))
+def largefire_folder(region: Region, fid, tst: TimeStep, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], "Largefire", str(fid))
 
 
 @timed
 def save_fire_nplist(allpixels_fid, region, fid, tst):
-
-    output_dir = fire_folder(region, fid, tst)
+    output_dir = largefire_folder(region, fid, tst, location="local")
     os.makedirs(output_dir, exist_ok=True)
 
     data = allpixels_fid[["x", "y", "FRP", "DS", "DT", "ampm", 'datetime', "Sat"]].copy()
@@ -161,7 +162,7 @@ def save_large_fires_nplist(allpixels, region, large_fires, tst):
 def save_fire_layers(allfires_gdf_fid, region, fid, tst):
     from FireGpkg_sfs import getdd
 
-    output_dir = fire_folder(region, fid, tst)
+    output_dir = fire_folder(region, fid, tst, location="local")
     os.makedirs(output_dir, exist_ok=True)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:

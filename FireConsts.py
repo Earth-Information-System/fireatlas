@@ -28,20 +28,17 @@ dirhome = os.environ.get("HOME")  # get system home directory
 
 dirdata = './'  # project directory -- only used For logging location
 dirdata_s3_bucket = "maap-ops-workspace"
+dirdata_local_path = "data"
+dirdata_s3_path = "shared/gsfc_landslides"
 
 def get_dirdata(
         dirname: Literal["FEDSinput", "FEDSpreprocessed", "FEDSoutput-s3-conus"], 
         location: Literal["s3", "local"], 
-        strip_protocol: bool = False
     ): 
     if location == "local":
-        return f"data/{dirname}/"
+        return f"{dirdata_local_path}/{dirname}/"
     else:
-        subdir = f"shared/gsfc_landslides/{dirname}/"
-        if strip_protocol:
-            return subdir
-        else: 
-            return f"s3://{dirdata_s3_bucket}/{subdir}"
+        return f"s3://{dirdata_s3_bucket}/{dirdata_s3_path}/{dirname}"
 
 get_dirextdata = partial(get_dirdata, dirname="FEDSinput")
 get_dirprpdata = partial(get_dirdata, dirname="FEDSpreprocessed")
