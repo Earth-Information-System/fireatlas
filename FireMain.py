@@ -146,6 +146,9 @@ def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
     import pandas as pd
     
     if not remove_static_sources_bool:
+        # should make sure region[1] is a geometry
+        geom = get_reg_shp(region[1])
+        region = (region[0], geom)
         return region
     
     # get source data geometry

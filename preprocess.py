@@ -137,6 +137,30 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 
     return filtered_df_paths
 
+def check_preprocessed_file(list_of_ts, sat):
+    """Before running preprocess_monthly_file, check if the file already exists
+    for that satellite using a list of time steps
+
+    Parameters
+    ----------
+    list_of_ts : list of time tuples
+    sat : str, 'SNPP' or 'NOAA20'
+
+    Returns
+    -------
+    list of unique combos of years and months that need to be processed
+    """
+    # check that there's viirs data for these dates and if not, keep track
+    needs_processing = []
+    for ts in list_of_ts:
+        filepath = preprocessed_filename(ts, sat)
+        if not os.path.exists(filepath):
+            needs_processing.append(ts)
+
+    # get unique combos of year and month. make sure sorted
+    unique_ym = list(set([(ts[0], ts[1]) for ts in needs_processing]))
+    unique_ym = sorted(unique_ym, key=lambda x: (x[0], x[1]))
+    return unique_ym
 
 @timed
 def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):

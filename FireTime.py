@@ -217,3 +217,34 @@ def isyearst(t):
         return True
     else:
         return False
+
+
+def update_tst_ted(polygon_series, tst=None, ted=None):
+    """ Ingests a geoseries containing a polygon, which has already been preprocessed--columns formatted--
+    and updates tst/ted based on the dates of the polygon.
+    If tst or ted are provided, they'll override the dates from the geoseries. If left as None, function reads dates from geoseries.
+    Parameters
+    ----------
+    polygon : series of the fire perimeter, 
+    already processed by FireIO.preprocess_polygon
+    tst : start time, [year, month, day, "AM" or "PM"]
+    ted : end time, [year, month, day, "AM" or "PM"]
+
+    Returns
+    -------
+    updated tst and ted
+    """
+    # if tst/ted is not provided, use the dates from the polygon
+    if tst is None:
+        dt = polygon_series['ALARM_DATE']
+        tst = [dt.year, dt.month, dt.day, "AM"]
+    if ted is None:
+        dt = polygon_series['CONT_DATE']
+        ted = [dt.year, dt.month, dt.day, "AM"]
+
+    # check if the start date is before the end date
+    if(tst[:-1] > ted[:-1]):
+        print("ERROR with fire", polygon_series['FIRE_NAME'])
+        raise ValueError(f"The end date ({ted}) is before the start date ({tst}). This needs to be adjusted. Ending run.")
+    
+    return tst, ted

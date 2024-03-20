@@ -10,14 +10,14 @@ from utils import timed
 
 import warnings; warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
-def allpixels_filepath(t: TimeStep, region: Region):
-    filename = f"allpixels_{t[0]}{t[1]:02}{t[2]:02}_{t[3]}.csv"
-    return os.path.join(FireConsts.diroutdata, region[0], filename)
+def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region):
+    filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
+    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], filename)
 
 
 @timed
-def save_allpixels(allpixels, ted: TimeStep, region: Region):
-    output_filepath = allpixels_filepath(ted, region)
+def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
+    output_filepath = allpixels_filepath(tst, ted, region)
 
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -26,20 +26,20 @@ def save_allpixels(allpixels, ted: TimeStep, region: Region):
 
 
 @timed
-def read_allpixels(ted: TimeStep, region: Region):
-    filepath = allpixels_filepath(ted, region)
+def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region):
+    filepath = allpixels_filepath(tst, ted, region)
 
     return pd.read_csv(filepath, index_col="uuid", parse_dates=["t"])
 
 
-def allfires_filepath(t: TimeStep, region: Region):
-    filename = f"allfires_{t[0]}{t[1]:02}{t[2]:02}_{t[3]}.parq"
-    return os.path.join(FireConsts.diroutdata, region[0], filename)
+def allfires_filepath(tst: TimeStep, ted: TimeStep, region: Region):
+    filename = f"allfires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.parq"
+    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], filename)
 
 
 @timed
-def save_allfires_gdf(allfires_gdf, ted: TimeStep, region: Region):
-    output_filepath = allfires_filepath(ted, region)
+def save_allfires_gdf(allfires_gdf, tst: TimeStep, ted: TimeStep, region: Region):
+    output_filepath = allfires_filepath(tst, ted, region)
 
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -48,24 +48,24 @@ def save_allfires_gdf(allfires_gdf, ted: TimeStep, region: Region):
 
 
 @timed
-def read_allfires_gdf(ted: TimeStep, region: Region):
-    filepath = allfires_filepath(ted, region)
+def read_allfires_gdf(tst: TimeStep, ted: TimeStep, region: Region):
+    filepath = allfires_filepath(tst, ted, region)
 
     return gpd.read_parquet(filepath)
 
 
-def snapshot_folder(region: Region, t: TimeStep):
-    return os.path.join(FireConsts.diroutdata, region[0], "Snapshot", f"{t[0]}{t[1]:02}{t[2]:02}{t[3]}")
+def snapshot_folder(region: Region, tst: TimeStep, ted: TimeStep):
+    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}")
 
 
 @timed
-def save_snapshot_layers(allfires_gdf_t, region: Region, t: TimeStep):
+def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: TimeStep):
     from FireGpkg import getdd
 
-    output_dir = snapshot_folder(region, t)
+    output_dir = snapshot_folder(region, tst, ted)
     os.makedirs(output_dir, exist_ok=True)
 
-    dt = FireTime.t2dt(t)
+    dt = FireTime.t2dt(ted)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
         columns = [col for col in getdd(layer)]
@@ -118,7 +118,7 @@ def save_snapshots(allfires_gdf, region, tst, ted):
     for t in FireTime.t_generator(tst, ted):
         dt = FireTime.t2dt(t)
         data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last")
-        save_snapshot_layers(data, region, t)
+        save_snapshot_layers(data, region, tst, t)
 
 
 @timed
@@ -132,14 +132,14 @@ def find_largefires(allfires_gdf):
     return last_large.fireID.values
 
 
-def fire_folder(region: Region, fid):
-    return os.path.join(FireConsts.diroutdata, region[0], "Largefire", str(fid))
+def fire_folder(region: Region, fid, tst: TimeStep):
+    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], "Largefire", str(fid))
 
 
 @timed
-def save_fire_nplist(allpixels_fid, region, fid):
+def save_fire_nplist(allpixels_fid, region, fid, tst):
 
-    output_dir = fire_folder(region, fid)
+    output_dir = fire_folder(region, fid, tst)
     os.makedirs(output_dir, exist_ok=True)
 
     data = allpixels_fid[["x", "y", "FRP", "DS", "DT", "ampm", 'YYYYMMDD_HHMM', "Sat"]].copy()
@@ -151,17 +151,17 @@ def save_fire_nplist(allpixels_fid, region, fid):
 
 
 @timed
-def save_large_fires_nplist(allpixels, region, large_fires):
+def save_large_fires_nplist(allpixels, region, large_fires, tst):
     for fid in large_fires:
         data = allpixels[allpixels["fid"] == fid]
-        save_fire_nplist(data, region, fid)
+        save_fire_nplist(data, region, fid, tst)
 
 
 @timed
-def save_fire_layers(allfires_gdf_fid, region, fid):
+def save_fire_layers(allfires_gdf_fid, region, fid, tst):
     from FireGpkg_sfs import getdd
 
-    output_dir = fire_folder(region, fid)
+    output_dir = fire_folder(region, fid, tst)
     os.makedirs(output_dir, exist_ok=True)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
@@ -208,7 +208,7 @@ def merge_rows(allfires_gdf_fid):
 
 
 @timed
-def save_large_fires_layers(allfires_gdf, region, large_fires):
+def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
     gdf = allfires_gdf.reset_index()
 
     merge_needed = (gdf.mergeid != gdf.fireID) & (gdf.invalid == False)
@@ -222,4 +222,55 @@ def save_large_fires_layers(allfires_gdf, region, large_fires):
         if data.t.duplicated().any():
             data = merge_rows(data)
         
-        save_fire_layers(data, region, fid)
+        save_fire_layers(data, region, fid, tst)
+
+
+def individual_fires_path(tst, ted, region):
+    filename = f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"
+    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], filename)
+
+
+def cumunion(x):
+    from shapely.ops import unary_union
+    for i in range(1, len(x)):
+        x[i] = unary_union([x[i-1], x[i]])
+    return x
+
+@timed
+def save_individual_fire(allfires_gdf, tst, ted, region):
+    """save daily perimeters for an individual fire. This function ignores fids 
+    and key to this function is unioning the hulls from previous days, regardless of 
+    the original fireID/mergeid.
+    """
+
+    allfires_gdf = allfires_gdf.reset_index()
+
+    # summarize file by t. make sure you dissolve the hull
+    merged_t = allfires_gdf.set_geometry('hull').dissolve(by='t', aggfunc={
+        'meanFRP': lambda x: (allfires_gdf.loc[x.index, 'meanFRP'] * allfires_gdf.loc[x.index, 'n_newpixels']).sum() / allfires_gdf.loc[x.index, 'n_newpixels'].sum(),
+        'n_newpixels': 'sum',
+        'duration': 'max'
+    }).reset_index()
+
+    # calculate cumulative sum of n_newpixels
+    merged_t['n_pixels'] = merged_t['n_newpixels'].cumsum()
+
+    # combine the hulls from previous days
+    merged_t['hull'] = cumunion(merged_t['hull'].tolist())
+
+    # do the rest of the calculations
+    merged_t['farea'] = merged_t['hull'].area / 10**6  # convert to km^2
+    merged_t['pixden'] = merged_t['n_pixels'] / merged_t['farea']
+
+    # reorder columns
+    col_order = ['t', 'duration', 'n_pixels', 'n_newpixels', 'meanFRP', 'pixden', 'farea', 'hull']
+    merged_t = merged_t[col_order]
+
+    # get file output name
+    output_filepath = individual_fires_path(tst, ted, region)
+    # make path if necessary
+    os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
+    
+    # save
+    merged_t.to_file(output_filepath, driver="FlatGeobuf")
+
