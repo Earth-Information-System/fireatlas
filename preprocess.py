@@ -315,6 +315,7 @@ def preprocess_region_t(
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
     
+    # read in the preprocessed region
     region = read_region(region)
     logger.info(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
@@ -329,9 +330,6 @@ def preprocess_region_t(
         )
     else:
         df = read_preprocessed_input(t, sat=sensor, location=read_location)
-
-    # read in the preprocessed region
-    region = read_region(region)
 
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
