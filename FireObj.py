@@ -75,14 +75,14 @@ class Allfires:
     
     @classmethod
     @timed 
-    def rehydrate(cls, t, region, include_dead=False):
+    def rehydrate(cls, tst, ted, region, include_dead=False):
         import datetime
         import FireConsts, FireTime, postprocess
 
-        allfires_gdf = postprocess.read_allfires_gdf(t, region)
-        allpixels = postprocess.read_allpixels(t, region)
+        allfires_gdf = postprocess.read_allfires_gdf(tst, ted, region)
+        allpixels = postprocess.read_allpixels(tst, ted, region)
 
-        dt = FireTime.t2dt(t)
+        dt = FireTime.t2dt(ted)
 
         has_started = (allfires_gdf.t_st <= dt)
         if not include_dead:
@@ -92,10 +92,10 @@ class Allfires:
         else:
             gdf = allfires_gdf[has_started]
         
-        allfires = cls(t)
+        allfires = cls(ted)
         allfires.gdf = allfires_gdf
         for fid, gdf_fid in gdf.groupby(level=0):
-            f = Fire(fid, t, allpixels)
+            f = Fire(fid, ted, allpixels)
             dt_st = gdf_fid.t_st.min()
             dt_ed = gdf_fid.t_ed.max()
             
