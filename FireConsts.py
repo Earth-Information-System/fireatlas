@@ -38,7 +38,7 @@ def get_dirdata(
     if location == "local":
         return f"{dirdata_local_path}/{dirname}/"
     else:
-        return f"s3://{dirdata_s3_bucket}/{dirdata_s3_path}/{dirname}"
+        return f"s3://{dirdata_s3_bucket}/{dirdata_s3_path}/{dirname}/"
 
 get_dirextdata = partial(get_dirdata, dirname="FEDSinput")
 get_dirprpdata = partial(get_dirdata, dirname="FEDSpreprocessed")
