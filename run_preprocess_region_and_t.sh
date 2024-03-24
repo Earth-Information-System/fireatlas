@@ -8,23 +8,23 @@ echo "Initial working directory: $(pwd -P)"
 echo "conda: $(which conda)"
 echo "Python: $(which python)"
 python --version
-source activate /opt/conda/envs/env-feds-dask
+pip install -r env-feds-2024-dps-requirements.txt
 echo "Starting algorithm in subshell"
 (
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
-  python FireRun.py $1
+  # python3 FireRunByRegionAndT.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]"
+  scalene --cli --no-browser --reduced-profile --html --column-width 180 \
+      --outfile "${output_dir}/profile.html" --- FireRunByRegionAndT.py --regnm=$1 --t="$2"
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
-  #cp "$basedir/dask-report.html" ./output
 
 } || { # catch
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output
-  #cp "$basedir/dask-report.html" ./output
 }
 )
 echo "Done!"

@@ -16,31 +16,6 @@ import FireConsts
 from FireLog import logger
 from utils import timed
 
-def DataUpdateChecker():
-    """ download data from different satellite sensors at the
-    start of every 2nd hour from 1am through 11pm: `0 1-23/2 * * *`
-
-    the jobs are being scheduled here: https://repo.ops.maap-project.org/eorland_gee/fireatlas_nrt/-/pipeline_schedules
-
-    :return: None
-    """
-    import FireIO
-    from FireLog import logger
-    import DataCheckUpdate
-
-    try:
-        # Download SUOMI-NPP
-        DataCheckUpdate.update_VNP14IMGTDL()
-        # Download NOAA-20
-        DataCheckUpdate.update_VJ114IMGTDL()
-        # Download GridMET
-        DataCheckUpdate.update_GridMET_fm1000()
-    except Exception as exc:
-        logger.exception(exc)
-    finally:
-        for filepath in glob.glob(os.path.join(FireConsts.get_dirprpdata(location="local"), "*", "*.txt")):
-            FireIO.copy_from_local_to_s3(filepath)
-
 
 def Yearbatchrun(year, tst=None, ted=None, restart=False):
     """ Run the code for each single year

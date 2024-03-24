@@ -64,6 +64,7 @@ def RegionRun(region: Region, tst=None, ted=None):
     for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), str(tst[0]), region[0], "Largefire", "*", "*.fgb")):
         FireIO.copy_from_local_to_s3(filepath)
 
+
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     

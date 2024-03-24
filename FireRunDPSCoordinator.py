@@ -1,9 +1,50 @@
+import functools
 import json
 import argparse
+import os
+import time
+from typing import Tuple
+import concurrent
+from concurrent.futures import ThreadPoolExecutor
 
 from FireLog import logger
+from FireTypes import Region, TimeStep
 from utils import timed
-from FireTypes import TimeStep, Region
+from maap.maap import MAAP
+from maap.dps.dps_job import DPSJob
+
+import logging
+logger = logging.getLogger(__name__)
+
+
+class RetryException(Exception):
+    pass
+
+
+class MaxRetryException(Exception):
+    pass
+
+class JobSubmissionException(Exception):
+    pass
+
+
+def retry(max_retries, exception_to_check, delay=1):
+
+    def decorator_retry(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            retries = 0
+            while True:
+                try:
+                    return func(*args, **kwargs)
+                except exception_to_check as e:
+                    retries += 1
+                    if retries > max_retries:
+                        raise MaxRetryException(e)
+                    logger.info(f"Retry {retries} for {func.__name__} due to {e}. Retrying in {delay} seconds...")
+                    time.sleep(delay)
+        return wrapper
+    return decorator_retry
 
 
 def validate_json(s):
@@ -13,35 +54,183 @@ def validate_json(s):
         raise argparse.ArgumentTypeError("Not a valid JSON string")
 
 
+def get_algorithm_config_filepath(dir_names):
+    current_file_dir = os.path.dirname(os.path.abspath(__file__))
+    return [
+        os.path.join(current_file_dir, 'maap_runtime', f'{dir_name}', 'algorithm_config.yaml')
+        for dir_name in dir_names
+    ]
+
+
+def validate_job_submission(submitted_jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
+    """we don't retry job submissions, they should ideally always work
+
+    validate status of job submission results and return result 'job_id'
+    """
+    failed_statuses = [result for result in submitted_jobs if result.status == 'failed']
+    if any(failed_statuses):
+        raise JobSubmissionException(f"[ SUBMISSION FAILED ]: the following jobs failed to submit {failed_statuses}")
+    return submitted_jobs
+
+
+@retry(max_retries=1, exception_to_check=(RetryException,))
+def submit_preprocess_region(
+        maap_api: MAAP,
+        region: Region,
+) -> Tuple[DPSJob]:
+    """handles targets jobs 'preprocess_region' and 'preprocess_region_and_t'
+    """
+    submitted_jobs = []
+    # handle 'preprocess_region'
+    # TODO: the target jobs already do existence checks
+    # but if we want to save time and not kick off the
+    # jobs we'd have to add logic here
+    result = maap_api.submitJob(**{
+        "regnm": region[0],
+        "bbox": json.loads(region[1])
+    })
+    submitted_jobs.append(result)
+    failed_jobs = track_submitted_jobs(submitted_jobs)
+    if failed_jobs:
+        logger.warning(f"'submit_preprocess_region' attempt retry for job_ids={[job.id for job in failed_jobs]}")
+        raise RetryException()
+
+
+@retry(max_retries=2, exception_to_check=(RetryException,))
+def submit_preprocess_per_t(
+        maap_api: MAAP,
+        region: Region,
+        list_of_time_steps: Tuple[TimeStep],
+) -> Tuple[DPSJob]:
+    """handles targets jobs 'preprocess_region' and 'preprocess_region_and_t'
+    """
+    submitted_jobs = []
+    # handle 'preprocess_region_and_t'
+    for t in list_of_time_steps:
+        # TODO: the target jobs already do existence checks
+        # but if we want to save time and not kick off the
+        # jobs we'd have to add logic here
+        result = maap_api.submitJob(**{
+            "regnm": region[0],
+            "t": json.loads(t)
+        })
+        submitted_jobs.append(result)
+
+    failed_jobs = track_submitted_jobs(submitted_jobs)
+    if failed_jobs:
+        logger.warning(f"'submit_preprocess_per_t' attempt retry for job_ids={[job.id for job in failed_jobs]}")
+        raise RetryException()
+
+
+@retry(max_retries=1, exception_to_check=(RetryException,))
+def submit_update_checker(maap_api: MAAP) -> Tuple[DPSJob]:
+    """handles targets jobs 'data_update_checker' and 'fire_forward'
+    """
+    submitted_jobs = []
+    result = maap_api.submitJob()
+    submitted_jobs.append(result)
+
+    failed_jobs = track_submitted_jobs(submitted_jobs)
+    if failed_jobs:
+        logger.warning(f"'submit_update_checker' attempt retry for job_ids={[job.id for job in failed_jobs]}")
+        raise RetryException()
+
+
+@retry(max_retries=2, exception_to_check=(RetryException,))
+def submit_fire_forward(
+        maap_api: MAAP,
+        region: Region,
+        tst: TimeStep,
+        ted: TimeStep,
+) -> Tuple[DPSJob]:
+    """handles targets jobs 'data_update_checker' and 'fire_forward'
+    """
+    submitted_jobs = []
+    result = maap_api.submitJob(**{
+        "regnm": region[0],
+        "tst": json.loads(tst),
+        "ted": json.loads(ted)
+    })
+    submitted_jobs.append(result)
+    failed_jobs = track_submitted_jobs(submitted_jobs)
+    if failed_jobs:
+        logger.warning(f"'submit_fire_forward' attempt retry for job_ids={[job.id for job in failed_jobs]}")
+        raise RetryException()
+
+
+def wait_for_job(dps_job: DPSJob) -> DPSJob:
+    """this internal DPSJob function will block until job completes and use exponential backoff
+    https://github.com/MAAP-Project/maap-py/blob/master/maap/dps/dps_job.py#L80C9-L80C28
+
+    it seems the statuses.lower() are: ['failed', 'succeeded', 'accepted', 'running']
+    https://github.com/MAAP-Project/maap-py/blob/master/maap/dps/dps_job.py
+    """
+    return dps_job.wait_for_completion()
+
+
+def poll_on_job_status(jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
+    failed_jobs = []
+    # don't want to overwhelm the MAAP api so keeping max_workers relatively small
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        dps_job_futures = [executor.submit(wait_for_job, dps_job) for dps_job in jobs]
+        for dps_job in concurrent.futures.as_completed(dps_job_futures):
+            try:
+                if dps_job.retrieve_status().lower() != 'succeeded':
+                    failed_jobs.append(dps_job)
+            except Exception as e:
+                logger.exception(f"'poll_on_jobs_status' failed with {e}")
+    return failed_jobs
+
+
+def track_submitted_jobs(submitted_jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
+    """for the given 'target_func_name' block and wait for job results
+    """
+    queued_jobs = validate_job_submission(submitted_jobs)
+    failed_jobs = poll_on_job_status(queued_jobs)
+    return failed_jobs
+
+
 @timed
-def Run(region: Region, tst: TimeStep, ted: TimeStep):
-    import FireConsts, FireIO, preprocess
+def Run(region: Region, tst: TimeStep = None, ted: TimeStep = None):
+    import FireTime
 
-    # check to see if region has been processed.
-    # maybe process region
+    dps_child_jobs = (
+        'data_update_checker',
+        'preprocess_region',
+        'preprocess_region_t',
+        'fire_forward'
+    )
+    list_of_time_steps = list(FireTime.t_generator(tst, ted))
+    jobs_to_run = zip(dps_child_jobs, get_algorithm_config_filepath(dps_child_jobs))
 
-    # for each t between tst and ted
-        # for each satellite specified
-            # check to see if half day files have been created
-            # maybe kick off job to create
+    try:
+        for dps_job_key, algo_config in jobs_to_run.items():
+            maap_api = MAAP(maap_host='api.maap-project.org', config_file_path=algo_config)
+            if dps_job_key == 'data_update_checker':
+                submit_update_checker(maap_api)
+            elif dps_job_key == 'preprocess_region':
+                submit_preprocess_region(maap_api, region)
+            elif dps_job_key == 'preprocess_region_and_t':
+                submit_preprocess_per_t(maap_api, region, list_of_time_steps)
+            elif dps_job_key == 'fire_forward':
+                submit_fire_forward(maap_api, region, tst, ted)
+            else:
+                raise ValueError(f"[ JOB MATCH ]: dps_job_key='{dps_job_key}'")
+    except (MaxRetryException, JobSubmissionException) as exc:
+        logger.exception(exc)
 
-        # check to see if the the region_t files have been created
-        # maybe kick off job to create
-
-    # run fire forward which goes for whole year and writes all the outputs
 
 if __name__ == "__main__":
-    """ The main code to run preprocessing for a region and time period. It writes to a dedicated directory on s3.
+    """Coordinating DPS jobs for all others
     
     Example:
-    python3 FireRunDPSCoordinator.py --regnm="WesternUS" --t="[2023,6,1,\"AM\"]"
+    python3 FireRunDPSCoordinator.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
     """
     
     parser = argparse.ArgumentParser()
     parser = argparse.ArgumentParser()
     parser.add_argument("--regnm", type=str)
     parser.add_argument("--bbox", type=validate_json)
-
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
     args = parser.parse_args()

@@ -1,6 +1,5 @@
 import json
 import argparse
-import os
 
 from FireLog import logger
 from utils import timed
