@@ -73,13 +73,11 @@ def validate_job_submission(submitted_jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
     return submitted_jobs
 
 
-@retry(max_retries=1, exception_to_check=(RetryException,))
+@retry(max_retries=2, exception_to_check=(RetryException,))
 def submit_preprocess_region(
         maap_api: MAAP,
         region: Region,
 ) -> Tuple[DPSJob]:
-    """handles targets jobs 'preprocess_region' and 'preprocess_region_and_t'
-    """
     import FireIO
 
     output_filepath = preprocess.preprocessed_region_filename(region, location="s3")
@@ -106,8 +104,6 @@ def submit_preprocess_per_t(
         region: Region,
         list_of_time_steps: Tuple[TimeStep],
 ) -> Tuple[DPSJob]:
-    """handles targets jobs 'preprocess_region' and 'preprocess_region_and_t'
-    """
     import FireConsts
     import FireIO
 
@@ -131,10 +127,8 @@ def submit_preprocess_per_t(
         raise RetryException()
 
 
-@retry(max_retries=1, exception_to_check=(RetryException,))
+@retry(max_retries=2, exception_to_check=(RetryException,))
 def submit_update_checker(maap_api: MAAP) -> Tuple[DPSJob]:
-    """handles targets jobs 'data_update_checker' and 'fire_forward'
-    """
     # TODO: maybe check in the future
     submitted_jobs = []
     result = maap_api.submitJob()
@@ -153,8 +147,6 @@ def submit_fire_forward(
         tst: TimeStep,
         ted: TimeStep,
 ) -> Tuple[DPSJob]:
-    """handles targets jobs 'data_update_checker' and 'fire_forward'
-    """
     submitted_jobs = []
     result = maap_api.submitJob(**{
         "regnm": region[0],
