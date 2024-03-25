@@ -1,4 +1,4 @@
-FROM mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.0.1
+FROM mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4
 ARG BUILD_MAPP_PGT_ARG
 ENV MAAP_PGT=$BUILD_MAPP_PGT_ARG
 COPY ./maap_runtime/submit-dps-job.py submit-dps-job.py
