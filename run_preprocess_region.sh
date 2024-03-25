@@ -8,7 +8,6 @@ echo "Initial working directory: $(pwd -P)"
 echo "conda: $(which conda)"
 echo "Python: $(which python)"
 python --version
-pip install -r env-feds-2024-dps-requirements.txt
 echo "Starting algorithm in subshell"
 (
 pushd "$basedir"
