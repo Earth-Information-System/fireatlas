@@ -14,7 +14,7 @@ echo "Starting algorithm in subshell"
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
-  scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output_dir}/profile.html" --- FireRunDataUpdateChecker.py
+  scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output}/profile.html" --- FireRunDataUpdateChecker.py
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output

@@ -16,7 +16,7 @@ pushd "$basedir"
   echo "Running in directory: $(pwd -P)"
   # python3 FireRunByRegionAndT.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]"
   scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-      --outfile "${output_dir}/profile.html" --- FireRunByRegionAndT.py --regnm=$1 --t="$2"
+      --outfile "${output}/profile.html" --- FireRunByRegionAndT.py --regnm=$1 --t="$2"
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" ./output

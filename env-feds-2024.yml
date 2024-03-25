@@ -20,6 +20,7 @@ dependencies:
   - certifi
   - openssl
   - pytest
+  - tqdm
   - pip
   - pip:
     - git+https://github.com/MAAP-Project/maap-py.git@develop
