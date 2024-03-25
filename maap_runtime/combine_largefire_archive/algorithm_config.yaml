@@ -3,7 +3,7 @@ algorithm_name: eis-fire-feds-combine-largefire-archive-v3
 algorithm_version: 1.0.0
 environment: ubuntu
 repository_url: https://repo.maap-project.org/gcorradini/fireatlas_nrt.git
-docker_container_url: "mas.maap-project.org/root/maap-workspaces/base_images/pangeo:v3.1.4"
+docker_container_url: "mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4"
 queue: "maap-dps-eis-worker-32gb"
 run_command: "fireatlas_nrt/run_largefire_archive.sh"
 build_command: "fireatlas_nrt/run_dps_build.sh"

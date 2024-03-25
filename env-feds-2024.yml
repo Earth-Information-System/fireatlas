@@ -1,0 +1,28 @@
+name: fire
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - xarray
+  - pandas
+  - geopandas
+  - shapely
+  - fsspec
+  - jupyterlab
+  - fiona
+  - rtree
+  - scikit-learn
+  - pyarrow
+  - rasterio
+  - pyproj
+  - ipykernel
+  - ca-certificates
+  - certifi
+  - openssl
+  - pytest
+  - pip
+  - pip:
+    - git+https://github.com/MAAP-Project/maap-py.git@develop
+    - scalene
+prefix: /opt/conda/envs/fire
+
