@@ -40,7 +40,7 @@ dps-run:fire-atlas-coordinator-manual:
 # schedulers that call these jobs at certain cron frequencies and times are located:
 # https://repo.ops.maap-project.org/eorland_gee/fireatlas_nrt/-/pipeline_schedules
 
-dps-run:data-update-checker:
+dps-run:fire-atalas-data-update-checker:
   extends: .run_dps_job_base
   only:
     variables:
