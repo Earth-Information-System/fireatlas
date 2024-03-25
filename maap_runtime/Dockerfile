@@ -7,4 +7,4 @@ COPY ./maap_runtime/submit-dps-job.py submit-dps-job.py
 # example: docker run test hello-world-aimee_ubuntu main aimeeb maap-dps-worker-16gb --params '{"one":"two"}'
 #ENTRYPOINT ["python", "submit-dps-job.py"]
 #ENTRYPOINT ["bash", "-c", "source activate /opt/conda/envs/vanilla && python submit-dps-job.py \"$@\""]
-ENTRYPOINT ["bash", "-c", ". /opt/conda/etc/profile.d/conda.sh && conda activate vanilla &&  python submit-dps-job.py \"$@\"", "bash"]
+ENTRYPOINT ["bash", "-c", "export MAAP_PGT=${MAAP_PGT} && . /opt/conda/etc/profile.d/conda.sh && conda activate vanilla &&  python submit-dps-job.py \"$@\"", "bash"]
