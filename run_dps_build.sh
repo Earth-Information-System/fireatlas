@@ -9,4 +9,5 @@ echo "Python: $(which python)"
 python --version
 # the vanilla image uses conda version 23.10
 # where mamba should be default resolver
+pushd "$basedir"
 conda env create -f env-feds-2024.yml
