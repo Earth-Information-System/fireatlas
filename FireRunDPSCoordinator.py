@@ -185,8 +185,6 @@ def poll_on_job_status(jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
 
 
 def track_submitted_jobs(submitted_jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
-    """for the given 'target_func_name' block and wait for job results
-    """
     queued_jobs = validate_job_submission(submitted_jobs)
     failed_jobs = poll_on_job_status(queued_jobs)
     return failed_jobs
