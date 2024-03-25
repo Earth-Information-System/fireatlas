@@ -19,7 +19,7 @@ stages:
     #sudo apt update -y -qq
     #sudo apt-get install -y -qq python3-pip
     pip install git+https://github.com/MAAP-Project/maap-py.git@develop
-    python3.10 submit-dps-job.py ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
+    python submit-dps-job.py ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
 
 ###################################
 # MANUALLY RUN DPS JOBS
