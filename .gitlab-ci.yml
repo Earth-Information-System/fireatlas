@@ -26,7 +26,7 @@ dps-run:fire-atlas-coordinator-manual:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-feds-dps-coordinator-v3
+    ALGO_NAME: $ALGO_NAME
     VERSION: $VERSION_TAG
     USERNAME: $USERNAME
     QUEUE: maap-dps-eis-worker-32gb
