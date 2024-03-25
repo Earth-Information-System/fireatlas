@@ -6,6 +6,7 @@ stages:
   only:
     - primarykeyv2
     - pipelines
+    - preprocess-db
     - gc/pipelines/additions
   tags:
     - shell
@@ -15,15 +16,16 @@ stages:
     #- docker images | grep 'fire-atlas-' | awk '{print $3}' | xargs docker rmi -f
     cd ./maap_runtime/
     python --version
-    sudo apt update -y -qq && sudo apt install python3-pip -y -qq
+    sudo apt update -y -qq && \
+      sudo apt-get install -y -qq python3.10 python3.10-distutils python3.10-venv python3-pip
     pip install git+https://github.com/MAAP-Project/maap-py.git@develop
-    python submit-dps-job.py ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
+    python3.10 submit-dps-job.py ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
 
 ###################################
 # MANUALLY RUN DPS JOBS
 ###################################
 
-dps-run:fire-atlas-coordinator-manual:
+dps-run:fire-atlas-any-manual:
   extends: .run_dps_job_base
   only:
     variables:

@@ -6,7 +6,7 @@ import time
 from typing import Tuple
 import concurrent
 from concurrent.futures import ThreadPoolExecutor
-
+import preprocess
 from FireLog import logger
 from FireTypes import Region, TimeStep
 from utils import timed
@@ -80,11 +80,15 @@ def submit_preprocess_region(
 ) -> Tuple[DPSJob]:
     """handles targets jobs 'preprocess_region' and 'preprocess_region_and_t'
     """
+    import FireIO
+
+    output_filepath = preprocess.preprocessed_region_filename(region, location="s3")
+    if FireIO.os_path_exists(output_filepath):
+        logger.info(f"skipping 'preprocess_region' b/c file \
+        already exists for region {region[0]}, {output_filepath}")
+        return
+
     submitted_jobs = []
-    # handle 'preprocess_region'
-    # TODO: the target jobs already do existence checks
-    # but if we want to save time and not kick off the
-    # jobs we'd have to add logic here
     result = maap_api.submitJob(**{
         "regnm": region[0],
         "bbox": json.loads(region[1])
@@ -104,12 +108,17 @@ def submit_preprocess_per_t(
 ) -> Tuple[DPSJob]:
     """handles targets jobs 'preprocess_region' and 'preprocess_region_and_t'
     """
+    import FireConsts
+    import FireIO
+
     submitted_jobs = []
-    # handle 'preprocess_region_and_t'
     for t in list_of_time_steps:
-        # TODO: the target jobs already do existence checks
-        # but if we want to save time and not kick off the
-        # jobs we'd have to add logic here
+        output_filepath = preprocess.preprocessed_filename(t, sat=FireConsts.firesrc, region=region, location="s3")
+        if FireIO.os_path_exists(output_filepath):
+            logger.info(f"skipping 'preprocess_region_t' b/c file \
+            already exists for region {region[0]}, {output_filepath}")
+            continue
+
         result = maap_api.submitJob(**{
             "regnm": region[0],
             "t": json.loads(t)
@@ -126,6 +135,7 @@ def submit_preprocess_per_t(
 def submit_update_checker(maap_api: MAAP) -> Tuple[DPSJob]:
     """handles targets jobs 'data_update_checker' and 'fire_forward'
     """
+    # TODO: maybe check in the future
     submitted_jobs = []
     result = maap_api.submitJob()
     submitted_jobs.append(result)
