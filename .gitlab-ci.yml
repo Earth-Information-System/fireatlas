@@ -15,10 +15,10 @@ stages:
     #- docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
     #- docker images | grep 'fire-atlas-' | awk '{print $3}' | xargs docker rmi -f
     cd ./maap_runtime/
-    sudo apt update -y -qq
-    sudo apt-get install -y -qq python3.10 python3.10-distutils python3.10-venv python3-pip
-    pip install git+https://github.com/MAAP-Project/maap-py.git@develop
     python --version
+    sudo apt update -y -qq
+    sudo apt-get install -y -qq python3-pip
+    pip install git+https://github.com/MAAP-Project/maap-py.git@develop
     python3.10 submit-dps-job.py ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
 
 ###################################
