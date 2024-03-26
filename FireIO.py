@@ -2274,6 +2274,7 @@ def copy_from_local_to_s3(filepath: str):
 
     s3_client = boto3.client('s3')
 
+    logger.info(f"running replace on filepath={filepath}")
     dst = filepath.replace(FireConsts.dirdata_local_path, FireConsts.dirdata_s3_path)
     logger.info(f"uploading file {filepath} to {FireConsts.dirdata_s3_bucket}/{dst}")
 
