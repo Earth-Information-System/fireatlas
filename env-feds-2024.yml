@@ -1,4 +1,3 @@
-name: fire
 channels:
   - conda-forge
 dependencies:
@@ -9,6 +8,7 @@ dependencies:
   - shapely
   - fsspec
   - jupyterlab
+  - s3fs
   - fiona
   - rtree
   - scikit-learn
@@ -20,4 +20,8 @@ dependencies:
   - certifi
   - openssl
   - pytest
-prefix: /opt/conda/envs/fire
+  - tqdm
+  - pip
+  - pip:
+    - git+https://github.com/MAAP-Project/maap-py.git@develop
+    - scalene

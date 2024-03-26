@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 
 import argparse
-from FireLog import logger
 from FireTypes import Region
 from utils import timed
 
@@ -28,6 +27,7 @@ def RegionRun(region: Region, tst=None, ted=None):
     # os.environ['CONT_OPT'] = 2
     # import FireConsts
     import FireIO, FireConsts, FireMain, postprocess
+    from FireLog import logger
 
     ctime = datetime.now()
     
@@ -43,7 +43,7 @@ def RegionRun(region: Region, tst=None, ted=None):
 
         ted = [ctime.year, ctime.month, ctime.day, ampm]
     
-    print(f"Running code for {region[0]} from {tst} to {ted} with source {FireConsts.firesrc}")
+    logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {FireConsts.firesrc}")
 
     allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     allpixels_filepath = postprocess.save_allpixels(allpixels, tst, ted, region)
@@ -58,17 +58,18 @@ def RegionRun(region: Region, tst=None, ted=None):
     postprocess.save_large_fires_nplist(allpixels, region, large_fires, tst)
     postprocess.save_large_fires_layers(allfires.gdf, region, large_fires, tst)
 
-    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), str(tst[0]), region[0], "Snapshot", "*", "*.fgb")):
+    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), region[0], str(tst[0]), "Snapshot", "*", "*.fgb")):
         FireIO.copy_from_local_to_s3(filepath)
 
-    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), str(tst[0]), region[0], "Largefire", "*", "*.fgb")):
+    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), region[0], str(tst[0]), "Largefire", "*", "*.fgb")):
         FireIO.copy_from_local_to_s3(filepath)
+
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     
     Example:
-    python3 FireRunByRegion.py --regnm="CaliTestRun" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]" --export
+    python3 FireRunFireForward.py --regnm="CaliTestRun" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
     """
     
     parser = argparse.ArgumentParser()
@@ -79,4 +80,5 @@ if __name__ == "__main__":
     try:
         RegionRun([args.regnm, None], args.tst, args.ted)
     except Exception as e:
+        from FireLog import logger
         logger.exception(e)

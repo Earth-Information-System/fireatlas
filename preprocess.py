@@ -1,5 +1,6 @@
 import os
 import uuid
+import fsspec
 import pandas as pd
 from typing import Literal, Optional
 from shapely import to_geojson, from_geojson
@@ -53,7 +54,8 @@ def preprocess_region(region: Region, force=False):
 def read_region(region: Region):
     filepath = preprocessed_region_filename(region)
 
-    with open(filepath, "r") as f:
+    # use fsspec here b/c it could be s3 or local
+    with fsspec.open(filepath, "r") as f:
         shape = from_geojson(f.read())
     return (region[0], shape)
 

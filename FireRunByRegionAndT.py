@@ -2,7 +2,6 @@ import json
 import argparse
 import os
 
-from FireLog import logger
 from utils import timed
 from FireTypes import TimeStep, Region
 
@@ -17,12 +16,12 @@ def validate_json(s):
 @timed
 def RegionAndTRun(region: Region, t: TimeStep):
     import FireIO, FireConsts, preprocess
-    
-    print(f"Running preprocessing code for {region[0]} at {t=} with source {FireConsts.firesrc}")
+    from FireLog import logger
 
-    output_filepaths = preprocess.preprocess_region_t(t, FireConsts.firesrc, region=region)
-    for filepath in output_filepaths:
-        FireIO.copy_from_local_to_s3(filepath)
+    logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {FireConsts.firesrc}")
+
+    output_filepath = preprocess.preprocess_region_t(t, sensor=FireConsts.firesrc, region=region)
+    FireIO.copy_from_local_to_s3(output_filepath)
 
 
 if __name__ == "__main__":
@@ -39,4 +38,5 @@ if __name__ == "__main__":
     try:
         RegionAndTRun([args.regnm, None], args.t)
     except Exception as e:
+        from FireLog import logger
         logger.exception(e)
