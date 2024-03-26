@@ -257,7 +257,7 @@ def make_sf_nfplist(allfires, t, regnm, fids):
     sfkeys = list(dd.keys())
 
     if t != allfires.t:
-        allfires = FireIO.load_fobj(t, regnm, activeonly=True)
+        allfires = FireIO.load_fobj(t, regnm, activeonly=False)
     # record all nfps for all fires with fids to make nfplist at t
     gdf_1d = None
     for fid in fids:
@@ -438,14 +438,14 @@ def save_sfts_all(queue: multiprocessing.Queue, t, regnm, layers=["perimeter", "
     tstart = time.time()
     # read allfires object
     logger.info(f'Load allfires..')
-    allfires = FireIO.load_fobj(t, regnm, activeonly=True)
+    allfires = FireIO.load_fobj(t, regnm, activeonly=False)
     
     t_pt = FireTime.t_nb(t, nb="previous")
     
     try:
     # read allfires object at previous time step
         logger.info(f'Load allfires_pt...')
-        allfires_pt = FireIO.load_fobj(t_pt, regnm, activeonly=True)
+        allfires_pt = FireIO.load_fobj(t_pt, regnm, activeonly=False)
     except: 
         allfires_pt = FireObj.Allfires(t_pt)
     # find all large active fires and sleepers
