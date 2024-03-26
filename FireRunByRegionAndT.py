@@ -20,9 +20,8 @@ def RegionAndTRun(region: Region, t: TimeStep):
 
     logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {FireConsts.firesrc}")
 
-    output_filepaths = preprocess.preprocess_region_t(t, sensor=FireConsts.firesrc, region=region)
-    for filepath in output_filepaths:
-        FireIO.copy_from_local_to_s3(filepath)
+    output_filepath = preprocess.preprocess_region_t(t, sensor=FireConsts.firesrc, region=region)
+    FireIO.copy_from_local_to_s3(output_filepath)
 
 
 if __name__ == "__main__":
