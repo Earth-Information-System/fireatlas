@@ -51,8 +51,8 @@ def preprocess_region(region: Region, force=False):
     return output_filepath
 
 @timed
-def read_region(region: Region):
-    filepath = preprocessed_region_filename(region)
+def read_region(region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+    filepath = preprocessed_region_filename(region, location=location)
 
     # use fsspec here b/c it could be s3 or local
     with fsspec.open(filepath, "r") as f:
@@ -170,30 +170,44 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     return filepath
 
 
-def check_preprocessed_file(list_of_ts, sat):
+def check_preprocessed_file(
+    tst: TimeStep,
+    ted: TimeStep,
+    sat: Literal["SNPP", "NOAA20"], 
+    freq: Literal["monthly", "NRT"] = "monthly", 
+    location: Literal["s3", "local"] = FireConsts.READ_LOCATION
+):
     """Before running preprocess_monthly_file, check if the file already exists
     for that satellite using a list of time steps
 
     Parameters
     ----------
-    list_of_ts : list of time tuples
-    sat : str, 'SNPP' or 'NOAA20'
+    tst : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' to start checking for files
+    ted : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' to end checking for files
+    sat: Literal["SNPP", "NOAA20"]
+        which satellite to use
+    freq: Literal["monthly", "NRT"]
+        which files to use - monthly or daily (NRT)
+    location: Literal["s3", "local"]
+        where to check for files
 
     Returns
     -------
-    list of unique combos of years and months that need to be processed
+    list of unique combos of years and months (and days if NRT) that need to be processed
     """
     # check that there's viirs data for these dates and if not, keep track
     needs_processing = []
-    for ts in list_of_ts:
-        filepath = preprocessed_filename(ts, sat)
-        if not os.path.exists(filepath):
-            needs_processing.append(ts)
+    for t in FireTime.t_generator(tst, ted):
+        filepath = preprocessed_filename(t, sat, location=location)
+        if not FireIO.os_path_exists(filepath):
+            needs_processing.append(t)
 
-    # get unique combos of year and month. make sure sorted
-    unique_ym = list(set([(ts[0], ts[1]) for ts in needs_processing]))
-    unique_ym = sorted(unique_ym, key=lambda x: (x[0], x[1]))
-    return unique_ym
+    if freq == "monthly":
+        return list(set([(t[0], t[1]) for t in needs_processing]))
+    else:
+        return list(set([(t[0], t[1], t[2]) for t in needs_processing]))
 
 
 @timed
@@ -310,7 +324,8 @@ def preprocess_region_t(
     sensor: Literal['SNPP', 'NOAA20', 'VIIRS', "TESTING123"], 
     region: Region, 
     force: bool = False,
-    read_location: Literal["local", "s3"] = FireConsts.READ_LOCATION
+    read_location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
+    read_region_location: Literal["local", "s3"] = None,
 ):
 
     # if regional output already exists, exit early so we don't reprocess
@@ -324,7 +339,7 @@ def preprocess_region_t(
         return output_filepath
     
     # read in the preprocessed region
-    region = read_region(region)
+    region = read_region(region, location=read_region_location or read_location)
     logger.info(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
     )

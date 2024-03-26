@@ -509,7 +509,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
     return allfires
 
 @timed
-def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=None):
+def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=None, read_location=None):
     """ The wrapper function to progressively track all fire events for a time period
 
     Parameters
@@ -520,9 +520,10 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
     the year, month, day and 'AM'|'PM' at end time
     sat : str, 'SNPP', 'NOAA20', 'VIIRS', 'BAMOD
         if set, overrides `FireConsts.firesrc`
-    restart : bool
+    restart : [DEPRECATED] bool
         if set to true, force to initiate an object
-
+    read_location: 
+        where to read preprocessed files from
     Returns
     -------
     allfires : FireObj allfires object
@@ -535,12 +536,15 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
     if sat is None:
         sat = FireConsts.firesrc
 
+    if read_location is None:
+        read_location = FireConsts.READ_LOCATION
+
     # initialize allfires object
     allfires = FireObj.Allfires(tst)
 
     # read in all preprocessed pixel data
     allpixels = pd.concat([
-        preprocess.read_preprocessed(t, sat=sat, region=region)
+        preprocess.read_preprocessed(t, sat=sat, region=region, location=read_location)
         for t in FireTime.t_generator(tst, ted)
     ])
     allpixels["fid"] = -1

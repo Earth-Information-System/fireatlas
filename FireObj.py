@@ -75,12 +75,15 @@ class Allfires:
     
     @classmethod
     @timed 
-    def rehydrate(cls, tst, ted, region, include_dead=False):
+    def rehydrate(cls, tst, ted, region, include_dead=False, read_location=None):
         import datetime
         import FireConsts, FireTime, postprocess
 
-        allfires_gdf = postprocess.read_allfires_gdf(tst, ted, region)
-        allpixels = postprocess.read_allpixels(tst, ted, region)
+        if read_location is None:
+            read_location = FireConsts.READ_LOCATION
+            
+        allfires_gdf = postprocess.read_allfires_gdf(tst, ted, region, location=read_location)
+        allpixels = postprocess.read_allpixels(tst, ted, region, location=read_location)
 
         dt = FireTime.t2dt(ted)
 

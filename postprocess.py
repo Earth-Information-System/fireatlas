@@ -28,8 +28,8 @@ def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
     return output_filepath
 
 @timed
-def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region):
-    filepath = allpixels_filepath(tst, ted, region)
+def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+    filepath = allpixels_filepath(tst, ted, region, location=location)
 
     return pd.read_csv(filepath, index_col="uuid", parse_dates=["t"])
 
@@ -51,8 +51,8 @@ def save_allfires_gdf(allfires_gdf, tst: TimeStep, ted: TimeStep, region: Region
 
 
 @timed
-def read_allfires_gdf(tst: TimeStep, ted: TimeStep, region: Region):
-    filepath = allfires_filepath(tst, ted, region)
+def read_allfires_gdf(tst: TimeStep, ted: TimeStep, region: Region, location : Literal["s3", "local"] = FireConsts.READ_LOCATION):
+    filepath = allfires_filepath(tst, ted, region, location=location)
 
     return gpd.read_parquet(filepath)
 
@@ -163,7 +163,7 @@ def save_large_fires_nplist(allpixels, region, large_fires, tst):
 def save_fire_layers(allfires_gdf_fid, region, fid, tst):
     from FireGpkg_sfs import getdd
 
-    output_dir = fire_folder(region, fid, tst, location="local")
+    output_dir = largefire_folder(region, fid, tst, location="local")
     os.makedirs(output_dir, exist_ok=True)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
@@ -227,9 +227,9 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
         save_fire_layers(data, region, fid, tst)
 
 
-def individual_fires_path(tst, ted, region):
+def individual_fires_path(tst, ted, region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
     filename = f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"
-    return os.path.join(FireConsts.diroutdata, region[0], str(tst[0]), filename)
+    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename)
 
 
 def cumunion(x):
@@ -269,7 +269,7 @@ def save_individual_fire(allfires_gdf, tst, ted, region):
     merged_t = merged_t[col_order]
 
     # get file output name
-    output_filepath = individual_fires_path(tst, ted, region)
+    output_filepath = individual_fires_path(tst, ted, region, location="local")
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
     
