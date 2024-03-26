@@ -26,7 +26,7 @@ if __name__ == "__main__":
     """ The main code to run preprocessing for a region and time period. It writes to a dedicated directory on s3.
     
     Example:
-    python3 FireRunByRegionAndT.py --regnm="WesternUS" --t="[2023,6,1,\"AM\"]"
+    python3 FireRunPreprocessRegion.py --regnm="WesternUS" --bbox="[-119.5, 36.8, -118.9, 37.7]"
     """
     
     parser = argparse.ArgumentParser()
