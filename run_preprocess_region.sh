@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -euxo pipefail
 set -eo pipefail
 mkdir output
 wrkdir=$(pwd -P)

@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -euxo pipefail
 set -eo pipefail
 basedir=$( cd "$(dirname "$0")"; pwd -P )
 echo "Basedir: $basedir"

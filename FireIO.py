@@ -12,6 +12,7 @@ import os
 import pandas as pd
 
 import FireConsts, FireTime
+from FireLog import logger
 import geopandas as gpd
 from FireTypes import Region, TimeStep
 
