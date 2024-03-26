@@ -475,8 +475,8 @@ def CONUSrunNRT():
         ampm = 'PM'
     else:
         ampm = 'AM'
-    #tst = [2022, 1, 1, 'AM']
-    #ted = [2022, 12, 31, 'PM']
+    tst = [2023, 1, 1, 'AM']
+    ted = [2023, 12, 31, 'PM']
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
 
