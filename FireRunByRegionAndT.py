@@ -35,8 +35,4 @@ if __name__ == "__main__":
     parser.add_argument("--regnm", type=str)
     parser.add_argument("--t", type=validate_json)
     args = parser.parse_args()
-    try:
-        RegionAndTRun([args.regnm, None], args.t)
-    except Exception as e:
-        from FireLog import logger
-        logger.exception(e)
+    RegionAndTRun([args.regnm, None], args.t)

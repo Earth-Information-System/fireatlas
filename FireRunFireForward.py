@@ -77,8 +77,4 @@ if __name__ == "__main__":
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
     args = parser.parse_args()
-    try:
-        RegionRun([args.regnm, None], args.tst, args.ted)
-    except Exception as e:
-        from FireLog import logger
-        logger.exception(e)
+    RegionRun([args.regnm, None], args.tst, args.ted)
