@@ -344,13 +344,16 @@ def preprocess_region_t(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
     )
     if sensor == "VIIRS":
-        df = pd.concat(
-            [
-                read_preprocessed_input(t, sat="SNPP", location=read_location),
-                read_preprocessed_input(t, sat="NOAA20", location=read_location),
-            ],
-            ignore_index=True,
-        )
+        dfs = []
+        for sat in ["SNPP", "NOAA20"]:
+            try:
+                dfs.append(read_preprocessed_input(t, sat=sat, location=read_location))
+            except FileNotFoundError as e:
+                logger.info(f"{sat} file not available at {t=}: '{str(e)}'")
+        if len(dfs) == 0:
+            raise ValueError(f"Both NOAA20 and SNPP files are not available for {t=}")
+        else:
+            df = pd.concat(dfs, ignore_index=True)
     else:
         df = read_preprocessed_input(t, sat=sensor, location=read_location)
 
