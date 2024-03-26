@@ -3,7 +3,6 @@ import json
 import argparse
 import os
 
-from FireLog import logger
 from utils import timed
 
 
@@ -49,4 +48,5 @@ if __name__ == "__main__":
     try:
         Run()
     except Exception as e:
+        from FireLog import logger
         logger.exception(e)

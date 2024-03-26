@@ -13,10 +13,6 @@ from utils import timed
 from maap.maap import MAAP
 from maap.dps.dps_job import DPSJob
 
-import logging
-logger = logging.getLogger(__name__)
-
-
 class RetryException(Exception):
     pass
 

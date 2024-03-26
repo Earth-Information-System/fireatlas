@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 
 import argparse
-from FireLog import logger
 from FireTypes import Region
 from utils import timed
 
@@ -28,6 +27,7 @@ def RegionRun(region: Region, tst=None, ted=None):
     # os.environ['CONT_OPT'] = 2
     # import FireConsts
     import FireIO, FireConsts, FireMain, postprocess
+    from FireLog import logger
 
     ctime = datetime.now()
     
@@ -43,7 +43,7 @@ def RegionRun(region: Region, tst=None, ted=None):
 
         ted = [ctime.year, ctime.month, ctime.day, ampm]
     
-    print(f"Running code for {region[0]} from {tst} to {ted} with source {FireConsts.firesrc}")
+    logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {FireConsts.firesrc}")
 
     allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     allpixels_filepath = postprocess.save_allpixels(allpixels, tst, ted, region)
@@ -80,4 +80,5 @@ if __name__ == "__main__":
     try:
         RegionRun([args.regnm, None], args.tst, args.ted)
     except Exception as e:
+        from FireLog import logger
         logger.exception(e)

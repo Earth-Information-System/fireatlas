@@ -1,7 +1,6 @@
 import json
 import argparse
 
-from FireLog import logger
 from utils import timed
 from FireTypes import Region
 
@@ -37,4 +36,5 @@ if __name__ == "__main__":
     try:
         Run([args.regnm, args.bbox])
     except Exception as e:
+        from FireLog import logger
         logger.exception(e)
