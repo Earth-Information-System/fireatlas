@@ -58,10 +58,10 @@ def RegionRun(region: Region, tst=None, ted=None):
     postprocess.save_large_fires_nplist(allpixels, region, large_fires, tst)
     postprocess.save_large_fires_layers(allfires.gdf, region, large_fires, tst)
 
-    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), str(tst[0]), region[0], "Snapshot", "*", "*.fgb")):
+    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), region[0], str(tst[0]), "Snapshot", "*", "*.fgb")):
         FireIO.copy_from_local_to_s3(filepath)
 
-    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), str(tst[0]), region[0], "Largefire", "*", "*.fgb")):
+    for filepath in glob.glob(os.path.join(FireConsts.get_diroutdata(location="local"), region[0], str(tst[0]), "Largefire", "*", "*.fgb")):
         FireIO.copy_from_local_to_s3(filepath)
 
 

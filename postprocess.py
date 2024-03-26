@@ -14,7 +14,7 @@ import warnings; warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarnin
 
 def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
     filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
-    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], filename)
+    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename)
 
 
 @timed
@@ -36,7 +36,7 @@ def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region):
 
 def allfires_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
     filename = f"allfires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.parq"
-    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], filename)
+    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename)
 
 
 @timed
@@ -58,7 +58,7 @@ def read_allfires_gdf(tst: TimeStep, ted: TimeStep, region: Region):
 
 
 def snapshot_folder(region: Region, tst: TimeStep, ted: TimeStep, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
-    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}")
+    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}")
 
 
 @timed
@@ -136,7 +136,7 @@ def find_largefires(allfires_gdf):
 
 
 def largefire_folder(region: Region, fid, tst: TimeStep, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
-    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], "Largefire", str(fid))
+    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), "Largefire", str(fid))
 
 
 @timed
@@ -229,7 +229,7 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
 
 def individual_fires_path(tst, ted, region):
     filename = f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"
-    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], filename)
+    return os.path.join(FireConsts.diroutdata, region[0], str(tst[0]), filename)
 
 
 def cumunion(x):
