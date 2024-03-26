@@ -69,7 +69,7 @@ if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     
     Example:
-    python3 FireRunByRegion.py --regnm="CaliTestRun" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]" --export
+    python3 FireRunFireForward.py --regnm="CaliTestRun" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
     """
     
     parser = argparse.ArgumentParser()

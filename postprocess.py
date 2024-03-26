@@ -34,9 +34,9 @@ def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region):
     return pd.read_csv(filepath, index_col="uuid", parse_dates=["t"])
 
 
-def allfires_filepath(tst: TimeStep, ted: TimeStep, region: Region):
+def allfires_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
     filename = f"allfires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.parq"
-    return os.path.join(FireConsts.diroutdata, str(tst[0]), region[0], filename)
+    return os.path.join(FireConsts.get_diroutdata(location=location), str(tst[0]), region[0], filename)
 
 
 @timed
