@@ -25,7 +25,7 @@ def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
     allpixels.to_csv(output_filepath)
-
+    return output_filepath
 
 @timed
 def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region):
@@ -47,6 +47,7 @@ def save_allfires_gdf(allfires_gdf, tst: TimeStep, ted: TimeStep, region: Region
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
     allfires_gdf.to_parquet(output_filepath)
+    return output_filepath
 
 
 @timed
