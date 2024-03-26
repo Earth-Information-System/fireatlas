@@ -11,6 +11,7 @@ from FireLog import logger
 from FireTypes import Region, TimeStep
 from utils import timed
 from maap.maap import MAAP
+from maap.utils import algorithm_utils
 from maap.dps.dps_job import DPSJob
 
 class RetryException(Exception):
@@ -72,6 +73,7 @@ def validate_job_submission(submitted_jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
 @retry(max_retries=2, exception_to_check=(RetryException,))
 def submit_preprocess_region(
         maap_api: MAAP,
+        algo_kwargs: dict,
         region: Region,
 ) -> Tuple[DPSJob]:
     import FireIO
@@ -83,10 +85,13 @@ def submit_preprocess_region(
         return
 
     submitted_jobs = []
-    result = maap_api.submitJob(**{
-        "regnm": region[0],
-        "bbox": json.loads(region[1])
-    })
+    result = maap_api.submitJob(
+        **algo_kwargs,
+        **{
+            "regnm": region[0],
+            "bbox": json.dumps(region[1])
+        }
+    )
     submitted_jobs.append(result)
     failed_jobs = track_submitted_jobs(submitted_jobs)
     if failed_jobs:
@@ -97,6 +102,7 @@ def submit_preprocess_region(
 @retry(max_retries=2, exception_to_check=(RetryException,))
 def submit_preprocess_per_t(
         maap_api: MAAP,
+        algo_kwargs: dict,
         region: Region,
         list_of_time_steps: Tuple[TimeStep],
 ) -> Tuple[DPSJob]:
@@ -111,10 +117,13 @@ def submit_preprocess_per_t(
             already exists for region {region[0]}, {output_filepath}")
             continue
 
-        result = maap_api.submitJob(**{
-            "regnm": region[0],
-            "t": json.loads(t)
-        })
+        result = maap_api.submitJob(
+            **algo_kwargs,
+            **{
+                "regnm": region[0],
+                "t": json.dumps(t)
+            }
+        )
         submitted_jobs.append(result)
 
     failed_jobs = track_submitted_jobs(submitted_jobs)
@@ -124,10 +133,10 @@ def submit_preprocess_per_t(
 
 
 @retry(max_retries=2, exception_to_check=(RetryException,))
-def submit_update_checker(maap_api: MAAP) -> Tuple[DPSJob]:
+def submit_update_checker(maap_api: MAAP, algo_kwargs: dict) -> Tuple[DPSJob]:
     # TODO: maybe check in the future
     submitted_jobs = []
-    result = maap_api.submitJob()
+    result = maap_api.submitJob(**algo_kwargs)
     submitted_jobs.append(result)
 
     failed_jobs = track_submitted_jobs(submitted_jobs)
@@ -139,16 +148,20 @@ def submit_update_checker(maap_api: MAAP) -> Tuple[DPSJob]:
 @retry(max_retries=2, exception_to_check=(RetryException,))
 def submit_fire_forward(
         maap_api: MAAP,
+        algo_kwargs: dict,
         region: Region,
         tst: TimeStep,
         ted: TimeStep,
 ) -> Tuple[DPSJob]:
     submitted_jobs = []
-    result = maap_api.submitJob(**{
-        "regnm": region[0],
-        "tst": json.loads(tst),
-        "ted": json.loads(ted)
-    })
+    result = maap_api.submitJob(
+        **algo_kwargs,
+        **{
+            "regnm": region[0],
+            "tst": json.dumps(tst),
+            "ted": json.dumps(ted)
+        }
+    )
     submitted_jobs.append(result)
     failed_jobs = track_submitted_jobs(submitted_jobs)
     if failed_jobs:
@@ -173,7 +186,7 @@ def poll_on_job_status(jobs: Tuple[DPSJob]) -> Tuple[DPSJob]:
         dps_job_futures = [executor.submit(wait_for_job, dps_job) for dps_job in jobs]
         for dps_job in concurrent.futures.as_completed(dps_job_futures):
             try:
-                if dps_job.retrieve_status().lower() != 'succeeded':
+                if dps_job.result().retrieve_status().lower() != 'succeeded':
                     failed_jobs.append(dps_job)
             except Exception as e:
                 logger.exception(f"'poll_on_jobs_status' failed with {e}")
@@ -201,15 +214,24 @@ def Run(region: Region, tst: TimeStep = None, ted: TimeStep = None):
 
     try:
         for dps_job_key, algo_config in jobs_to_run.items():
-            maap_api = MAAP(maap_host='api.maap-project.org', config_file_path=algo_config)
+            maap_api = MAAP(maap_host='api.maap-project.org')
+            algo_config = algorithm_utils.read_yaml_file(algo_config)
+            submit_job_kwargs = {
+                "identifier": f"job-{algo_config['algorithm_name']}:{algo_config['algorithm_version']}",
+                "algo_id": algo_config["algorithm_name"],
+                "version": algo_config["algorithm_version"],
+                "username": "gcorradini",
+                "queue": algo_config["queue"],
+            }
+
             if dps_job_key == 'data_update_checker':
-                submit_update_checker(maap_api)
+                submit_update_checker(maap_api, submit_job_kwargs)
             elif dps_job_key == 'preprocess_region':
-                submit_preprocess_region(maap_api, region)
+                submit_preprocess_region(maap_api, submit_job_kwargs, region)
             elif dps_job_key == 'preprocess_region_and_t':
-                submit_preprocess_per_t(maap_api, region, list_of_time_steps)
+                submit_preprocess_per_t(maap_api, submit_job_kwargs, region, list_of_time_steps)
             elif dps_job_key == 'fire_forward':
-                submit_fire_forward(maap_api, region, tst, ted)
+                submit_fire_forward(maap_api, submit_job_kwargs, region, tst, ted)
             else:
                 raise ValueError(f"[ JOB MATCH ]: dps_job_key='{dps_job_key}'")
     except (MaxRetryException, JobSubmissionException) as exc:
@@ -230,8 +252,4 @@ if __name__ == "__main__":
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
     args = parser.parse_args()
-
-    try:
-        Run([args.regnm, args.bbox], args.tst, args.ted)
-    except Exception as e:
-        logger.exception(e)
+    Run([args.regnm, args.bbox], args.tst, args.ted)

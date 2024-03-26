@@ -45,8 +45,4 @@ if __name__ == "__main__":
     Example:
     python3 FireRunDataUpdateChecker.py
     """
-    try:
-        Run()
-    except Exception as e:
-        from FireLog import logger
-        logger.exception(e)
+    Run()

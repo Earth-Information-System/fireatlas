@@ -32,9 +32,4 @@ if __name__ == "__main__":
     parser.add_argument("--regnm", type=str)
     parser.add_argument("--bbox", type=validate_json)
     args = parser.parse_args()
-
-    try:
-        Run([args.regnm, args.bbox])
-    except Exception as e:
-        from FireLog import logger
-        logger.exception(e)
+    Run([args.regnm, args.bbox])
