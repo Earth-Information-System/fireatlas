@@ -32,7 +32,7 @@ dirdata_local_path = "data"
 dirdata_s3_path = "shared/gsfc_landslides"
 
 def get_dirdata(
-        dirname: Literal["FEDSinput", "FEDSpreprocessed", "FEDSoutput-s3-conus"], 
+        dirname: Literal["FEDSinput", "FEDSpreprocessed", "FEDSoutput-v3"], 
         location: Literal["s3", "local"], 
     ): 
     if location == "local":
@@ -42,7 +42,7 @@ def get_dirdata(
 
 get_dirextdata = partial(get_dirdata, dirname="FEDSinput")
 get_dirprpdata = partial(get_dirdata, dirname="FEDSpreprocessed")
-get_diroutdata = partial(get_dirdata, dirname="FEDSoutput-s3-conus")
+get_diroutdata = partial(get_dirdata, dirname="FEDSoutput-v3")
 
 # final storage place for written files. This is where everything reads from
 READ_LOCATION = "s3"
