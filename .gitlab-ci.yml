@@ -6,8 +6,7 @@ stages:
   only:
     - primarykeyv2
     - pipelines
-    - preprocess-db
-    - gc/pipelines/additions
+    - gc/dask_coordinator
   tags:
     - shell
   script: |

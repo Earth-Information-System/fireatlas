@@ -14,11 +14,8 @@ def validate_json(s):
 
 @timed
 def Run(region: Region):
-    import FireIO, preprocess
-
-    filepath = preprocess.preprocess_region(region)
-
-    FireIO.copy_from_local_to_s3(filepath)
+    from FireRunDaskCoordinator import job_preprocess_region
+    job_preprocess_region(region)
 
 
 if __name__ == "__main__":
