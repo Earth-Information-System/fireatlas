@@ -19,6 +19,35 @@ Modules required
 * FireConsts
 """
 
+def getdd(layer):
+    ''' Get attributes names and formats for different gpkg layers
+    '''
+    if layer == "perimeter":
+        dd = {
+            "mergeid": "int",  # this is the id in the large fire database
+            "ftype": "int",  # fire type
+            "n_pixels": "int",  # number of total pixels
+            "n_newpixels": "int",  # number of new pixels
+            "farea": "float",  # fire size
+            "fperim": "float",  # fire perimeter length
+            "flinelen": "float",  # active fire front line length
+            "duration": "float",  # fire duration
+            "pixden": "float",  # fire pixel density
+            "meanFRP": "float",  # mean FRP of the new fire pixels
+            "t": "datetime64[ns]",
+            "t_st": "datetime64",
+            "t_ed": "datetime64",
+        }
+    elif layer in ["fireline", "newfirepix"]:
+        dd = {
+            "mergeid": "int",
+            "t": "datetime64[ns]",
+            "t_st": "datetime64[ns]",
+            "t_ed": "datetime64[ns]",
+        }
+    return dd
+
+
 
 def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     """ Create gpd DataFrame for fire basic attributes and fire perimeter.

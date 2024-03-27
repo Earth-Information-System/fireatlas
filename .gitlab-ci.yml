@@ -5,49 +5,24 @@ stages:
   stage: dps-run
   only:
     - primarykeyv2
+    - pipelines
+    - gc/dask_coordinator
   tags:
     - shell
-  script:
-    - docker build --build-arg BUILD_MAPP_PGT_ARG=$MAAP_PGT -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
-    - docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
-    - docker images | grep 'fire-atlas-' | awk '{print $3}' | xargs docker rmi -f
-
+  script: |
+    #- docker build --build-arg BUILD_MAPP_PGT_ARG=$MAAP_PGT -t ${IMAGE_TAG} -f ./maap_runtime/Dockerfile .
+    #- docker run ${IMAGE_TAG} ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
+    #- docker images | grep 'fire-atlas-' | awk '{print $3}' | xargs docker rmi -f
+    docker run --env MAAP_PGT=${MAAP_PGT} --env MAAP_CONF=/maap-py --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
+      --rm mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4 \
+      /opt/conda/envs/vanilla/bin/python maap_runtime/submit-dps-job.py \
+      ${ALGO_NAME} ${VERSION} ${USERNAME} ${QUEUE} ${MAAP_IMAGE_ENV} --params "${PARAMS}"
 
 ###################################
-# DPS JOBS
+# MANUALLY RUN DPS JOBS
 ###################################
-# schedulers that call these jobs at certain cron frequencies and times are located:
-# https://repo.ops.maap-project.org/eorland_gee/fireatlas_nrt/-/pipeline_schedules
 
-dps-run:data-update-checker:
-  extends: .run_dps_job_base
-  only:
-    variables:
-       - $DATA_UPDATE_CHECKER
-  variables:
-    MAAP_IMAGE_ENV: ubuntu
-    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-dps-data-checker-v2
-    VERSION: 1.0.0
-    USERNAME: tmccabe
-    QUEUE: maap-dps-eis-worker-32gb
-    PARAMS: '{}'
-
-dps-run:fire-atlas-conus:
-  extends: .run_dps_job_base
-  only:
-    variables:
-      - $CONUS
-  variables:
-    MAAP_IMAGE_ENV: ubuntu
-    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-dps-main-v3
-    VERSION: 1.0.0
-    USERNAME: gcorradini
-    QUEUE: maap-dps-eis-worker-32gb
-    PARAMS: '{"regnm": "CONUS_ARCHIVE_P_KEY", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]", "export":"true"}'
-
-dps-run:fire-atlas-conus-manual:
+dps-run:fire-atlas-any-manual:
   extends: .run_dps_job_base
   only:
     variables:
@@ -55,13 +30,47 @@ dps-run:fire-atlas-conus-manual:
   variables:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
-    ALGO_NAME: eis-fire-feds-dps-main-v3test
+    ALGO_NAME: $ALGO_NAME
     VERSION: $VERSION_TAG
     USERNAME: $USERNAME
     QUEUE: maap-dps-eis-worker-32gb
     PARAMS: |
       $PARAMS_STRING
-    # EXAMPLE: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]", "export": "true"}'
+    # EXAMPLE: '{"regnm": "CaliTestRun", "bbox": "[-125,36,-117,42]", "tst": "[2023,6,1,\"AM\"]", "ted": "[2023,9,1,\"AM\"]"}'
+
+###################################
+# DPS JOBS
+###################################
+# schedulers that call these jobs at certain cron frequencies and times are located:
+# https://repo.ops.maap-project.org/eorland_gee/fireatlas_nrt/-/pipeline_schedules
+
+dps-run:fire-atalas-data-update-checker:
+  extends: .run_dps_job_base
+  only:
+    variables:
+       - $DATA_UPDATE_CHECKER
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME: eis-feds-dps-data-checker-v3
+    VERSION: 0.99.0
+    USERNAME: gcorradini
+    QUEUE: maap-dps-eis-worker-32gb
+    PARAMS: '{}'
+
+dps-run:fire-atlas-coordinator:
+  extends: .run_dps_job_base
+  only:
+    variables:
+      - $CONUS
+  variables:
+    MAAP_IMAGE_ENV: ubuntu
+    IMAGE_TAG: fire-atlas-${CI_COMMIT_SHORT_SHA}
+    ALGO_NAME:  eis-feds-dps-coordinator-v3
+    VERSION: 0.99.0
+    USERNAME: gcorradini
+    QUEUE: maap-dps-eis-worker-32gb
+    PARAMS: '{"regnm": "CONUS_PREPROCESS_ARCHIVE", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2022, 1, 1, \"AM\"]", "ted": "[2022, 12, 31, \"PM\"]"}'
 
 dps-run:fire-atlas-boreal-automate-snapshot:
   extends: .run_dps_job_base
@@ -102,7 +111,7 @@ dps-run:fire-atlas-lf-archive:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-archive-v3
-    VERSION: 1.0.0
+    VERSION: 0.99.0
     USERNAME: gcorradini
     QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{"folder_name": "WesternUS_REDO", "start": 2013, "end": 2021}'
@@ -116,7 +125,7 @@ dps-run:fire-atlas-lf-nrt:
     MAAP_IMAGE_ENV: ubuntu
     IMAGE_TAG: fire-atlas-lf-archive-nrt-${CI_COMMIT_SHORT_SHA}
     ALGO_NAME: eis-fire-feds-combine-largefire-nrt-v3
-    VERSION: 1.0.0
+    VERSION: 0.99.0
     USERNAME: gcorradini
     QUEUE: maap-dps-eis-worker-32gb
     PARAMS: '{"folder_name": "CONUS_NRT_DPS"}'

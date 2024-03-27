@@ -7,3 +7,4 @@ bk/
 running.log
 .conda/
 import/
+.coverage

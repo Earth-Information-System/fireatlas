@@ -1,27 +1,28 @@
 #!/bin/bash
-# set -euxo pipefail
 set -eo pipefail
-mkdir output
+output_dir=${PWD}/output
+mkdir "${output_dir}"
 basedir=$( cd "$(dirname "$0")"; pwd -P )
 echo "Basedir: $basedir"
 echo "Initial working directory: $(pwd -P)"
 echo "conda: $(which conda)"
 echo "Python: $(which python)"
 python --version
-source activate /opt/conda/envs/env-feds-dask
+source activate /opt/conda/envs/vanilla
 echo "Starting algorithm in subshell"
 (
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
-  python combine_largefire.py -s $2 -e $3 -p -x --folder-name $1
+  scalene --cli --no-browser --reduced-profile --html --column-width 180 \
+    --outfile "${output_dir}/profile.html" --- combine_largefire.py -s $2 -e $3 -p -x --folder-name $1
   popd
   echo "Copying log to special output dir"
-  cp "$basedir/running.log" ./output
+  cp "$basedir/running.log" "$output_dir"
 } || { # catch
   popd
   echo "Copying log to special output dir"
-  cp "$basedir/running.log" ./output
+  cp "$basedir/running.log" "$output_dir"
 }
 )
 echo "Done!"

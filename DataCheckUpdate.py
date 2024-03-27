@@ -5,6 +5,8 @@ from FireConsts import dirextdata
 import subprocess
 from datetime import date, timedelta
 import pandas as pd
+import preprocess
+from FireLog import logger
 
 from FireIO import os_path_exists
 
@@ -240,7 +242,7 @@ def wget(url, **kwargs):
     if "locdir" in kwargs:
         target_dir = kwargs.pop("locdir")
     target_file = os.path.join(target_dir, os.path.basename(url))
-    print(f"Downloading {url} to {target_file}")
+    logger.info(f"Downloading {url} to {target_file}")
     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
     request = urllib.request.Request(url)
     if "header" in kwargs:
@@ -248,9 +250,10 @@ def wget(url, **kwargs):
         assert header == "NASA", f"Non-standard header is not implemented: {header}"
         request.add_header("Authorization", "Bearer ZW9ybGFuZDpaV3hwYW1Gb0xtOXliR0Z1WkVCdVlYTmhMbWR2ZGc9PToxNjQyNzE4ODAyOjQyYzMzM2ViODViOWI3OTVlYzAyYTdmYWE2ZjYwYjFjZTc5MGJmNDg")
     if len(kwargs) > 0:
-        print(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
+        logger.info(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
     with opener.open(request) as response, fsspec.open(target_file, "wb") as f:
         f.write(response.read())
+    return target_file
 
 def update_VNP14IMGTDL(local_dir=None):
 
@@ -282,11 +285,14 @@ def update_VNP14IMGTDL(local_dir=None):
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
-        try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
-        except Exception as e: 
+        try:
+            downloaded_filepath = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        except Exception as e:
             print("\nCould not download VNP14IMGTDL data for",d)
             print('Error message:',e)
             continue
+        preprocess.preprocess_input_file(downloaded_filepath)
+
 
 def update_VJ114IMGTDL(local_dir=None):
 
@@ -317,13 +323,14 @@ def update_VJ114IMGTDL(local_dir=None):
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
     for d in pd.date_range(dstart,today):
         urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
-        try: strcmd = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        try:
+            downloaded_filepath = wget(url=urlfnm,locdir=local_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
         except Exception as e: 
             print("\nCould not download VJ114IMGTDL data for",d)
             print('Error message:',e)
             continue
-        
-        
+        preprocess.preprocess_input_file(downloaded_filepath)
+
 def update_GridMET_fm1000(local_dir=None):
     ''' Get updated GridMET data (including fm1000)
     '''

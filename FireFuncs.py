@@ -1,3 +1,6 @@
+from FireLog import logger
+from utils import timed
+
 def get_CONNECTIVITY_FIRE(fire):
     """ set the CONNECTIVITY_FIRE_KM value (km) for a given fire. Within this
     buffer of the fire exterior, new pixels will be appended to the fire.
@@ -53,30 +56,6 @@ def get_CONNECTIVITY_FIRE(fire):
         return v
 
 
-def get_CONNECTIVITY_CLUSTER():
-    """ get the connectivity spatial threshold for initial clustering
-
-    Returns:
-    --------
-    CONNECTIVITY_CLUSTER_KM : float
-        the connectivity spatial threshold for initial clustering, km
-    """
-    CONNECTIVITY_CLUSTER_KM = 0.7
-    return CONNECTIVITY_CLUSTER_KM
-
-
-def get_CONNECTIVITY_SLEEPER():
-    """ get the CONNECTIVITY_SLEEPER_KM value
-
-    Returns:
-    --------
-    CONNECTIVITY_SLEEPER_KM : float
-        the connectivity spatial threshold (to previous fire line), km
-    """
-    CONNECTIVITY_SLEEPER_KM = 1  # 1km
-    return CONNECTIVITY_SLEEPER_KM
-
-
 def set_ftype(fire):
     """ set fire type and dominant LCT for newly activated fires
 
@@ -90,7 +69,7 @@ def set_ftype(fire):
     from FireConsts import FTYP_opt
     import FireIO
     from datetime import date
-    import random
+    import numpy as np
 
     # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
     # 1 - use the CA type classification (dtermined using LCTmax)
@@ -106,26 +85,17 @@ def set_ftype(fire):
             uselocs = fire.newlocs_geo
         else:
             # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
-            uselocs = random.sample(fire.newlocs_geo, 1000)
+            uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
 
-        vLCT = FireIO.get_LCT_CONUS(
-            uselocs
-        )  # call get_LCT to get all LCT for the fire pixels
+        # get all LCT for the fire pixels
+        vLCT = FireIO.get_LCT_CONUS(uselocs)
         try:
-            LCTmax = max(
-            set(vLCT), key=vLCT.count)  # extract the LCT with most pixel counts
+            # extract the LCT with most pixel counts
+            LCTmax = max(set(vLCT), key=vLCT.count)
         except:
-            print('No LCT data available, setting ftype to 0...')
+            logger.info('No LCT data available, setting ftype to 0...')
             ftype = 0
             return ftype
-        # get and record fm1000 value at ignition
-        ignct = fire.ignlocsMP.centroid  # ignition centroid
-        loc = (ignct.y, ignct.x)  # (lat,lon)
-        t = date(*fire.t_st[:-1])
-        try: stFM1000 = FireIO.get_FM1000(t, loc)
-        except:
-            #print('FM1000 data is unavailable at this time.')
-            stFM1000 = 0
 
         # determine the fire type using the land cover type and stFM1000
         if LCTmax in [0, 11, 31]:  #'NoData', 'Water', 'Barren' -> 'Other'
@@ -135,25 +105,25 @@ def set_ftype(fire):
         elif LCTmax in [82]:  # 'Agriculture' -> 'Agriculture'
             ftype = 6
         elif LCTmax in [42]:  # 'Forest' ->
-            if stFM1000 > 12:  # 'Forest manage'
+            if fire.stFM1000 > 12:  # 'Forest manage'
                 ftype = 3
             else:  # 'Forest wild'
                 ftype = 2
         elif LCTmax in [52, 71]:  # 'Shrub', 'Grassland' ->
-            if stFM1000 > 12:  # 'Shrub manage'
+            if fire.stFM1000 > 12:  # 'Shrub manage'
                 ftype = 5
             else:  # 'Shrub wild'
                 ftype = 4
         else:
-            print(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
+            logger.info(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
     elif FTYP_opt == 2:  # global type classification
          # update or read LCTmax; calculated using all newlocs
         if fire.n_newpixels < 1000:
             uselocs = fire.newlocs_geo
         else:
-            # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
-            uselocs = random.sample(fire.newlocs_geo, 1000)
+           # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+            uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
         
         vLCT = FireIO.get_LCT_Global(
             uselocs
@@ -163,7 +133,7 @@ def set_ftype(fire):
             LCTmax = max(
             set(vLCT), key=vLCT.count)  # extract the LCT with most pixel counts
         except:
-            print('No LCT data available, setting ftype to 0...')
+            logger.info('No LCT data available, setting ftype to 0...')
             ftype = 0
             return ftype
         

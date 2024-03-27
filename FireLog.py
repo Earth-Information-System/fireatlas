@@ -29,5 +29,5 @@ ch.setFormatter(formatter)
 fh.setFormatter(formatter)
 
 # add the handlers to logger
-# logger.addHandler(ch)   # comment this to stop screen output
-logger.addHandler(fh)  # comment this to stop log file recording
+logger.addHandler(ch)   # comment this to stop screen output
+#logger.addHandler(fh)  # comment this to stop log file recording

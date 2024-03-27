@@ -2,10 +2,10 @@
 This is the module containing all constants used in this project as well as the
 running controls
 """
-
+from typing import Literal
 import os
 import FireEnums
-
+from functools import partial
 
 def get_env_var_as_type(name, cast_to_type=int, default=None):
     try:
@@ -26,14 +26,29 @@ def get_env_var_as_type(name, cast_to_type=int, default=None):
 projnm = "FEDStest"  # project name
 dirhome = os.environ.get("HOME")  # get system home directory
 
-# run at iMac
 dirdata = './'  # project directory -- only used For logging location
-# run at MacBook
-# dirdata = os.path.join(dirhome,'GoogleDrive','My','My.Research','UCI','ProjectData','CAFEDS','v2.0')
+dirdata_s3_bucket = "maap-ops-workspace"
+dirdata_local_path = "data"
+dirdata_s3_path = "shared/gsfc_landslides"
 
-dirextdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/'  # exterior input data directory
-dirtmpdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDStemp-s3-conus/'     # temporary data directory
-diroutdata = 's3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-s3-conus/'   # output data directory
+def get_dirdata(
+        dirname: Literal["FEDSinput", "FEDSpreprocessed", "FEDSoutput-v3"], 
+        location: Literal["s3", "local"], 
+    ): 
+    if location == "local":
+        return f"{dirdata_local_path}/{dirname}/"
+    else:
+        return f"s3://{dirdata_s3_bucket}/{dirdata_s3_path}/{dirname}/"
+
+get_dirextdata = partial(get_dirdata, dirname="FEDSinput")
+get_dirprpdata = partial(get_dirdata, dirname="FEDSpreprocessed")
+get_diroutdata = partial(get_dirdata, dirname="FEDSoutput-v3")
+
+# final storage place for written files. This is where everything reads from
+READ_LOCATION = "s3"
+dirextdata = get_dirextdata(location=READ_LOCATION)
+dirprpdata = get_dirprpdata(location=READ_LOCATION)
+diroutdata = get_diroutdata(location=READ_LOCATION)
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 
@@ -47,6 +62,11 @@ EARTH_RADIUS_KM = 6371.0  # earth radius, km
 # temporal parameters for fire object definition
 maxoffdays = 5  # fire becomes inactive after this number of consecutive days without active fire detection
 limoffdays = 20  # fire keeps sleeper status even at inactive but with inactive dates smaller than this value
+CONNECTIVITY_CLUSTER_KM = 0.7  # the connectivity spatial threshold for initial clustering, km
+CONNECTIVITY_SLEEPER_KM = 1  # the connectivity spatial threshold (to previous fire line), km
+
+# fire area threshold for determining large fires.
+LARGEFIRE_FAREA = 4
 
 # fire tracking options
 expand_only = (

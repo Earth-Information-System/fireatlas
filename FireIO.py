@@ -9,12 +9,86 @@ This module include functions used to read and save data
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
 import os
-import fiona
-import boto3
-import re
-import time
+import pandas as pd
+
+import FireConsts, FireTime
 from FireLog import logger
 import geopandas as gpd
+from FireTypes import Region, TimeStep
+
+
+def preprocess_polygon(polygon_gdf, data_source, id_col, 
+                       firename_col = None, startdate_col = None, enddate_col = None, geometry_col = None):
+    """
+    Process a geodataframe to ensure it has the correct column names, date types, and crs. 
+    Also buffers geometry by 375m to account for VIIRS pixel size.
+    Need to specify data source and column used for ID. Each fire dataset has a potentially different ID so need to 
+    include this to make the ID meaningful. 
+    I expect a geodataframe with columns for fire name, start date, end date, and geometry.
+    Names come from CALFIRE's FRAP fire perimeter dataset.
+    If any column names differ from expected, user should specify which columns to use. 
+
+    Parameters
+    ----------
+    polygon_gdf : geopandas.GeoDataFrame
+        A geodataframe containing fire perimeters.
+    data_source : str, data source e.g. "FRAP", "NIFC WFIGS", etc.
+    id_col : str, name of the id column used to record id e.g. "INC_NUM", "IRWIN", etc.
+    firename_col : str, column name for fire name if different from expected
+    startdate_col : str, column name for start date if different from expected
+    enddate_col : str, column name for end date if different from expected
+    geometry : str, column name for geometry if different from expected
+
+    Returns
+    -------
+    geopandas.GeoDataFrame
+        A geodataframe with the correct column names, date types, and crs.
+    """
+
+    import geopandas as gpd
+    import pandas as pd
+    import FireConsts, FireEnums
+
+    # test if it is a geodataframe, if not return an error message
+    if not isinstance(polygon_gdf, gpd.GeoDataFrame):
+        raise TypeError("Input should be a GeoDataFrame")
+    
+    # buffer polygon by VIIRS res. need to convert to crs in meters
+    polygon_m = polygon_gdf.geometry.to_crs(FireEnums.EPSG.CONUS_EQ_AREA.value)
+    polygon_m = polygon_m.buffer(FireConsts.VIIRSbuf)
+    
+    # reset geometry and convert to lat/lon
+    polygon_gdf = polygon_gdf.set_geometry(polygon_m).to_crs(4326)
+
+    # select the columns that are needed
+    colnames = ['FIRE_NAME', 'ALARM_DATE', 'CONT_DATE', 'geometry']
+    updated_colnames = [firename_col, startdate_col, enddate_col, geometry_col]
+
+    # coalesces the updated column names with the original column names, taking the non-None values, select cols
+    updated_colnames = [new_colname or orig_colname for new_colname, orig_colname in zip(updated_colnames, colnames)]
+    perim_processed = polygon_gdf[updated_colnames]
+    # renames columns to what you want
+    perim_processed.columns = colnames
+
+    # add in data source, id name, and fire id
+    if id_col in polygon_gdf.columns:
+        fire_id = polygon_gdf[id_col]
+    else:
+        raise ValueError(f"The column {id_col} does not exist in the data")
+    perim_processed.insert(1, 'FIRE_ID', fire_id)
+    perim_processed.insert(2, 'ID_NAME', id_col)
+    perim_processed.insert(3, 'DATA_SOURCE', data_source)    
+    
+    # finally, make sure the date columns are formatted correctly
+    perim_processed = perim_processed.copy()
+    date_cols = colnames[1:3]
+    for d in date_cols:
+        if perim_processed[d].dtype != 'datetime64[ns, UTC]':
+            perim_processed[d] = pd.to_datetime(perim_processed[d])
+
+    return perim_processed
+
+
 
 
 def gpd_read_file(filename, parquet=False, **kwargs):
@@ -134,33 +208,55 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
 
     return gdf
 
-
-def read_VNP14IMGML(yr, mo, ver="C1.05"):
-    """ read monthly VNP14IMGML data
-
+def VNP14IMGML_filepath(t: TimeStep, ver="C1.05"):
+    """ Filepath for monthly S-NPP VIIRS data
+    
     Parameters
     ----------
-    yr : int
-        year
-    mo : int
-        month
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
 
     Returns
     -------
-    df : dataframe
-        the monthly dataframe of VIIRS active fires
+    filepath : str | None
+        Path to input data or None if file does not exist
     """
-    from FireConsts import dirextdata
-    import os
-    import pandas as pd
+    year, month = t[0], t[1]
 
-    # set monthly file name
-    fnmFC = os.path.join(
-        dirextdata,
-        "VIIRS","VNP14IMGML",
-        "VNP14IMGML." + str(yr) + str(mo).zfill(2) + "." + ver + ".txt",)
+    file_dir = os.path.join(
+        FireConsts.dirextdata,
+        "VIIRS",
+        "VNP14IMGML",
+    )
     
-    # read
+    filepath = os.path.join(
+        file_dir, 
+        f"VNP14IMGML.{year}{month:02}.{ver}.txt.gz"
+    )
+    if not os_path_exists(filepath):
+        filepath = os.path.join(
+            file_dir, 
+            f"VNP14IMGML.{year}{month:02}.{ver}.txt"
+        )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
+    
+    return filepath
+
+def read_VNP14IMGML(filepath: str):
+    """ read monthly S-NPP VIIRS data
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        monthly DataFrame containing standardized columns of VIIRS active fires
+    """
     usecols = [
         "YYYYMMDD",
         "HHMM",
@@ -174,55 +270,63 @@ def read_VNP14IMGML(yr, mo, ver="C1.05"):
         "DNFlag",
     ]
 
+    df = pd.read_csv(
+        filepath,
+        dtype={"YYYYMMDD": "string", "HHMM": "string"},
+        usecols=usecols,
+        skipinitialspace=True,
+        na_values={"FRP": '*******'}
+    )
+    df["datetime"] = pd.to_datetime(
+        df["YYYYMMDD"] + " " + df["HHMM"], 
+        format="%Y%m%d %H%M"
+    )
+    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    df = df.drop(columns=["Sample", "Line"])
+    return df
+
+
+def VNP14IMGTDL_filepath(t: TimeStep):
+    """ Filepath for NRT S-NPP VIIRS data
     
-    if os_path_exists(fnmFC):
-        df = pd.read_csv(
-            fnmFC,
-            parse_dates=[["YYYYMMDD", "HHMM"]],
-            usecols=usecols,
-            skipinitialspace=True,
-        )
-        
-         # sometimes the FRP value is '*******' and cause incorrect dtype, need to correct this
-        df = df.replace('*******',0)
-        df['FRP'] = df['FRP'].astype('float')
-        
-        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-        df = df.drop(columns=["Sample", "Line"])
-        return df
-    else:
-        print('No data available for file',fnmFC)
-        return None
+    Parameters
+    ----------
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    d = FireTime.t2dt(t)
+
+    filepath = os.path.join(
+        FireConsts.dirextdata,
+        "VIIRS",
+        "VNP14IMGTDL",
+        f"SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{d.strftime('%Y%j')}.txt"
+    )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
+
+    return filepath
 
 
-def read_VNP14IMGTDL(t):
+def read_VNP14IMGTDL(filepath: str):
     """ Read daily NRT S-NPP VIIRS fire location data
 
     Parameters
     ----------
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the intialization
+    filepath : str
+        Path to input data. Can be local or s3.
 
     Returns
     -------
-    vlist : list
-        (lat,lon) tuple of all daily active fires
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of daily active fires
     """
-    from FireConsts import dirextdata
-
-    import pandas as pd
-    import os
-    from datetime import date
-
-    d = date(*t[:-1])
-
-    # derive monthly file name with path
-    dirFC = os.path.join(dirextdata,'VIIRS', "VNP14IMGTDL") + "/"
-    fnmFC = os.path.join(
-        dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
-    )
-
-    # read and extract
     usecols = [
         "latitude",
         "longitude",
@@ -234,57 +338,68 @@ def read_VNP14IMGTDL(t):
         "acq_date",
         "acq_time",
     ]
-    if os_path_exists(fnmFC):
-        # read data
-        df = pd.read_csv(
-            fnmFC,
-            parse_dates=[["acq_date", "acq_time"]],
-            usecols=usecols,
-            skipinitialspace=True,
-        )
-        df = df.rename(
-            columns={
-                "latitude": "Lat",
-                "longitude": "Lon",
-                "frp": "FRP",
-                "scan": "DS",
-                "track": "DT",
-                "acq_date_acq_time": "YYYYMMDD_HHMM",
-            }
-        )
-        return df
-    else:
-        return None
+    df = pd.read_csv(
+        filepath,
+        dtype={"acq_date": "string", "acq_time": "string"},
+        usecols=usecols,
+        skipinitialspace=True,
+    )
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], 
+        format="%Y-%m-%d %H:%M"
+    )
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "frp": "FRP",
+            "scan": "DS",
+            "track": "DT",
+        }
+    )
+    return df
 
 
-def read_VJ114IMGML(yr, mo):
-    """ read monthly VNP14IMGML data
+def VJ114IMGML_filepath(t: TimeStep):
+    """ Filepath for monthly NOAA20 VIIRS data
 
     Parameters
     ----------
-    yr : int
-        year
-    mo : int
-        month
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
 
     Returns
     -------
-    df : dataframe
-        the monthly dataframe of VIIRS active fires
+    filepath : str
+        Path to input data or None if file does not exist
     """
-    from FireConsts import dirextdata
-    import os
-    import pandas as pd
-
-    # set monthly file name
-    fnmFC = os.path.join(
-        dirextdata,
+    filepath = os.path.join(
+        FireConsts.dirextdata,
+        "VIIRS",
         "VJ114IMGML",
-        str(yr),
-        "VJ114IMGML_" + str(yr) + str(mo).zfill(2) + ".txt",
+        str(t[0]),
+        f"VJ114IMGML_{t[0]}{t[1]:02}.txt"
     )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
 
-    # read
+    return filepath
+
+
+def read_VJ114IMGML(filepath: str):
+    """ read monthly NOAA20 VIIRS fire location data
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        monthly DataFrame containing standardized columns of VIIRS active fires
+    """
     usecols = [
         "year",
         "month",
@@ -299,102 +414,99 @@ def read_VJ114IMGML(yr, mo):
         "frp",
     ]
 
-    def parser(yr, mo, dy, h, m):
-        return pd.to_datetime(
-            yr + "-" + mo + "-" + dy + " " + h + ":" + m, format="%Y-%m-%d %H:%M"
-        )
-
-    if os_path_exists(fnmFC):
-        # df = pd.read_csv(fnmFC,usecols=usecols,skipinitialspace=True)
-        df = pd.read_csv(
-            fnmFC,
-            parse_dates={"YYYYMMDD_HHMM": ["year", "month", "day", "hh", "mm"]},
-            date_parser=parser,
-            usecols=usecols,
-            skipinitialspace=True,
-        )
-        df = df.rename(
-            columns={
-                "lat": "Lat",
-                "lon": "Lon",
-                "frp": "FRP",
-                "line": "Line",
-                "sample": "Sample",
-            }
-        )
-        df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-        return df
-    else:
-        return None
+    df = pd.read_csv(
+        filepath,
+        dtype={col: 'string' for col in ["year", "month", "day", "hh", "mm"]},
+        usecols=usecols,
+        skipinitialspace=True,
+    )
+    df["datetime"] = pd.to_datetime(
+        df["year"] + "-" + df["month"] + "-" + df["day"] + " " + df["hh"] + ":" + df["mm"], 
+        format="%Y-%m-%d %H:%M"
+    )
+    df = df.rename(
+        columns={
+            "lat": "Lat",
+            "lon": "Lon",
+            "frp": "FRP",
+            "line": "Line",
+            "sample": "Sample",
+        }
+    )
+    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    return df
 
 
-def read_VJ114IMGTDL(t):
-    """ Read daily NRT NOAA20 VIIRS fire location data
+def VJ114IMGTDL_filepath(t: TimeStep):
+    """ Filepath for daily NRT NOAA20 VIIRS data
 
     Parameters
     ----------
     t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the intialization
+        the year, month, day and 'AM'|'PM' during the initialization
 
     Returns
     -------
-    vlist : list
-        (lat,lon) tuple of all daily active fires
+    filepath : str
+        Path to input data or None if file does not exist
     """
-    from FireConsts import dirextdata
+    d = FireTime.t2dt(t)
 
-    import pandas as pd
-    import os
-    from datetime import date
-
-    d = date(*t[:-1])
-    # derive monthly file name with path
-    dirFC = os.path.join(dirextdata,'VIIRS', "VJ114IMGTDL") + "/"
-    fnmFC = os.path.join(
-        dirFC, "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
+    filepath = os.path.join(
+        FireConsts.dirextdata,
+        "VIIRS",
+        "VJ114IMGTDL",
+        f"J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_{d.strftime('%Y%j')}.txt"
     )
+    if not os_path_exists(filepath):
+        print('No data available for file', filepath)
+        return
 
-    # read and extract
-    # usecols = ['latitude','longitude','daynight','frp','confidence']
-    usecols = [
-        "latitude",
-        "longitude",
-        "daynight",
-        "frp",
-        "confidence",
-        "scan",
-        "track",
-        "acq_date",
-        "acq_time",
-    ]
-    if os_path_exists(fnmFC):
-        # read data
-        #df = pd.read_csv(
-        #    fnmFC,
-        #    parse_dates=[["acq_date", "acq_time"]],
-        #    usecols=usecols,
-        #    skipinitialspace=True,
-        #)
-        df = pd.read_csv(fnmFC)
-        df['acq_date'] = str(d)
-        df["acq_date_acq_time"] = pd.to_datetime(df['acq_date'] +' '+ df['acq_time'])
-        #print(df['acq_date_acq_time'])
-        df = df.rename(
-            columns={
-                "latitude": "Lat",
-                "longitude": "Lon",
-                "frp": "FRP",
-                "scan": "DS",
-                "track": "DT",
-                "acq_date_acq_time": "YYYYMMDD_HHMM",
-            }
-        )
-        return df
-    else:
-        return None
+    return filepath
 
 
-def AFP_regfilter(df, shp_Reg, strlat="Lat", strlon="Lon"):
+def read_VJ114IMGTDL(filepath: str):
+    """ Read daily NRT NOAA20 VIIRS fire location data
+
+    NOTE: this function expects julian date to be encoded in the filename
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of daily active fires
+    """
+    from datetime import datetime
+
+    # strip the julian date out of the filepath
+    julian_date = filepath.split("_")[-1].split(".")[0]
+
+    # convert to a datetime.date object
+    d = datetime.strptime(julian_date, "%Y%j").date()
+
+    df = pd.read_csv(filepath)
+    df["acq_date"] = str(d)
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], 
+        format="%Y-%m-%d %H:%M"
+    )
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "frp": "FRP",
+            "scan": "DS",
+            "track": "DT",
+        }
+    )
+    return df
+
+
+def AFP_regfilter(df, shp_Reg):
     """ filter fire pixels using a given shp_Reg
 
     Parameters
@@ -403,47 +515,32 @@ def AFP_regfilter(df, shp_Reg, strlat="Lat", strlon="Lon"):
         fire pixel data with lat and lon information
     shp_Reg : geometry
         the geometry of the region shape
-    strlat : str
-        the column name for the latitude
-    strlon : str
-        the column name for the longitude
 
     Returns
     -------
     df_filtered : pandas DataFrame
         the filtered fire pixels
     """
-    from FireConsts import remove_static_sources_bool
+    from FireConsts import epsg
     from shapely.geometry import Point
     import geopandas as gpd
-    import pandas as pd
 
     # preliminary spatial filter and quality filter
     regext = shp_Reg.bounds
     newfirepixels = df.loc[
-        (df[strlat] >= regext[1])
-        & (df[strlat] <= regext[3])
-        & (df[strlon] >= regext[0])
-        & (df[strlon] <= regext[2])
+        (df["Lat"] >= regext[1])
+        & (df["Lat"] <= regext[3])
+        & (df["Lon"] >= regext[0])
+        & (df["Lon"] <= regext[2])
     ]
-    point_data = [Point(xy) for xy in zip(newfirepixels[strlon], newfirepixels[strlat])]
+    point_data = [Point(xy) for xy in zip(newfirepixels["Lon"], newfirepixels["Lat"])]
     gdf_filtered = gpd.GeoDataFrame(newfirepixels, geometry=point_data, crs=4326)
 
-    # if shp_Reg is not a rectangle, do detailed filtering (within shp_Reg)
-    import math
-
-    if ((not math.isclose(shp_Reg.minimum_rotated_rectangle.area, shp_Reg.area)) | remove_static_sources_bool):
-        gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
+    # Do detailed filtering (within shp_Reg)
+    gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
 
     # drop geometry column
-    from FireConsts import epsg
-    
-    #print('current proj:',gdf_filtered.crs)
-    
     df_filtered = AFP_toprj(gdf_filtered, epsg=epsg)
-    
-    #print('converting to proj:',epsg)
-    # df_filtered = pd.DataFrame(gdf_filtered.drop(columns='geometry'))
 
     return df_filtered
 
@@ -478,7 +575,7 @@ def AFP_setampm(df):
     Parameters
     ----------
     df : pandas DataFrame
-        fire pixel data, with 'Lon' and 'YYYYMMDD_HHMM' column
+        fire pixel data, with 'Lon' and 'datetime' column
 
     Returns
     -------
@@ -488,9 +585,9 @@ def AFP_setampm(df):
     import pandas as pd
     import numpy as np
 
-    # calculate local hour using the longitude and YYYYMMDD_HHMM column
+    # calculate local hour using the longitude and datetime column
     localhour = (
-        pd.to_timedelta(df.Lon / 15, unit="hours") + df["YYYYMMDD_HHMM"]
+        pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"]
     ).dt.hour
 
     # set am/pm flag based on local hour
@@ -516,237 +613,6 @@ def AFP_toprj(gdf, epsg=32610):
     df = pd.DataFrame(gdf.drop(columns="geometry"))
 
     return df
-
-
-def save_AFPtmp(df, d, head="VNP14IMGML.", tail=".pkl"):
-    """ Function used to save regional filtered data to a temporary directory
-    """
-    from FireConsts import dirtmpdata
-    import os
-    import pickle
-    import fsspec
-
-    # temporary file name
-    fnm_tmp = os.path.join(dirtmpdata, head + d.strftime("%Y%m") + tail)
-    check_filefolder(fnm_tmp)
-
-    # save
-    with fsspec.open(fnm_tmp, "wb") as f:
-        pickle.dump(df, f)
-
-
-def load_AFPtmp(d, head="VNP14IMGML.", tail=".pkl"):
-    """ Function used to load regional filtered data to a temporary directory
-    """
-    from FireConsts import dirtmpdata
-    import os
-    import fsspec
-    import pickle
-
-    # temporary file name
-    fnm_tmp = os.path.join(dirtmpdata, head + d.strftime("%Y%m") + tail)
-
-    # load and return
-    if os_path_exists(fnm_tmp):
-        with fsspec.open(fnm_tmp, "rb") as f:
-            df = pickle.load(f)
-            return df
-    else:
-        print(f"Temporary file not found: {fnm_tmp}.")
-        return None
-
-
-def read_AFPVIIRS(
-    t,
-    region,
-    sat="SNPP",
-    cols=["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"],
-):
-    """ Read half-daily fire location for a region from monthly NOAA20 VIIRS fire data.
-        For the monthly VIIRS data, in order to reduce repeat calculation, we
-        do the spatial and quality filtering once and save the filtered data to
-        files in a temporary directory. For most time steps, we read the pre-saved
-        VIIRS data.
-
-    Parameters
-    ----------
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the intialization
-    region : 2-element tuple [regnm, regshp].
-        Regnm is the name of the region; Regshp can be
-         - a geometry
-         - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
-         - a country name
-    cols : list
-        the column names of the output dataframe
-    Returns
-    -------
-    df_AFP : pandas DataFrame
-        list of active fire pixels (filtered) from NOAA20
-    """
-
-    from datetime import date
-
-    # read from pre-saved file
-    d = date(*t[:-1])
-    if sat == "SNPP":
-        sathead = "VNP14IMGML"
-    elif sat == "NOAA20":
-        sathead = "VJ114IMGML"
-    else:
-        print("please set SNPP or NOAA20 for sat")
-
-    # load from pre-saved file
-    df = load_AFPtmp(d, head=region[0] + "_" + sathead + ".")
-
-    # if no pre-saved file, read from original VNP14IMGML file and do/save spatial filtering
-    if df is None:
-        # read or form shape used for filtering active fires
-        shp_Reg = get_reg_shp(region[1])
-        
-        # read VJ114IMGML monthly file
-        if sat == "SNPP":
-            df = read_VNP14IMGML(t[0], t[1])
-            df = df.loc[df["Type"] == 0]  # type filtering
-        elif sat == "NOAA20":
-            df = read_VJ114IMGML(t[0], t[1])
-            df = df.loc[df["mask"] >= 7]
-        else:
-            print("please set SNPP or NOAA20 for sat")
-
-        # do regional filtering
-        df = AFP_regfilter(df, shp_Reg)
-        # set ampm
-        df = AFP_setampm(df)
-
-        # save to temporary file
-        save_AFPtmp(df, d, head=region[0] + "_" + sathead + ".")
-
-    # extract active pixels at current time step  (day and ampm filter)
-    df = df.loc[(df["YYYYMMDD_HHMM"].dt.day == t[2]) & (df["ampm"] == t[-1])]
-
-    # add the satellite information
-    df["Sat"] = sat
-
-    # return selected columns; need to change column names first
-    df_AFP = df[cols]
-
-    return df_AFP
-
-
-def read_AFPVIIRSNRT(
-    t,
-    region,
-    sat="SNPP",
-    cols=["Lat", "Lon", "FRP", "Sat", "DT", "DS", "YYYYMMDD_HHMM", "ampm", "x", "y"],):
-    
-    """ Read half-daily active fire pixels in a region from daily NRT NOAA20 VIIRS
-    fire location data
-
-    Parameters
-    ----------
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the intialization
-    region : 2-element tuple [regnm, regshp].
-        Regnm is the name of the region; Regshp can be
-         - a geometry
-         - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
-         - a country name
-    cols : list
-        the column names of the output dataframe
-    Returns
-    -------
-    df_AFP : pandas DataFrame
-        list of active fire pixels (filtered) from SNPPNRT
-    """
-    from datetime import date
-
-    # read from VNP14IMGTDL file
-    if sat == "SNPP":
-        df = read_VNP14IMGTDL(t)
-    elif sat == "NOAA20":
-        df = read_VJ114IMGTDL(t)
-    else:
-        print("please set SNPP or NOAA20 for sat")
-
-    if df is None:
-        return None
-
-    # extract active pixes at current time step
-    df = AFP_setampm(df)
-    df = df.loc[(df["ampm"] == t[-1])]
-
-    # do regional filtering
-    shp_Reg = get_reg_shp(region[1])
-    df = AFP_regfilter(df, shp_Reg)
-
-    # do non-static filtering; now only available at CA
-    # df = AFP_nonstatfilter(df)
-
-    # add the satellite information
-    df["Sat"] = sat
-
-    # return selected columns; need to change column names first
-    df_AFP = df[cols]
-
-    return df_AFP
-
-
-def read_AFP(t, src="SNPP", nrt=False, region=None):
-    """ The wrapper function used to read and extract half-daily active fire
-    pixels in a region.
-
-    Parameters
-    ----------
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the intialization
-    src : str
-        'SNPP' | 'NOAA20' | 'VIIRS' | 'BAMOD'
-    nrt : bool
-        if set to True, read NRT data instead of monthly data
-    region : 2-element tuple [regnm, regshp].
-        Regnm is the name of the region; Regshp can be
-         - a geometry
-         - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
-         - a country name
-    Returns
-    -------
-    vlist : pandas DataFrame
-        extracted active fire pixel data used for fire tracking
-    """
-    import pandas as pd
-
-    if src == "VIIRS":
-        if nrt:
-            vlist_SNPP = read_AFPVIIRSNRT(t, region, sat="SNPP")
-            vlist_NOAA20 = read_AFPVIIRSNRT(t, region, sat="NOAA20")
-            vlist = pd.concat([vlist_NOAA20, vlist_SNPP], ignore_index=True)
-        else:
-            vlist_SNPP = read_AFPVIIRS(t, region, sat="SNPP")
-            vlist_NOAA20 = read_AFPVIIRS(t, region, sat="NOAA20")
-            vlist = pd.concat([vlist_NOAA20, vlist_SNPP], ignore_index=True)
-    elif src == "SNPP":
-        if nrt:
-            vlist = read_AFPVIIRSNRT(t, region, sat="SNPP")
-        else:
-            vlist = read_AFPVIIRS(t, region, sat="SNPP")
-    elif src == "NOAA20":
-        if nrt:
-            vlist = read_AFPVIIRSNRT(t, region, sat="NOAA20")
-        else:
-            vlist = read_AFPVIIRS(t, region, sat="NOAA20")
-    elif src == "BAMOD":
-        vlist = read_BAMOD(t, region)
-    else:
-        print("Please set src to SNPP, NOAA20, or BAMOD")
-        return None
-    
-    if vlist is None: 
-        print("No data available for this source for time",t) 
-        return
-    
-    return vlist.reset_index(drop=True)
-
 
 # ------------------------------------------------------------------------------
 #%% Read other datasets
@@ -978,7 +844,7 @@ def get_LCT_CONUS(locs):
     
     Parameters
     ----------
-    locs : list of lists (nx2)
+    locs : np.array (nx2)
         lat and lon values for each active fire detection
 
     Returns
@@ -986,26 +852,15 @@ def get_LCT_CONUS(locs):
     vLCT : list of ints
         land cover types for all input active fires
     """
-    from FireConsts import dirextdata
+    from preprocess import preprocessed_landcover_filename
 
     import rasterio
-    import pyproj
-    import os
 
     # read NLCD 500m data
-    fnmLCT = os.path.join(dirextdata, "NLCD", "nlcd_export_510m_simplified.tif")
+    fnmLCT = preprocessed_landcover_filename("nlcd_export_510m_simplified")
     dataset = rasterio.open(fnmLCT)
-    transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
-    locs_crs_x, locs_crs_y = transformer.transform(
-        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
-        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
-        # here.
-        [l[1] for l in locs],
-        [l[0] for l in locs]
-    )
-    locs_crs = list(zip(locs_crs_x, locs_crs_y))
-    samps = list(dataset.sample(locs_crs))
-    vLCT = [int(s) for s in samps]
+    vLCT = dataset.sample(locs, indexes=1)
+    vLCT = [lc[0] for lc in vLCT]
     return vLCT
 
 def get_LCT_Global(locs):
@@ -1014,7 +869,7 @@ def get_LCT_Global(locs):
     
     Parameters
     ----------
-    locs : list of lists (nx2)
+    locs : np.array (nx2)
         lat and lon values for each active fire detection
 
     Returns
@@ -1025,20 +880,15 @@ def get_LCT_Global(locs):
     from FireConsts import dirextdata
 
     import rasterio
-    import pyproj
     import os
     
     fnmLCT = os.path.join(dirextdata, "GlobalLC", "global_lc_mosaic.tif")
     dataset = rasterio.open(fnmLCT)
-    #print('LOCS CRS:',locs_crs)
     
     # previous LC data sources were in a different crs and needed a transform
     # the VIIRS and LC data in this case are both in EPSG:4326, so we can sample directly
-    samps = list(dataset.sample(locs))
-    #print('LANDCOVER SAMPLES:',samps)
-    
-    vLCT = [int(s) for s in samps]
-    #print('vLCT SAMPLES:',vLCT)
+    samps = list(dataset.sample(locs))  
+    vLCT = [s[0] for s in samps]
     return vLCT
 
 def get_LCT_NLCD(locs):
@@ -1046,7 +896,7 @@ def get_LCT_NLCD(locs):
 
     Parameters
     ----------
-    locs : list of lists (nx2)
+    locs : np.array (nx2)
         lon and lat values for each active fire detection
 
     Returns
@@ -1064,23 +914,23 @@ def get_LCT_NLCD(locs):
     # read NLCD 500m data
     fnmLCT = os.path.join(dirextdata, "CA", "nlcd_510m_latlon.tif")
     dataset = rasterio.open(fnmLCT)
-    # locs = [(x,y) for (y,x) in locs]
     vLCT = dataset.sample(locs, indexes=1)
     vLCT = [lc[0] for lc in vLCT]  # list values
 
     return vLCT
 
 
-def get_FM1000(t, loc):
+def get_FM1000(t, lon, lat):
     """ Get fm1000 for a point at t
 
     Parameters
     ----------
     t : datetime date
         date
-    loc : tuple
-        (lat,lon) value
-
+    lon : float
+        longitude value
+    lat : float
+        latitude value
     Returns
     -------
     FM1000_loc : list of floats
@@ -1108,45 +958,9 @@ def get_FM1000(t, loc):
         FM1000_day = FM1000_all.isel(day=-1)
 
     # extract data near the given location
-    FM1000_loc = FM1000_day.sel(lon=loc[0], lat=loc[1], method="nearest").item()
+    FM1000_loc = FM1000_day.sel(lon=lon, lat=lat, method="nearest").item()
 
     return FM1000_loc
-
-
-# def get_stFM1000(fhull,locs,t):
-#     ''' get FM1000 for a fire at a time
-#
-#     Parameters
-#     ----------
-#     fhull : geometry
-#         the hull of the fire
-#     locs : list of lists (nx2)
-#         lat and lon values for each active fire detection
-#     t : tuple, (int,int,int,str)
-#         the year, month, day and 'AM'|'PM'
-#
-#     Returns
-#     -------
-#     FM1000 : list of floats
-#         fm1000 value for all input active fires
-#     '''
-#     import FireClustering
-#
-#     from datetime import date
-#
-#     # centroid (lat,lon) is defined as that of hull (faster) or locs
-#     if fhull is not None:
-#         cent = (fhull.centroid.y,fhull.centroid.x)
-#     else:
-#         cent = FireClustering.cal_centroid(locs)
-#
-#     # datetime date of the time tuple
-#     d_st = date(*t[:-1])
-#
-#     # call get_FM1000 function to extract fm1000 for the centroid at a time
-#     FM1000 = get_FM1000(d_st, cent)
-#
-#     return FM1000
 
 # ------------------------------------------------------------------------------
 #%% read and load object, gdf and summary related files
@@ -2378,6 +2192,8 @@ def copy_from_maap_to_veda_s3(
     from_maap_s3_path: str, 
     regnm: str
 ):
+    import boto3
+
     s3_client = boto3.client('s3')
     filename = os.path.basename(from_maap_s3_path)
     filename_no_ext = os.path.splitext(filename)[0]
@@ -2451,3 +2267,15 @@ def copy_from_maap_to_veda_s3(
     gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
     with open(local_tmp_filepath, 'rb') as file_object:
         s3_client.upload_fileobj(file_object, 'veda-data-store-staging', to_veda_s3_path)
+
+
+def copy_from_local_to_s3(filepath: str):
+    import boto3
+
+    s3_client = boto3.client('s3')
+
+    logger.info(f"running replace on filepath={filepath}")
+    dst = filepath.replace(FireConsts.dirdata_local_path, FireConsts.dirdata_s3_path)
+    logger.info(f"uploading file {filepath} to {FireConsts.dirdata_s3_bucket}/{dst}")
+
+    s3_client.upload_file(filepath, FireConsts.dirdata_s3_bucket, dst)
