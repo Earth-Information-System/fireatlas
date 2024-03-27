@@ -10,7 +10,7 @@ from dask.delayed import Delayed
 from FireLog import logger
 from FireTypes import Region, TimeStep
 from utils import timed
-import datetime
+from datetime import datetime
 
 MAX_WORKERS = 3
 
