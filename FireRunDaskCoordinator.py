@@ -11,7 +11,7 @@ from FireTypes import Region, TimeStep
 from utils import timed
 import datetime
 
-MAX_WORKERS = 10
+MAX_WORKERS = 4
 
 
 def validate_json(s):
