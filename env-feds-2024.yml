@@ -4,6 +4,7 @@ dependencies:
   - python=3.11
   - xarray
   - pandas
+  - dask
   - geopandas
   - shapely
   - fsspec
@@ -21,7 +22,7 @@ dependencies:
   - openssl
   - pytest
   - tqdm
+  - scalene
   - pip
   - pip:
     - git+https://github.com/MAAP-Project/maap-py.git@develop
-    - scalene

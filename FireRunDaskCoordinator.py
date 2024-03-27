@@ -5,6 +5,7 @@ import glob
 from typing import Tuple
 from dask.distributed import Client
 from dask import delayed
+from dask.delayed import Delayed
 
 from FireLog import logger
 from FireTypes import Region, TimeStep
@@ -21,7 +22,7 @@ def validate_json(s):
         raise argparse.ArgumentTypeError("Not a valid JSON string")
 
 
-def job_fire_forward(eventual_results: Tuple[delayed.Delayed], region: Region, tst: TimeStep, ted: TimeStep):
+def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: TimeStep, ted: TimeStep):
     import FireIO, FireConsts, FireMain, postprocess
     from FireLog import logger
 
@@ -64,8 +65,8 @@ def job_fire_forward(eventual_results: Tuple[delayed.Delayed], region: Region, t
 
 
 def job_preprocess_region_t(
-        eventual_result1: delayed.Delayed,
-        eventual_result2: delayed.Delayed, region: Region, t: TimeStep):
+        eventual_result1: Delayed,
+        eventual_result2: Delayed, region: Region, t: TimeStep):
     import FireIO, FireConsts, preprocess
     from FireLog import logger
 

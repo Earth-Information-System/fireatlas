@@ -15,13 +15,12 @@ def validate_json(s):
 
 @timed
 def Run(region: Region, t: TimeStep):
-    import FireIO, FireConsts, preprocess
+    from FireRunDaskCoordinator import job_preprocess_region_t
+    import FireConsts
     from FireLog import logger
 
     logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {FireConsts.firesrc}")
-
-    output_filepath = preprocess.preprocess_region_t(t, sensor=FireConsts.firesrc, region=region)
-    FireIO.copy_from_local_to_s3(output_filepath)
+    job_preprocess_region_t(None, None, region, t)
 
 
 if __name__ == "__main__":
