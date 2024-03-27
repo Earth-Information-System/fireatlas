@@ -16,7 +16,7 @@ def validate_json(s):
 
 
 @timed
-def RegionRun(region: Region, tst=None, ted=None):
+def Run(region: Region, tst=None, ted=None):
     # NOTE: this set up has to happen before `import FireConsts`
     # or any other modules also import from FireConsts
     # so set os environ variables that will override
@@ -77,4 +77,4 @@ if __name__ == "__main__":
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
     args = parser.parse_args()
-    RegionRun([args.regnm, None], args.tst, args.ted)
+    Run([args.regnm, None], args.tst, args.ted)
