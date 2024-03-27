@@ -21,6 +21,7 @@ dependencies:
   - certifi
   - openssl
   - pytest
+  - pytest-cov
   - tqdm
   - scalene
   - pip

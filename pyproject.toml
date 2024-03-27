@@ -1,0 +1,9 @@
+[tool.coverage.run]
+omit = [
+    "*/maap_runtime/*",
+    "*/tests/*",
+    "FireRun*.py",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=."

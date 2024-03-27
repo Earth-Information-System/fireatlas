@@ -8,9 +8,10 @@ import preprocess
 import pytest
 import pandas as pd
 from datetime import datetime
-from FireTypes import TimeStep
+from FireTypes import TimeStep, Region
 from shapely.geometry import Polygon
 from unittest.mock import MagicMock
+from pathlib import Path
 
 try:
     from shapely import to_geojson, from_geojson
@@ -20,25 +21,93 @@ except ImportError:
 from unittest.mock import call
 
 
+@pytest.mark.parametrize(
+    "region, location, new_s3_bucket, new_s3_path, expected_filepath",
+    [
+        (
+            ["TestDefault", None],
+            "s3",
+            None,
+            None,
+            f"s3://{FireConsts.dirdata_s3_bucket}/{FireConsts.dirdata_s3_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
+        ),
+        (
+            ["TestOverride", None],
+            "s3",
+            "big-bucket",
+            "small-path/whatever",
+            f"s3://big-bucket/small-path/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
+        ),
+    ],
+)
+def test_preprocessed_region_filename_s3(monkeypatch, region: Region,
+                                         location: str, new_s3_bucket: str, new_s3_path: str,
+                                         expected_filepath: str):
+    # arrange
+    if new_s3_bucket:
+        monkeypatch.setattr(FireConsts, "dirdata_s3_bucket", new_s3_bucket)
+    if new_s3_path:
+        monkeypatch.setattr(FireConsts, "dirdata_s3_path", new_s3_path)
+
+    # act
+    actual_filepath = preprocess.preprocessed_region_filename(region, location)
+
+    # assert
+    assert actual_filepath == expected_filepath
+
+
+@pytest.mark.parametrize(
+    "region, location, new_dir_path, expected_filepath",
+    [
+        (
+            ["TestDefault", None],
+            "local",
+            None,
+            f"{FireConsts.dirdata_local_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
+        ),
+        (
+            ["TestOverride", None],
+            "local",
+            "big-data/whatever",
+            f"big-data/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
+        ),
+    ],
+)
+def test_preprocessed_region_filename_local(monkeypatch, region: Region,
+                                         location: str, new_dir_path: str,
+                                         expected_filepath: str):
+    # arrange
+    if new_dir_path:
+        monkeypatch.setattr(FireConsts, "dirdata_local_path", new_dir_path)
+
+    # act
+    actual_filepath = preprocess.preprocessed_region_filename(region, location)
+
+    # assert
+    assert actual_filepath == expected_filepath
+
+
 def test_preprocess_region(tmpdir, monkeypatch):
     # arrange
-    monkeypatch.setattr(FireConsts, "dirprpdata", tmpdir)
-    monkeypatch.setattr(preprocess, "OUTPUT_DIR", tmpdir)
+    monkeypatch.setattr(
+        preprocess,
+        "preprocessed_region_filename",
+        lambda region, location: str(tmpdir / Path('Test123.json'))
+    )
+    monkeypatch.setattr(FireMain, "maybe_remove_static_sources", lambda region, s3extdata: region)
     test_region = ["Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)])]
-    monkeypatch.setattr(FireMain, "maybe_remove_static_sources", lambda x, y: x)
 
     # act
     preprocess.preprocess_region(test_region)
 
     # assert
-    with open(f"{tmpdir}{test_region[0]}.json", "r") as f:
+    with open(f"{tmpdir}/{test_region[0]}.json", "r") as f:
         assert test_region[1] == from_geojson(f.read())
 
 
 def test_read_region(tmpdir, monkeypatch):
     # arrange
     monkeypatch.setattr(FireConsts, "dirprpdata", tmpdir)
-    monkeypatch.setattr(preprocess, "OUTPUT_DIR", tmpdir)
     expected_region = ("Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)]))
     with open(f"{tmpdir}{expected_region[0]}.json", "w") as f:
         f.write(to_geojson(expected_region[1]))
@@ -53,7 +122,6 @@ def test_read_region(tmpdir, monkeypatch):
 def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
     # arrange
     monkeypatch.setattr(FireConsts, "dirextdata", tmpdir)
-    monkeypatch.setattr(preprocess, "INPUT_DIR", tmpdir)
 
     tmpdir = tmpdir.join("NLCD")
     tmpdir.mkdir()
@@ -93,7 +161,6 @@ def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
 )
 def test_preprocess_NRT_file(timestep: TimeStep, sat: str, monkeypatch, test_data_dir):
     monkeypatch.setattr(FireConsts, "dirextdata", test_data_dir)
-    monkeypatch.setattr(preprocess, "INPUT_DIR", test_data_dir)
 
     if sat == "SNPP":
         df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat)
