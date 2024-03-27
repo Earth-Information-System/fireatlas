@@ -8,7 +8,7 @@ import preprocess
 import pytest
 import pandas as pd
 from datetime import datetime
-from FireTypes import TimeStep
+from FireTypes import TimeStep, Region
 from shapely.geometry import Polygon
 from unittest.mock import MagicMock
 
@@ -18,6 +18,42 @@ except ImportError:
     from shapely.geometry import mapping as to_geojson, shape as from_geojson
 
 from unittest.mock import call
+
+
+@pytest.mark.parametrize(
+    "region, location, new_s3_bucket, new_s3_path, expected_filepath",
+    [
+        (
+            ["TestDefault", None],
+            "s3",
+            None,
+            None,
+            f"s3://{FireConsts.dirdata_s3_bucket}/{FireConsts.dirdata_s3_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
+        ),
+        (
+            ["TestOverride", None],
+            "s3",
+            "big-bucket",
+            "small-path/whatever",
+            f"s3://big-bucket/small-path/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
+        ),
+    ],
+)
+def test_preprocessed_region_filename_s3(monkeypatch, region: Region,
+                                         location: str, new_s3_bucket: str, new_s3_path: str,
+                                         expected_filepath: str):
+    # arrange
+    if new_s3_bucket:
+        monkeypatch.setattr(FireConsts, "dirdata_s3_bucket", new_s3_bucket)
+    if new_s3_path:
+        monkeypatch.setattr(FireConsts, "dirdata_s3_path", new_s3_path)
+
+    # act
+    actual_filepath = preprocess.preprocessed_region_filename(region, location)
+
+    # assert
+    assert actual_filepath == expected_filepath
+
 
 
 def test_preprocess_region(tmpdir, monkeypatch):
