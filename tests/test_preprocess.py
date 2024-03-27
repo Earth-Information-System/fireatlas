@@ -11,6 +11,7 @@ from datetime import datetime
 from FireTypes import TimeStep, Region
 from shapely.geometry import Polygon
 from unittest.mock import MagicMock
+from pathlib import Path
 
 try:
     from shapely import to_geojson, from_geojson
@@ -56,30 +57,26 @@ def test_preprocessed_region_filename_s3(monkeypatch, region: Region,
 
 
 @pytest.mark.parametrize(
-    "region, location, new_dir_data, new_dir_path, expected_filepath",
+    "region, location, new_dir_path, expected_filepath",
     [
         (
             ["TestDefault", None],
             "local",
             None,
-            None,
-            f"{FireConsts.dirdata}/{FireConsts.dirdata_local_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
+            f"{FireConsts.dirdata_local_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
         ),
         (
             ["TestOverride", None],
             "local",
-            "big-data",
-            "small-path/whatever",
-            f"./big-data/small-path/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
+            "big-data/whatever",
+            f"big-data/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
         ),
     ],
 )
 def test_preprocessed_region_filename_local(monkeypatch, region: Region,
-                                         location: str, new_dir_data: str, new_dir_path: str,
+                                         location: str, new_dir_path: str,
                                          expected_filepath: str):
     # arrange
-    if new_dir_data:
-        monkeypatch.setattr(FireConsts, "dirdata", new_dir_data)
     if new_dir_path:
         monkeypatch.setattr(FireConsts, "dirdata_local_path", new_dir_path)
 
@@ -92,23 +89,25 @@ def test_preprocessed_region_filename_local(monkeypatch, region: Region,
 
 def test_preprocess_region(tmpdir, monkeypatch):
     # arrange
-    monkeypatch.setattr(FireConsts, "dirprpdata", tmpdir)
-    monkeypatch.setattr(preprocess, "OUTPUT_DIR", tmpdir)
+    monkeypatch.setattr(
+        preprocess,
+        "preprocessed_region_filename",
+        lambda region, location: str(tmpdir / Path('Test123.json'))
+    )
+    monkeypatch.setattr(FireMain, "maybe_remove_static_sources", lambda region, s3extdata: region)
     test_region = ["Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)])]
-    monkeypatch.setattr(FireMain, "maybe_remove_static_sources", lambda x, y: x)
 
     # act
     preprocess.preprocess_region(test_region)
 
     # assert
-    with open(f"{tmpdir}{test_region[0]}.json", "r") as f:
+    with open(f"{tmpdir}/{test_region[0]}.json", "r") as f:
         assert test_region[1] == from_geojson(f.read())
 
 
 def test_read_region(tmpdir, monkeypatch):
     # arrange
     monkeypatch.setattr(FireConsts, "dirprpdata", tmpdir)
-    monkeypatch.setattr(preprocess, "OUTPUT_DIR", tmpdir)
     expected_region = ("Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)]))
     with open(f"{tmpdir}{expected_region[0]}.json", "w") as f:
         f.write(to_geojson(expected_region[1]))
@@ -123,7 +122,6 @@ def test_read_region(tmpdir, monkeypatch):
 def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
     # arrange
     monkeypatch.setattr(FireConsts, "dirextdata", tmpdir)
-    monkeypatch.setattr(preprocess, "INPUT_DIR", tmpdir)
 
     tmpdir = tmpdir.join("NLCD")
     tmpdir.mkdir()
@@ -163,7 +161,6 @@ def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
 )
 def test_preprocess_NRT_file(timestep: TimeStep, sat: str, monkeypatch, test_data_dir):
     monkeypatch.setattr(FireConsts, "dirextdata", test_data_dir)
-    monkeypatch.setattr(preprocess, "INPUT_DIR", test_data_dir)
 
     if sat == "SNPP":
         df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat)
