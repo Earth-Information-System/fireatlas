@@ -461,7 +461,7 @@ def CONUSrunNRT():
     
     ctime = datetime.now()
 
-    region = ('CONUS_NRT_DPS',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
+    region = ('CONUS_NRT_DPS_SCALENE',[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647])
     logger.info(f'STARTING RUN FOR {region[0]}')
 
     lts = FireIO.get_lts_serialization(regnm=region[0])
