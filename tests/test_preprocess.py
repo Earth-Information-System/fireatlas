@@ -55,6 +55,40 @@ def test_preprocessed_region_filename_s3(monkeypatch, region: Region,
     assert actual_filepath == expected_filepath
 
 
+@pytest.mark.parametrize(
+    "region, location, new_dir_data, new_dir_path, expected_filepath",
+    [
+        (
+            ["TestDefault", None],
+            "local",
+            None,
+            None,
+            f"{FireConsts.dirdata}/{FireConsts.dirdata_local_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
+        ),
+        (
+            ["TestOverride", None],
+            "local",
+            "big-data",
+            "small-path/whatever",
+            f"./big-data/small-path/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
+        ),
+    ],
+)
+def test_preprocessed_region_filename_local(monkeypatch, region: Region,
+                                         location: str, new_dir_data: str, new_dir_path: str,
+                                         expected_filepath: str):
+    # arrange
+    if new_dir_data:
+        monkeypatch.setattr(FireConsts, "dirdata", new_dir_data)
+    if new_dir_path:
+        monkeypatch.setattr(FireConsts, "dirdata_local_path", new_dir_path)
+
+    # act
+    actual_filepath = preprocess.preprocessed_region_filename(region, location)
+
+    # assert
+    assert actual_filepath == expected_filepath
+
 
 def test_preprocess_region(tmpdir, monkeypatch):
     # arrange
