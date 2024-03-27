@@ -17,18 +17,32 @@ from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireGpkg import getdd as snapshot_getdd
 from fireatlas import FireConsts
 
+def all_dir(tst: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]))
 
-def allpixels_filepath(
-    tst: TimeStep,
-    ted: TimeStep,
-    region: Region,
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
-):
+
+def get_t_of_last_allfires_run(location: Literal["local", "s3"]):
+    """Look at the files in a given location and figure out the t of the last
+    allfires run. 
+    
+    Returns
+    -------
+    
+    t: TimeStep
+       latest t for which there are allfires and allpixels files
+    
+    """
+    all_dir = postprocess.all_dir(tst, region, location=location)
+    last_allfires = sorted(glob.glob(os.path.join(all_dir, "allfires*")))[-1]
+    last_allpixels = sorted(glob.glob(os.path.join(all_dir, "allpixels*")))[-1]
+
+    dt = pd.to_datetime(sorted([last_allfires, last_allpixels])[0].split("/")[-1].split("_")[1])
+    return FireTime.dt2t(dt)
+
+
+def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
     filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
-    return os.path.join(
-        FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename
-    )
-
+    return os.path.join(all_dir(tst, region, location), filename)
 
 @timed
 def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
@@ -60,9 +74,7 @@ def allfires_filepath(
     location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
 ):
     filename = f"allfires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.parq"
-    return os.path.join(
-        FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename
-    )
+    return os.path.join(all_dir(tst, region, location), filename)
 
 
 @timed
