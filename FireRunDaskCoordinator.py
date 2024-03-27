@@ -12,7 +12,7 @@ from FireTypes import Region, TimeStep
 from utils import timed
 import datetime
 
-MAX_WORKERS = 4
+MAX_WORKERS = 3
 
 
 def validate_json(s):
@@ -103,7 +103,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     import FireTime
 
     list_of_timesteps = list(FireTime.t_generator(tst, ted))
-    dask_client = Client(n_workers=(len(list_of_timesteps) % MAX_WORKERS))
+    dask_client = Client(n_workers=MAX_WORKERS)
     logger.info(f"dask workers = {len(dask_client.cluster.workers)}")
 
     data_input_results = delayed(job_data_update_checker)()
@@ -121,7 +121,7 @@ if __name__ == "__main__":
     """coordinating all jobs
     
     Example:
-    python3 FireRunDaskCoordinator.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
+    python3 FireRunDaskCoordinator.py --regnm="CaliTestRun" --bbox="[-126,24,-61,49]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
     """
     
     parser = argparse.ArgumentParser()
