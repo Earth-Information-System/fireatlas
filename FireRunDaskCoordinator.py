@@ -121,7 +121,7 @@ if __name__ == "__main__":
     """coordinating all jobs
     
     Example:
-    python3 FireRunDaskCoordinator.py --regnm="CaliTestRun" --bbox="[-126,24,-61,49]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
+    python3 FireRunDaskCoordinator.py --regnm="CONUS" --bbox="[-126,24,-61,49]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
     """
     
     parser = argparse.ArgumentParser()
