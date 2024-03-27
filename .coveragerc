@@ -1,0 +1,6 @@
+[run]
+omit =
+    */maap_runtime/*
+    */FireRun*.py/*
+    */tests/*
+    */*.sh/*
