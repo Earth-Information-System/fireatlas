@@ -1,8 +1,9 @@
 from functools import wraps
 from time import time
-from FireLog import logger
 
 def timed(f):
+    from .FireLog import logger
+
     @wraps(f)
     def wrap(*args, **kwargs):    
         # capture the start time

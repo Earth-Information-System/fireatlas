@@ -4,7 +4,7 @@ Module containing all logging info used in this project
 Usage: from FireLog import logger
 
 """
-from FireConsts import dirdata
+from .FireConsts import dirdata
 import logging
 
 # get logger

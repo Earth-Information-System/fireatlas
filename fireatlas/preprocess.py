@@ -10,21 +10,40 @@ from tqdm import tqdm
 import rasterio
 import rasterio.warp
 
-import FireConsts
-import FireClustering
-from FireLog import logger
-import FireIO
-import FireTime
-from FireTypes import Region, TimeStep
-from utils import timed
+from .FireLog import logger
+from .FireTypes import Region, TimeStep
+from .utils import timed
+from .FireMain import maybe_remove_static_sources
+from .FireConsts import (
+    READ_LOCATION,
+    CONNECTIVITY_CLUSTER_KM,
+    get_dirprpdata,
+    dirextdata
+)
+from .FireClustering import do_clustering
+from .FireTime import t_generator, t2dt
+from .FireIO import (
+    get_reg_shp,
+    AFP_regfilter,
+    AFP_setampm,
+    VNP14IMGTDL_filepath,
+    VJ114IMGTDL_filepath,
+    VNP14IMGML_filepath,
+    VJ114IMGML_filepath,
+    read_VJ114IMGML,
+    read_VNP14IMGTDL,
+    read_VNP14IMGML,
+    read_VJ114IMGTDL,
+    os_path_exists
+)
 
 
 def preprocessed_region_filename(
     region: Region, 
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION
+    location: Literal["s3", "local"] = READ_LOCATION
 ):
     return os.path.join(
-        FireConsts.get_dirprpdata(location=location), 
+        get_dirprpdata(location=location),
         region[0],
         f"{region[0]}.json"
     )
@@ -32,7 +51,6 @@ def preprocessed_region_filename(
 
 @timed
 def preprocess_region(region: Region, force=False):
-    from FireMain import maybe_remove_static_sources
 
     output_filepath = preprocessed_region_filename(region, location="local")
     if not force and os.path.exists(output_filepath):
@@ -43,7 +61,7 @@ def preprocess_region(region: Region, force=False):
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
-    region = maybe_remove_static_sources(region, FireConsts.dirextdata)
+    region = maybe_remove_static_sources(region, dirextdata)
 
     with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
@@ -51,7 +69,7 @@ def preprocess_region(region: Region, force=False):
     return output_filepath
 
 @timed
-def read_region(region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+def read_region(region: Region, location: Literal["s3", "local"] = READ_LOCATION):
     filepath = preprocessed_region_filename(region, location=location)
 
     # use fsspec here b/c it could be s3 or local
@@ -62,9 +80,9 @@ def read_region(region: Region, location: Literal["s3", "local"] = FireConsts.RE
 
 def preprocessed_landcover_filename(
     filename="nlcd_export_510m_simplified", 
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION
+    location: Literal["s3", "local"] = READ_LOCATION
 ):
-    return os.path.join(FireConsts.get_dirprpdata(location=location), f"{filename}_latlon.tif")
+    return os.path.join(get_dirprpdata(location=location), f"{filename}_latlon.tif")
 
 
 @timed
@@ -76,7 +94,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
     
-    fnmLCT = os.path.join(FireConsts.dirextdata, "NLCD", f"{filename}.tif")
+    fnmLCT = os.path.join(dirextdata, "NLCD", f"{filename}.tif")
     
     # make nested path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -112,10 +130,10 @@ def preprocessed_filename(
     *,
     region: Optional[Region] = None,
     suffix="",
-    location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
+    location: Literal["local", "s3"] = READ_LOCATION,
 ):
     return os.path.join(
-        FireConsts.get_dirprpdata(location=location),
+        get_dirprpdata(location=location),
         *([] if region is None else [region[0]]),
         sat,
         f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}{suffix}.txt",
@@ -138,9 +156,9 @@ def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
         Path to input data or None if file does not exist
     """
     if sat == "SNPP":
-        filepath = FireIO.VNP14IMGTDL_filepath(t)
+        filepath = VNP14IMGTDL_filepath(t)
     elif sat == "NOAA20":
-        filepath = FireIO.VJ114IMGTDL_filepath(t)
+        filepath = VJ114IMGTDL_filepath(t)
     else:
         raise ValueError("Please set SNPP or NOAA20 for sat")
     return filepath
@@ -162,9 +180,9 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
         Path to input data or None if file does not exist
     """
     if sat == "SNPP":
-        filepath = FireIO.VNP14IMGML_filepath(t)
+        filepath = VNP14IMGML_filepath(t)
     elif sat == "NOAA20":
-        filepath = FireIO.VJ114IMGML_filepath(t)
+        filepath = VJ114IMGML_filepath(t)
     else:
         raise ValueError("please set SNPP or NOAA20 for sat")
     return filepath
@@ -175,7 +193,7 @@ def check_preprocessed_file(
     ted: TimeStep,
     sat: Literal["SNPP", "NOAA20"], 
     freq: Literal["monthly", "NRT"] = "monthly", 
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION
+    location: Literal["s3", "local"] = READ_LOCATION
 ):
     """Before running preprocess_monthly_file, check if the file already exists
     for that satellite using a list of time steps
@@ -199,9 +217,9 @@ def check_preprocessed_file(
     """
     # check that there's viirs data for these dates and if not, keep track
     needs_processing = []
-    for t in FireTime.t_generator(tst, ted):
+    for t in t_generator(tst, ted):
         filepath = preprocessed_filename(t, sat, location=location)
-        if not FireIO.os_path_exists(filepath):
+        if not os_path_exists(filepath):
             needs_processing.append(t)
 
     if freq == "monthly":
@@ -234,23 +252,23 @@ def preprocess_input_file(filepath: str):
 
     if "VNP14IMGTDL" in filepath:
         sat = "SNPP"
-        df = FireIO.read_VNP14IMGTDL(filepath)
+        df = read_VNP14IMGTDL(filepath)
     elif "VJ114IMGTDL" in filepath:
         sat = "NOAA20"
-        df = FireIO.read_VJ114IMGTDL(filepath)
+        df = read_VJ114IMGTDL(filepath)
     elif "VNP14IMGML" in filepath:
         sat = "SNPP"
-        df = FireIO.read_VNP14IMGML(filepath)
+        df = read_VNP14IMGML(filepath)
         df = df.loc[df["Type"] == 0]  # type filtering
     elif "VJ114IMGML" in filepath:
         sat = "NOAA20"
-        df = FireIO.read_VJ114IMGML(filepath)
+        df = read_VJ114IMGML(filepath)
         df = df.loc[df["mask"] >= 7]
     else:
         raise ValueError("please set SNPP or NOAA20 for sat")
 
     # set ampm
-    df = FireIO.AFP_setampm(df)
+    df = AFP_setampm(df)
 
     # add the satellite information
     df["Sat"] = sat
@@ -299,7 +317,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def read_preprocessed_input(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
-    location: Literal["local", "s3"] = FireConsts.READ_LOCATION
+    location: Literal["local", "s3"] = READ_LOCATION
 ):
     filename = preprocessed_filename(t, sat, location=location)
     df = pd.read_csv(filename)
@@ -311,10 +329,10 @@ def read_preprocessed(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
     region: Region,
-    location: Literal["local", "s3"] = FireConsts.READ_LOCATION
+    location: Literal["local", "s3"] = READ_LOCATION
 ):
     filename = preprocessed_filename(t, sat, region=region, location=location)
-    df = pd.read_csv(filename).set_index("uuid").assign(t=FireTime.t2dt(t))
+    df = pd.read_csv(filename).set_index("uuid").assign(t=t2dt(t))
     return df
 
 
@@ -324,7 +342,7 @@ def preprocess_region_t(
     sensor: Literal['SNPP', 'NOAA20', 'VIIRS', "TESTING123"], 
     region: Region, 
     force: bool = False,
-    read_location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
+    read_location: Literal["local", "s3"] = READ_LOCATION,
     read_region_location: Literal["local", "s3"] = None,
 ):
 
@@ -358,8 +376,8 @@ def preprocess_region_t(
         df = read_preprocessed_input(t, sat=sensor, location=read_location)
 
     # do regional filtering
-    shp_Reg = FireIO.get_reg_shp(region[1])
-    df = FireIO.AFP_regfilter(df, shp_Reg)
+    shp_Reg = get_reg_shp(region[1])
+    df = AFP_regfilter(df, shp_Reg)
 
     columns = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm", "x", "y"]
 
@@ -368,7 +386,7 @@ def preprocess_region_t(
         df = df[columns]
 
         # do preliminary clustering using new active fire locations (assign cid to each pixel)
-        df = FireClustering.do_clustering(df, FireConsts.CONNECTIVITY_CLUSTER_KM)
+        df = do_clustering(df, CONNECTIVITY_CLUSTER_KM)
         
         # assign a uuid to each pixel and put it as the first column
         df.insert(0, "uuid" , [uuid.uuid4() for _ in range(len(df.index))])

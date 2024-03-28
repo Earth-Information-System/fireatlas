@@ -1,12 +1,18 @@
 """ FireClustering
 This module include all functions used for doing fire clustering
 """
-from utils import timed
+from .utils import timed
+import rtree
+import numpy as np
+import math
+import itertools
+
+from sklearn.neighbors import BallTree
+
 
 def build_rtree(geoms, fids=False):
     """Builds Rtree from a shapely multipolygon shape
     and optionally uses list of fids as identifier"""
-    import rtree
 
     idx = rtree.index.Index()  # create new index
     for ind, geom in enumerate(geoms):
@@ -45,9 +51,6 @@ def compute_all_spatial_distances(data, max_thresh_km):
     inds : np array of np array
         indices of neighbors (self excluded)
     """
-    import numpy as np
-    from sklearn.neighbors import BallTree
-
     X = data[["x", "y"]].values
 
     bt = BallTree(X, leaf_size=20)
@@ -79,7 +82,6 @@ def do_clustering(data, max_thresh_km):
     point_to_cluster_id : list
         cluster id for each fire point
     """
-    import numpy as np
 
     # copy the dataframe so the we don't modify it inplace
     data = data.copy()
@@ -152,8 +154,7 @@ def cal_distance(loc1, loc2):
     distance : float
         distance (km) between two points
     """
-    from FireConsts import EARTH_RADIUS_KM
-    import math
+    from .FireConsts import EARTH_RADIUS_KM
 
     lat1 = math.radians(loc1[0])
     lon1 = math.radians(loc1[1])
@@ -188,8 +189,6 @@ def cal_mindist(c1, c2):
     mindist : float
         the minimum distance (km) between c1 and c2
     """
-
-    import itertools
 
     mindist = min([cal_distance(l1, l2) for l1, l2 in itertools.product(c1, c2)])
 

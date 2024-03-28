@@ -4,12 +4,17 @@ This module include functions used to handle the time conversion
 The time step in the tracking system is defined as a list (year, month, day, ampm).
 The following functions are used to convert times between different formats.
 
+    from datetime import datetime, date
+
     t : time steps, tuple (year,month,day,ampm)
-    d : date, datetime.date()
+    d : date, date()
     ampm : ampm, str()
-    dt : time steps, datetime.datetime()
+    dt : time steps, datetime()
 
 """
+
+from datetime import date, timedelta
+import pandas as pd
 
 
 def t_nb(t, nb="next"):
@@ -26,7 +31,6 @@ def t_nb(t, nb="next"):
     t_out : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' for next/previous time
     """
-    from datetime import date, timedelta
 
     # the next time step
     if nb == "next":
@@ -74,8 +78,6 @@ def t_dif(t1, t2):
     dt : float
         time difference in days (t2-t1), half day as 0.5
     """
-    from datetime import date
-
     # calculate the day difference
     d1 = date(*t1[:-1])
     d2 = date(*t2[:-1])
@@ -109,8 +111,6 @@ def t2d(t):
     ampm : str, 'AM'|'PM'
         ampm indicator
     """
-    from datetime import date
-
     d = date(*t[:-1])  # current date, datetime date
     ampm = t[-1]  # current ampm, 'AM'|'PM'
 
@@ -129,8 +129,6 @@ def t2dt(t):
     dt : datetime datetime
         datetime
     """
-    from datetime import datetime
-
     dlh = {"AM": 0, "PM": 12}
     dhl = {0: "AM", 12: "PM"}
 
@@ -194,8 +192,6 @@ def ftrange(firstday, lastday):
     trange : pandas date range
         date range defined by firstday and lastday
     """
-    import pandas as pd
-
     trange = pd.date_range(t2dt(firstday), t2dt(lastday), freq="12h")
     return trange
 

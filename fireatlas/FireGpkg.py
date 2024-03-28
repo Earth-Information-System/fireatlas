@@ -19,6 +19,12 @@ Modules required
 * FireConsts
 """
 
+import time
+import numpy as np
+import geopandas as gpd
+import pandas as pd
+
+
 def getdd(layer):
     ''' Get attributes names and formats for different gpkg layers
     '''
@@ -66,12 +72,9 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     gdf : geopandas DataFrame
         the gdf containing half daily fire basic attributes and fire perimeter
     """
-    import numpy as np
-    import geopandas as gpd
-    import pandas as pd
-    # from FireConsts import dd
-    import FireIO, FireObj, FireTime
-    from FireConsts import epsg
+    from .FireIO import load_gpkgobj
+    from .FireTime import t_nb, t2dt
+    from .FireConsts import epsg
 
     # diagnostic data name and types saved in geojson files (in addition to geometries)
     if layer == "perimeter":
@@ -122,9 +125,9 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
 
     dd = {**dd1, **dd2}  # or (dd1 | dd2) for Python 3.9.0 or higher
     # read or initialize the gdf
-    t_pt = FireTime.t_nb(allfires.t, nb="previous")
+    t_pt = t_nb(allfires.t, nb="previous")
     
-    gdf = FireIO.load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
+    gdf = load_gpkgobj(t_pt, regnm, layer=layer)  # try to read data at t_pt
 
     if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
         gdf = gpd.GeoDataFrame(
@@ -160,7 +163,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     for fid, f in allfires.mayactivefires.items():  # loop over active fires
         for k, tp in dd2.items():
             if tp == "datetime64":
-                gdf.loc[fid, k] = FireTime.t2dt(getattr(f, k))
+                gdf.loc[fid, k] = t2dt(getattr(f, k))
             else:
                 gdf.loc[fid, k] = getattr(f, k)
 
@@ -198,7 +201,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
     for fid, f in allfires.fires.items():  # loop over all fires
         for k, tp in dd1.items():
             if tp == "datetime64":
-                gdf.loc[fid, k] = FireTime.t2dt(getattr(f, k))
+                gdf.loc[fid, k] = t2dt(getattr(f, k))
             else:
                 gdf.loc[fid, k] = getattr(f, k)
 
@@ -238,10 +241,10 @@ def save_gdf_1t(t, regnm):
     allfires : Allfires object
         the Allfires object to be used to create gdf
     """
-    import FireIO
+    from .FireIO import load_fobj, save_gpkgobj
 
     # read Allfires object from the saved pkl file
-    allfires = FireIO.load_fobj(t, regnm, activeonly=True)
+    allfires = load_fobj(t, regnm, activeonly=True)
 #     allfires = FireIO.load_fobj(t, regnm, activeonly=False)
 
     # create gdf using previous time step gdf values and new allfires object
@@ -249,7 +252,7 @@ def save_gdf_1t(t, regnm):
     gdf_fline = make_gdf_snapshot(allfires, regnm, layer="fireline")
     gdf_nfp = make_gdf_snapshot(allfires, regnm, layer="newfirepix")
 
-    FireIO.save_gpkgobj(
+    save_gpkgobj(
         allfires.t, regnm, gdf_fperim=gdf_fperim, gdf_fline=gdf_fline, gdf_nfp=gdf_nfp
     )
 
@@ -263,7 +266,7 @@ def save_gdf_trng(tst, ted, regnm):
     ted : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' at end time
     """
-    import FireObj, FireIO, FireTime
+    from .FireTime import t_dif, t_nb
 
     # loop over all days during the period
     endloop = False  # flag to control the ending olf the loop
@@ -276,22 +279,22 @@ def save_gdf_trng(tst, ted, regnm):
 
         # time flow control
         #  - if t reaches ted, set endloop to True to stop the loop
-        if FireTime.t_dif(t, ted) == 0:
+        if t_dif(t, ted) == 0:
             endloop = True
 
         #  - update t with the next time stamp
-        t = FireTime.t_nb(t, nb="next")
+        t = t_nb(t, nb="next")
 
 
 def save_gdf_uptonow(t, regnm):
     """ Create and save all valid fires (active, sleeper, and dead) up to now
     """
-    import FireIO, FireTime
-    import geopandas as gpd
-    from FireConsts import epsg
+    from .FireIO import load_fobj, save_gpkgobj
+    from .FireTime import t2dt
+    from .FireConsts import epsg
 
     # read allfires object
-    allfires = FireIO.load_fobj(t, regnm, activeonly=False)
+    allfires = load_fobj(t, regnm, activeonly=False)
 
     # initialize gdf
     dd = {
@@ -321,7 +324,7 @@ def save_gdf_uptonow(t, regnm):
         # assign attributes
         for k, tp in dd.items():
             if tp == "datetime64":
-                gdf.loc[fid, k] = FireTime.t2dt(getattr(f, k))
+                gdf.loc[fid, k] = t2dt(getattr(f, k))
             else:
                 gdf.loc[fid, k] = getattr(f, k)
         # assign geometry
@@ -338,16 +341,13 @@ def save_gdf_uptonow(t, regnm):
         gdf[k] = gdf[k].astype(tp)
 
     # save
-    FireIO.save_gpkgobj(allfires.t, regnm, gdf_uptonow=gdf)
+    save_gpkgobj(allfires.t, regnm, gdf_uptonow=gdf)
     # return gdf
 
 
 if __name__ == "__main__":
     """ The main code to record daily geojson data for a time period
     """
-
-    import time
-
     t1 = time.time()
     # set the start and end time
     # tst=(2021,7,13,'AM')

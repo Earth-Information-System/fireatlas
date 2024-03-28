@@ -27,3 +27,4 @@ dependencies:
   - pip
   - pip:
     - git+https://github.com/MAAP-Project/maap-py.git@develop
+# NOTE: this env.yml is here for convenience but really all packages should be in pyproject.toml too

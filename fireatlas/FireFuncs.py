@@ -1,5 +1,5 @@
-from FireLog import logger
-from utils import timed
+import numpy as np
+
 
 def get_CONNECTIVITY_FIRE(fire):
     """ set the CONNECTIVITY_FIRE_KM value (km) for a given fire. Within this
@@ -26,18 +26,18 @@ def get_CONNECTIVITY_FIRE(fire):
     v : float
         the CONNECTIVITY_FIRE_KM (km)
     """
-    from FireConsts import CONT_opt
+    from .FireConsts import CONT_opt
 
     if CONT_opt == 0:  # use preset values
-        from FireConsts import CONT_preset
+        from .FireConsts import CONT_preset
 
         return CONT_preset
     elif CONT_opt == 1:  # use lookup table from CAFEDS
-        from FireConsts import CONT_CA
+        from .FireConsts import CONT_CA
 
         return CONT_CA[fire.ftype]
     elif CONT_opt == 2:  # use lookup table for global universal run
-        from FireConsts import FTYP_Glb
+        from .FireConsts import FTYP_Glb
 
         ftype = FTYP_Glb[fire.ftype]
         
@@ -65,18 +65,16 @@ def set_ftype(fire):
         the fire associated with the CONNECTIVITY_FIRE_KM
 
     """
-    import numpy as np
-    from FireConsts import FTYP_opt
-    import FireIO
-    from datetime import date
-    import numpy as np
+    from .FireConsts import FTYP_opt
+    from .FireIO import get_LCT_CONUS, get_LCT_Global
+    from .FireLog import logger
 
     # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
     # 1 - use the CA type classification (dtermined using LCTmax)
     # 2 - use the global type classfication (need more work...)
 
     if FTYP_opt == 0:  # use preset ftype for all fires
-        from FireConsts import FTYP_preset
+        from .FireConsts import FTYP_preset
 
         ftype = FTYP_preset[0]
     elif FTYP_opt == 1:  # use CA type classifications (determined using LCTmax)
@@ -88,7 +86,7 @@ def set_ftype(fire):
             uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
 
         # get all LCT for the fire pixels
-        vLCT = FireIO.get_LCT_CONUS(uselocs)
+        vLCT = get_LCT_CONUS(uselocs)
         try:
             # extract the LCT with most pixel counts
             LCTmax = max(set(vLCT), key=vLCT.count)
@@ -125,7 +123,7 @@ def set_ftype(fire):
            # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
             uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
         
-        vLCT = FireIO.get_LCT_Global(
+        vLCT = get_LCT_Global(
             uselocs
         )  # call get_LCT to get all LCT for the fire pixels
         
@@ -176,18 +174,18 @@ def set_ftypename(fire):
         the fire type name of the given fire
 
     """
-    from FireConsts import FTYP_opt
+    from .FireConsts import FTYP_opt
 
     if FTYP_opt == 0:  # use preset ftype for all fires
-        from FireConsts import FTYP_preset
+        from .FireConsts import FTYP_preset
 
         ftname = FTYP_preset[0]
     elif FTYP_opt == 1:  # use CA type classifications (determined using LCTmax)
-        from FireConsts import FTYP_CA
+        from .FireConsts import FTYP_CA
 
         ftname = FTYP_CA[fire.ftype]
     elif FTYP_opt == 2:  # global type classification
-        from FireConsts import FTYP_Glb
+        from .FireConsts import FTYP_Glb
 
         ftname = FTYP_Glb[fire.ftype]
     return ftname

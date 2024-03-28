@@ -1,17 +1,16 @@
 import os
-import FireConsts
-import FireClustering
-import FireMain
-import FireIO
-import pathlib
-import preprocess
 import pytest
 import pandas as pd
-from datetime import datetime
-from FireTypes import TimeStep, Region
 from shapely.geometry import Polygon
 from unittest.mock import MagicMock
 from pathlib import Path
+
+from fireatlas import preprocess
+from fireatlas import FireConsts
+from fireatlas import FireClustering
+from fireatlas import FireMain
+from fireatlas import FireIO
+from fireatlas.FireTypes import TimeStep, Region
 
 try:
     from shapely import to_geojson, from_geojson

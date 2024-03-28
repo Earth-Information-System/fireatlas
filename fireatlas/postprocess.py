@@ -5,16 +5,25 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 
-from FireTypes import Region, TimeStep
-import FireConsts, FireTime
 from utils import timed
-
 import warnings; warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
+from .FireTypes import Region, TimeStep
+from .FireConsts import (
+    get_diroutdata,
+    READ_LOCATION,
+    maxoffdays,
+    limoffdays,
+    LARGEFIRE_FAREA
+)
+from .FireTime import t2dt, t_generator
+from shapely.ops import unary_union
+from .FireGpkg_sfs import getdd
 
-def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+
+def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = READ_LOCATION):
     filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
-    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename)
+    return os.path.join(get_diroutdata(location=location), region[0], str(tst[0]), filename)
 
 
 @timed
@@ -28,15 +37,15 @@ def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
     return output_filepath
 
 @timed
-def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+def read_allpixels(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = READ_LOCATION):
     filepath = allpixels_filepath(tst, ted, region, location=location)
 
     return pd.read_csv(filepath, index_col="uuid", parse_dates=["t"])
 
 
-def allfires_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+def allfires_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = READ_LOCATION):
     filename = f"allfires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.parq"
-    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename)
+    return os.path.join(get_diroutdata(location=location), region[0], str(tst[0]), filename)
 
 
 @timed
@@ -51,24 +60,22 @@ def save_allfires_gdf(allfires_gdf, tst: TimeStep, ted: TimeStep, region: Region
 
 
 @timed
-def read_allfires_gdf(tst: TimeStep, ted: TimeStep, region: Region, location : Literal["s3", "local"] = FireConsts.READ_LOCATION):
+def read_allfires_gdf(tst: TimeStep, ted: TimeStep, region: Region, location : Literal["s3", "local"] = READ_LOCATION):
     filepath = allfires_filepath(tst, ted, region, location=location)
 
     return gpd.read_parquet(filepath)
 
 
-def snapshot_folder(region: Region, tst: TimeStep, ted: TimeStep, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
-    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}")
+def snapshot_folder(region: Region, tst: TimeStep, ted: TimeStep, location: Literal["s3", "local"] = READ_LOCATION):
+    return os.path.join(get_diroutdata(location=location), region[0], str(tst[0]), "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}")
 
 
 @timed
 def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: TimeStep):
-    from FireGpkg import getdd
-
     output_dir = snapshot_folder(region, tst, ted, location="local")
     os.makedirs(output_dir, exist_ok=True)
 
-    dt = FireTime.t2dt(ted)
+    dt = t2dt(ted)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
         columns = [col for col in getdd(layer)]
@@ -89,9 +96,9 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
             data["isignition"] = dt == data["t_st"]
             data["t_inactive"] = (dt - data["t_ed"]).dt.days
             
-            data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= FireConsts.maxoffdays)
-            data["isdead"] = ~data["invalid"] & (data["t_inactive"] > FireConsts.limoffdays)
-            data["mayreactivate"] = ~data["invalid"] & (FireConsts.maxoffdays < data["t_inactive"]) & (data["t_inactive"] <= FireConsts.limoffdays)
+            data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= maxoffdays)
+            data["isdead"] = ~data["invalid"] & (data["t_inactive"] > limoffdays)
+            data["mayreactivate"] = ~data["invalid"] & (maxoffdays < data["t_inactive"]) & (data["t_inactive"] <= limoffdays)
 
             # map booleans to integers
             for col in ["isignition", "isactive", "isdead", "mayreactivate"]:
@@ -118,8 +125,8 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
 def save_snapshots(allfires_gdf, region, tst, ted):
     gdf = allfires_gdf.reset_index()
 
-    for t in FireTime.t_generator(tst, ted):
-        dt = FireTime.t2dt(t)
+    for t in t_generator(tst, ted):
+        dt = t2dt(t)
         data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last")
         save_snapshot_layers(data, region, tst, t)
 
@@ -130,13 +137,13 @@ def find_largefires(allfires_gdf):
 
     last_seen = gdf.drop_duplicates("fireID", keep="last")
     last_large = last_seen[
-        (last_seen.farea > FireConsts.LARGEFIRE_FAREA) & (last_seen.invalid == False)
+        (last_seen.farea > LARGEFIRE_FAREA) & (last_seen.invalid == False)
     ]
     return last_large.fireID.values
 
 
-def largefire_folder(region: Region, fid, tst: TimeStep, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
-    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), "Largefire", str(fid))
+def largefire_folder(region: Region, fid, tst: TimeStep, location: Literal["s3", "local"] = READ_LOCATION):
+    return os.path.join(get_diroutdata(location=location), region[0], str(tst[0]), "Largefire", str(fid))
 
 
 @timed
@@ -161,7 +168,6 @@ def save_large_fires_nplist(allpixels, region, large_fires, tst):
 
 @timed
 def save_fire_layers(allfires_gdf_fid, region, fid, tst):
-    from FireGpkg_sfs import getdd
 
     output_dir = largefire_folder(region, fid, tst, location="local")
     os.makedirs(output_dir, exist_ok=True)
@@ -227,13 +233,12 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
         save_fire_layers(data, region, fid, tst)
 
 
-def individual_fires_path(tst, ted, region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+def individual_fires_path(tst, ted, region, location: Literal["s3", "local"] = READ_LOCATION):
     filename = f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"
-    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename)
+    return os.path.join(get_diroutdata(location=location), region[0], str(tst[0]), filename)
 
 
 def cumunion(x):
-    from shapely.ops import unary_union
     for i in range(1, len(x)):
         x[i] = unary_union([x[i-1], x[i]])
     return x

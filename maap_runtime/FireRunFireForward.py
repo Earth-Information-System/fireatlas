@@ -1,11 +1,8 @@
-import os
-import glob
 import json
-from datetime import datetime
-
 import argparse
-from FireTypes import Region
-from utils import timed
+import fireatlas
+from fireatlas.utils import timed
+from fireatlas import FireRunDaskCoordinator
 
 
 def validate_json(s):
@@ -16,7 +13,7 @@ def validate_json(s):
 
 
 @timed
-def Run(region: Region, tst=None, ted=None):
+def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted:  fireatlas.FireTypes.TimeStep):
     # NOTE: this set up has to happen before `import FireConsts`
     # or any other modules also import from FireConsts
     # so set os environ variables that will override
@@ -26,8 +23,7 @@ def Run(region: Region, tst=None, ted=None):
     # os.environ['FTYP_OPT'] = 2
     # os.environ['CONT_OPT'] = 2
     # import FireConsts
-    from FireRunDaskCoordinator import job_fire_forward
-    job_fire_forward([None], region, tst, ted)
+    FireRunDaskCoordinator.job_fire_forward([None], region, tst, ted)
 
 
 if __name__ == "__main__":

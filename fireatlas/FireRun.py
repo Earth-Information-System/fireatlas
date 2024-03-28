@@ -1,18 +1,8 @@
 """ FireRun
 Module to control different runs
 """
-import sys
-import os
 import time
 import argparse
-import glob
- 
-# import logging
-# stdout_handler = logging.StreamHandler(sys.stdout)
-# logger = logging.getLogger(__name__)
-# logger.addHandler(stdout_handler)
-# logger.setLevel(logging.INFO)
-import FireConsts
 from FireLog import logger
 from utils import timed
 

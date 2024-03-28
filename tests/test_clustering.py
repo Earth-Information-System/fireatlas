@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import pytest
-import FireClustering
+from fireatlas import FireClustering
 
 
 @pytest.mark.parametrize(

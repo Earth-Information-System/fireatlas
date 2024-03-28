@@ -5,10 +5,10 @@ import numpy as np
 import s3fs
 import time
 from pathlib import Path
-from FireConsts import diroutdata
+from .FireConsts import diroutdata
 from dask.distributed import Client
-from FireLog import logger
-from FireIO import copy_from_maap_to_veda_s3
+from .FireLog import logger
+from .FireIO import copy_from_maap_to_veda_s3
 
 LAYERS = ["newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14

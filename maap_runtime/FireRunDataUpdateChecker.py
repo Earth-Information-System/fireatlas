@@ -1,9 +1,8 @@
-import glob
 import json
 import argparse
-import os
 
 from utils import timed
+from fireatlas import FireRunDaskCoordinator
 
 
 def validate_json(s):
@@ -22,8 +21,7 @@ def Run():
 
     :return: None
     """
-    from FireRunDaskCoordinator import job_data_update_checker
-    job_data_update_checker()
+    FireRunDaskCoordinator.job_data_update_checker()
 
 
 

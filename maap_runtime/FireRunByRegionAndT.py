@@ -1,9 +1,11 @@
 import json
 import argparse
-import os
 
-from utils import timed
-from FireTypes import TimeStep, Region
+import fireatlas
+from fireatlas.utils import timed
+from fireatlas import FireRunDaskCoordinator
+from fireatlas import FireConsts
+from fireatlas import FireLog
 
 
 def validate_json(s):
@@ -14,13 +16,9 @@ def validate_json(s):
 
 
 @timed
-def Run(region: Region, t: TimeStep):
-    from FireRunDaskCoordinator import job_preprocess_region_t
-    import FireConsts
-    from FireLog import logger
-
-    logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {FireConsts.firesrc}")
-    job_preprocess_region_t(None, None, region, t)
+def Run(region: fireatlas.FireType.Region, t: fireatlas.FireType.TimeStep):
+    FireLog.logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {FireConsts.firesrc}")
+    FireRunDaskCoordinator.job_preprocess_region_t(None, None, region, t)
 
 
 if __name__ == "__main__":

@@ -7,10 +7,25 @@ from dask.distributed import Client
 from dask import delayed
 from dask.delayed import Delayed
 
-from FireLog import logger
-from FireTypes import Region, TimeStep
-from utils import timed
+from .FireTypes import Region, TimeStep
+from .utils import timed
 from datetime import datetime
+
+from .FireMain import Fire_Forward
+from .postprocess import (
+    save_allpixels,
+    save_allfires_gdf,
+    save_snapshots,
+    find_largefires,
+    save_large_fires_layers,
+    save_large_fires_nplist,
+)
+from .FireConsts import get_dirprpdata, get_diroutdata, firesrc
+from .preprocess import preprocess_region_t, preprocess_region
+from .DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
+from .FireIO import copy_from_local_to_s3
+from .FireTime import t_generator
+from .FireLog import logger
 
 MAX_WORKERS = 3
 
@@ -23,9 +38,6 @@ def validate_json(s):
 
 
 def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: TimeStep, ted: TimeStep):
-    import FireIO, FireConsts, FireMain, postprocess
-    from FireLog import logger
-
     ctime = datetime.now()
 
     if tst in (None, ""):  # if no start is given, run from beginning of year
@@ -38,71 +50,62 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
             ampm = 'AM'
         ted = [ctime.year, ctime.month, ctime.day, ampm]
 
-    logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {FireConsts.firesrc}")
+    logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {firesrc}")
 
-    allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
-    allpixels_filepath = postprocess.save_allpixels(allpixels, tst, ted, region)
-    allfires_filepath = postprocess.save_allfires_gdf(allfires.gdf, tst, ted, region)
+    allfires, allpixels = Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    allpixels_filepath = save_allpixels(allpixels, tst, ted, region)
+    allfires_filepath = save_allfires_gdf(allfires.gdf, tst, ted, region)
 
-    FireIO.copy_from_local_to_s3(allpixels_filepath)
-    FireIO.copy_from_local_to_s3(allfires_filepath)
+    copy_from_local_to_s3(allpixels_filepath)
+    copy_from_local_to_s3(allfires_filepath)
 
-    postprocess.save_snapshots(allfires.gdf, region, tst, ted)
+    save_snapshots(allfires.gdf, region, tst, ted)
 
-    large_fires = postprocess.find_largefires(allfires.gdf)
-    postprocess.save_large_fires_nplist(allpixels, region, large_fires, tst)
-    postprocess.save_large_fires_layers(allfires.gdf, region, large_fires, tst)
-
-    for filepath in glob.glob(
-            os.path.join(FireConsts.get_diroutdata(location="local"), region[0], str(tst[0]), "Snapshot", "*",
-                         "*.fgb")):
-        FireIO.copy_from_local_to_s3(filepath)
+    large_fires = find_largefires(allfires.gdf)
+    save_large_fires_nplist(allpixels, region, large_fires, tst)
+    save_large_fires_layers(allfires.gdf, region, large_fires, tst)
 
     for filepath in glob.glob(
-            os.path.join(FireConsts.get_diroutdata(location="local"), region[0], str(tst[0]), "Largefire", "*",
+            os.path.join(get_diroutdata(location="local"), region[0], str(tst[0]), "Snapshot", "*",
                          "*.fgb")):
-        FireIO.copy_from_local_to_s3(filepath)
+        copy_from_local_to_s3(filepath)
+
+    for filepath in glob.glob(
+            os.path.join(get_diroutdata(location="local"), region[0], str(tst[0]), "Largefire", "*",
+                         "*.fgb")):
+        copy_from_local_to_s3(filepath)
 
 
 def job_preprocess_region_t(
         eventual_result1: Delayed,
         eventual_result2: Delayed, region: Region, t: TimeStep):
-    import FireIO, FireConsts, preprocess
-    from FireLog import logger
-
-    logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {FireConsts.firesrc}")
-    output_filepath = preprocess.preprocess_region_t(t, sensor=FireConsts.firesrc, region=region)
-    FireIO.copy_from_local_to_s3(output_filepath)
+    logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {firesrc}")
+    output_filepath = preprocess_region_t(t, sensor=firesrc, region=region)
+    copy_from_local_to_s3(output_filepath)
 
 
 def job_preprocess_region(region: Region):
-    import FireIO, preprocess
-
-    filepath = preprocess.preprocess_region(region)
-    FireIO.copy_from_local_to_s3(filepath)
+    filepath = preprocess_region(region)
+    copy_from_local_to_s3(filepath)
 
 
 def job_data_update_checker():
     """"""
-    import DataCheckUpdate, FireConsts, FireIO
-
     try:
         # Download SUOMI-NPP
-        DataCheckUpdate.update_VNP14IMGTDL()
+        update_VNP14IMGTDL()
         # Download NOAA-20
-        DataCheckUpdate.update_VJ114IMGTDL()
+        update_VJ114IMGTDL()
     except Exception as exc:
         logger.exception(exc)
     finally:
-        for filepath in glob.glob(os.path.join(FireConsts.get_dirprpdata(location="local"), "*", "*.txt")):
-            FireIO.copy_from_local_to_s3(filepath)
+        for filepath in glob.glob(os.path.join(get_dirprpdata(location="local"), "*", "*.txt")):
+            copy_from_local_to_s3(filepath)
 
 
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep):
-    import FireTime
-
-    list_of_timesteps = list(FireTime.t_generator(tst, ted))
+    list_of_timesteps = list(t_generator(tst, ted))
     dask_client = Client(n_workers=MAX_WORKERS)
     logger.info(f"dask workers = {len(dask_client.cluster.workers)}")
 

@@ -1,3 +1,70 @@
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm[toml]>=6.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fireatlas"
+dynamic = ["version"]
+requires-python = ">=3.10"
+description = "EIS Fire NRT DPS"
+readme = "README.md"
+authors = []
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: NASA/EIS/Scientific/Engineering",
+]
+license = { text = "Apache-2.0" }
+keywords = ["eis", "fireatlas"]
+dependencies = [
+  "xarray",
+  "pandas",
+  "dask",
+  "geopandas",
+  "fiona",
+  "shapely",
+  "fsspec",
+  "s3fs",
+  "rtree",
+  "scikit-learn",
+  "pyarrow",
+  "rasterio",
+  "pyproj",
+  "tqdm",
+  "scalene"
+]
+
+# [project.urls]
+# Homepage = ""
+# Tracker = ""
+# Documentation = ""
+
+[tool.setuptools.packages.find]
+exclude = ["notebooks"]
+include = ["fireatlas", "maap_runtime", "tests"]
+
+[tool.setuptools.package-data]
+fireatlas = ["py.typed"]
+
+
+[tool.setuptools_scm]
+write_to = "fireatlas/_version.py"
+write_to_template = "__version__ = '{version}'"
+
+
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "pytest-cov",
+]
+
 [tool.coverage.run]
 omit = [
     "*/maap_runtime/*",

@@ -8,3 +8,4 @@ running.log
 .conda/
 import/
 .coverage
+_version.py

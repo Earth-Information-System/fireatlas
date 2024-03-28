@@ -1,6 +1,16 @@
 """ FireVector
 This is the module used for vector related calculations
 """
+import math
+import geopandas as gpd
+import shapely.geometry as geometry
+
+from shapely.ops import unary_union, polygonize
+from shapely.geometry import Polygon, MultiPoint, MultiLineString
+
+from scipy.spatial import Delaunay, ConvexHull
+
+from FireConsts import valpha, VIIRSbuf, extbuffer, EARTH_RADIUS_KM, fpbuffer, MCD64buf
 
 
 def doConcH(points, alpha):
@@ -19,11 +29,6 @@ def doConcH(points, alpha):
         Too large, and you lose everything!
     source: http://blog.thehumangeo.com/2014/05/12/drawing-boundaries-in-python/
     """
-    from shapely.ops import unary_union, polygonize
-    from scipy.spatial import Delaunay
-    import math
-    import shapely.geometry as geometry
-
     def add_edge(edges, edge_points, coords, i, j):
         """
         Add a line between the i-th and j-th points,
@@ -87,9 +92,6 @@ def doConvH(locs):
     hull : Polygon object
         calculated hull shape
     """
-    from scipy.spatial import ConvexHull
-    from shapely.geometry import Polygon
-
     # calculate the convex hull using scipy.spatial.ConvexHull
     qhull = ConvexHull(locs)
 
@@ -114,9 +116,6 @@ def cal_hull(locs, sensor="viirs"):
     hull : object
         calculated hull (a buffer of VIIRS half pixel size included)
     """
-    from shapely.geometry import MultiPoint
-    from FireConsts import valpha, VIIRSbuf
-
     # set buffer according to sensor
     if sensor == "viirs":
         buf = VIIRSbuf
@@ -160,8 +159,6 @@ def get_ext_pixels(pixels, hull):
     boolean np.array
         whether each pixel is part of the exterior
     """
-    import geopandas as gpd
-    from FireConsts import extbuffer
 
     hts_buf = hull.buffer(-extbuffer)
     pixel_arr = gpd.points_from_xy(pixels["x"], pixels["y"])
@@ -182,10 +179,6 @@ def get_fline_pixels(pixels, hull):
     boolean np.array
         whether each pixel is part of the fline
     """
-    import geopandas as gpd
-    from shapely.geometry import MultiLineString
-    from FireConsts import fpbuffer
-
     pixel_arr = gpd.points_from_xy(pixels["x"], pixels["y"])
 
     # extract the pixels near the hull
@@ -211,9 +204,6 @@ def calConcHarea(hull):
     farea : float
         the area (km2) of the polygon enclosed by the vertices
     """
-    import math
-    from FireConsts import EARTH_RADIUS_KM
-
     farea = hull.area  # area in deg**2
 
     if farea > 0:

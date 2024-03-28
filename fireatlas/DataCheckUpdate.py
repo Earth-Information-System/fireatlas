@@ -1,29 +1,30 @@
 """ DataUpdate
 This module include functions used to check and update needed data files
 """
-from FireConsts import dirextdata
-import subprocess
-from datetime import date, timedelta
+import s3fs
+import fnmatch
+import glob
+import urllib.request
+import os
+import fsspec
+import xarray as xr
+import tempfile
 import pandas as pd
-import preprocess
-from FireLog import logger
+import warnings
 
-from FireIO import os_path_exists
+from datetime import date, timedelta
+
 
 def glob2(pathname, **kwargs):
     '''
     Custom implementation of Glob that also works for S3 directories.
     '''
     if pathname.startswith("s3://"):
-        import s3fs
-        import fnmatch
-        import os
         s3 = s3fs.S3FileSystem(anon=False)
         s3_dir = os.path.dirname(pathname)
         fnms = [f"s3://{f}" for f in s3.ls(s3_dir) if fnmatch.fnmatch(f"s3://{f}", pathname)]
         return sorted(fnms)
     else:
-        import glob
         return sorted(list(glob.glob(pathname, **kwargs)))
 
 # ------------------------------------------------------------------------------
@@ -40,9 +41,8 @@ def check_VNP14IMGML_avail(year, month, ver="C1.05"):
         the month
     """
 
-    from FireConsts import dirextdata
-    import os
-    from datetime import date
+    from .FireConsts import dirextdata
+    from .FireIO import os_path_exists
 
     # derive monthly file name with path
     t = date(year, month, 1)
@@ -79,9 +79,8 @@ def check_VNP14IMGTDL_avail(year, month, day):
         the day
     """
 
-    from FireConsts import dirextdata
-    import os
-    from datetime import date, timedelta
+    from .FireConsts import dirextdata
+    from .FireIO import os_path_exists
 
     # derive monthly file name with path
     t = date(year, month, day)
@@ -127,9 +126,8 @@ def check_VJ114IMGTDL_avail(year, month, day):
         the day
     """
 
-    from FireConsts import dirextdata
-    import os
-    from datetime import date, timedelta
+    from .FireConsts import dirextdata
+    from .FireIO import os_path_exists
 
     # derive monthly file name with path
     t = date(year, month, day)
@@ -176,13 +174,8 @@ def check_GridMET_avail(year, month, day):
         the day
     """
 
-    from FireConsts import dirextdata
-    import os
-    from datetime import date
-    import xarray as xr
-    import pandas as pd
-
-    import warnings
+    from .FireConsts import dirextdata
+    from .FireIO import os_path_exists
 
     warnings.simplefilter("ignore")
 
@@ -234,9 +227,7 @@ def check_data_avail(year, month, day):
 # update external dataset
 # ------------------------------------------------------------------------------
 def wget(url, **kwargs):
-    import urllib.request
-    import os
-    import fsspec
+    from .FireLog import logger
 
     target_dir = "."
     if "locdir" in kwargs:
@@ -265,6 +256,8 @@ def update_VNP14IMGTDL(local_dir=None):
     local_dir : str
         the directory containing the downloaded data
     '''
+    from .preprocess import preprocess_input_file
+    from .FireConsts import dirextdata
 
     # The directory to save VNP14IMGTDL data
     if local_dir == None:
@@ -291,7 +284,7 @@ def update_VNP14IMGTDL(local_dir=None):
             print("\nCould not download VNP14IMGTDL data for",d)
             print('Error message:',e)
             continue
-        preprocess.preprocess_input_file(downloaded_filepath)
+        preprocess_input_file(downloaded_filepath)
 
 
 def update_VJ114IMGTDL(local_dir=None):
@@ -304,6 +297,8 @@ def update_VJ114IMGTDL(local_dir=None):
     local_dir : str
         the directory containing the downloaded data
     '''
+    from .preprocess import preprocess_input_file
+    from .FireConsts import dirextdata
 
     # The directory to save VNP14IMGTDL data
     if local_dir == None:
@@ -329,15 +324,13 @@ def update_VJ114IMGTDL(local_dir=None):
             print("\nCould not download VJ114IMGTDL data for",d)
             print('Error message:',e)
             continue
-        preprocess.preprocess_input_file(downloaded_filepath)
+        preprocess_input_file(downloaded_filepath)
 
 def update_GridMET_fm1000(local_dir=None):
     ''' Get updated GridMET data (including fm1000)
     '''
-    import os
-    import xarray as xr
-    import tempfile
-    
+    from .FireConsts import dirextdata
+
     # The directory to save GridMET data
     if local_dir == None:
         local_dir = dirextdata+'GridMET/'

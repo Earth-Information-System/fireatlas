@@ -1,8 +1,9 @@
 import pytest
-import FireIO
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Point, Polygon
+
+from fireatlas import FireIO
 
 
 @pytest.mark.parametrize(

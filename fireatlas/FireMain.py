@@ -18,11 +18,13 @@ Modules required
 * FireConsts
 """
 
-# Use a logger to record console output
-from FireLog import logger
+from .FireTypes import Region, TimeStep
+from .utils import timed
 
-from FireTypes import Region, TimeStep
-from utils import timed
+import time
+import os
+import geopandas as gpd
+import pandas as pd
 
 
 # Functions
@@ -88,13 +90,13 @@ def set_eafirerngs(allfires, fids):
     eafirerngs : list
         the list of fire connecting ranges corresponding to the sequence of fids
     """
-    import FireFuncs
+    from .FireFuncs import get_CONNECTIVITY_FIRE
 
     # extract existing active fire data (use extending ranges)
     firerngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        CONNECTIVITY_FIRE_KM = FireFuncs.get_CONNECTIVITY_FIRE(f)
+        CONNECTIVITY_FIRE_KM = get_CONNECTIVITY_FIRE(f)
         rng = f.hull.buffer(CONNECTIVITY_FIRE_KM * 1000)
         firerngs.append(rng)
     return firerngs
@@ -115,13 +117,13 @@ def set_sleeperrngs(allfires, fids):
     eafirerngs : list
         the list of fire connecting ranges corresponding to the sequence of fids
     """
-    import FireConsts
+    from .FireConsts import CONNECTIVITY_SLEEPER_KM
 
     # extract existing active fire data (use extending ranges)
     sleeperrngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        rng = f.hull.buffer(FireConsts.CONNECTIVITY_SLEEPER_KM * 1000)
+        rng = f.hull.buffer(CONNECTIVITY_SLEEPER_KM * 1000)
         sleeperrngs.append(rng)
     return sleeperrngs
 
@@ -138,13 +140,14 @@ def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
     region : region obj
         A region that is the difference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
     """
-    import os
-    from FireIO import get_reg_shp
-    from FireConsts import epsg, remove_static_sources_bool, remove_static_sources_sourcefile, remove_static_sources_buffer
+    from .FireIO import get_reg_shp
+    from .FireConsts import (
+        epsg,
+        remove_static_sources_bool,
+        remove_static_sources_sourcefile,
+        remove_static_sources_buffer
+    )
 
-    import geopandas as gpd
-    import pandas as pd
-    
     if not remove_static_sources_bool:
         # should make sure region[1] is a geometry
         geom = get_reg_shp(region[1])
@@ -193,10 +196,13 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
     allfires : Allfires obj
         updated Allfires object for the day with new formed/expanded fire objects
     """
-    import pandas as pd
-    import FireObj, FireClustering, FireTime
-    from FireConsts import expand_only, firessr
-    from FireVector import cal_hull
+    from .FireObj import Fire
+    from .FireClustering import (
+        build_rtree,
+        idx_intersection
+    )
+    from .FireConsts import expand_only, firessr
+    from .FireVector import cal_hull
 
     # initializations
     idmax = max([*allfires.fires.keys(), 0])  # maximum id of existing fires
@@ -207,7 +213,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
     eafirerngs = set_eafirerngs(allfires, fids_ea)
 
     # create a spatial index based on geometry bounds of fire connecting ranges
-    ea_idx = FireClustering.build_rtree(eafirerngs)
+    ea_idx = build_rtree(eafirerngs)
 
     # loop over all new clusters (0:cid-1) and determine its fate
     FP2expand = {}  # a dict to record {fid : Firepixel objects} pairs
@@ -218,7 +224,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
         #   record all pixels to be added to the existing object (no actual changes on existing fire objects)
         
         # find potential neighbors using spatial index
-        id_cfs = FireClustering.idx_intersection(ea_idx, hull.bounds)  
+        id_cfs = idx_intersection(ea_idx, hull.bounds)
         clusterdone = False
 
          # loop over all potential eafires
@@ -254,7 +260,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
                 fids_new.append(id_newfire)  # record id_newfire to fid_new
 
                 # use the fire id and new fire pixels to create a new Fire object
-                newfire = FireObj.Fire(id_newfire, allfires.t, allpixels, sensor=firessr)
+                newfire = Fire(id_newfire, allfires.t, allpixels, sensor=firessr)
                 newfire.t_st = newfire.t
                 newfire.pixels = pixels
                 newfire.hull = hull
@@ -315,14 +321,16 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
     allfires : Allfires obj
         Allfires obj after fire merging
     """
-    import pandas as pd
-    import FireClustering
+    from .FireClustering import (
+        build_rtree,
+        idx_intersection
+    )
 
     # extract existing active fire data (use extending ranges)
     eafirerngs = set_eafirerngs(allfires, fids_ea)
 
     # create a spatial index based on geometry bounds of fire connecting ranges
-    ea_idx = FireClustering.build_rtree(eafirerngs)
+    ea_idx = build_rtree(eafirerngs)
 
     # extract new and recently expanded fire data (use hulls without buffer)
     nefires = [allfires.fires[fid] for fid in fids_ne]
@@ -338,7 +346,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             firedone[fid_ne] == False
         ):  # skip objects that have been merged to others in earlier loop
             # potential neighbors
-            id_cfs = FireClustering.idx_intersection(ea_idx, nefirehulls[id_ne].bounds)
+            id_cfs = idx_intersection(ea_idx, nefirehulls[id_ne].bounds)
             # loop over all potential neighbor fobj candidiates
             for id_ea in id_cfs:
                 fid_ea = fids_ea[id_ea]  # fire id of existing active fire
@@ -377,7 +385,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
         nefiresleeperrangs = set_sleeperrngs(allfires, fids_ne)
 
         # create a spatial index based on geometry bounds of ne fire sleeper ranges
-        ne_idx = FireClustering.build_rtree(nefiresleeperrangs)
+        ne_idx = build_rtree(nefiresleeperrangs)
 
         # do the check analoguous to above; loop over each sleeper fire
         firedone = {
@@ -393,7 +401,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
                 firedone[fid_sleep] == False
             ):  # skip objects that have been merged to others in earlier loop
                 # potential neighbors
-                id_cfs = FireClustering.idx_intersection(
+                id_cfs = idx_intersection(
                     ne_idx, sleepflines[id_sleep].bounds
                 )
                 # loop over all potential neighbour fobj candidates
@@ -460,12 +468,14 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
 
 @timed
 def Fire_Forward_one_step(allfires, allpixels, t, region):
-    import FireConsts, FireTime
-    
+    from .FireConsts import opt_rmstatfire
+    from .FireTime import isyearst, t2dt
+    from .FireLog import logger
+
     logger.info("--------------------")
     logger.info(f"Fire tracking at {t}")
 
-    if FireTime.isyearst(t):
+    if isyearst(t):
         allfires.newyear_reset(region[0])
 
     # 1. record existing active fire ids (before fire tracking at t)
@@ -474,7 +484,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
     # 2. update t of allfires, clean up allfires and fire object
     allfires.cleanup(t)
 
-    tpixels = allpixels[allpixels["t"] == FireTime.t2dt(t)]
+    tpixels = allpixels[allpixels["t"] == t2dt(t)]
 
     # 4.5. if active fire pixels are detected, do fire expansion/merging
     if len(tpixels) > 0:
@@ -489,7 +499,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
             allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep)
 
     # 7. manualy invalidate static fires (with exceptionally large fire density)
-    if FireConsts.opt_rmstatfire:
+    if opt_rmstatfire:
         allfires.invalidate_statfires()
 
     # 8. log changes
@@ -529,30 +539,31 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
     allfires : FireObj allfires object
         the allfires object at end date
     """
-    import FireTime, FireObj, FireConsts
-    import preprocess
-    import pandas as pd
+    from .preprocess import read_preprocessed
+    from .FireConsts import firesrc, READ_LOCATION
+    from .FireObj import Allfires
+    from .FireTime import t_generator
 
     if sat is None:
-        sat = FireConsts.firesrc
+        sat = firesrc
 
     if read_location is None:
-        read_location = FireConsts.READ_LOCATION
+        read_location = READ_LOCATION
 
     # initialize allfires object
-    allfires = FireObj.Allfires(tst)
+    allfires = Allfires(tst)
 
     # read in all preprocessed pixel data
     allpixels = pd.concat([
-        preprocess.read_preprocessed(t, sat=sat, region=region, location=read_location)
-        for t in FireTime.t_generator(tst, ted)
+        read_preprocessed(t, sat=sat, region=region, location=read_location)
+        for t in t_generator(tst, ted)
     ])
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
     allpixels["ext_until"] = None
 
     # loop over every t during the period and mutate allfires, allpixels
-    for t in FireTime.t_generator(tst, ted):
+    for t in t_generator(tst, ted):
         allfires = Fire_Forward_one_step(allfires, allpixels, t, region)
 
     return allfires, allpixels
@@ -561,10 +572,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period
     """
-
-    import time
-    import FireGpkg
-    import FireGpkg_sfs
+    from .FireGpkg_sfs import save_sfts_trng
 
     t1 = time.time()
     print(t1)
@@ -605,7 +613,7 @@ if __name__ == "__main__":
     print("----------------------------------------")
     print("Running save_sfts_trng")
     print("----------------------------------------")
-    FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+    save_sfts_trng(tst, ted, regnm=region[0])
 
     t2 = time.time()
     print(f"{(t2-t1)/60.} minutes used to run code")

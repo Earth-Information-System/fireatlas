@@ -4,7 +4,10 @@ running controls
 """
 from typing import Literal
 import os
-import FireEnums
+from .FireEnums import (
+    FireSource,
+    EPSG
+)
 from functools import partial
 
 def get_env_var_as_type(name, cast_to_type=int, default=None):
@@ -95,7 +98,7 @@ area_VI = 0.141  # km2, area of each 375m VIIRS pixel
 MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.31271653 m/2
 
 # fire source data
-firesrc = get_env_var_as_type('FIRE_SOURCE', cast_to_type=str, default=FireEnums.FireSource.VIIRS.value)  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
+firesrc = get_env_var_as_type('FIRE_SOURCE', cast_to_type=str, default=FireSource.VIIRS.value)  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
 firenrt = get_env_var_as_type('FIRE_NRT', cast_to_type=bool, default=True) # NRT - True, False
 firessr = "viirs"  # sensor - 'mcd64'
 
@@ -160,7 +163,7 @@ FTYP_Glb = {
 # ------------------------------------------------------------------------------
 # other options
 # ------------------------------------------------------------------------------
-epsg = get_env_var_as_type('EPSG_CODE', cast_to_type=int, default=FireEnums.EPSG.CONUS_EQ_AREA.value)
+epsg = get_env_var_as_type('EPSG_CODE', cast_to_type=int, default=EPSG.CONUS_EQ_AREA.value)
 # epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)
 
 remove_static_sources_bool = True  # remove areas with known flaring/gas sources from region

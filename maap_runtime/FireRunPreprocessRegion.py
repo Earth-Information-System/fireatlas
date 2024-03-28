@@ -1,8 +1,9 @@
 import json
 import argparse
 
-from utils import timed
-from FireTypes import Region
+import fireatlas
+from fireatlas.utils import timed
+from fireatlas import FireRunDaskCoordinator
 
 
 def validate_json(s):
@@ -13,9 +14,8 @@ def validate_json(s):
 
 
 @timed
-def Run(region: Region):
-    from FireRunDaskCoordinator import job_preprocess_region
-    job_preprocess_region(region)
+def Run(region: fireatlas.FireTypes.Region):
+    FireRunDaskCoordinator.job_preprocess_region(region)
 
 
 if __name__ == "__main__":
