@@ -9,3 +9,5 @@ running.log
 import/
 .coverage
 _version.py
+data/
+fireatlas.egg-info/

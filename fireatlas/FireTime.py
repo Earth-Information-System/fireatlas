@@ -13,7 +13,7 @@ The following functions are used to convert times between different formats.
 
 """
 
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import pandas as pd
 
 

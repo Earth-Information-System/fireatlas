@@ -10,7 +10,7 @@ from shapely.geometry import Polygon, MultiPoint, MultiLineString
 
 from scipy.spatial import Delaunay, ConvexHull
 
-from FireConsts import valpha, VIIRSbuf, extbuffer, EARTH_RADIUS_KM, fpbuffer, MCD64buf
+from .FireConsts import valpha, VIIRSbuf, extbuffer, EARTH_RADIUS_KM, fpbuffer, MCD64buf
 
 
 def doConcH(points, alpha):

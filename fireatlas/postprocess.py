@@ -5,9 +5,10 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 
-from utils import timed
+from shapely.ops import unary_union
 import warnings; warnings.filterwarnings('ignore', 'GeoSeries.notna', UserWarning)
 
+from .utils import timed
 from .FireTypes import Region, TimeStep
 from .FireConsts import (
     get_diroutdata,
@@ -17,7 +18,6 @@ from .FireConsts import (
     LARGEFIRE_FAREA
 )
 from .FireTime import t2dt, t_generator
-from shapely.ops import unary_union
 from .FireGpkg_sfs import getdd
 
 

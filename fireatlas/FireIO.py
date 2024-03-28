@@ -15,7 +15,6 @@ import numpy as np
 import geopandas as gpd
 import shapely
 import rasterio
-import gdal
 import pyproj
 import boto3
 import fsspec
@@ -683,6 +682,7 @@ def load_mcd64(year, xoff=0, yoff=0, xsize=None, ysize=None):
     arr: np.array, clipped image"""
 
     from .FireConsts import dirextdata
+    import gdal
 
     mcd64dir = os.path.join(dirextdata, "MCD64A1")
     fnm = os.path.join(mcd64dir, "mcd64_" + str(year) + ".tif")
@@ -2013,7 +2013,7 @@ def read_gpkg(fnm, layer="perimeter"):
 
 def save2gtif(arr, outfile, cols, rows, geotrans, proj):
     """write out a geotiff"""
-
+    import gdal
     driver = gdal.GetDriverByName("GTiff")
     ds = driver.Create(outfile, cols, rows, 1, gdal.GDT_Byte)
     ds.SetGeoTransform(geotrans)
