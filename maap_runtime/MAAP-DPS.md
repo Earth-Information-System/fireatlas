@@ -1,4 +1,16 @@
-# Instructions for running on MAAP DPS
+# Async Task Runner
+
+## Overview 
+
+Currently the EIS team uses the MAAP-DPS async executor (explanation below) to run their tasks. However, for reasons
+related to portability, data volume and simple idioms we've decided to have Dask act as the main parallelization 
+coordination tool. What that means in practices is that you can run this algorithm on any cloud compute instance (EC2, GCP) 
+or cluster (k8s, JupyterHub) with lots of corese as long as it has Dask installed. In the future we might plumb through
+the ability to leverage remote Dask clusters as well.
+
+--
+
+# MAAP DPS
 
 ## Setup
 

@@ -14,16 +14,7 @@ def validate_json(s):
 
 @timed
 def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted:  fireatlas.FireTypes.TimeStep):
-    # NOTE: this set up has to happen before `import FireConsts`
-    # or any other modules also import from FireConsts
-    # so set os environ variables that will override
-    # `FireConsts.settings` for all Python interpreters
-    # (meaning even those spawned during fork in multiple processes)
-    # os.environ['EPSG_CODE'] = FireEnums.EPSG.HI_LAT
-    # os.environ['FTYP_OPT'] = 2
-    # os.environ['CONT_OPT'] = 2
-    # import FireConsts
-    FireRunDaskCoordinator.job_fire_forward([None], region, tst, ted)
+    FireRunDaskCoordinator.job_fire_forward([None,], region, tst, ted)
 
 
 if __name__ == "__main__":

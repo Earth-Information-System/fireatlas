@@ -10,4 +10,6 @@ python --version
 # where mamba should be default resolver
 pushd "$basedir"
 source activate /opt/conda/envs/vanilla
-conda env update -f env-feds-2024.yml
+/opt/conda/envs/vanilla/bin/pip install -e ..
+/opt/conda/envs/vanilla/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"
+

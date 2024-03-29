@@ -1,4 +1,14 @@
-============= Fire object tracking system using VIIRS active fires =============
+# Fire Object Tracking
+
+## TOC:
+
+* [Getting Started](./docs/getting_started.md)
+* [Running Tests](./docs/running_tests.md)
+* [Notebooks Exploration](./docs/notebooks.md)
+* [Algorithm Explanation](./docs/algorithm_explanation.md)
+* [Async Task Runner](./maap_runtime/MAAP-DPS.md)
+
+## Overview:
 
 [NAME]: Fire object tracking system using VIIRS active fires
 
@@ -59,5 +69,3 @@
 [COPYRIGHT]: This code is open-source and can be free used for research purposes
 
 [CONTACTS]: yang.chen@uci.edu
-
-=================================== End ========================================

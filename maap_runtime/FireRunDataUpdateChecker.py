@@ -1,7 +1,7 @@
 import json
 import argparse
 
-from utils import timed
+from fireatlas.utils import timed
 from fireatlas import FireRunDaskCoordinator
 
 

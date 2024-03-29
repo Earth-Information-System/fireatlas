@@ -26,7 +26,9 @@ from fireatlas.FireIO import copy_from_local_to_s3
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 
-MAX_WORKERS = 3
+# NOTE: the current eis queue 64gb is set up as an
+# AWS r5.2xlarge instance with 64gb RAM and 8 CPUs
+MAX_WORKERS = 6
 
 
 def validate_json(s):
