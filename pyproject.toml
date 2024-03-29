@@ -28,6 +28,7 @@ dependencies = [
   "xarray",
   "pandas",
   "dask",
+  "distributed",
   "geopandas",
   "fiona",
   "shapely",
