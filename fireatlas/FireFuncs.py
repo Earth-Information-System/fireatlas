@@ -2,7 +2,7 @@ import numpy as np
 
 
 def get_CONNECTIVITY_FIRE(fire):
-    """ set the CONNECTIVITY_FIRE_KM value (km) for a given fire. Within this
+    """set the CONNECTIVITY_FIRE_KM value (km) for a given fire. Within this
     buffer of the fire exterior, new pixels will be appended to the fire.
 
     Constants
@@ -26,23 +26,17 @@ def get_CONNECTIVITY_FIRE(fire):
     v : float
         the CONNECTIVITY_FIRE_KM (km)
     """
-    from .FireConsts import CONT_opt
+    from fireatlas import FireConsts
 
-    if CONT_opt == 0:  # use preset values
-        from .FireConsts import CONT_preset
+    if FireConsts.CONT_opt == 0:  # use preset values
+        return FireConsts.CONT_preset
+    elif FireConsts.CONT_opt == 1:  # use lookup table from CAFEDS
+        return FireConsts.CONT_CA[fire.ftype]
+    elif FireConsts.CONT_opt == 2:  # use lookup table for global universal run
+        ftype = FireConsts.FTYP_Glb[fire.ftype]
 
-        return CONT_preset
-    elif CONT_opt == 1:  # use lookup table from CAFEDS
-        from .FireConsts import CONT_CA
+        fnpix = min(fire.n_pixels, 25)  # set an upper limit
 
-        return CONT_CA[fire.ftype]
-    elif CONT_opt == 2:  # use lookup table for global universal run
-        from .FireConsts import FTYP_Glb
-
-        ftype = FTYP_Glb[fire.ftype]
-        
-        fnpix = min(fire.n_pixels, 25)  # set an upper limit 
-        
         if ftype == "Temp Forest":
             v = fnpix * 2 / 25 + 0.8  # 0.8 (0) - 2.8 (25)
         elif ftype == "Trop Forest":
@@ -57,7 +51,7 @@ def get_CONNECTIVITY_FIRE(fire):
 
 
 def set_ftype(fire):
-    """ set fire type and dominant LCT for newly activated fires
+    """set fire type and dominant LCT for newly activated fires
 
     Parameters
     ----------
@@ -65,33 +59,34 @@ def set_ftype(fire):
         the fire associated with the CONNECTIVITY_FIRE_KM
 
     """
-    from .FireConsts import FTYP_opt
-    from .FireIO import get_LCT_CONUS, get_LCT_Global
-    from .FireLog import logger
+    from fireatlas import FireConsts, FireIO
+    from fireatlas.FireLog import logger
 
     # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
     # 1 - use the CA type classification (dtermined using LCTmax)
     # 2 - use the global type classfication (need more work...)
 
-    if FTYP_opt == 0:  # use preset ftype for all fires
-        from .FireConsts import FTYP_preset
-
-        ftype = FTYP_preset[0]
-    elif FTYP_opt == 1:  # use CA type classifications (determined using LCTmax)
+    if FireConsts.FTYP_opt == 0:  # use preset ftype for all fires
+        ftype = FireConsts.FTYP_preset[0]
+    elif (
+        FireConsts.FTYP_opt == 1
+    ):  # use CA type classifications (determined using LCTmax)
         # update or read LCTmax; calculated using all newlocs
         if fire.n_newpixels < 1000:
             uselocs = fire.newlocs_geo
         else:
             # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
-            uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
+            uselocs = fire.newlocs_geo[
+                np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :
+            ]
 
         # get all LCT for the fire pixels
-        vLCT = get_LCT_CONUS(uselocs)
+        vLCT = FireIO.get_LCT_CONUS(uselocs)
         try:
             # extract the LCT with most pixel counts
             LCTmax = max(set(vLCT), key=vLCT.count)
         except:
-            logger.info('No LCT data available, setting ftype to 0...')
+            logger.info("No LCT data available, setting ftype to 0...")
             ftype = 0
             return ftype
 
@@ -115,53 +110,56 @@ def set_ftype(fire):
         else:
             logger.info(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
-    elif FTYP_opt == 2:  # global type classification
-         # update or read LCTmax; calculated using all newlocs
+    elif FireConsts.FTYP_opt == 2:  # global type classification
+        # update or read LCTmax; calculated using all newlocs
         if fire.n_newpixels < 1000:
             uselocs = fire.newlocs_geo
         else:
-           # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
-            uselocs = fire.newlocs_geo[np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :]
-        
-        vLCT = get_LCT_Global(
+            # we can do a random sample of 1000 new pixels (it's likely going to be a forest fire anyways)
+            uselocs = fire.newlocs_geo[
+                np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :
+            ]
+
+        vLCT = FireIO.get_LCT_Global(
             uselocs
         )  # call get_LCT to get all LCT for the fire pixels
-        
+
         try:
             LCTmax = max(
-            set(vLCT), key=vLCT.count)  # extract the LCT with most pixel counts
+                set(vLCT), key=vLCT.count
+            )  # extract the LCT with most pixel counts
         except:
-            logger.info('No LCT data available, setting ftype to 0...')
+            logger.info("No LCT data available, setting ftype to 0...")
             ftype = 0
             return ftype
-        
-        #print("LCTMAX:",LCTmax)
+
+        # print("LCTMAX:",LCTmax)
         if LCTmax in [0, 50, 60, 70, 80, 90, 100, 200]:
             ftype = 0
-        # ^^^ current catch-all for 'Other'. 
+        # ^^^ current catch-all for 'Other'.
         # See: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_Landcover_100m_Proba-V-C3_Global
-        
-        elif LCTmax in [20]: # Shrub --> Savanna
+
+        elif LCTmax in [20]:  # Shrub --> Savanna
             ftype = 4
-        
-        elif LCTmax in [40]: # Agriculture class
+
+        elif LCTmax in [40]:  # Agriculture class
             ftype = 5
-        
-        else: # begin forested class
+
+        else:  # begin forested class
             lat_list = [xy[1] for xy in uselocs]
             lat_mean = abs(np.nanmean(lat_list))
             # Forest Classifications based on: https://ucmp.berkeley.edu/exhibits/biomes/forests.php
             if lat_mean < 23.5:
-                ftype = 2 # tropical
+                ftype = 2  # tropical
             elif lat_mean < 50:
-                ftype = 1 # temperate
+                ftype = 1  # temperate
             else:
-                ftype = 3 # boreal
+                ftype = 3  # boreal
     return ftype
 
 
 def set_ftypename(fire):
-    """ return Fire type name
+    """return Fire type name
 
     Parameters
     ----------
@@ -174,18 +172,14 @@ def set_ftypename(fire):
         the fire type name of the given fire
 
     """
-    from .FireConsts import FTYP_opt
+    from fireatlas import FireConsts
 
-    if FTYP_opt == 0:  # use preset ftype for all fires
-        from .FireConsts import FTYP_preset
-
-        ftname = FTYP_preset[0]
-    elif FTYP_opt == 1:  # use CA type classifications (determined using LCTmax)
-        from .FireConsts import FTYP_CA
-
-        ftname = FTYP_CA[fire.ftype]
-    elif FTYP_opt == 2:  # global type classification
-        from .FireConsts import FTYP_Glb
-
-        ftname = FTYP_Glb[fire.ftype]
+    if FireConsts.FTYP_opt == 0:  # use preset ftype for all fires
+        ftname = FireConsts.FTYP_preset[0]
+    elif (
+        FireConsts.FTYP_opt == 1
+    ):  # use CA type classifications (determined using LCTmax)
+        ftname = FireConsts.FTYP_CA[fire.ftype]
+    elif FireConsts.FTYP_opt == 2:  # global type classification
+        ftname = FireConsts.FTYP_Glb[fire.ftype]
     return ftname

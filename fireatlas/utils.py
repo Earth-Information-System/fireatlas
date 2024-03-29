@@ -1,11 +1,12 @@
 from functools import wraps
 from time import time
+from fireatlas.FireLog import logger
+
 
 def timed(f):
-    from .FireLog import logger
 
     @wraps(f)
-    def wrap(*args, **kwargs):    
+    def wrap(*args, **kwargs):
         # capture the start time
         t_start = time()
 
@@ -16,7 +17,7 @@ def timed(f):
         t_end = time()
 
         # get the time difference
-        t_diff = (t_end - t_start)
+        t_diff = t_end - t_start
 
         # humanize the time difference
         if t_diff > 60:
@@ -25,8 +26,9 @@ def timed(f):
             took = f"{t_diff:.2f} sec"
         else:
             took = f"{t_diff * 1000:.2f} ms"
-        
+
         # log the time that the function took
         logger.info(f"func:{f.__name__} took: {took}")
         return result
+
     return wrap

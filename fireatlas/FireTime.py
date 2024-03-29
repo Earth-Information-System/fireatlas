@@ -18,7 +18,7 @@ import pandas as pd
 
 
 def t_nb(t, nb="next"):
-    """ Calculate the next or previous time step (year, month, day, ampm)
+    """Calculate the next or previous time step (year, month, day, ampm)
     Parameters
     ----------
     t : tuple, (int,int,int,str)
@@ -57,6 +57,7 @@ def t_nb(t, nb="next"):
             t_out = [d_out.year, d_out.month, d_out.day, "PM"]
     return t_out
 
+
 def t_generator(t_st, t_ed):
     t = t_st
     while t_ed != t:
@@ -64,8 +65,9 @@ def t_generator(t_st, t_ed):
         t = t_nb(t, nb="next")
     yield t
 
+
 def t_dif(t1, t2):
-    """ calculate the time difference between two time steps
+    """calculate the time difference between two time steps
     Parameters
     ----------
     t1 : tuple, (int,int,int,str)
@@ -91,14 +93,15 @@ def t_dif(t1, t2):
             dt += 0.5
     return dt
 
-def dt_dif(dt1,dt2):
-    ''' given two datatime values, calculate the differences (in days)
-    '''
-    daysdif = (dt1-dt2).seconds/24/3600 + (dt1-dt2).days
+
+def dt_dif(dt1, dt2):
+    """given two datatime values, calculate the differences (in days)"""
+    daysdif = (dt1 - dt2).seconds / 24 / 3600 + (dt1 - dt2).days
     return daysdif
 
+
 def t2d(t):
-    """ convert a t tuple to date and ampm
+    """convert a t tuple to date and ampm
     Parameters
     ----------
     t : tuple, (int,int,int,str)
@@ -118,7 +121,7 @@ def t2d(t):
 
 
 def t2dt(t):
-    """ convert a t tuple to datetime
+    """convert a t tuple to datetime
     Parameters
     ----------
     t : tuple, (int,int,int,str)
@@ -138,7 +141,7 @@ def t2dt(t):
 
 
 def d2t(year, month, day, ampm):
-    """ convert year, month, day, ampm to a t tuple
+    """convert year, month, day, ampm to a t tuple
     Parameters
     ----------
     year : int
@@ -160,7 +163,7 @@ def d2t(year, month, day, ampm):
 
 
 def dt2t(dt):
-    """ convert datetime to a t tuple
+    """convert datetime to a t tuple
     Parameters
     ----------
     dt : datetime datetime
@@ -178,7 +181,7 @@ def dt2t(dt):
 
 
 def ftrange(firstday, lastday):
-    """ get datetime range for given first and last t tuples (both ends included)
+    """get datetime range for given first and last t tuples (both ends included)
 
     Parameters
     ----------
@@ -197,7 +200,7 @@ def ftrange(firstday, lastday):
 
 
 def isyearst(t):
-    """ determine if this time step is a new year start
+    """determine if this time step is a new year start
 
     Parameters
     ----------
@@ -216,12 +219,12 @@ def isyearst(t):
 
 
 def update_tst_ted(polygon_series, tst=None, ted=None):
-    """ Ingests a geoseries containing a polygon, which has already been preprocessed--columns formatted--
+    """Ingests a geoseries containing a polygon, which has already been preprocessed--columns formatted--
     and updates tst/ted based on the dates of the polygon.
     If tst or ted are provided, they'll override the dates from the geoseries. If left as None, function reads dates from geoseries.
     Parameters
     ----------
-    polygon : series of the fire perimeter, 
+    polygon : series of the fire perimeter,
     already processed by FireIO.preprocess_polygon
     tst : start time, [year, month, day, "AM" or "PM"]
     ted : end time, [year, month, day, "AM" or "PM"]
@@ -232,15 +235,17 @@ def update_tst_ted(polygon_series, tst=None, ted=None):
     """
     # if tst/ted is not provided, use the dates from the polygon
     if tst is None:
-        dt = polygon_series['ALARM_DATE']
+        dt = polygon_series["ALARM_DATE"]
         tst = [dt.year, dt.month, dt.day, "AM"]
     if ted is None:
-        dt = polygon_series['CONT_DATE']
+        dt = polygon_series["CONT_DATE"]
         ted = [dt.year, dt.month, dt.day, "AM"]
 
     # check if the start date is before the end date
-    if(tst[:-1] > ted[:-1]):
-        print("ERROR with fire", polygon_series['FIRE_NAME'])
-        raise ValueError(f"The end date ({ted}) is before the start date ({tst}). This needs to be adjusted. Ending run.")
-    
+    if tst[:-1] > ted[:-1]:
+        print("ERROR with fire", polygon_series["FIRE_NAME"])
+        raise ValueError(
+            f"The end date ({ted}) is before the start date ({tst}). This needs to be adjusted. Ending run."
+        )
+
     return tst, ted

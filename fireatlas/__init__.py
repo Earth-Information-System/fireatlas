@@ -3,5 +3,12 @@ try:
 except ImportError:
     __version__ = "unknown"
 
-# we cannot make top level imports until we factor out FireConsts os enviroment variables or else they get set here
-from . import FireTypes
+# do not create top-level imports here
+# that import from `.FireConsts` until
+# we've moved to pydantic so that os env var
+# substitution in FireConsts can work for us
+from fireatlas import (
+    FireTypes,
+    FireTime,
+    FireEnums,
+)

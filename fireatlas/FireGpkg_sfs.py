@@ -29,6 +29,11 @@ import time
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
+from fireatlas import FireIO
+from fireatlas import FireTime
+from fireatlas import FireConsts
+from fireatlas.FireLog import logger
+
 
 def getdd(layer):
     ''' Get attributes names and formats for different gpkg layers
@@ -151,8 +156,6 @@ def merge_fires(gdf_1d, fid, t, sfkeys):
     gdf_diss : geopandas DataFrame
         the gdf containing a merged geometry and summary stats
     """
-    from .FireTime import t2dt
-
     # dissolve the dataframe
     gdf_1d["mergeid"] = fid
     gdf_diss = gdf_1d.dissolve(by="mergeid")
@@ -170,7 +173,7 @@ def merge_fires(gdf_1d, fid, t, sfkeys):
     if "flinelen" in sfkeys:
         gdf_diss.loc[fid, "flinelen"] = sum(gdf_1d.flinelen)
     if "t" in sfkeys:
-        gdf_diss.loc[fid, "t"] = t2dt(t)
+        gdf_diss.loc[fid, "t"] = FireTime.t2dt(t)
 
     # weighted average computed for averages
     if ("pixden" in sfkeys) & ("farea" in sfkeys):
@@ -209,13 +212,11 @@ def make_sf(t, regnm, layer, fids_m, fid):
     gdf_1d : Geopandas DataFrame
         the 1-row gdf for the single fire
     """
-    from .FireIO import load_gpkgobj
-
     dd = getdd(layer)
     sfkeys = list(dd.keys())
 
     # extract rows for fires merged to the target fire
-    gdf = load_gpkgobj(
+    gdf = FireIO.load_gpkgobj(
         t, regnm, layer=layer
     )  # read daily gdf: active and sleeper only
 
@@ -264,15 +265,11 @@ def make_sf_nfplist(allfires, t, regnm, fids):
     gdf_1d : Geopandas DataFrame
         the 1-row gdf for the single fire
     """
-    from .FireIO import load_fobj
-    from .FireTime import t2dt
-    from .FireConsts import epsg
-
     dd = getdd('nfplist')
     sfkeys = list(dd.keys())
 
     if t != allfires.t:
-        allfires = load_fobj(t, regnm, activeonly=False)
+        allfires = FireIO.load_fobj(t, regnm, activeonly=False)
     # record all nfps for all fires with fids to make nfplist at t
     gdf_1d = None
     for fid in fids:
@@ -290,12 +287,12 @@ def make_sf_nfplist(allfires, t, regnm, fids):
                 df.columns = sfkeys
                 gdf_1f = gpd.GeoDataFrame(
                     df,
-                    crs="epsg:" + str(epsg),
+                    crs="epsg:" + str(FireConsts.epsg),
                     geometry=gpd.points_from_xy(df.x, df.y),
                 )
 
                 # also add t variable (detection 12-hourly time step)
-                gdf_1f['t'] = t2dt(t)
+                gdf_1f['t'] = FireTime.t2dt(t)
 
                 if gdf_1d is None:
                     gdf_1d = gdf_1f
@@ -303,6 +300,7 @@ def make_sf_nfplist(allfires, t, regnm, fids):
                     gdf_1d = gdf_1d.append(gdf_1f)
     del allfires
     return gdf_1d
+
 
 def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
     """ create the single large fire gpkg file at time t.
@@ -324,9 +322,6 @@ def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
     gdf_all : Geopandas DataFrame
         the full time series gdf for the single fire
     """
-    from .FireTime import t_dif, t_nb
-
-
     # loop over all merged fires
     endloop = False  # flag to control the ending of the loop
     t = list(f.t_st)  # t is the time (year,month,day,ampm) for each step
@@ -347,11 +342,11 @@ def make_sfts_1f(allfires,f, fid, fids_m, regnm, layer="perimeter"):
                 gdf_all = gdf_all.append(gdf_1d, ignore_index=True)
 
         #  - if t reaches ted, set endloop to True to stop the loop
-        if t_dif(t, f.t_ed) == 0:
+        if FireTime.t_dif(t, f.t_ed) == 0:
             endloop = True
 
         #  - update t with the next time stamp
-        t = t_nb(t, nb="next")
+        t = FireTime.t_nb(t, nb="next")
 
     return gdf_all
 
@@ -372,8 +367,6 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
     gdf_all : Geopandas DataFrame
         the full time series gdf for the single fire
     """
-    from .FireIO import load_gpkgsfs
-
     # the target single large fire and target time
     f = allfires.fires[fid]
     t = allfires.t
@@ -383,7 +376,7 @@ def update_sfts_1f(allfires, allfires_pt, fid, regnm, layer="perimeter"):
 
     # try to read small fire file at previous time step (gdf_sf_pt)
     t_pt = allfires_pt.t
-    gdf_sf_pt = load_gpkgsfs(t_pt, fid, regnm, layer=layer)
+    gdf_sf_pt = FireIO.load_gpkgsfs(t_pt, fid, regnm, layer=layer)
 
     # if no gdf_sf_pt, create historical time series using the make_sfts_1f()
     # if the running is fast enough, no need to use the code in the 'else' part...
@@ -461,24 +454,21 @@ def save_sfts_all(queue: multiprocessing.Queue, t, regnm, layers=["perimeter", "
     regnm : str
         region name
     """
-    from .FireLog import logger
-    from .FireTime import t_nb
-    from .FireIO import load_fobj
-    from .FireObj import Allfires
+    from fireatlas import FireObj
 
     tstart = time.time()
     # read allfires object
     logger.info(f'Load allfires..')
-    allfires = load_fobj(t, regnm, activeonly=False)
+    allfires = FireIO.load_fobj(t, regnm, activeonly=False)
     
-    t_pt = t_nb(t, nb="previous")
+    t_pt = FireTime.t_nb(t, nb="previous")
     
     try:
     # read allfires object at previous time step
         logger.info(f'Load allfires_pt...')
-        allfires_pt = load_fobj(t_pt, regnm, activeonly=False)
+        allfires_pt = FireIO.load_fobj(t_pt, regnm, activeonly=False)
     except: 
-        allfires_pt = Allfires(t_pt)
+        allfires_pt = FireObj.Allfires(t_pt)
     # find all large active fires and sleepers
     logger.info(f'Finding largefires...')
     large_ids = find_largefires(allfires)
@@ -498,8 +488,6 @@ def worker_save_sfts_1f(queue: multiprocessing.Queue):
     :param queue:
     :return:
     """
-    from .FireLog import logger
-
     while True:
         payload = queue.get()
         # check for poison pill
@@ -520,9 +508,6 @@ def save_sfts_1f(allfires, allfires_pt, fid, regnm, layers=["perimeter", "fireli
     regnm : str
         region name
     """
-    from .FireLog import logger
-    from .FireIO import save_gpkgsfs
-
     logger.info(f'Generating LF data for fid {fid}')
     tstart = time.time()
     f = allfires.fires[fid]
@@ -535,21 +520,21 @@ def save_sfts_1f(allfires, allfires_pt, fid, regnm, layers=["perimeter", "fireli
         logger.info(f"{(tend-tstart)/60.} minutes used for updating perimeter layer.")
 
         tstart = time.time()
-        save_gpkgsfs(allfires.t, fid, regnm, gdf_fperim=gdf_fperim)
+        FireIO.save_gpkgsfs(allfires.t, fid, regnm, gdf_fperim=gdf_fperim)
         tend = time.time()
         logger.info(f"{(tend-tstart)/60.} minutes used for I/O data perimeter layer.")
 
     if "fireline" in layers:
         gdf_fline = update_sfts_1f(allfires,allfires_pt, fid, regnm, layer="fireline")
-        save_gpkgsfs(allfires.t, fid, regnm, gdf_fline=gdf_fline)
+        FireIO.save_gpkgsfs(allfires.t, fid, regnm, gdf_fline=gdf_fline)
 
     if "newfirepix" in layers:
         gdf_nfp = update_sfts_1f(allfires,allfires_pt, fid, regnm, layer="newfirepix")
-        save_gpkgsfs(allfires.t, fid, regnm, gdf_nfp=gdf_nfp)
+        FireIO.save_gpkgsfs(allfires.t, fid, regnm, gdf_nfp=gdf_nfp)
 
     if "nfplist" in layers:
         gdf_nfplist = update_sfts_1f(allfires,allfires_pt, fid, regnm, layer="nfplist")
-        save_gpkgsfs(allfires.t, fid, regnm, gdf_nfplist=gdf_nfplist)
+        FireIO.save_gpkgsfs(allfires.t, fid, regnm, gdf_nfplist=gdf_nfplist)
 
     tend = time.time()
 
@@ -569,17 +554,13 @@ def save_sfts_trng(
     regnm : str
         region name
     """
-    from .FireConsts import number_of_multi_proc_workers
-    from .FireTime import t_dif, t_nb
-    from .FireLog import logger
-
     # loop over all days during the period
     endloop = False  # flag to control the ending olf the loop
     t = list(tst)  # t is the time (year,month,day,ampm) for each step
 
     queue = multiprocessing.Queue()
     workers = []
-    for i in range(number_of_multi_proc_workers):
+    for i in range(FireConsts.number_of_multi_proc_workers):
         p = multiprocessing.Process(target=worker_save_sfts_1f, args=(queue,))
         p.start()
         workers.append(p)
@@ -597,14 +578,14 @@ def save_sfts_trng(
         tend = time.time()
         logger.info(f"{(tend-tstart)/60.} minutes used to save Largefire data for this time.")
 
-        if t_dif(t, ted) == 0:
+        if FireTime.t_dif(t, ted) == 0:
             endloop = True
 
         #  - update t with the next time stamp
-        t = t_nb(t, nb="next")
+        t = FireTime.t_nb(t, nb="next")
 
     # add poison pill to stop work
-    for i in range(number_of_multi_proc_workers):
+    for i in range(FireConsts.number_of_multi_proc_workers):
         queue.put(None)
 
     # wait all writer workers
@@ -623,10 +604,9 @@ def combine_sfts(regnm,yr,addFRAP=False):
     addFRAP : bool
         if set to true, add fire name/id from FRAP database (require FRAP data and AT_FRAP function)
     '''
-    from .FireIO import gpd_read_file, get_gpkgsfs_dir
-    from .FireTime import dt_dif
-
-    strdir = get_gpkgsfs_dir(yr,regnm)
+    # TODO: remove dead codepath
+    import AT_FRAP
+    strdir = FireIO.get_gpkgsfs_dir(yr,regnm)
 
     if addFRAP:
         vFRAP = AT_FRAP.getFRAPyr(yr)
@@ -647,10 +627,10 @@ def combine_sfts(regnm,yr,addFRAP=False):
         fnmlast = sorted(glob(strdir+'/F'+str(fid)+'_*.gpkg'))[-1]
 
         # read the data (four layers)
-        gdf_perim = gpd_read_file(fnmlast,layer='perimeter').to_crs(epsg=4326)
-        gdf_fline = gpd_read_file(fnmlast,layer='fireline').to_crs(epsg=4326)
-        gdf_nfp = gpd_read_file(fnmlast,layer='newfirepix').to_crs(epsg=4326)
-        gdf_nfplist = gpd_read_file(fnmlast,layer='nfplist').to_crs(epsg=4326)
+        gdf_perim = FireIO.gpd_read_file(fnmlast,layer='perimeter').to_crs(epsg=4326)
+        gdf_fline = FireIO.gpd_read_file(fnmlast,layer='fireline').to_crs(epsg=4326)
+        gdf_nfp = FireIO.gpd_read_file(fnmlast,layer='newfirepix').to_crs(epsg=4326)
+        gdf_nfplist = FireIO.gpd_read_file(fnmlast,layer='nfplist').to_crs(epsg=4326)
 
         # add fire ID to the gdf
         gdf_perim['FireID'] = fid
@@ -660,9 +640,9 @@ def combine_sfts(regnm,yr,addFRAP=False):
 
         # add duration to fline, nfp, and nfplist
         t0 = pd.to_datetime(gdf_perim.iloc[0].t)
-        gdf_fline['duration'] = pd.to_datetime(gdf_fline['t']).apply(lambda x: dt_dif(x,t0))
-        gdf_nfp['duration'] = pd.to_datetime(gdf_nfp['t']).apply(lambda x: dt_dif(x,t0))
-        gdf_nfplist['duration'] = pd.to_datetime(gdf_nfplist['t']).apply(lambda x: dt_dif(x,t0))
+        gdf_fline['duration'] = pd.to_datetime(gdf_fline['t']).apply(lambda x: FireTime.dt_dif(x,t0))
+        gdf_nfp['duration'] = pd.to_datetime(gdf_nfp['t']).apply(lambda x: FireTime.dt_dif(x,t0))
+        gdf_nfplist['duration'] = pd.to_datetime(gdf_nfplist['t']).apply(lambda x: FireTime.dt_dif(x,t0))
 
         # add FRAP fire name and id
         if addFRAP:
@@ -722,10 +702,7 @@ def convert_sfts(regnm,yr,fids):
     fids : list of int
         fire ids
     '''
-    from .FireIO import get_gpkgsfs_dir, gpd_read_file
-    from .FireTime import dt_dif
-
-    strdir = get_gpkgsfs_dir(yr,regnm)
+    strdir = FireIO.get_gpkgsfs_dir(yr,regnm)
     
     # loop over all fids
     gdf_perim_all, gdf_fline_all, gdf_nfp_all, gdf_nfplist_all = None, None, None, None
@@ -735,10 +712,10 @@ def convert_sfts(regnm,yr,fids):
         fnmlast = sorted(glob(strdir+'/F'+str(fid)+'_*.gpkg'))[-1]
 
         # read the data (four layers)
-        gdf_perim = gpd_read_file(fnmlast,layer='perimeter').to_crs(epsg=4326)
-        gdf_fline = gpd_read_file(fnmlast,layer='fireline').to_crs(epsg=4326)
-        gdf_nfp = gpd_read_file(fnmlast,layer='newfirepix').to_crs(epsg=4326)
-        gdf_nfplist = gpd_read_file(fnmlast,layer='nfplist').to_crs(epsg=4326)
+        gdf_perim = FireIO.gpd_read_file(fnmlast,layer='perimeter').to_crs(epsg=4326)
+        gdf_fline = FireIO.gpd_read_file(fnmlast,layer='fireline').to_crs(epsg=4326)
+        gdf_nfp = FireIO.gpd_read_file(fnmlast,layer='newfirepix').to_crs(epsg=4326)
+        gdf_nfplist = FireIO.gpd_read_file(fnmlast,layer='nfplist').to_crs(epsg=4326)
 
         # add fire ID to the gdf
         gdf_perim['FireID'] = fid
@@ -748,9 +725,9 @@ def convert_sfts(regnm,yr,fids):
 
         # add duration to fline, nfp, and nfplist
         t0 = pd.to_datetime(gdf_perim.iloc[0].t)
-        gdf_fline['duration'] = pd.to_datetime(gdf_fline['t']).apply(lambda x: dt_dif(x,t0))
-        gdf_nfp['duration'] = pd.to_datetime(gdf_nfp['t']).apply(lambda x: dt_dif(x,t0))
-        gdf_nfplist['duration'] = pd.to_datetime(gdf_nfplist['t']).apply(lambda x: dt_dif(x,t0))
+        gdf_fline['duration'] = pd.to_datetime(gdf_fline['t']).apply(lambda x: FireTime.dt_dif(x,t0))
+        gdf_nfp['duration'] = pd.to_datetime(gdf_nfp['t']).apply(lambda x: FireTime.dt_dif(x,t0))
+        gdf_nfplist['duration'] = pd.to_datetime(gdf_nfplist['t']).apply(lambda x: FireTime.dt_dif(x,t0))
 
         # combine all fids
         if (gdf_perim_all is None):

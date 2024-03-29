@@ -6,13 +6,12 @@ from typing import Tuple
 from dask.distributed import Client
 from dask import delayed
 from dask.delayed import Delayed
-
-from .FireTypes import Region, TimeStep
-from .utils import timed
 from datetime import datetime
 
-from .FireMain import Fire_Forward
-from .postprocess import (
+from fireatlas.FireMain import Fire_Forward
+from fireatlas.FireTypes import Region, TimeStep
+from fireatlas.utils import timed
+from fireatlas.postprocess import (
     save_allpixels,
     save_allfires_gdf,
     save_snapshots,
@@ -20,12 +19,12 @@ from .postprocess import (
     save_large_fires_layers,
     save_large_fires_nplist,
 )
-from .FireConsts import get_dirprpdata, get_diroutdata, firesrc
-from .preprocess import preprocess_region_t, preprocess_region
+from fireatlas.FireConsts import get_dirprpdata, get_diroutdata, firesrc
+from fireatlas.preprocess import preprocess_region_t, preprocess_region
 from .DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from .FireIO import copy_from_local_to_s3
-from .FireTime import t_generator
-from .FireLog import logger
+from fireatlas.FireIO import copy_from_local_to_s3
+from fireatlas.FireTime import t_generator
+from fireatlas.FireLog import logger
 
 MAX_WORKERS = 3
 

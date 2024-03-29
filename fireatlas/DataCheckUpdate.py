@@ -14,6 +14,11 @@ import warnings
 
 from datetime import date, timedelta
 
+from fireatlas import FireConsts
+from fireatlas.FireIO import os_path_exists
+from fireatlas.FireLog import logger
+from fireatlas.preprocess import preprocess_input_file
+
 
 def glob2(pathname, **kwargs):
     '''
@@ -40,13 +45,9 @@ def check_VNP14IMGML_avail(year, month, ver="C1.05"):
     month : int
         the month
     """
-
-    from .FireConsts import dirextdata
-    from .FireIO import os_path_exists
-
     # derive monthly file name with path
     t = date(year, month, 1)
-    dirFC = os.path.join(dirextdata,"VIIRS", "VNP14IMGML") + "/"
+    dirFC = os.path.join(FireConsts.dirextdata,"VIIRS", "VNP14IMGML") + "/"
     fnmFC = os.path.join(dirFC, "VNP14IMGML." + t.strftime("%Y%m") + "." + ver + ".txt")
 
     # check if the file exist
@@ -78,13 +79,9 @@ def check_VNP14IMGTDL_avail(year, month, day):
     day : int
         the day
     """
-
-    from .FireConsts import dirextdata
-    from .FireIO import os_path_exists
-
     # derive monthly file name with path
     t = date(year, month, day)
-    dirFC = os.path.join(dirextdata,"VIIRS", "VNP14IMGTDL") + "/"
+    dirFC = os.path.join(FireConsts.dirextdata,"VIIRS", "VNP14IMGTDL") + "/"
     fnmFC = os.path.join(
         dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + t.strftime("%Y%j") + ".txt"
     )
@@ -125,13 +122,9 @@ def check_VJ114IMGTDL_avail(year, month, day):
     day : int
         the day
     """
-
-    from .FireConsts import dirextdata
-    from .FireIO import os_path_exists
-
     # derive monthly file name with path
     t = date(year, month, day)
-    dirFC = os.path.join(dirextdata,'VIIRS', "VJ114IMGTDL") + "/"
+    dirFC = os.path.join(FireConsts.dirextdata,'VIIRS', "VJ114IMGTDL") + "/"
     fnmFC = os.path.join(
         dirFC, "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_" + t.strftime("%Y%j") + ".txt"
     )
@@ -173,14 +166,10 @@ def check_GridMET_avail(year, month, day):
     day : int
         the day
     """
-
-    from .FireConsts import dirextdata
-    from .FireIO import os_path_exists
-
     warnings.simplefilter("ignore")
 
     t = date(year, month, day)
-    dirGridMET = os.path.join(dirextdata, "GridMET") + "/"
+    dirGridMET = os.path.join(FireConsts.dirextdata, "GridMET") + "/"
     fnmFM1000 = dirGridMET + "fm1000_" + t.strftime("%Y") + ".nc"
 
     if os_path_exists(fnmFM1000):
@@ -227,8 +216,6 @@ def check_data_avail(year, month, day):
 # update external dataset
 # ------------------------------------------------------------------------------
 def wget(url, **kwargs):
-    from .FireLog import logger
-
     target_dir = "."
     if "locdir" in kwargs:
         target_dir = kwargs.pop("locdir")
@@ -256,12 +243,10 @@ def update_VNP14IMGTDL(local_dir=None):
     local_dir : str
         the directory containing the downloaded data
     '''
-    from .preprocess import preprocess_input_file
-    from .FireConsts import dirextdata
 
     # The directory to save VNP14IMGTDL data
     if local_dir == None:
-        local_dir=dirextdata+'VIIRS/VNP14IMGTDL/'
+        local_dir=FireConsts.dirextdata+'VIIRS/VNP14IMGTDL/'
 
     # Derive the date periods needed to download
     today = date.today()
@@ -297,12 +282,9 @@ def update_VJ114IMGTDL(local_dir=None):
     local_dir : str
         the directory containing the downloaded data
     '''
-    from .preprocess import preprocess_input_file
-    from .FireConsts import dirextdata
-
     # The directory to save VNP14IMGTDL data
     if local_dir == None:
-        local_dir=dirextdata+'VIIRS/VJ114IMGTDL/'
+        local_dir=FireConsts.dirextdata+'VIIRS/VJ114IMGTDL/'
     # Derive the date periods needed to download
     today = date.today()
     fnms = glob2(local_dir+'J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_'+str(today.year)+'*.txt')
@@ -329,11 +311,9 @@ def update_VJ114IMGTDL(local_dir=None):
 def update_GridMET_fm1000(local_dir=None):
     ''' Get updated GridMET data (including fm1000)
     '''
-    from .FireConsts import dirextdata
-
     # The directory to save GridMET data
     if local_dir == None:
-        local_dir = dirextdata+'GridMET/'
+        local_dir = FireConsts.dirextdata+'GridMET/'
 
     today = date.today()
 

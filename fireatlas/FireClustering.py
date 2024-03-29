@@ -1,13 +1,15 @@
 """ FireClustering
 This module include all functions used for doing fire clustering
 """
-from .utils import timed
+
 import rtree
 import numpy as np
 import math
 import itertools
 
 from sklearn.neighbors import BallTree
+from fireatlas import FireConsts
+from fireatlas.utils import timed
 
 
 def build_rtree(geoms, fids=False):
@@ -37,7 +39,7 @@ def idx_intersection(idx, bbox):
 
 
 def compute_all_spatial_distances(data, max_thresh_km):
-    """ Derive neighbors for each point (with x,y)
+    """Derive neighbors for each point (with x,y)
 
     Parameters
     ----------
@@ -56,7 +58,7 @@ def compute_all_spatial_distances(data, max_thresh_km):
     bt = BallTree(X, leaf_size=20)
 
     inds = bt.query_radius(X, r=max_thresh_km * 1000, return_distance=False)
-    
+
     # remove self from neighbors
     new_inds = []
     for i in range(len(inds)):
@@ -68,7 +70,7 @@ def compute_all_spatial_distances(data, max_thresh_km):
 
 @timed
 def do_clustering(data, max_thresh_km):
-    """ Do initial clustering for fire pixels
+    """Do initial clustering for fire pixels
 
     Parameters
     ----------
@@ -140,7 +142,7 @@ def do_clustering(data, max_thresh_km):
 
 
 def cal_distance(loc1, loc2):
-    """ Calculate the distance between two points
+    """Calculate the distance between two points
 
     Parameters
     ----------
@@ -154,8 +156,6 @@ def cal_distance(loc1, loc2):
     distance : float
         distance (km) between two points
     """
-    from .FireConsts import EARTH_RADIUS_KM
-
     lat1 = math.radians(loc1[0])
     lon1 = math.radians(loc1[1])
     lat2 = math.radians(loc2[0])
@@ -170,12 +170,12 @@ def cal_distance(loc1, loc2):
     )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-    distance = EARTH_RADIUS_KM * c
+    distance = FireConsts.EARTH_RADIUS_KM * c
     return distance
 
 
 def cal_mindist(c1, c2):
-    """ Calculate the minimum distance beween two clusters (may modify the algorithm to speed up this calculation)
+    """Calculate the minimum distance beween two clusters (may modify the algorithm to speed up this calculation)
 
     Parameters
     ----------

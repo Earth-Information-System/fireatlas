@@ -7,41 +7,28 @@ FOUR LAYERS OF OBJECTS
     c. Cluster:   the class of active fire pixel cluster (only for supporting)
     d. FirePixel: the class of an active fire pixel
 """
+
 import geopandas as gpd
 from datetime import date, timedelta
-
-from .utils import timed
-from .FireTime import t2dt, dt2t, t_nb, t_dif
-from .postprocess import read_allfires_gdf, read_allpixels
-from .FireFuncs import set_ftype, set_ftypename
-from .FireGpkg_sfs import getdd as singlefire_getdd
-from .FireIO import save_newyearfidmapping
-from .FireVector import (
-    get_fline_pixels,
-    cal_hull,
-    get_ext_pixels
-)
 from shapely.geometry import MultiLineString, MultiPoint
-from .FireConsts import (
-    FTYP_opt,
-    epsg,
-    flbuffer,
-    VIIRSbuf,
-    READ_LOCATION,
-    limoffdays,
-    area_VI,
-    maxoffdays
-)
+
+from fireatlas.utils import timed
+from fireatlas.FireTime import t2dt, dt2t, t_nb, t_dif
+from fireatlas.postprocess import read_allfires_gdf, read_allpixels
+from fireatlas.FireFuncs import set_ftype, set_ftypename
+from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
+from fireatlas.FireIO import save_newyearfidmapping
+from fireatlas import FireVector
+from fireatlas import FireConsts
 
 
 # a. Object - Allfires
 class Allfires:
-    """ Class of allfire events at a particular time step
-    """
+    """Class of allfire events at a particular time step"""
 
     # initilization
     def __init__(self, t):
-        """ Initiate the object with current time
+        """Initiate the object with current time
         Parameters
         ----------
         t : tuple, (int,int,int,str)
@@ -79,7 +66,7 @@ class Allfires:
 
     def __repr__(self):
         return f"<Allfires at t={self.t} with n_fires={len(self.fires)}>"
-    
+
     def init_gdf(self):
 
         gdf = gpd.GeoDataFrame(
@@ -87,42 +74,42 @@ class Allfires:
                 *singlefire_getdd("all").keys(),
                 "fireID",
                 "t",
-            ], 
-            crs=f"epsg:{epsg}",
-            geometry="hull"
+            ],
+            crs=f"epsg:{FireConsts.epsg}",
+            geometry="hull",
         )
         self.gdf = gdf.set_index(["fireID", "t"])
-    
+
     @classmethod
-    @timed 
+    @timed
     def rehydrate(cls, tst, ted, region, include_dead=False, read_location=None):
 
         if read_location is None:
-            read_location = READ_LOCATION
-            
+            read_location = FireConsts.READ_LOCATION
+
         allfires_gdf = read_allfires_gdf(tst, ted, region, location=read_location)
         allpixels = read_allpixels(tst, ted, region, location=read_location)
 
         dt = t2dt(ted)
 
-        has_started = (allfires_gdf.t_st <= dt)
+        has_started = allfires_gdf.t_st <= dt
         if not include_dead:
-            dt_dead = dt - timedelta(days=limoffdays)
-            not_dead = (allfires_gdf.t_ed >= dt_dead)
+            dt_dead = dt - timedelta(days=FireConsts.limoffdays)
+            not_dead = allfires_gdf.t_ed >= dt_dead
             gdf = allfires_gdf[has_started & not_dead]
         else:
             gdf = allfires_gdf[has_started]
-        
+
         allfires = cls(ted)
         allfires.gdf = allfires_gdf
         for fid, gdf_fid in gdf.groupby(level=0):
             f = Fire(fid, ted, allpixels)
             dt_st = gdf_fid.t_st.min()
             dt_ed = gdf_fid.t_ed.max()
-            
+
             f.t_st = dt2t(dt_st)
             f.t_ed = dt2t(dt_ed)
-            
+
             gdf_fid_t = gdf_fid.loc[(fid, dt_ed)]
             for k, v in gdf_fid_t.items():
                 if k in ["hull", "ftype", "fline", "invalid"]:
@@ -133,7 +120,7 @@ class Allfires:
                 allfires.fids_expanded.append(fid)
             allfires.fires[fid] = f
         return allfires
-    
+
     @timed
     def update_gdf(self):
         dd = singlefire_getdd("all")
@@ -142,7 +129,7 @@ class Allfires:
         for fid, f in self.burningfires.items():
             if (fid, dt) in self.gdf.index:
                 raise ValueError(f"Error writing gdf: {fid} already at {self.t}")
-            
+
             for k, tp in dd.items():
                 if tp == "datetime64[ns]":
                     self.gdf.loc[(fid, dt), k] = t2dt(getattr(f, k))
@@ -151,7 +138,7 @@ class Allfires:
 
         for k, tp in dd.items():
             self.gdf[k] = self.gdf[k].astype(tp)
-        
+
         for h0, h1 in self.heritages:
             if h0 in self.gdf.index:
                 self.gdf.loc[h0, "mergeid"] = h1
@@ -159,13 +146,12 @@ class Allfires:
     # properties
     @property
     def cday(self):
-        """ Datetime date of current time step
-        """
+        """Datetime date of current time step"""
         return date(*self.t[:-1])
 
     @property
     def ampm(self):
-        """ Ampm indicator of current time step
+        """Ampm indicator of current time step
         Parameters
         ----------
         ampm : str, 'AM'|'PM'
@@ -175,96 +161,82 @@ class Allfires:
 
     @property
     def fids(self):
-        """ List of fire ids
-        """
+        """List of fire ids"""
         return [i for i, f in self.fires.items()]
 
     @property
     def number_of_fires(self):
-        """ Total number of fires (active and inactive) at this time step
-        """
+        """Total number of fires (active and inactive) at this time step"""
         return len(self.fires)
 
     @property
     def fids_active(self):
-        """ List of active fire ids
-        """
+        """List of active fire ids"""
         return [i for i, f in self.fires.items() if f.isactive]
 
     @property
     def number_of_activefires(self):
-        """ Total number of active fires at this time step
-        """
+        """Total number of active fires at this time step"""
         return len(self.fids_active)
 
     @property
     def burningfires(self):
-        """ dict of active fires
-        """
+        """dict of active fires"""
         return {i: f for i, f in self.fires.items() if f.isburning}
-    
+
     @property
     def activefires(self):
-        """ dict of active fires
-        """
+        """dict of active fires"""
         return {i: f for i, f in self.fires.items() if f.isactive}
 
     @property
     def mayactivefires(self):
-        """ dict of active fires and sleepers
-        """
+        """dict of active fires and sleepers"""
         return {i: f for i, f in self.fires.items() if (f.isactive or f.mayreactivate)}
 
     @property
     def deadfires(self):
-        """ dict of inactive fires not going to be reactivated
-        """
+        """dict of inactive fires not going to be reactivated"""
         return {
             i: f for i, f in self.fires.items() if not (f.isactive or f.mayreactivate)
         }
 
     @property
     def fids_dead(self):
-        """ List of fire ids that is not going to be reactivated
-        """
+        """List of fire ids that is not going to be reactivated"""
         return [i for i, f in self.fires.items() if not (f.isactive or f.mayreactivate)]
 
     @property
     def fids_sleeper(self):
-        """ List of fire ids that may reactivate
-        """
+        """List of fire ids that may reactivate"""
         return [i for i, f in self.fires.items() if f.mayreactivate]
 
     @property
     def number_of_sleeper(self):
-        """ Total number of sleep fires at this time step
-        """
+        """Total number of sleep fires at this time step"""
         return len(self.fids_sleeper)
 
     @property
     def fids_valid(self):
-        """ List of valid (non-invalid) fire ids
-        """
+        """List of valid (non-invalid) fire ids"""
         # return [self.fires[f].fireID for f in self.fires if self.fires[f].invalid is False]
         return [i for i, f in self.fires.items() if f.invalid is False]
 
     @property
     def number_of_validfires(self):
-        """ Total number of valid fires at this time step
-        """
+        """Total number of valid fires at this time step"""
         return len(self.fids_valid)
 
     @property
     def validfires(self):
-        """ List of valid fires
-        """
+        """List of valid fires"""
         # return [self.fires[fid] for fid in self.fids_valid]
         return {i: f for i, f in self.fires.items() if f.invalid is False}
 
     @property
     def fids_updated(self):
-        """ List of fire id which is updated at this time step
-            (expanded, new, merged, invalid)
+        """List of fire id which is updated at this time step
+        (expanded, new, merged, invalid)
         """
         fids_updated = list(
             set(
@@ -278,15 +250,15 @@ class Allfires:
 
     @property
     def fids_ne(self):
-        """ List of fire id which is newly formed or expanded
-               at this time step
+        """List of fire id which is newly formed or expanded
+        at this time step
         """
         fids_ne = sorted(set(self.fids_expanded + self.fids_new))
         return fids_ne
 
     # functions to be run before tracking VIIRS active fire pixels at each time step
     def update_t(self, t):
-        """ Update the time (cday and ampm) for the Allfire object.
+        """Update the time (cday and ampm) for the Allfire object.
         Parameters
         ----------
         t : tuple, (int,int,int,str)
@@ -295,7 +267,7 @@ class Allfires:
         self.t = list(t)  # current date and ampm
 
     def update_t_allfires(self, t):
-        """ Update the time (t) for each Fire object in the Allfire object.
+        """Update the time (t) for each Fire object in the Allfire object.
         Parameters
         ----------
         t : tuple, (int,int,int,str)
@@ -305,7 +277,7 @@ class Allfires:
             f.t = list(t)
 
     def cleanup(self, t):
-        """ Clean up Allfires obj at each time step
+        """Clean up Allfires obj at each time step
         - update t (for allfires and all fires)
         - clean up lists to record fire changes
         - clean up newpixels for each fire
@@ -329,8 +301,7 @@ class Allfires:
         )  # a list of ids for fires invalidated at current time step
 
     def newyear_reset(self, regnm):
-        """ reset fire ids at the start of a new year
-        """
+        """reset fire ids at the start of a new year"""
         # re-id all active fires
         newfires = {}
         fidmapping = []
@@ -364,7 +335,7 @@ class Allfires:
     def record_fids_change(
         self, fids_expanded=None, fids_new=None, fids_merged=None, fids_invalid=None
     ):
-        """ Update the list of ids for fires with changes at current time step.
+        """Update the list of ids for fires with changes at current time step.
         Parameters
         ----------
         fids_expanded : list
@@ -389,8 +360,8 @@ class Allfires:
 
     @timed
     def invalidate_statfires(self):
-        """ If pixel density of an active fire is too large, assume it's static
-                fires and invalidate it.
+        """If pixel density of an active fire is too large, assume it's static
+        fires and invalidate it.
         """
         for f in self.activefires.values():
             if (f.pixden > 20) & (f.farea < 20):
@@ -400,13 +371,13 @@ class Allfires:
                 # add the fire id into the fids_invalid list
                 self.fids_invalid.append(f.fireID)
 
+
 # b. Object - Fire
 class Fire:
-    """ Class of a single fire event at a particular time step
-    """
+    """Class of a single fire event at a particular time step"""
 
     def __init__(self, id, t, allpixels, sensor="viirs"):
-        """ Initialize Fire class with active fire pixels locations and t. This
+        """Initialize Fire class with active fire pixels locations and t. This
             is only called when fire clusters forming a new Fire object.
         Parameters
         ----------
@@ -437,44 +408,39 @@ class Fire:
         # always set valid at initialization
         self.invalid = False
 
-        if FTYP_opt == 1:
+        if FireConsts.FTYP_opt == 1:
             # TODO: get and record fm1000 value at ignition
             # lon, lat = self.ignition_center_geo
             # self.stFM1000 = FireIO.get_stFM1000(FireTime.t2d(t), lon=lon, lat=lat)
             self.stFM1000 = 0
-    
+
     def __repr__(self):
         return f"<Fire {self.fireID} at={self.t} with n_pixels={self.n_pixels}"
 
     @property
     def cday(self):
-        """ Current day (datetime date)
-        """
+        """Current day (datetime date)"""
         return date(*self.t[:-1])
 
     @property
     def cdoy(self):
-        """ Current day (datetime date)
-        """
+        """Current day (datetime date)"""
         return self.cday.timetuple().tm_yday
 
     @property
     def ampm(self):
-        """ Current ampm flag, 'AM'|'PM'
-        """
+        """Current ampm flag, 'AM'|'PM'"""
         return self.t[-1]
 
     @property
     def duration(self):
-        """ Time difference between first and last active fire detection
-        """
+        """Time difference between first and last active fire detection"""
         duration = t_dif(self.t_st, self.t_ed)  # + 0.5
         return duration
 
     @property
     def t_inactive(self):
-        """ Time difference between current time and the last active fire detection
-        """
+        """Time difference between current time and the last active fire detection"""
         t_inactive = t_dif(self.t_ed, self.t)
         return t_inactive
 
@@ -484,48 +450,48 @@ class Fire:
 
     @property
     def isactive(self):
-        """ Fire active status
-        """
+        """Fire active status"""
         # invalidated fires are always inactive
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return self.t_inactive <= maxoffdays
+        return self.t_inactive <= FireConsts.maxoffdays
 
     @property
     def isdead(self):
-        """ Fire active status
-        """
+        """Fire active status"""
         # invalidated fires are always inactive
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return self.t_inactive > limoffdays
+        return self.t_inactive > FireConsts.limoffdays
 
     @property
     def mayreactivate(self):
-        """ Fire sleeper status
-        """
+        """Fire sleeper status"""
         # invalidated fires are always inactive
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return maxoffdays < self.t_inactive <= limoffdays
+        return FireConsts.maxoffdays < self.t_inactive <= FireConsts.limoffdays
 
     @property
     def isignition(self):
-        """ Is the current timestep the ignition?
+        """Is the current timestep the ignition?
         when start time == end time; and new pixel > 0
         """
         return self.t == self.t_st
-    
+
     @property
     def fireID(self):
         return self._fid
-    
+
     @property
     def pixels(self):
-        return self.allpixels[(self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] <= t2dt(self.t))]
+        return self.allpixels[
+            (self.allpixels["fid"] == self.fireID)
+            & (self.allpixels["t"] <= t2dt(self.t))
+        ]
 
     @pixels.setter
     def pixels(self, pixels):
@@ -533,66 +499,59 @@ class Fire:
 
     @property
     def locs(self):
-        """ List of fire pixel locations (x, y)
-        """
+        """List of fire pixel locations (x, y)"""
         return self.pixels[["x", "y"]].values
 
     @property
     def locs_geo(self):
-        """ List of fire pixel locations (lat,lon)
-        """
+        """List of fire pixel locations (lat,lon)"""
         return self.pixels[["Lon", "Lat"]].values
 
     @property
     def locsMP(self):
-        """ MultiPoint shape of locs
-        """
+        """MultiPoint shape of locs"""
         mp = MultiPoint(self.locs)
         return mp
 
     @property
     def n_pixels(self):
-        """ Total number of fire pixels"""
+        """Total number of fire pixels"""
         return len(self.pixels)
-    
+
     @property
     def newpixels(self):
-        return self.allpixels[(self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] == t2dt(self.t))]
+        return self.allpixels[
+            (self.allpixels["fid"] == self.fireID)
+            & (self.allpixels["t"] == t2dt(self.t))
+        ]
 
     @property
     def newlocs(self):
-        """ List of new fire pixels locations (lat,lon)
-        """
+        """List of new fire pixels locations (lat,lon)"""
         return self.newpixels[["x", "y"]].values
 
     @property
     def newlocs_geo(self):
-        """ List of new fire pixels locations (lat,lon)
-        """
+        """List of new fire pixels locations (lat,lon)"""
         return self.newpixels[["Lon", "Lat"]].values
 
     @property
     def nfp(self):
-        """ MultiPoint shape of newlocs
-        """
+        """MultiPoint shape of newlocs"""
         mp = MultiPoint(self.newlocs)
         return mp
 
-
     @property
     def newpixelatts(self):
-        """ List of new fire pixels attributes
-        """
+        """List of new fire pixels attributes"""
         return [
             (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
             for p in self.newpixels
         ]
 
-          
     @property
     def newpixelatts(self):
-        """ List of new fire pixels attributes
-        """
+        """List of new fire pixels attributes"""
         return [
             (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
             for p in self.newpixels
@@ -600,14 +559,16 @@ class Fire:
 
     @property
     def n_newpixels(self):
-        """ Total number of new fire pixels
-        """
+        """Total number of new fire pixels"""
         return len(self.newpixels)
-    
+
     @property
     def ignpixels(self):
-        return self.allpixels[(self.allpixels["fid"] == self.fireID) & (self.allpixels["t"] == t2dt(self.t_st))]
-    
+        return self.allpixels[
+            (self.allpixels["fid"] == self.fireID)
+            & (self.allpixels["t"] == t2dt(self.t_st))
+        ]
+
     @property
     def ignition_center_geo(self):
         ignMP = MultiPoint(self.ignpixels[["Lon", "Lat"]].values)
@@ -617,22 +578,20 @@ class Fire:
 
     @property
     def farea(self):
-        """ Fire spatial size of the fire event (km2)
-        """
+        """Fire spatial size of the fire event (km2)"""
         # get hull
         fhull = self.hull
 
         # If no hull, return area calculated from number of pixels
         if fhull is None:
-            return self.n_pixels * area_VI
+            return self.n_pixels * FireConsts.area_VI
         else:
             area_cal = fhull.area / 1e6
-            return max(area_cal, area_VI)
+            return max(area_cal, FireConsts.area_VI)
 
     @property
     def pixden(self):
-        """ Fire pixel density (number of pixels per km2 fire area)
-        """
+        """Fire pixel density (number of pixels per km2 fire area)"""
         farea = self.farea
         if farea > 0:
             return self.n_pixels / farea
@@ -641,14 +600,12 @@ class Fire:
 
     @property
     def ftypename(self):
-        """ Fire type name
-        """
+        """Fire type name"""
         return set_ftypename(self)
 
     @property
     def fperim(self):
-        """ Perimeter length of fire hull
-        """
+        """Perimeter length of fire hull"""
         fhull = self.hull
 
         if fhull is None:
@@ -659,53 +616,49 @@ class Fire:
 
     @property
     def extpixels(self):
-        """ External pixels at the previous timestep + new pixels"""
+        """External pixels at the previous timestep + new pixels"""
         pdt = t2dt(t_nb(self.t, "previous"))
         return self.allpixels[
-            (self.allpixels["fid"] == self.fireID) & (
-                (self.allpixels["ext_until"] == pdt) | (self.allpixels["t"] == t2dt(self.t))
+            (self.allpixels["fid"] == self.fireID)
+            & (
+                (self.allpixels["ext_until"] == pdt)
+                | (self.allpixels["t"] == t2dt(self.t))
             )
         ]
 
     @extpixels.setter
     def extpixels(self, extpixels):
-        """ Set extpixels """
+        """Set extpixels"""
         self.allpixels.loc[extpixels.index, "ext_until"] = t2dt(self.t)
-    
+
     @property
     def flinepixels(self):
-        """ All fire pixels near the fire perimeter (fine line pixels)
-        """
-        return self.newpixels[self.newpixels["in_fline"] == True] 
+        """All fire pixels near the fire perimeter (fine line pixels)"""
+        return self.newpixels[self.newpixels["in_fline"] == True]
 
     @flinepixels.setter
     def flinepixels(self, flinepixels):
-        """ Set flinepixels based on hull and newpixels
-        """
+        """Set flinepixels based on hull and newpixels"""
         self.allpixels.loc[flinepixels.index, "in_fline"] = True
 
     @property
     def flplocs(self):
-        """ List of fire line pixel locations (lat,lon)
-        """
+        """List of fire line pixel locations (lat,lon)"""
         return self.flinepixels[["x", "y"]].values
 
     @property
     def n_flinepixels(self):
-        """ Total number of fire line pixels
-        """
+        """Total number of fire line pixels"""
         return len(self.flinepixels)
-    
+
     @property
     def meanFRP(self):
-        """Mean FRP of the new fire pixels
-        """
+        """Mean FRP of the new fire pixels"""
         return self.newpixels.FRP.mean()
 
     @property
     def flinelen(self):
-        """ The length of active fire line
-        """
+        """The length of active fire line"""
         try:
             flinelen = self.fline.length / 1e3  # km
         except:
@@ -715,31 +668,31 @@ class Fire:
 
     # functions
     def updateftype(self):
-        """ Update fire type
+        """Update fire type
         # do not use ftype as property since it may mess up when t updates (without pixel addition)
         """
         self.ftype = set_ftype(self)
 
     def updatefhull(self):
-        """ Update the hull using old hull and new locs
-        """
+        """Update the hull using old hull and new locs"""
         # get previous hull, and nex pixels + external pixels from previous timesteps
         phull = self.hull
         pixels = self.extpixels
 
         # combine those with the new pixels and calculate the hull
-        hull = cal_hull(pixels[["x", "y"]].values, sensor=self.sensor)
-        
+        hull = FireVector.cal_hull(pixels[["x", "y"]].values, sensor=self.sensor)
+
         # use the union of the newly calculated hull and the previous hull
         self.hull = phull.union(hull)
 
         # find the pixels that are near the hull and record findings
-        self.extpixels = pixels[get_ext_pixels(pixels, hull)]
-        
+        self.extpixels = pixels[FireVector.get_ext_pixels(pixels, hull)]
 
     def updatefline(self):
 
-        flinepixels = self.newpixels[get_fline_pixels(self.newpixels, self.hull)]
+        flinepixels = self.newpixels[
+            FireVector.get_fline_pixels(self.newpixels, self.hull)
+        ]
         self.flinepixels = flinepixels
 
         # this happens if last active pixels are within the fire scar
@@ -747,7 +700,9 @@ class Fire:
             self.fline = None
             return
 
-        flinelocsMP = MultiPoint(flinepixels[["x", "y"]].values).buffer(VIIRSbuf)
+        flinelocsMP = MultiPoint(flinepixels[["x", "y"]].values).buffer(
+            FireConsts.VIIRSbuf
+        )
 
         # get the hull
         fhull = self.hull
@@ -759,11 +714,11 @@ class Fire:
             # extract exterior of fire perimeter
             mls = MultiLineString([plg.exterior for plg in fhull.geoms])
             # set fline to the part which intersects with  bufferred flinelocsMP
-            self.fline = mls.intersection(flinelocsMP.buffer(flbuffer))
+            self.fline = mls.intersection(flinelocsMP.buffer(FireConsts.flbuffer))
 
         elif fhull.geom_type == "Polygon":
             mls = fhull.exterior
-            self.fline = mls.intersection(flinelocsMP.buffer(flbuffer))
+            self.fline = mls.intersection(flinelocsMP.buffer(FireConsts.flbuffer))
         else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
             self.fline = flinelocsMP
 

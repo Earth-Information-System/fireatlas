@@ -1,6 +1,7 @@
 """ FireVector
 This is the module used for vector related calculations
 """
+
 import math
 import geopandas as gpd
 import shapely.geometry as geometry
@@ -10,7 +11,14 @@ from shapely.geometry import Polygon, MultiPoint, MultiLineString
 
 from scipy.spatial import Delaunay, ConvexHull
 
-from .FireConsts import valpha, VIIRSbuf, extbuffer, EARTH_RADIUS_KM, fpbuffer, MCD64buf
+from fireatlas.FireConsts import (
+    valpha,
+    VIIRSbuf,
+    extbuffer,
+    EARTH_RADIUS_KM,
+    fpbuffer,
+    MCD64buf,
+)
 
 
 def doConcH(points, alpha):
@@ -22,13 +30,14 @@ def doConcH(points, alpha):
     ----------
     locs : np.array (nx2)
         x, y values of all fire pixels
-    alpha : 
+    alpha :
         alpha value to influence the
         gooeyness of the border. Smaller numbers
         don't fall inward as much as larger numbers.
         Too large, and you lose everything!
     source: http://blog.thehumangeo.com/2014/05/12/drawing-boundaries-in-python/
     """
+
     def add_edge(edges, edge_points, coords, i, j):
         """
         Add a line between the i-th and j-th points,
@@ -82,7 +91,7 @@ def doConcH(points, alpha):
 
 
 def doConvH(locs):
-    """ derive the convex hull given fire locations
+    """derive the convex hull given fire locations
     Parameters
     ----------
     locs : np.array (nx2)
@@ -105,7 +114,7 @@ def doConvH(locs):
 
 
 def cal_hull(locs, sensor="viirs"):
-    """ wrapper to calculate the hull given fire locations.
+    """wrapper to calculate the hull given fire locations.
         the returned hull type depends on the pixel number
     Parameters
     ----------
@@ -122,7 +131,7 @@ def cal_hull(locs, sensor="viirs"):
     elif sensor == "mcd64":
         buf = MCD64buf
     else:
-        print('please set sensor to viirs or mcd64')
+        print("please set sensor to viirs or mcd64")
 
     # number of pixels
     nfp = len(locs)
@@ -131,8 +140,8 @@ def cal_hull(locs, sensor="viirs"):
     # if there are more than 3 points: try using concave hull
     if nfp > 3:
         hull = doConcH(locs, alpha=valpha)
-    
-    # if you don't have a good hull yet and there are more 
+
+    # if you don't have a good hull yet and there are more
     # than 2 points: try using convex hull
     if nfp > 2 and (hull is None or hull.area == 0):
         hull = doConvH(locs)
@@ -140,14 +149,14 @@ def cal_hull(locs, sensor="viirs"):
     # if you don't have a good hull yet: make a MultiPoint
     if hull is None or hull.area == 0:
         hull = MultiPoint(locs)
-        
+
     hull = hull.buffer(buf)
-    
+
     return hull
 
 
 def get_ext_pixels(pixels, hull):
-    """ calculate the exterior pixels around a hull
+    """calculate the exterior pixels around a hull
     Parameters
     ----------
     pixels : df
@@ -167,7 +176,7 @@ def get_ext_pixels(pixels, hull):
 
 
 def get_fline_pixels(pixels, hull):
-    """ calculate the fline pixels around a hull
+    """calculate the fline pixels around a hull
     Parameters
     ----------
     pixels : df
@@ -186,7 +195,7 @@ def get_fline_pixels(pixels, hull):
     if hull.geom_type == "Polygon":
         lr = hull.exterior.buffer(fpbuffer)
         return pixel_arr.intersects(lr)
-    
+
     # if hull is a multipolygon, find new pixels near the outer shell
     elif hull.geom_type == "MultiPolygon":
         mlr = MultiLineString([x.exterior for x in hull.geoms]).buffer(fpbuffer)
@@ -194,7 +203,7 @@ def get_fline_pixels(pixels, hull):
 
 
 def calConcHarea(hull):
-    """ calculate area given the concave hull (km2)
+    """calculate area given the concave hull (km2)
     Parameters
     ----------
     hull : geometry, 'Polygon' | 'MultiPoint'
@@ -212,7 +221,7 @@ def calConcHarea(hull):
         # convert deg**2 to km2
         farea = (
             farea
-            * EARTH_RADIUS_KM ** 2
+            * EARTH_RADIUS_KM**2
             * math.cos(math.radians(lat))
             * math.radians(1) ** 2
         )

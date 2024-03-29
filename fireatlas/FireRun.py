@@ -3,16 +3,18 @@ Module to control different runs
 """
 import time
 import argparse
-from FireLog import logger
-from utils import timed
+from datetime import datetime
+import geopandas as gpd
+from pandas import Series
+import os
+from fireatlas.FireLog import logger
+from fireatlas.utils import timed
 
 
 def Yearbatchrun(year, tst=None, ted=None, restart=False):
     """ Run the code for each single year
     """
-    import FireMain, FireSummary, FireGdf_merge, FireGdf_sfs_merge, FireGdf_ign, FireGdf_final
-
-    import time
+    from fireatlas import FireMain, FireSummary, FireGdf_merge, FireGdf_sfs_merge, FireGdf_ign, FireGdf_final
 
     t1 = time.time()
     # set the start and end time
@@ -66,7 +68,7 @@ def CreekSamplerun(firesrc='SNPP'):
     - firesrc options: 'SNPP', 'NOAA20', 'VIIRS'
     - before running, need to set corresponding firesrc in FireConsts.py
     """
-    import FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
     ted = (2020, 9, 8, "PM")
@@ -89,7 +91,7 @@ def DixieSamplerun(firesrc='SNPP'):
     - firesrc options: 'SNPP', 'NOAA20', 'VIIRS'
     - before running, need to set corresponding firesrc in FireConsts.py
     """
-    import FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import FireGpkg_sfs
 
     tst = (2021, 7, 13, "AM")
     ted = (2021, 9, 16, "PM")
@@ -146,7 +148,7 @@ def DixieSamplerun(firesrc='SNPP'):
 
 
 def CreekRegionSamplerun():
-    import FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2020, 9, 5, "AM")
     ted = (2020, 9, 19, "AM")
@@ -169,7 +171,7 @@ def CreekRegionSamplerun():
     
 
 def ChileSampleRun():
-    import FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import FireMain, FireGpkg, FireGpkg_sfs
 
     tst = (2023, 2, 13, 'AM')
     ted = (2023, 4, 1, "AM")
@@ -193,9 +195,7 @@ def ChileSampleRun():
 
 
 def BorealNA():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireEnums
-    from datetime import datetime
-    import os
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireEnums
     # NOTE: this set up has to happen before `import FireConsts`
     # so set os environ variables that will override
     # `FireConsts.settings` for all Python interpreters
@@ -203,8 +203,8 @@ def BorealNA():
     os.environ['EPSG_CODE'] = FireEnums.EPSG.HI_LAT
     os.environ['FTYP_OPT'] = 2
     os.environ['CONT_OPT'] = 2
-    import FireConsts
-    
+    from fireatlas import FireConsts
+
     ctime = datetime.now()
     region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
     
@@ -242,11 +242,8 @@ def BorealNA():
     
 
 def ItalyGreeceNRT():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
-    import FireConsts
-    from datetime import datetime
-    import os
-    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+
     ctime = datetime.now()
     region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
     
@@ -285,11 +282,7 @@ def ItalyGreeceNRT():
 
 
 def QuebecSampleRun():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
-    import FireConsts
-    from datetime import datetime
-    import os
-    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
     ctime = datetime.now()
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
@@ -329,7 +322,7 @@ def QuebecSampleRun():
     logger.info(f"{(tend-tstart)/60.} minutes used for QuebecSampleRun with dask.")
 
 def CArun():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     CAshp = FireIO.get_Cal_shp()
     region = ("California", CAshp)
@@ -347,7 +340,7 @@ def CArun():
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 def CArun2136():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     CAshp = FireIO.get_Cal_shp()
     region = ("California2136", CAshp)
@@ -365,7 +358,7 @@ def CArun2136():
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 def CArun32610():
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     CAshp = FireIO.get_Cal_shp()
     region = ("California32610", CAshp)
@@ -388,10 +381,7 @@ def CArun32610():
 
 def CArunNRT():
     
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
     ctime = datetime.now()
 
     CAshp = FireIO.get_Cal_shp()
@@ -420,8 +410,8 @@ def CArunNRT():
 
 @timed
 def CONUSrunNRT():
-    import preprocess
-    import FireConsts, FireMain, FireGpkg, FireGpkg_sfs
+    from fireatlas import preprocess
+    from fireatlas import FireConsts, FireMain, FireGpkg, FireGpkg_sfs
 
     region = ["CONUS",]
     tst = [2023, 8, 28, 'AM']
@@ -434,11 +424,7 @@ def CONUSrunNRT():
 
 def WesternUSrunNRT():
     
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
-    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
     if FireConsts.firenrt != True:
         print('Please set firenrt to True')
         return
@@ -470,12 +456,8 @@ def WesternUSrunNRT():
     
     
 def SouthEastUSrunNRT():
-    
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
-    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+
     if FireConsts.firenrt != True:
         print('Please set firenrt to True')
         return
@@ -508,12 +490,7 @@ def SouthEastUSrunNRT():
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 def SouthEastUS_LF_ONLY():
-    
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
-    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
     if FireConsts.firenrt != True:
         print('Please set firenrt to True')
         return
@@ -547,12 +524,8 @@ def SouthEastUS_LF_ONLY():
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
     
 def NorthEastUSrunNRT():
-    
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
-    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+
     if FireConsts.firenrt != True:
         print('Please set firenrt to True')
         return
@@ -585,12 +558,7 @@ def NorthEastUSrunNRT():
 
 
 def WesternUSYrRun(year):
-    
-    import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireObj
-    import FireConsts
-    from datetime import datetime
-    import os
-    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
     region = ('WesternUS',[-125.698046875,31.676476158707615,
                            -101.00078125,49.51429477264348])
 
@@ -610,8 +578,7 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
     preprocesses the monthly data for the region and runs fire_forward.
     Saves the outpts too--allpixels, allfires, and individual fires.
     """
-    import FireTime, preprocess, FireMain, postprocess
-    from pandas import Series
+    from fireatlas import FireTime, preprocess, FireMain, postprocess
 
     # convert gdf to a series if it is not already
     if not isinstance(perimeter_gdf, Series):
@@ -672,8 +639,7 @@ def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat = 'SNPP', d
     -------
     allpixels csv file, allfires geoparquet, fgb of individual fire with perimeters merged by day
     """
-    import FireIO, preprocess
-    import geopandas as gpd
+    from fireatlas import FireIO, preprocess
 
     # preprocessing steps to do at the start
     preprocess.preprocess_landcover()

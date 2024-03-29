@@ -10,19 +10,19 @@ from tqdm import tqdm
 import rasterio
 import rasterio.warp
 
-from .FireLog import logger
-from .FireTypes import Region, TimeStep
-from .utils import timed
-from .FireMain import maybe_remove_static_sources
-from .FireConsts import (
+from fireatlas.FireLog import logger
+from fireatlas.FireTypes import Region, TimeStep
+from fireatlas.utils import timed
+from fireatlas.FireMain import maybe_remove_static_sources
+from fireatlas.FireConsts import (
     READ_LOCATION,
     CONNECTIVITY_CLUSTER_KM,
     get_dirprpdata,
-    dirextdata
+    dirextdata,
 )
-from .FireClustering import do_clustering
-from .FireTime import t_generator, t2dt
-from .FireIO import (
+from fireatlas.FireClustering import do_clustering
+from fireatlas.FireTime import t_generator, t2dt
+from fireatlas.FireIO import (
     get_reg_shp,
     AFP_regfilter,
     AFP_setampm,
@@ -34,18 +34,15 @@ from .FireIO import (
     read_VNP14IMGTDL,
     read_VNP14IMGML,
     read_VJ114IMGTDL,
-    os_path_exists
+    os_path_exists,
 )
 
 
 def preprocessed_region_filename(
-    region: Region, 
-    location: Literal["s3", "local"] = READ_LOCATION
+    region: Region, location: Literal["s3", "local"] = READ_LOCATION
 ):
     return os.path.join(
-        get_dirprpdata(location=location),
-        region[0],
-        f"{region[0]}.json"
+        get_dirprpdata(location=location), region[0], f"{region[0]}.json"
     )
 
 
@@ -65,8 +62,9 @@ def preprocess_region(region: Region, force=False):
 
     with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
-    
+
     return output_filepath
+
 
 @timed
 def read_region(region: Region, location: Literal["s3", "local"] = READ_LOCATION):
@@ -79,8 +77,8 @@ def read_region(region: Region, location: Literal["s3", "local"] = READ_LOCATION
 
 
 def preprocessed_landcover_filename(
-    filename="nlcd_export_510m_simplified", 
-    location: Literal["s3", "local"] = READ_LOCATION
+    filename="nlcd_export_510m_simplified",
+    location: Literal["s3", "local"] = READ_LOCATION,
 ):
     return os.path.join(get_dirprpdata(location=location), f"{filename}_latlon.tif")
 
@@ -93,9 +91,9 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
         logger.info("Preprocessing has already occurred for this landcover file.")
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
-    
+
     fnmLCT = os.path.join(dirextdata, "NLCD", f"{filename}.tif")
-    
+
     # make nested path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
@@ -141,7 +139,7 @@ def preprocessed_filename(
 
 
 def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
-    """ Filepath for NRT VIIRS data
+    """Filepath for NRT VIIRS data
 
     Parameters
     ----------
@@ -165,7 +163,7 @@ def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
 
 
 def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
-    """ Filepath for monthly VIIRS data
+    """Filepath for monthly VIIRS data
 
     Parameters
     ----------
@@ -191,9 +189,9 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def check_preprocessed_file(
     tst: TimeStep,
     ted: TimeStep,
-    sat: Literal["SNPP", "NOAA20"], 
-    freq: Literal["monthly", "NRT"] = "monthly", 
-    location: Literal["s3", "local"] = READ_LOCATION
+    sat: Literal["SNPP", "NOAA20"],
+    freq: Literal["monthly", "NRT"] = "monthly",
+    location: Literal["s3", "local"] = READ_LOCATION,
 ):
     """Before running preprocess_monthly_file, check if the file already exists
     for that satellite using a list of time steps
@@ -247,7 +245,7 @@ def preprocess_input_file(filepath: str):
     """
     if filepath is None:
         raise ValueError("Please provide a valid filepath")
-    
+
     logger.info(f"preprocessing {filepath.split('/')[-1]}")
 
     if "VNP14IMGTDL" in filepath:
@@ -275,7 +273,9 @@ def preprocess_input_file(filepath: str):
     df["input_filename"] = filepath.split("/")[-1]
 
     # return selected columns
-    df = df[["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]]
+    df = df[
+        ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
+    ]
 
     output_paths = []
 
@@ -297,9 +297,9 @@ def preprocess_input_file(filepath: str):
 
             # save active pixels at this time step (day and ampm filter)
             time_filtered_df.to_csv(output_filepath, index=False)
-            
+
             output_paths.append(output_filepath)
-    
+
     return output_paths
 
 
@@ -317,7 +317,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def read_preprocessed_input(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
-    location: Literal["local", "s3"] = READ_LOCATION
+    location: Literal["local", "s3"] = READ_LOCATION,
 ):
     filename = preprocessed_filename(t, sat, location=location)
     df = pd.read_csv(filename)
@@ -329,7 +329,7 @@ def read_preprocessed(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
     region: Region,
-    location: Literal["local", "s3"] = READ_LOCATION
+    location: Literal["local", "s3"] = READ_LOCATION,
 ):
     filename = preprocessed_filename(t, sat, region=region, location=location)
     df = pd.read_csv(filename).set_index("uuid").assign(t=t2dt(t))
@@ -338,9 +338,9 @@ def read_preprocessed(
 
 @timed
 def preprocess_region_t(
-    t: TimeStep, 
-    sensor: Literal['SNPP', 'NOAA20', 'VIIRS', "TESTING123"], 
-    region: Region, 
+    t: TimeStep,
+    sensor: Literal["SNPP", "NOAA20", "VIIRS", "TESTING123"],
+    region: Region,
     force: bool = False,
     read_location: Literal["local", "s3"] = READ_LOCATION,
     read_region_location: Literal["local", "s3"] = None,
@@ -351,11 +351,11 @@ def preprocess_region_t(
     if not force and os.path.exists(output_filepath):
         logger.info(
             "Preprocessing has already occurred for this combination of "
-            "timestep, sensor, and region." 
+            "timestep, sensor, and region."
         )
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
-    
+
     # read in the preprocessed region
     region = read_region(region, location=read_region_location or read_location)
     logger.info(
@@ -379,7 +379,19 @@ def preprocess_region_t(
     shp_Reg = get_reg_shp(region[1])
     df = AFP_regfilter(df, shp_Reg)
 
-    columns = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm", "x", "y"]
+    columns = [
+        "Lat",
+        "Lon",
+        "FRP",
+        "Sat",
+        "DT",
+        "DS",
+        "input_filename",
+        "datetime",
+        "ampm",
+        "x",
+        "y",
+    ]
 
     if not df.empty:
         # return selected columns
@@ -387,13 +399,13 @@ def preprocess_region_t(
 
         # do preliminary clustering using new active fire locations (assign cid to each pixel)
         df = do_clustering(df, CONNECTIVITY_CLUSTER_KM)
-        
+
         # assign a uuid to each pixel and put it as the first column
-        df.insert(0, "uuid" , [uuid.uuid4() for _ in range(len(df.index))])
-    else: 
-        # make a dummy DataFrame with the right columns so that we know later that 
+        df.insert(0, "uuid", [uuid.uuid4() for _ in range(len(df.index))])
+    else:
+        # make a dummy DataFrame with the right columns so that we know later that
         # we don't need to do this step again.
-        df = pd.DataFrame(columns = ["uuid", *columns, "initial_cid"])
+        df = pd.DataFrame(columns=["uuid", *columns, "initial_cid"])
 
     # make nested path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)

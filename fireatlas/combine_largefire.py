@@ -5,10 +5,11 @@ import numpy as np
 import s3fs
 import time
 from pathlib import Path
-from .FireConsts import diroutdata
 from dask.distributed import Client
-from .FireLog import logger
-from .FireIO import copy_from_maap_to_veda_s3
+
+from fireatlas.FireLog import logger
+from fireatlas import FireIO
+from fireatlas import FireConsts
 
 LAYERS = ["newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
@@ -64,7 +65,7 @@ def merge_lf_years(
             driver="FlatGeobuf",
         )
         if IS_PRODUCTION_RUN:
-            copy_from_maap_to_veda_s3(maap_s3_layer_path, folder_name)
+            FireIO.copy_from_maap_to_veda_s3(maap_s3_layer_path, folder_name)
 
 
 def load_lf(lf_id, file_path, layer="nfplist", drop_duplicate_geometries=False):
@@ -167,7 +168,7 @@ def main(
 
     if not in_parallel:
         for year in years_range:
-            s3_maap_input_path = f"{diroutdata}{folder_name}/{year}/Largefire/"
+            s3_maap_input_path = f"{FireConsts.diroutdata}{folder_name}/{year}/Largefire/"
             write_lf_layers_by_year(
                 year, 
                 s3_maap_input_path, 
@@ -175,7 +176,7 @@ def main(
             )
         merge_lf_years(
             LOCAL_DIR_OUTPUT_PREFIX_PATH,
-            f"{diroutdata}{LOCAL_DIR_OUTPUT_PREFIX_PATH.format(folder_name)}/LargeFire_Outputs/merged",
+            f"{FireConsts.diroutdata}{LOCAL_DIR_OUTPUT_PREFIX_PATH.format(folder_name)}/LargeFire_Outputs/merged",
             folder_name
         )
         return
@@ -194,7 +195,7 @@ def main(
         dask_client.submit(
             write_lf_layers_by_year,
             year,
-            f"{diroutdata}{folder_name}/{year}/Largefire/",
+            f"{FireConsts.diroutdata}{folder_name}/{year}/Largefire/",
             LOCAL_DIR_OUTPUT_PREFIX_PATH,
         )
         for year in years_range
@@ -209,7 +210,7 @@ def main(
     dask_client.restart()
     merge_lf_years(
         LOCAL_DIR_OUTPUT_PREFIX_PATH,
-        f"{diroutdata}{folder_name}/LargeFire_Outputs/merged",
+        f"{FireConsts.diroutdata}{folder_name}/LargeFire_Outputs/merged",
         folder_name
     )
 
