@@ -14,7 +14,7 @@ from .utils import timed
 from .FireTime import t2dt, dt2t, t_nb, t_dif
 from .postprocess import read_allfires_gdf, read_allpixels
 from .FireFuncs import set_ftype, set_ftypename
-from .FireGpkg_sfs import getdd
+from .FireGpkg_sfs import getdd as singlefire_getdd
 from .FireIO import save_newyearfidmapping
 from .FireVector import (
     get_fline_pixels,
@@ -84,7 +84,7 @@ class Allfires:
 
         gdf = gpd.GeoDataFrame(
             columns=[
-                *getdd("all").keys(),
+                *singlefire_getdd("all").keys(),
                 "fireID",
                 "t",
             ], 
@@ -136,7 +136,7 @@ class Allfires:
     
     @timed
     def update_gdf(self):
-        dd = getdd("all")
+        dd = singlefire_getdd("all")
         dt = t2dt(self.t)
 
         for fid, f in self.burningfires.items():

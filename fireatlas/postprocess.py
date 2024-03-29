@@ -18,7 +18,9 @@ from .FireConsts import (
     LARGEFIRE_FAREA
 )
 from .FireTime import t2dt, t_generator
-from .FireGpkg_sfs import getdd
+from .FireGpkg_sfs import getdd as singlefire_getdd
+from .FireGpkg import getdd as snapshot_getdd
+
 
 
 def allpixels_filepath(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["s3", "local"] = READ_LOCATION):
@@ -78,7 +80,7 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
     dt = t2dt(ted)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
-        columns = [col for col in getdd(layer)]
+        columns = [col for col in snapshot_getdd(layer)]
         data = allfires_gdf_t[[*columns, "invalid", "fireID"]].copy()
         
         if layer == "perimeter":
@@ -173,7 +175,7 @@ def save_fire_layers(allfires_gdf_fid, region, fid, tst):
     os.makedirs(output_dir, exist_ok=True)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
-        columns = [col for col in getdd(layer)]
+        columns = [col for col in singlefire_getdd(layer)]
         data = allfires_gdf_fid[columns].copy()
         if layer == "perimeter":
             data["geometry"] = allfires_gdf_fid["hull"]
