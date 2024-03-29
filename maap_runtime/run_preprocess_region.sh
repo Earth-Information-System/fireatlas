@@ -14,9 +14,9 @@ echo "Starting algorithm in subshell"
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
-  # python3 FireRunPeprocessRegion.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]"
+  # python3 FireRunPreprocessRegion.py --regnm="CaliTestRun" --bbox="[-125,36,-117,42]"
   scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-      --outfile "${output_dir}/profile.html" --- FireRunPeprocessRegion.py --regnm=$1 --bbox="$2"
+      --outfile "${output_dir}/profile.html" --- FireRunPreprocessRegion.py --regnm=$1 --bbox="$2"
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" "$output_dir"
