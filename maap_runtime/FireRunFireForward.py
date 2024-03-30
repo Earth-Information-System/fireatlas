@@ -7,6 +7,7 @@ from fireatlas import FireRunDaskCoordinator
 
 def validate_json(s):
     try:
+        print(f"${s}$")
         return json.loads(s)
     except ValueError:
         raise argparse.ArgumentTypeError("Not a valid JSON string")

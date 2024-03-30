@@ -1,34 +1,40 @@
-""" FireLog
-Module containing all logging info used in this project
-
-Usage: from FireLog import logger
-
-"""
-
-from fireatlas.FireConsts import dirdata
 import logging
+import os
 
-# get logger
-logger = logging.getLogger(__name__)
+_logger_configured = False
 
-# set level
-logger.setLevel(logging.INFO)
+def get_logger(name):
+    from fireatlas.FireConsts import dirdata
 
-# define the console handler
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+    global _logger_configured
 
-# define the file handler
-fh = logging.FileHandler(
-    dirdata + "running.log"
-)  # the logfile is stored in the dirpjdata directory
-fh.setLevel(logging.INFO)
+    logger = logging.getLogger(name)
 
-# format the console and file handlers
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-ch.setFormatter(formatter)
-fh.setFormatter(formatter)
+    if not _logger_configured:
+        logger.setLevel(logging.INFO)
 
-# add the handlers to logger
-logger.addHandler(ch)  # comment this to stop screen output
-# logger.addHandler(fh)  # comment this to stop log file recording
+        # create a console handler and set its level
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+
+        # create a file handler as well
+        fh = logging.FileHandler(dirdata + "running.log")
+        fh.setLevel(logging.INFO)
+
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        fh.setFormatter(formatter)
+
+        logger.addHandler(ch)
+        logger.addHandler(fh)
+
+        # To avoid duplicate log messages when using `getLogger` with the same name,
+        # prevent further propagation of messages to the root logger
+        logger.propagate = False
+
+        logger.info("logger initialized!")
+        _logger_configured = True
+
+    return logger
+
+logger = get_logger(__name__)
