@@ -16,7 +16,7 @@ pushd "$basedir"
   echo "Running in directory: $(pwd -P)"
   CURRENT_YEAR=$(date +'%Y')
   scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-    --outfile "${output_dir}/profile.html" --- combine_largefire.py -s $CURRENT_YEAR -e $CURRENT_YEAR -x --nrt --folder-name $1
+    --outfile "${output_dir}/profile.html" --- ../fireatlas/combine_largefire.py -s $CURRENT_YEAR -e $CURRENT_YEAR -x --nrt --folder-name $1
   popd
   echo "Copying log to special output dir"
   cp "$basedir/running.log" "$output_dir"

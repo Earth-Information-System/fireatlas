@@ -11,3 +11,4 @@ import/
 _version.py
 data/
 fireatlas.egg-info/
+running.log
