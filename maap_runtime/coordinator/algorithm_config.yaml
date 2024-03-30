@@ -5,7 +5,7 @@ environment: ubuntu
 repository_url: https://repo.maap-project.org/gcorradini/fireatlas_nrt.git
 docker_container_url: "mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4"
 queue: "maap-dps-eis-worker-64gb"
-run_command: "fireatlas_nrt/maap_runtime/run_dask_coordinator.sh"
+run_command: "fireatlas_nrt/maap_runtime/run_dps_cli.sh"
 build_command: "fireatlas_nrt/maap_runtime/run_dps_build.sh"
 disk_space: "100GB"
 inputs:
@@ -18,4 +18,6 @@ inputs:
   - name: tst # [year, month, day, ampm]
     download: False
   - name: ted # [year, month, day, ampm]
+    download: False
+  - name: operation # --data-update || --preprocess-region || --preprocess-region-t || --fire-forward || --coordinate-all
     download: False
