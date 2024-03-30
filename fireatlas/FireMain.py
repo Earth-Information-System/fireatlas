@@ -94,11 +94,12 @@ def set_eafirerngs(allfires, fids):
     eafirerngs : list
         the list of fire connecting ranges corresponding to the sequence of fids
     """
+    from fireatlas import FireFuncs
     # extract existing active fire data (use extending ranges)
     firerngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        CONNECTIVITY_FIRE_KM = FireConsts.get_CONNECTIVITY_FIRE(f)
+        CONNECTIVITY_FIRE_KM = FireFuncs.get_CONNECTIVITY_FIRE(f)
         rng = f.hull.buffer(CONNECTIVITY_FIRE_KM * 1000)
         firerngs.append(rng)
     return firerngs
