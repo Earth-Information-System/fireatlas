@@ -21,7 +21,7 @@ from fireatlas.postprocess import (
 )
 from fireatlas.FireConsts import get_dirprpdata, get_diroutdata, firesrc
 from fireatlas.preprocess import preprocess_region_t, preprocess_region
-from .DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
+from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
