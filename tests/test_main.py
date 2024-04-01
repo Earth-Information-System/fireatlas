@@ -1,9 +1,9 @@
-import FireConsts
-from FireMain import maybe_remove_static_sources
-from FireTypes import Region
 from shapely.geometry import Polygon
 import pytest
 
+from fireatlas import FireConsts
+from fireatlas.FireMain import maybe_remove_static_sources
+from fireatlas.FireTypes import Region
 
 @pytest.mark.parametrize(
     "original_region, should_remove_static_sources_bool",

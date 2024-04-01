@@ -5,15 +5,16 @@ import pathlib
 import geopandas as gpd
 from datetime import datetime
 from shapely.geometry import Point
-from FireConsts import remove_static_sources_sourcefile
 from unittest.mock import MagicMock
-import preprocess
+
+from fireatlas import preprocess
+from fireatlas.FireConsts import remove_static_sources_sourcefile
 
 
 @pytest.fixture
 def mock_rasterio(monkeypatch):
     monkeypatch.setattr(preprocess, "rasterio", MagicMock())
-    from preprocess import rasterio
+    from fireatlas.preprocess import rasterio
 
     rasterio.open = MagicMock()
     rasterio.warp = MagicMock()
