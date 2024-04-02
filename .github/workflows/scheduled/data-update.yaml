@@ -30,4 +30,4 @@ jobs:
           gcorradini \
           maap-dps-eis-worker-64gb \
           ubuntu \
-          --params '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "--data-update"}'
+          --params '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
