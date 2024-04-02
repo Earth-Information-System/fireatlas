@@ -257,7 +257,9 @@ def update_VNP14IMGTDL(local_dir=None):
         doys = [int(d[-7:-4]) for d in fnms]
         ndays = max(doys)
     dstart = date(today.year,1,1) + timedelta(days=ndays)
-    dstart = dstart - timedelta(days=1)              # downloaded the last file again to avoid incomplete data
+    # to avoid any incomplete data just check the last 10 days
+    # this shoudl be very quick and it's okay if we are duplicating efforts
+    dstart = dstart - timedelta(days=10)
 
     # Do the download process
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
@@ -294,7 +296,9 @@ def update_VJ114IMGTDL(local_dir=None):
         doys = [int(d[-7:-4]) for d in fnms]
         ndays = max(doys)
     dstart = date(today.year,1,1) + timedelta(days=ndays)
-    dstart = dstart - timedelta(days=1)              # downloaded the last file again to avoid incomplete data
+    # to avoid any incomplete data just check the last 10 days
+    # this shoudl be very quick and it's okay if we are duplicating efforts
+    dstart = dstart - timedelta(days=10)
 
     # Do the download process
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
