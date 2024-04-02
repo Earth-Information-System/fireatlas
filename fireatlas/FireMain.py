@@ -496,33 +496,9 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
 
     return allfires
 
-@timed
-def allpixels_and_allfires_from_saved(tst: TimeStep, t: TimeStep, sat=None, region=None, read_location=None, read_saved_location=None):
-    if read_location is None:
-        read_location = FireConsts.READ_LOCATION
-    if read_saved_location is None:
-        read_saved_location = read_location
-    
-    pt = FireTime.t_nb(t, "previous")
-
-    # we need saved allpixels from the previous timestep as well as latest pixels
-    allpixels_pt = postprocess.read_allpixels(tst, pt, region, location=read_saved_location)
-
-    latest = preprocess.read_preprocessed(t, sat="VIIRS", region=region, location=read_location)
-    latest["fid"] = -1
-    latest["in_fline"] = None
-    latest["ext_until"] = None
-
-    for col in allpixels_pt.columns:
-        latest[col] = latest[col].astype(allpixels_pt[col].dtype)
-
-    allpixels = pd.concat([allpixels_pt, latest])
-    allfires = FireObj.Allfires.rehydrate(tst, pt, region, allpixels=allpixels, include_dead=True, read_location=read_saved_location)
-
-    return allfires, allpixels
 
 @timed
-def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=None, read_location=None):
+def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=None, read_location=None, read_saved_location=None):
     """ The wrapper function to progressively track all fire events for a time period
 
     Parameters
@@ -533,8 +509,8 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
     the year, month, day and 'AM'|'PM' at end time
     sat : str, 'SNPP', 'NOAA20', 'VIIRS', 'BAMOD
         if set, overrides `FireConsts.firesrc`
-    restart : [DEPRECATED] bool
-        if set to true, force to initiate an object
+    restart : bool
+        whether to read from saved allfires and allpixels or start from fresh
     read_location: 
         where to read preprocessed files from
     Returns
@@ -543,7 +519,12 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
         the allfires object at end date
     """
     from fireatlas.preprocess import read_preprocessed
-    from fireatlas.postprocess import save_allpixels, save_allfires_gdf
+    from fireatlas.postprocess import (
+        get_t_of_last_allfires_run,
+        read_allpixels,
+        save_allpixels,
+        save_allfires_gdf
+    )
     from fireatlas.FireObj import Allfires
 
     if sat is None:
@@ -551,21 +532,69 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
 
     if read_location is None:
         read_location = FireConsts.READ_LOCATION
-    
-    # initialize allfires object
-    allfires = Allfires(tst)
 
-    # read in all preprocessed pixel data
-    allpixels = pd.concat([
+    if read_saved_location is None:
+        read_saved_location = read_location
+    
+    t_saved = None
+    if restart is False:
+        t_saved = get_t_of_last_allfires_run(
+            tst,
+            ted,
+            region=region,
+            location=read_saved_location,
+        )
+        if t_saved is None:
+            logger.warn("No saved version of allfires and allpixels")
+        elif t_saved == ted:
+            raise KeyError(
+                "Nothing left to do. There is already a saved version "
+                f"of allfires and allpixels at {t=}."
+            )
+    if t_saved:
+        # list of all the timesteps that we still need to run on
+        list_of_ts = list(FireTime.t_generator(FireTime.t_nb(t_saved, "next"), ted))
+    else:
+        list_of_ts = list(FireTime.t_generator(tst, ted))
+     
+    # read in preprocessed pixel data
+    list_of_allpixels = [
         read_preprocessed(t, sat=sat, region=region, location=read_location)
-        for t in FireTime.t_generator(tst, ted)
-    ])
+        for t in list_of_ts
+    ]
+    allpixels = pd.concat([df for df in list_of_allpixels if not df.empty])
+
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
     allpixels["ext_until"] = None
-    # loop over every t during the period and mutate allfires, allpixels
-    for t in FireTime.t_generator(tst, ted):
+    
+    if t_saved:
+        allpixels_saved = read_allpixels(
+            tst, 
+            t_saved,
+            region,
+            location=read_saved_location
+        )
+        for col in allpixels_saved.columns:
+            allpixels[col] = allpixels[col].astype(allpixels_saved[col].dtype)    
+
+        allpixels = pd.concat([allpixels_saved, allpixels])  
+        allfires = Allfires.rehydrate(
+            tst,
+            t_saved,
+            region,
+            allpixels=allpixels,
+            include_dead=True,
+            read_location=read_saved_location
+        )
+    else:
+        # initialize an empty allfires object
+        allfires = Allfires(tst)
+
+    # loop over every t during the period, mutate allfires, allpixels, save
+    for t in list_of_ts:
         allfires = Fire_Forward_one_step(allfires, allpixels, t, region)
+        # save allpixels and allfires locally for up to t
         save_allpixels(allpixels, tst, t, region)
         save_allfires_gdf(allfires.gdf, tst, t, region)
 
