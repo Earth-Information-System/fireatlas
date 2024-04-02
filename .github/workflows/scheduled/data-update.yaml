@@ -13,7 +13,11 @@ jobs:
       with:
         ref: gc/github_actions
 
-    - name: Kick off the job
+    - name: pip install fireatlas
+      run: |
+        pip install -e '.[test]'
+
+    - name: kick off the job
       run: |
         docker run \
           --env MAAP_PGT=${MAAP_PGT} \
