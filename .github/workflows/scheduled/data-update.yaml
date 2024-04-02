@@ -3,9 +3,11 @@ name: data update checker
 on:
   schedule:
     - cron:  '0 */4 * * *'
+  workflow_dispatch:
 
 jobs:
   data_update_checker:
+    if: contains('["ranchodeluxe"]', github.actor)
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
