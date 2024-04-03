@@ -2130,10 +2130,23 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
         )
 
 
-def copy_from_local_to_s3(filepath: str):
-    s3_client = boto3.client("s3")
+def copy_from_local_to_s3(filepath: str, **tags):
+    """ Copy from local to s3 adding any specified tags
 
-    dst = filepath.replace(FireConsts.dirdata_local_path, FireConsts.dirdata_s3_path)
-    logger.info(f"uploading file {filepath} to {FireConsts.dirdata_s3_bucket}/{dst}")
+    Some default tags will be added from the environment and specified FireConsts
+    """
+    s3 = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
-    s3_client.upload_file(filepath, FireConsts.dirdata_s3_bucket, dst)
+    dst = filepath.replace(FireConsts.dirdata_local_path, f"s3://{FireConsts.dirdata_s3_bucket}/{FireConsts.dirdata_s3_path}")
+    logger.info(f"uploading file {filepath} to {dst}")
+
+    s3.put_file(filepath, dst)
+
+    default_tags = {
+        "processedBy": os.environ.get("CHE_WORKSPACE_NAMESPACE", None) or os.environ.get("JUPYTERHUB_USER", None),
+        "epsg": FireConsts.epsg,
+        "remove_static_sources_bool": FireConsts.remove_static_sources_bool,
+    }
+    tags = {str(k): str(v) for k, v in {**default_tags, **tags}.items() if v is not None}
+
+    s3.put_tags(dst, tags)
