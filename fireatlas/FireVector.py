@@ -11,14 +11,8 @@ from shapely.geometry import Polygon, MultiPoint, MultiLineString
 
 from scipy.spatial import Delaunay, ConvexHull
 
-from fireatlas.FireConsts import (
-    valpha,
-    VIIRSbuf,
-    extbuffer,
-    EARTH_RADIUS_KM,
-    fpbuffer,
-    MCD64buf,
-)
+from fireatlas import FireConsts
+from fireatlas import settings
 
 
 def doConcH(points, alpha):
@@ -113,7 +107,7 @@ def doConvH(locs):
     return hull
 
 
-def cal_hull(locs, sensor="viirs"):
+def cal_hull(locs):
     """wrapper to calculate the hull given fire locations.
         the returned hull type depends on the pixel number
     Parameters
@@ -126,12 +120,10 @@ def cal_hull(locs, sensor="viirs"):
         calculated hull (a buffer of VIIRS half pixel size included)
     """
     # set buffer according to sensor
-    if sensor == "viirs":
-        buf = VIIRSbuf
-    elif sensor == "mcd64":
-        buf = MCD64buf
-    else:
-        print("please set sensor to viirs or mcd64")
+    if settings.FIRE_SENSOR == "viirs":
+        buf = settings.VIIRSbuf
+    elif settings.FIRE_SENSOR == "mcd64":
+        buf = settings.MCD64buf
 
     # number of pixels
     nfp = len(locs)
@@ -139,7 +131,7 @@ def cal_hull(locs, sensor="viirs"):
 
     # if there are more than 3 points: try using concave hull
     if nfp > 3:
-        hull = doConcH(locs, alpha=valpha)
+        hull = doConcH(locs, alpha=settings.valpha)
 
     # if you don't have a good hull yet and there are more
     # than 2 points: try using convex hull
@@ -169,7 +161,7 @@ def get_ext_pixels(pixels, hull):
         whether each pixel is part of the exterior
     """
 
-    hts_buf = hull.buffer(-extbuffer)
+    hts_buf = hull.buffer(-settings.extbuffer)
     pixel_arr = gpd.points_from_xy(pixels["x"], pixels["y"])
 
     return ~pixel_arr.intersects(hts_buf)
@@ -193,12 +185,12 @@ def get_fline_pixels(pixels, hull):
     # extract the pixels near the hull
     # if hull is a polygon, find new pixels near the hull
     if hull.geom_type == "Polygon":
-        lr = hull.exterior.buffer(fpbuffer)
+        lr = hull.exterior.buffer(settings.fpbuffer)
         return pixel_arr.intersects(lr)
 
     # if hull is a multipolygon, find new pixels near the outer shell
     elif hull.geom_type == "MultiPolygon":
-        mlr = MultiLineString([x.exterior for x in hull.geoms]).buffer(fpbuffer)
+        mlr = MultiLineString([x.exterior for x in hull.geoms]).buffer(settings.fpbuffer)
         return pixel_arr.intersects(mlr)
 
 
@@ -221,7 +213,7 @@ def calConcHarea(hull):
         # convert deg**2 to km2
         farea = (
             farea
-            * EARTH_RADIUS_KM**2
+            * settings.EARTH_RADIUS_KM**2
             * math.cos(math.radians(lat))
             * math.radians(1) ** 2
         )

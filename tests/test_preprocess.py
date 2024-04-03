@@ -11,6 +11,7 @@ from fireatlas import FireClustering
 from fireatlas import FireMain
 from fireatlas import FireIO
 from fireatlas.FireTypes import TimeStep, Region
+from fireatlas import settings
 
 try:
     from shapely import to_geojson, from_geojson
@@ -224,9 +225,10 @@ def test_preprocess_region_t(
         # and `FireClustering.compute_all_spatial_distances` so just return the input DataFrame for now
         monkeypatch.setattr(FireClustering, "do_clustering", lambda x, y: input_df)
 
+        settings.FIRE_SOURCE = "TESTING123"
         # we pass a fake sat/sensor so we can trigger the `else` branch for a single `read_preprocessed` mock
         outfile_df_path = preprocess.preprocess_region_t(
-            (2023, 11, 9, "AM"), "TESTING123", region
+            (2023, 11, 9, "AM"), region
         )
 
         # assert

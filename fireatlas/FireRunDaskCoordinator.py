@@ -19,12 +19,13 @@ from fireatlas.postprocess import (
     save_large_fires_layers,
     save_large_fires_nplist,
 )
-from fireatlas.FireConsts import get_dirprpdata, get_diroutdata, firesrc
+from fireatlas.FireConsts import get_dirprpdata, get_diroutdata
 from fireatlas.preprocess import preprocess_region_t, preprocess_region
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
+from fireatlas import settings
 
 # NOTE: the current eis queue 64gb is set up as an
 # AWS r5.2xlarge instance with 64gb RAM and 8 CPUs
@@ -51,7 +52,7 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
             ampm = 'AM'
         ted = [ctime.year, ctime.month, ctime.day, ampm]
 
-    logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {firesrc}")
+    logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     allfires, allpixels = Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     allpixels_filepath = save_allpixels(allpixels, tst, ted, region)
@@ -80,8 +81,8 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
 def job_preprocess_region_t(
         eventual_result1: Delayed,
         eventual_result2: Delayed, region: Region, t: TimeStep):
-    logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {firesrc}")
-    output_filepath = preprocess_region_t(t, sensor=firesrc, region=region)
+    logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
+    output_filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(output_filepath)
 
 

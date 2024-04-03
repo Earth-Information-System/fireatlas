@@ -29,6 +29,7 @@ from fireatlas.FireLog import logger
 from fireatlas.FireTypes import TimeStep
 from fireatlas import FireConsts
 from fireatlas import FireTime
+from fireatlas import settings
 
 
 def preprocess_polygon(
@@ -72,7 +73,7 @@ def preprocess_polygon(
 
     # buffer polygon by VIIRS res. need to convert to crs in meters
     polygon_m = polygon_gdf.geometry.to_crs(FireEnums.EPSG.CONUS_EQ_AREA.value)
-    polygon_m = polygon_m.buffer(FireConsts.VIIRSbuf)
+    polygon_m = polygon_m.buffer(settings.VIIRSbuf)
 
     # reset geometry and convert to lat/lon
     polygon_gdf = polygon_gdf.set_geometry(polygon_m).to_crs(4326)

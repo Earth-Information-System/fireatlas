@@ -12,3 +12,7 @@ from fireatlas import (
     FireTime,
     FireEnums,
 )
+
+from fireatlas.FireConsts import Settings
+
+settings = Settings()

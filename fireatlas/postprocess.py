@@ -16,6 +16,7 @@ from fireatlas.FireTypes import Region, TimeStep
 from fireatlas.FireTime import t2dt, t_generator
 from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireGpkg import getdd as snapshot_getdd
+from fireatlas import settings
 from fireatlas import FireConsts
 
 def all_dir(tst: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
@@ -151,12 +152,12 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
             data["isignition"] = dt == data["t_st"]
             data["t_inactive"] = (dt - data["t_ed"]).dt.days
 
-            data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= FireConsts.maxoffdays)
-            data["isdead"] = ~data["invalid"] & (data["t_inactive"] > FireConsts.limoffdays)
+            data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= settings.maxoffdays)
+            data["isdead"] = ~data["invalid"] & (data["t_inactive"] > settings.limoffdays)
             data["mayreactivate"] = (
                 ~data["invalid"]
-                & (FireConsts.maxoffdays < data["t_inactive"])
-                & (data["t_inactive"] <= FireConsts.limoffdays)
+                & (settings.maxoffdays < data["t_inactive"])
+                & (data["t_inactive"] <= settings.limoffdays)
             )
 
             # map booleans to integers
@@ -203,7 +204,7 @@ def find_largefires(allfires_gdf):
 
     last_seen = gdf.drop_duplicates("fireID", keep="last")
     last_large = last_seen[
-        (last_seen.farea > FireConsts.LARGEFIRE_FAREA) & (last_seen.invalid == False)
+        (last_seen.farea > settings.LARGEFIRE_FAREA) & (last_seen.invalid == False)
     ]
     return last_large.fireID.values
 

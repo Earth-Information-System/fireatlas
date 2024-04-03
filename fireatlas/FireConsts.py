@@ -7,6 +7,8 @@ from typing import Literal
 import os
 from fireatlas.FireEnums import FireSource, EPSG
 from functools import partial
+from pydantic_settings import BaseSettings
+from pydantic import Field
 
 
 def get_env_var_as_type(name, cast_to_type=int, default=None):
@@ -61,60 +63,58 @@ diroutdata = get_diroutdata(location=READ_LOCATION)
 
 # lakedir = 'D:/fire_atlas/Data/GlobalSurfaceWater/vector/'
 
-# ------------------------------------------------------------------------------
-# spatiotemporal constraints of fire objects
-# ------------------------------------------------------------------------------
+class Settings(BaseSettings):
+    # ------------------------------------------------------------------------------
+    # spatiotemporal constraints of fire objects
+    # ------------------------------------------------------------------------------
+    # spatial parameters used for fire pixel clustering
+    EARTH_RADIUS_KM: float = Field(6371.0, description="earth radius, km")
 
-# spatial parameters used for fire pixel clustering
-EARTH_RADIUS_KM = 6371.0  # earth radius, km
+    # temporal parameters for fire object definition
+    maxoffdays: int = Field(5, description=(
+        "fire becomes inactive after this number of "
+        "consecutive days without active fire detection"
+    ))
+    limoffdays: int = Field(20, description=(
+        "fire keeps sleeper status even at inactive but with "
+        "inactive dates smaller than this value"
+    ))
+    CONNECTIVITY_CLUSTER_KM: float = Field(0.7, description=(
+        "the connectivity spatial threshold for initial clustering, km"
+    ))
+    CONNECTIVITY_SLEEPER_KM: float = Field(1, description=(
+        "the connectivity spatial threshold (to previous fire line), km"
+    ))
 
-# temporal parameters for fire object definition
-maxoffdays = 5  # fire becomes inactive after this number of consecutive days without active fire detection
-limoffdays = 20  # fire keeps sleeper status even at inactive but with inactive dates smaller than this value
-CONNECTIVITY_CLUSTER_KM = (
-    0.7  # the connectivity spatial threshold for initial clustering, km
-)
-CONNECTIVITY_SLEEPER_KM = (
-    1  # the connectivity spatial threshold (to previous fire line), km
-)
+    # spatial parameters for fire object categorization
+    LARGEFIRE_FAREA: int = Field(4, description="fire area threshold for determining large fires")
 
-# fire area threshold for determining large fires.
-LARGEFIRE_FAREA = 4
+    # fire tracking options
+    expand_only: bool = Field(False, description=(
+        "if set to true, only expand existing fires (no new fire objects created)"
+    ))
 
-# fire tracking options
-expand_only = (
-    False  # if set to true, only expand existing fires (no new fire objects created)
-)
+    # ------------------------------------------------------------------------------
+    # shape parameters
+    # ------------------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
-# shape parameters
-# ------------------------------------------------------------------------------
+    valpha: int = Field(1000, description="alpha parameter, m")
 
-# alpha shape
-valpha = 1000  # alpha parameter, in m (default)
-lalpha = 100
-stralpha = "1km"  # string of alpha parameter
+    # VIIRS pixel size
+    VIIRSbuf: float = Field(187.5, description="fire perimeter buffer, m")
+    fpbuffer: int = Field(200, description="buffer use to determine fire line pixels, m")
+    flbuffer: int = Field(500, description="buffer for fire line pixels (radius) to intersect fire perimeter, m")
 
-# VIIRS pixel size
-VIIRSbuf = 187.5  # fire perimeter buffer (deg), corresponding to 375m/2 at lat=30
-fpbuffer = 200  # buffer use to determine fire line pixels (deg), ~200m
-flbuffer = (
-    500  # buffer for fire line pixels (radius) to intersect fire perimeter (deg), ~500m
-)
-extbuffer = 1000  # buffer to define interior/exterior region, 1000 m
-area_VI = 0.141  # km2, area of each 375m VIIRS pixel
+    extbuffer: int = Field(1000, description="buffer to define interior/exterior region, m")
+    area_VI: float = Field(0.141, description="area of each 375m VIIRS pixel, km2")
 
-# MODIS pixel size
-MCD64buf = 231.7  # MODIS fire perimeter buffer (deg), corresponding to 463.31271653 m/2
-
-# fire source data
-firesrc = get_env_var_as_type(
-    "FIRE_SOURCE", cast_to_type=str, default=FireSource.VIIRS.value
-)  # source - ['SNPP', 'NOAA20', 'VIIRS', 'BAMOD']:
-firenrt = get_env_var_as_type(
-    "FIRE_NRT", cast_to_type=bool, default=True
-)  # NRT - True, False
-firessr = "viirs"  # sensor - 'mcd64'
+    # MODIS pixel size
+    MCD64buf: float = Field(231.7, description="MODIS fire perimeter buffer, m")
+    
+    # fire source data
+    FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field("VIIRS", description="fire source data")
+    FIRE_NRT: bool = Field(True, description="whether to use NRT data")
+    FIRE_SENSOR: Literal["viirs", "mcd64"] = Field("viirs", description="fire sensor")
 
 # ------------------------------------------------------------------------------
 # fire type related parameters

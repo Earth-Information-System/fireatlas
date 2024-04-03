@@ -18,6 +18,7 @@ from fireatlas import FireConsts
 from fireatlas.FireClustering import do_clustering
 from fireatlas.FireTime import t_generator, t2dt
 from fireatlas import FireIO
+from fireatlas import settings
 
 
 def preprocessed_region_filename(
@@ -106,12 +107,15 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
 
 def preprocessed_filename(
     t: TimeStep,
-    sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
     *,
+    sat: Literal["NOAA20", "SNPP"] | None = None,
     region: Optional[Region] = None,
     suffix="",
     location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
 ):
+    if sat is None:
+        sat = settings.FIRE_SOURCE
+
     return os.path.join(
         FireConsts.get_dirprpdata(location=location),
         *([] if region is None else [region[0]]),
@@ -298,10 +302,10 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 @timed
 def read_preprocessed_input(
     t: TimeStep,
-    sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
+    sat: Literal["NOAA20", "SNPP"],
     location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
 ):
-    filename = preprocessed_filename(t, sat, location=location)
+    filename = preprocessed_filename(t, sat=sat, location=location)
     df = pd.read_csv(filename)
     return df
 
@@ -309,11 +313,10 @@ def read_preprocessed_input(
 @timed
 def read_preprocessed(
     t: TimeStep,
-    sat: Literal["NOAA20", "SNPP", "VIIRS", "TESTING123"],
     region: Region,
     location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
 ):
-    filename = preprocessed_filename(t, sat, region=region, location=location)
+    filename = preprocessed_filename(t, region=region, location=location)
     df = pd.read_csv(filename).set_index("uuid").assign(t=t2dt(t))
     return df
 
@@ -321,7 +324,6 @@ def read_preprocessed(
 @timed
 def preprocess_region_t(
     t: TimeStep,
-    sensor: Literal["SNPP", "NOAA20", "VIIRS", "TESTING123"],
     region: Region,
     force: bool = False,
     read_location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
@@ -329,7 +331,7 @@ def preprocess_region_t(
 ):
 
     # if regional output already exists, exit early so we don't reprocess
-    output_filepath = preprocessed_filename(t, sensor, region=region, location="local")
+    output_filepath = preprocessed_filename(t, region=region, location="local")
     if not force and os.path.exists(output_filepath):
         logger.info(
             "Preprocessing has already occurred for this combination of "
@@ -340,10 +342,11 @@ def preprocess_region_t(
 
     # read in the preprocessed region
     region = read_region(region, location=read_region_location or read_location)
+    source = settings.FIRE_SOURCE
     logger.info(
-        f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {sensor}, {region[0]}"
+        f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {source}, {region[0]}"
     )
-    if sensor == "VIIRS":
+    if source == "VIIRS":
         dfs = []
         for sat in ["SNPP", "NOAA20"]:
             try:
@@ -355,7 +358,7 @@ def preprocess_region_t(
         else:
             df = pd.concat(dfs, ignore_index=True)
     else:
-        df = read_preprocessed_input(t, sat=sensor, location=read_location)
+        df = read_preprocessed_input(t, sat=source, location=read_location)
 
     # do regional filtering
     shp_Reg = FireIO.get_reg_shp(region[1])
@@ -380,7 +383,7 @@ def preprocess_region_t(
         df = df[columns]
 
         # do preliminary clustering using new active fire locations (assign cid to each pixel)
-        df = do_clustering(df, FireConsts.CONNECTIVITY_CLUSTER_KM)
+        df = do_clustering(df, settings.CONNECTIVITY_CLUSTER_KM)
 
         # assign a uuid to each pixel and put it as the first column
         df.insert(0, "uuid", [uuid.uuid4() for _ in range(len(df.index))])

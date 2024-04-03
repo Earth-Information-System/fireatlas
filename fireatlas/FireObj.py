@@ -20,6 +20,7 @@ from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireIO import save_newyearfidmapping
 from fireatlas import FireVector
 from fireatlas import FireConsts
+from fireatlas import settings
 
 
 # a. Object - Allfires
@@ -95,7 +96,7 @@ class Allfires:
 
         has_started = allfires_gdf.t_st <= dt
         if not include_dead:
-            dt_dead = dt - timedelta(days=FireConsts.limoffdays)
+            dt_dead = dt - timedelta(days=settings.limoffdays)
             not_dead = allfires_gdf.t_ed >= dt_dead
             gdf = allfires_gdf[has_started & not_dead]
         else:
@@ -377,7 +378,7 @@ class Allfires:
 class Fire:
     """Class of a single fire event at a particular time step"""
 
-    def __init__(self, id, t, allpixels, sensor="viirs"):
+    def __init__(self, id, t, allpixels):
         """Initialize Fire class with active fire pixels locations and t. This
             is only called when fire clusters forming a new Fire object.
         Parameters
@@ -388,14 +389,11 @@ class Fire:
             the year, month, day and 'AM'|'PM'
         allpixels : dataframe
             a mutating dataframe of all fire pixels for the period of interest
-        sensor : str
-            the remote sensing instrument, 'viirs' | 'modis'; no differentiation
-            between SNPP and NOAA20
         """
         # initialize fire id and sensor
         self._fid = id
         self.mergeid = id  # mergeid is the final fire id the current fire being merged; use current fire id at initialization
-        self.sensor = sensor
+        self.sensor = settings.FIRE_SENSOR
         self.allpixels = allpixels
 
         # initialize current time, fire start time, and fire final time
@@ -456,7 +454,7 @@ class Fire:
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return self.t_inactive <= FireConsts.maxoffdays
+        return self.t_inactive <= settings.maxoffdays
 
     @property
     def isdead(self):
@@ -465,7 +463,7 @@ class Fire:
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return self.t_inactive > FireConsts.limoffdays
+        return self.t_inactive > settings.limoffdays
 
     @property
     def mayreactivate(self):
@@ -474,7 +472,7 @@ class Fire:
         if self.invalid:
             return False
         # otherwise, set to True if no new pixels detected for 5 consecutive days
-        return FireConsts.maxoffdays < self.t_inactive <= FireConsts.limoffdays
+        return settings.maxoffdays < self.t_inactive <= settings.limoffdays
 
     @property
     def isignition(self):
@@ -585,10 +583,10 @@ class Fire:
 
         # If no hull, return area calculated from number of pixels
         if fhull is None:
-            return self.n_pixels * FireConsts.area_VI
+            return self.n_pixels * settings.area_VI
         else:
             area_cal = fhull.area / 1e6
-            return max(area_cal, FireConsts.area_VI)
+            return max(area_cal, settings.area_VI)
 
     @property
     def pixden(self):
@@ -681,7 +679,7 @@ class Fire:
         pixels = self.extpixels
 
         # combine those with the new pixels and calculate the hull
-        hull = FireVector.cal_hull(pixels[["x", "y"]].values, sensor=self.sensor)
+        hull = FireVector.cal_hull(pixels[["x", "y"]].values)
 
         # use the union of the newly calculated hull and the previous hull
         self.hull = phull.union(hull)
@@ -702,7 +700,7 @@ class Fire:
             return
 
         flinelocsMP = MultiPoint(flinepixels[["x", "y"]].values).buffer(
-            FireConsts.VIIRSbuf
+            settings.VIIRSbuf
         )
 
         # get the hull
@@ -715,11 +713,11 @@ class Fire:
             # extract exterior of fire perimeter
             mls = MultiLineString([plg.exterior for plg in fhull.geoms])
             # set fline to the part which intersects with  bufferred flinelocsMP
-            self.fline = mls.intersection(flinelocsMP.buffer(FireConsts.flbuffer))
+            self.fline = mls.intersection(flinelocsMP.buffer(settings.flbuffer))
 
         elif fhull.geom_type == "Polygon":
             mls = fhull.exterior
-            self.fline = mls.intersection(flinelocsMP.buffer(FireConsts.flbuffer))
+            self.fline = mls.intersection(flinelocsMP.buffer(settings.flbuffer))
         else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
             self.fline = flinelocsMP
 

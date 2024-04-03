@@ -31,6 +31,7 @@ from fireatlas.FireLog import logger
 from fireatlas import FireClustering
 from fireatlas import FireVector
 from fireatlas import FireIO
+from fireatlas import settings
 
 
 # Functions
@@ -124,7 +125,7 @@ def set_sleeperrngs(allfires, fids):
     sleeperrngs = []
     for fid in fids:
         f = allfires.fires[fid]  # fire
-        rng = f.hull.buffer(FireConsts.CONNECTIVITY_SLEEPER_KM * 1000)
+        rng = f.hull.buffer(settings.CONNECTIVITY_SLEEPER_KM * 1000)
         sleeperrngs.append(rng)
     return sleeperrngs
 
@@ -205,7 +206,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
     # loop over all new clusters (0:cid-1) and determine its fate
     FP2expand = {}  # a dict to record {fid : Firepixel objects} pairs
     for ic, pixels in tpixels.groupby("initial_cid"):
-        hull = FireVector.cal_hull(pixels[["x", "y"]].values, sensor=FireConsts.firessr)
+        hull = FireVector.cal_hull(pixels[["x", "y"]].values)
 
         # if the cluster is close enough to an existing active fire object
         #   record all pixels to be added to the existing object (no actual changes on existing fire objects)
@@ -239,7 +240,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
         # if this cluster can't be appended to any existing Fobj:
         #     create a new fire object using the new cluster
         # ignore creating new fires if expand_only is set to True
-        if not FireConsts.expand_only:
+        if not settings.expand_only:
             # if the cluster is not added to existing active fires
             if clusterdone is False:  
                 # create a new fire id and add it to the fid_new list
@@ -247,7 +248,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
                 fids_new.append(id_newfire)  # record id_newfire to fid_new
 
                 # use the fire id and new fire pixels to create a new Fire object
-                newfire = Fire(id_newfire, allfires.t, allpixels, sensor=FireConsts.firessr)
+                newfire = Fire(id_newfire, allfires.t, allpixels)
                 newfire.t_st = newfire.t
                 newfire.pixels = pixels
                 newfire.hull = hull
@@ -498,7 +499,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
 
 
 @timed
-def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=None, read_location=None, read_saved_location=None):
+def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_location=None, read_saved_location=None):
     """ The wrapper function to progressively track all fire events for a time period
 
     Parameters
@@ -507,8 +508,6 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
         the year, month, day and 'AM'|'PM' at start time
     ted : tuple, (int,int,int,str)
     the year, month, day and 'AM'|'PM' at end time
-    sat : str, 'SNPP', 'NOAA20', 'VIIRS', 'BAMOD
-        if set, overrides `FireConsts.firesrc`
     restart : bool
         whether to read from saved allfires and allpixels or start from fresh
     read_location: 
@@ -526,9 +525,6 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
         save_allfires_gdf
     )
     from fireatlas.FireObj import Allfires
-
-    if sat is None:
-        sat = FireConsts.firesrc
 
     if read_location is None:
         read_location = FireConsts.READ_LOCATION
@@ -559,7 +555,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, sat=None, restart=False, region=N
      
     # read in preprocessed pixel data
     list_of_allpixels = [
-        read_preprocessed(t, sat=sat, region=region, location=read_location)
+        read_preprocessed(t, region=region, location=read_location)
         for t in list_of_ts
     ]
     allpixels = pd.concat([df for df in list_of_allpixels if not df.empty])
