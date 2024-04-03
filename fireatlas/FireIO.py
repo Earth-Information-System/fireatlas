@@ -16,7 +16,6 @@ import geopandas as gpd
 import shapely
 import rasterio
 import pyproj
-import boto3
 import fsspec
 import pickle
 import xarray as xr
@@ -2039,7 +2038,7 @@ def pixel2World(gt, Xpixel, Ypixel):
 
 
 def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
-    s3_client = boto3.client("s3")
+    s3 = s3fs.S3FileSystem()
     filename = os.path.basename(from_maap_s3_path)
     filename_no_ext = os.path.splitext(filename)[0]
 
@@ -2124,10 +2123,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     # fiona has a bug where it cannot write GPKG files to s3 even though FileGeobuf work fine
     # so to work around this issue we just write them locally to /tmp first
     gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
-    with open(local_tmp_filepath, "rb") as file_object:
-        s3_client.upload_fileobj(
-            file_object, "veda-data-store-staging", to_veda_s3_path
-        )
+    s3.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
 
 
 def copy_from_local_to_s3(filepath: str, **tags):
