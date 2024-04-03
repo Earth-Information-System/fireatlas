@@ -31,9 +31,11 @@ def get_env_var_as_type(name, cast_to_type=int, default=None):
 projnm = "FEDStest"  # project name
 dirhome = os.environ.get("HOME")  # get system home directory
 
+dirproject = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+dirdata_local_path = os.path.join(dirproject, "data")
+
 dirdata = "./"  # project directory -- only used For logging location
 dirdata_s3_bucket = "maap-ops-workspace"
-dirdata_local_path = "data"
 dirdata_s3_path = "shared/gsfc_landslides"
 
 

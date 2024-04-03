@@ -61,7 +61,7 @@ def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
-    allpixels[allpixels.t <= FireTime.t2dt(ted)].to_csv(output_filepath)
+    allpixels[allpixels.t <= t2dt(ted)].to_csv(output_filepath)
     return output_filepath
 
 
