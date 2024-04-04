@@ -38,20 +38,10 @@ class Settings(BaseSettings):
     EPSG_CODE: Literal[9311, 32610, 3571] = Field(9311, description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)")
 
     # temporal parameters for fire object definition
-    maxoffdays: int = Field(5, description=(
-        "fire becomes inactive after this number of "
-        "consecutive days without active fire detection"
-    ))
-    limoffdays: int = Field(20, description=(
-        "fire keeps sleeper status even at inactive but with "
-        "inactive dates smaller than this value"
-    ))
-    CONNECTIVITY_CLUSTER_KM: float = Field(0.7, description=(
-        "the connectivity spatial threshold for initial clustering, km"
-    ))
-    CONNECTIVITY_SLEEPER_KM: float = Field(1, description=(
-        "the connectivity spatial threshold (to previous fire line), km"
-    ))
+    maxoffdays: int = Field(5, description="fire becomes inactive after this number of consecutive days without active fire detection")
+    limoffdays: int = Field(20, description="fire keeps sleeper status even at inactive but with inactive dates smaller than this value")
+    CONNECTIVITY_CLUSTER_KM: float = Field(0.7, description="the connectivity spatial threshold for initial clustering, km")
+    CONNECTIVITY_SLEEPER_KM: float = Field(1, description="the connectivity spatial threshold (to previous fire line), km")
 
     # ------------------------------------------------------------------------------
     # shape parameters
@@ -87,16 +77,13 @@ class Settings(BaseSettings):
     # other options
     # ------------------------------------------------------------------------------
     # fire tracking options
-    expand_only: bool = Field(False, description=(
-        "if set to true, only expand existing fires (no new fire objects created)"
-    ))
+    expand_only: bool = Field(False, description="if set to true, only expand existing fires (no new fire objects created)")
     number_of_multi_proc_workers: int = Field(3, description="number of dask process workers to use")
     export_to_veda: bool = Field(False, description="whether to export data from MAAP to VEDA s3")
 
     # ------------------------------------------------------------------------------
     # fire type related parameters
     # ------------------------------------------------------------------------------
-
     FTYP_OPT: Literal["preset", "CA", "Global"] = Field("CA", description="fire type option")
     CONT_OPT:  Literal["preset", "CA", "Global"] = Field("CA", description="continuity threshold option")
 

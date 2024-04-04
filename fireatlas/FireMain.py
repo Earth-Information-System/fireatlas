@@ -477,7 +477,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
             allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep)
 
     # 7. manualy invalidate static fires (with exceptionally large fire density)
-    if setting.remove_static_small_fires:
+    if settings.remove_static_small_fires:
         allfires.invalidate_statfires()
 
     # 8. log changes
