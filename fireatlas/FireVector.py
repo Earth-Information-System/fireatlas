@@ -11,7 +11,6 @@ from shapely.geometry import Polygon, MultiPoint, MultiLineString
 
 from scipy.spatial import Delaunay, ConvexHull
 
-from fireatlas import FireConsts
 from fireatlas import settings
 
 

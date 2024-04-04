@@ -25,7 +25,6 @@ import collections
 
 from fireatlas.FireTypes import Region, TimeStep
 from fireatlas.utils import timed
-from fireatlas import FireConsts
 from fireatlas import FireTime
 from fireatlas.FireLog import logger
 from fireatlas import FireClustering
@@ -130,7 +129,7 @@ def set_sleeperrngs(allfires, fids):
     return sleeperrngs
 
 
-def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
+def maybe_remove_static_sources(region: Region) -> Region:
     """ Modify region to exclude static sources
 
     Parameters
@@ -142,19 +141,19 @@ def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
     region : region obj
         A region that is the difference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
     """
-    if not FireConsts.remove_static_sources_bool:
+    if not settings.remove_static_sources:
         # should make sure region[1] is a geometry
         geom = FireIO.get_reg_shp(region[1])
         region = (region[0], geom)
         return region
     
     # get source data geometry
-    global_flaring = pd.read_csv(os.path.join(input_data_dir, 'static_sources', FireConsts.remove_static_sources_sourcefile))
+    global_flaring = pd.read_csv(os.path.join(settings.dirextdata, 'static_sources', settings.remove_static_sources_sourcefile))
     global_flaring = global_flaring.drop_duplicates()
     global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
 
     global_flaring = gpd.GeoDataFrame(global_flaring, geometry=gpd.points_from_xy(global_flaring.Longitude, global_flaring.Latitude)) # Convert to point geometries
-    global_flaring["buffer_geometry"] = global_flaring.buffer(FireConsts.remove_static_sources_buffer)
+    global_flaring["buffer_geometry"] = global_flaring.buffer(settings.remove_static_sources_buffer)
     global_flaring = global_flaring.set_geometry(col = "buffer_geometry")
     
     # get region geometry
@@ -162,8 +161,8 @@ def maybe_remove_static_sources(region: Region, input_data_dir: str) -> Region:
     reg_df = gpd.GeoDataFrame.from_dict({"name":[region[0]], "geometry":[reg]}) # Put geometry into dataframe for join
     
     # ensure everything is in the same projection
-    global_flaring = global_flaring.set_crs("EPSG:" + str(FireConsts.epsg)) ## Translate to the user-input coordinate system
-    reg_df = reg_df.set_crs("EPSG:" + str(FireConsts.epsg))
+    global_flaring = global_flaring.set_crs("EPSG:" + str(settings.EPSG_CODE)) ## Translate to the user-input coordinate system
+    reg_df = reg_df.set_crs("EPSG:" + str(settings.EPSG_CODE))
     
     # Take the difference of points and region
     diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
@@ -478,7 +477,7 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
             allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep)
 
     # 7. manualy invalidate static fires (with exceptionally large fire density)
-    if FireConsts.opt_rmstatfire:
+    if setting.remove_static_small_fires:
         allfires.invalidate_statfires()
 
     # 8. log changes
@@ -512,6 +511,8 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         whether to read from saved allfires and allpixels or start from fresh
     read_location: 
         where to read preprocessed files from
+    read_saved_location:
+        where to read saved allfires and allpixels from
     Returns
     -------
     allfires : FireObj allfires object
@@ -525,9 +526,6 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         save_allfires_gdf
     )
     from fireatlas.FireObj import Allfires
-
-    if read_location is None:
-        read_location = FireConsts.READ_LOCATION
 
     if read_saved_location is None:
         read_saved_location = read_location

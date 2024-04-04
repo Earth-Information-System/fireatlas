@@ -19,7 +19,6 @@ from fireatlas.postprocess import (
     save_large_fires_layers,
     save_large_fires_nplist,
 )
-from fireatlas.FireConsts import get_dirprpdata, get_diroutdata
 from fireatlas.preprocess import preprocess_region_t, preprocess_region
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3
@@ -67,14 +66,12 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
     save_large_fires_nplist(allpixels, region, large_fires, tst)
     save_large_fires_layers(allfires.gdf, region, large_fires, tst)
 
-    for filepath in glob.glob(
-            os.path.join(get_diroutdata(location="local"), region[0], str(tst[0]), "Snapshot", "*",
-                         "*.fgb")):
+    data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
+
+    for filepath in glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")):
         copy_from_local_to_s3(filepath)
 
-    for filepath in glob.glob(
-            os.path.join(get_diroutdata(location="local"), region[0], str(tst[0]), "Largefire", "*",
-                         "*.fgb")):
+    for filepath in glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb")):
         copy_from_local_to_s3(filepath)
 
 
@@ -82,8 +79,8 @@ def job_preprocess_region_t(
         eventual_result1: Delayed,
         eventual_result2: Delayed, region: Region, t: TimeStep):
     logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
-    output_filepath = preprocess_region_t(t, region=region)
-    copy_from_local_to_s3(output_filepath)
+    filepath = preprocess_region_t(t, region=region)
+    copy_from_local_to_s3(filepath)
 
 
 def job_preprocess_region(region: Region):
@@ -101,7 +98,7 @@ def job_data_update_checker():
     except Exception as exc:
         logger.exception(exc)
     finally:
-        for filepath in glob.glob(os.path.join(get_dirprpdata(location="local"), "*", "*.txt")):
+        for filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt"):
             copy_from_local_to_s3(filepath)
 
 

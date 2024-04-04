@@ -15,7 +15,7 @@ from shapely.geometry import MultiLineString, MultiPoint
 from fireatlas.utils import timed
 from fireatlas.FireTime import t2dt, dt2t, t_nb, t_dif
 from fireatlas.postprocess import read_allfires_gdf, read_allpixels
-from fireatlas.FireFuncs import set_ftype, set_ftypename
+from fireatlas.FireFuncs import set_ftype
 from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireIO import save_newyearfidmapping
 from fireatlas import FireVector
@@ -76,7 +76,7 @@ class Allfires:
                 "fireID",
                 "t",
             ],
-            crs=f"epsg:{FireConsts.epsg}",
+            crs=f"epsg:{settings.EPSG_CODE}",
             geometry="hull",
         )
         self.gdf = gdf.set_index(["fireID", "t"])
@@ -84,10 +84,6 @@ class Allfires:
     @classmethod
     @timed
     def rehydrate(cls, tst, ted, region, allpixels=None, include_dead=False, read_location=None):
-
-        if read_location is None:
-            read_location = FireConsts.READ_LOCATION
-
         allfires_gdf = read_allfires_gdf(tst, ted, region, location=read_location)
         if allpixels is None:
             allpixels = read_allpixels(tst, ted, region, location=read_location)
@@ -407,7 +403,7 @@ class Fire:
         # always set valid at initialization
         self.invalid = False
 
-        if FireConsts.FTYP_opt == 1:
+        if settings.FTYP_OPT == "CA":
             # TODO: get and record fm1000 value at ignition
             # lon, lat = self.ignition_center_geo
             # self.stFM1000 = FireIO.get_stFM1000(FireTime.t2d(t), lon=lon, lat=lat)
@@ -600,7 +596,7 @@ class Fire:
     @property
     def ftypename(self):
         """Fire type name"""
-        return set_ftypename(self)
+        return FireConsts.FTYP[settings.FTYP_OPT][self.ftype]
 
     @property
     def fperim(self):

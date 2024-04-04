@@ -200,15 +200,15 @@ def ChileSampleRun():
 
 
 def BorealNA():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireEnums
-    # NOTE: this set up has to happen before `import FireConsts`
+    # NOTE: this set up has to happen before `from fireatlas import settings`
     # so set os environ variables that will override
-    # `FireConsts.settings` for all Python interpreters
+    # `FireConsts.Settings` for all Python interpreters
     # (meaning even those spawned during fork in multiple processes)
-    os.environ['EPSG_CODE'] = FireEnums.EPSG.HI_LAT
-    os.environ['FTYP_OPT'] = 2
-    os.environ['CONT_OPT'] = 2
-    from fireatlas import FireConsts
+    os.environ['EPSG_CODE'] = 3571
+    os.environ['FTYP_OPT'] = "global"
+    os.environ['CONT_OPT'] = "global"
+    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     ctime = datetime.now()
     region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
@@ -247,7 +247,7 @@ def BorealNA():
     
 
 def ItalyGreeceNRT():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     ctime = datetime.now()
     region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
@@ -287,7 +287,7 @@ def ItalyGreeceNRT():
 
 
 def QuebecSampleRun():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
     ctime = datetime.now()
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
@@ -429,7 +429,7 @@ def CONUSrunNRT():
 
 def WesternUSrunNRT():
     
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
     if settings.FIRE_NRT != True:
         print('Please set FIRE_NRT to True')
         return
@@ -461,7 +461,7 @@ def WesternUSrunNRT():
     
     
 def SouthEastUSrunNRT():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     if settings.FIRE_NRT != True:
         print('Please set FIRE_NRT to True')
@@ -495,7 +495,7 @@ def SouthEastUSrunNRT():
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 def SouthEastUS_LF_ONLY():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
     if settings.FIRE_NRT != True:
         print('Please set FIRE_NRT to True')
         return
@@ -530,7 +530,7 @@ def SouthEastUS_LF_ONLY():
 
     
 def NorthEastUSrunNRT():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     if settings.FIRE_NRT != True:
         print('Please set FIRE_NRT to True')

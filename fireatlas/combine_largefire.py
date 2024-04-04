@@ -9,7 +9,7 @@ from dask.distributed import Client
 
 from fireatlas.FireLog import logger
 from fireatlas import FireIO
-from fireatlas import FireConsts
+from fireatlas import settings
 
 LAYERS = ["newfirepix", "fireline", "perimeter"]
 MAX_WORKERS = 14
@@ -168,7 +168,7 @@ def main(
 
     if not in_parallel:
         for year in years_range:
-            s3_maap_input_path = f"{FireConsts.diroutdata}{folder_name}/{year}/Largefire/"
+            s3_maap_input_path = f"{settings.diroutdata}{folder_name}/{year}/Largefire/"
             write_lf_layers_by_year(
                 year, 
                 s3_maap_input_path, 
@@ -176,7 +176,7 @@ def main(
             )
         merge_lf_years(
             LOCAL_DIR_OUTPUT_PREFIX_PATH,
-            f"{FireConsts.diroutdata}{LOCAL_DIR_OUTPUT_PREFIX_PATH.format(folder_name)}/LargeFire_Outputs/merged",
+            f"{settings.diroutdata}{LOCAL_DIR_OUTPUT_PREFIX_PATH.format(folder_name)}/LargeFire_Outputs/merged",
             folder_name
         )
         return
@@ -195,7 +195,7 @@ def main(
         dask_client.submit(
             write_lf_layers_by_year,
             year,
-            f"{FireConsts.diroutdata}{folder_name}/{year}/Largefire/",
+            f"{settings.diroutdata}{folder_name}/{year}/Largefire/",
             LOCAL_DIR_OUTPUT_PREFIX_PATH,
         )
         for year in years_range
@@ -210,7 +210,7 @@ def main(
     dask_client.restart()
     merge_lf_years(
         LOCAL_DIR_OUTPUT_PREFIX_PATH,
-        f"{FireConsts.diroutdata}{folder_name}/LargeFire_Outputs/merged",
+        f"{settings.diroutdata}{folder_name}/LargeFire_Outputs/merged",
         folder_name
     )
 

@@ -11,21 +11,16 @@ import rasterio
 import rasterio.warp
 
 from fireatlas.FireLog import logger
-from fireatlas.FireTypes import Region, TimeStep
+from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
-from fireatlas.FireMain import maybe_remove_static_sources
-from fireatlas import FireConsts
 from fireatlas.FireClustering import do_clustering
 from fireatlas.FireTime import t_generator, t2dt
-from fireatlas import FireIO
-from fireatlas import settings
+from fireatlas import FireIO, FireMain, settings
 
 
-def preprocessed_region_filename(
-    region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION
-):
+def preprocessed_region_filename(region: Region, location: Location | None = None):
     return os.path.join(
-        FireConsts.get_dirprpdata(location=location), region[0], f"{region[0]}.json"
+        settings.get_path(location), settings.PREPROCESSED_DIR, region[0], f"{region[0]}.json"
     )
 
 
@@ -41,7 +36,7 @@ def preprocess_region(region: Region, force=False):
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
-    region = maybe_remove_static_sources(region, FireConsts.dirextdata)
+    region = FireMain.maybe_remove_static_sources(region)
 
     with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
@@ -50,7 +45,7 @@ def preprocess_region(region: Region, force=False):
 
 
 @timed
-def read_region(region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
+def read_region(region: Region, location: Location | None = None):
     filepath = preprocessed_region_filename(region, location=location)
 
     # use fsspec here b/c it could be s3 or local
@@ -61,9 +56,9 @@ def read_region(region: Region, location: Literal["s3", "local"] = FireConsts.RE
 
 def preprocessed_landcover_filename(
     filename="nlcd_export_510m_simplified",
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
+    location: Location | None = None,
 ):
-    return os.path.join(FireConsts.get_dirprpdata(location=location), f"{filename}_latlon.tif")
+    return os.path.join(settings.get_path(location), settings.PREPROCESSED_DIR, f"{filename}_latlon.tif")
 
 
 @timed
@@ -75,7 +70,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
 
-    fnmLCT = os.path.join(FireConsts.dirextdata, "NLCD", f"{filename}.tif")
+    fnmLCT = os.path.join(settings.dirextdata, "NLCD", f"{filename}.tif")
 
     # make nested path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
@@ -107,17 +102,17 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
 
 def preprocessed_filename(
     t: TimeStep,
-    *,
     sat: Literal["NOAA20", "SNPP"] | None = None,
     region: Optional[Region] = None,
     suffix="",
-    location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
+    location: Location | None = None
 ):
     if sat is None:
         sat = settings.FIRE_SOURCE
 
     return os.path.join(
-        FireConsts.get_dirprpdata(location=location),
+        settings.get_path(location),
+        settings.PREPROCESSED_DIR,
         *([] if region is None else [region[0]]),
         sat,
         f"{t[0]}{t[1]:02}{t[2]:02}_{t[3]}{suffix}.txt",
@@ -177,7 +172,7 @@ def check_preprocessed_file(
     ted: TimeStep,
     sat: Literal["SNPP", "NOAA20"],
     freq: Literal["monthly", "NRT"] = "monthly",
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
+    location: Location | None = None
 ):
     """Before running preprocess_monthly_file, check if the file already exists
     for that satellite using a list of time steps
@@ -192,18 +187,19 @@ def check_preprocessed_file(
         which satellite to use
     freq: Literal["monthly", "NRT"]
         which files to use - monthly or daily (NRT)
-    location: Literal["s3", "local"]
+    location: optional Literal["s3", "local"] 
         where to check for files
 
     Returns
     -------
     list of unique combos of years and months (and days if NRT) that need to be processed
     """
+    fs = fsspec.filesystem(location)
     # check that there's viirs data for these dates and if not, keep track
     needs_processing = []
     for t in t_generator(tst, ted):
-        filepath = preprocessed_filename(t, sat, location=location)
-        if not FireIO.os_path_exists(filepath):
+        filepath = preprocessed_filename(t, sat=sat, location=location)
+        if not fs.exists(filepath):
             needs_processing.append(t)
 
     if freq == "monthly":
@@ -275,7 +271,7 @@ def preprocess_input_file(filepath: str):
             time_filtered_df = data.loc[df["ampm"] == ampm]
 
             output_filepath = preprocessed_filename(
-                (day.year, day.month, day.day, ampm), sat, location="local"
+                (day.year, day.month, day.day, ampm), sat=sat, location="local"
             )
 
             # make nested path if necessary
@@ -290,12 +286,12 @@ def preprocess_input_file(filepath: str):
 
 
 def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
-    filepath = monthly_filepath(t, sat)
+    filepath = monthly_filepath(t, sat=sat)
     return preprocess_input_file(filepath)
 
 
 def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
-    filepath = NRT_filepath(t, sat)
+    filepath = NRT_filepath(t, sat=sat)
     return preprocess_input_file(filepath)
 
 
@@ -303,7 +299,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def read_preprocessed_input(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP"],
-    location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
+    location: Location | None = None,
 ):
     filename = preprocessed_filename(t, sat=sat, location=location)
     df = pd.read_csv(filename)
@@ -314,7 +310,7 @@ def read_preprocessed_input(
 def read_preprocessed(
     t: TimeStep,
     region: Region,
-    location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
+    location: Location | None = None,
 ):
     filename = preprocessed_filename(t, region=region, location=location)
     df = pd.read_csv(filename).set_index("uuid").assign(t=t2dt(t))
@@ -326,8 +322,8 @@ def preprocess_region_t(
     t: TimeStep,
     region: Region,
     force: bool = False,
-    read_location: Literal["local", "s3"] = FireConsts.READ_LOCATION,
-    read_region_location: Literal["local", "s3"] = None,
+    read_location: Location | None = None,
+    read_region_location: Location | None = None,
 ):
 
     # if regional output already exists, exit early so we don't reprocess

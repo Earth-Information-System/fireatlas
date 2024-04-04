@@ -1,7 +1,7 @@
 import os
-import glob
 from typing import Literal
 
+import fsspec
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -12,18 +12,18 @@ import warnings
 warnings.filterwarnings("ignore", "GeoSeries.notna", UserWarning)
 
 from fireatlas.utils import timed
-from fireatlas.FireTypes import Region, TimeStep
+from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.FireTime import t2dt, t_generator
 from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireGpkg import getdd as snapshot_getdd
 from fireatlas import settings
 from fireatlas import FireConsts
 
-def all_dir(tst: TimeStep, region: Region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION):
-    return os.path.join(FireConsts.get_diroutdata(location=location), region[0], str(tst[0]))
+def all_dir(tst: TimeStep, region: Region, location: Location | None = None):
+    return os.path.join(settings.get_path(location), settings.OUTPUT_DIR, region[0], str(tst[0]))
 
 
-def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, location: Literal["local", "s3"]):
+def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, location: Location | None = None):
     """Look at the files in a given location and figure out the t of the last
     allfires run. 
     
@@ -32,11 +32,12 @@ def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, loc
     t: TimeStep
        latest t within range for which there are allfires and allpixels files
     """
+    fs = fsspec.filesystem(location or settings.READ_LOCATION)
     all_filenames = {
         os.path.basename(f).split(".")[0]
         for f in [
-            *glob.glob(os.path.join(all_dir(tst, region, location=location), "allpixels*")),
-            *glob.glob(os.path.join(all_dir(tst, region, location=location), "allfires*")),
+            *fs.glob(os.path.join(all_dir(tst, region, location=location), "allpixels*")),
+            *fs.glob(os.path.join(all_dir(tst, region, location=location), "allfires*")),
         ]
     }
 
@@ -50,7 +51,7 @@ def allpixels_filepath(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION
+    location: Location | None = None,
 ):
     filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
     return os.path.join(all_dir(tst, region, location), filename)
@@ -71,7 +72,7 @@ def read_allpixels(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
+    location: Location | None = None,
 ):
     filepath = allpixels_filepath(tst, ted, region, location=location)
 
@@ -82,7 +83,7 @@ def allfires_filepath(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
+    location: Location | None = None,
 ):
     filename = f"allfires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.parq"
     return os.path.join(all_dir(tst, region, location), filename)
@@ -104,7 +105,7 @@ def read_allfires_gdf(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
+    location: Location | None = None,
 ):
     filepath = allfires_filepath(tst, ted, region, location=location)
 
@@ -115,12 +116,10 @@ def snapshot_folder(
     region: Region,
     tst: TimeStep,
     ted: TimeStep,
-    location: Literal["s3", "local"] = FireConsts.READ_LOCATION,
+    location: Location | None = None,
 ):
     return os.path.join(
-        FireConsts.get_diroutdata(location=location),
-        region[0],
-        str(tst[0]),
+        all_dir(tst, region, location=location)
         "Snapshot",
         f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}",
     )
@@ -209,11 +208,11 @@ def find_largefires(allfires_gdf):
     return last_large.fireID.values
 
 
-def largefire_folder(
-    region: Region, fid, tst: TimeStep, location: Literal["s3", "local"] = FireConsts.READ_LOCATION
-):
+def largefire_folder(region: Region, fid, tst: TimeStep, location: Location | None = None):
     return os.path.join(
-        FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), "Largefire", str(fid)
+        all_dir(tst, region, location=location),
+        "Largefire",
+        str(fid)
     )
 
 
@@ -306,12 +305,10 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
         save_fire_layers(data, region, fid, tst)
 
 
-def individual_fires_path(
-    tst, ted, region, location: Literal["s3", "local"] = FireConsts.READ_LOCATION
-):
-    filename = f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"
+def individual_fires_path(tst, ted, region, location: Location | None = None):
     return os.path.join(
-        FireConsts.get_diroutdata(location=location), region[0], str(tst[0]), filename
+        all_dir(tst, region, location=location),
+        f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"
     )
 
 

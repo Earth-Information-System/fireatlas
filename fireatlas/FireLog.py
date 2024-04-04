@@ -4,7 +4,7 @@ import os
 _logger_configured = False
 
 def get_logger(name):
-    from fireatlas.FireConsts import dirdata
+    from fireatlas.FireConsts import root_dir
 
     global _logger_configured
 
@@ -18,7 +18,7 @@ def get_logger(name):
         ch.setLevel(logging.INFO)
 
         # create a file handler as well
-        fh = logging.FileHandler(dirdata + "running.log")
+        fh = logging.FileHandler(os.path.join(root_dir + "running.log"))
         fh.setLevel(logging.INFO)
 
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

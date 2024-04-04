@@ -22,14 +22,10 @@ import xarray as xr
 import warnings
 from shapely.geometry import Point, Polygon
 from datetime import datetime, date
-from glob import glob
 
-from fireatlas import FireEnums
 from fireatlas.FireLog import logger
 from fireatlas.FireTypes import TimeStep
-from fireatlas import FireConsts
-from fireatlas import FireTime
-from fireatlas import settings
+from fireatlas import FireTime, settings
 
 
 def preprocess_polygon(
@@ -72,7 +68,7 @@ def preprocess_polygon(
         raise TypeError("Input should be a GeoDataFrame")
 
     # buffer polygon by VIIRS res. need to convert to crs in meters
-    polygon_m = polygon_gdf.geometry.to_crs(FireEnums.EPSG.CONUS_EQ_AREA.value)
+    polygon_m = polygon_gdf.geometry.to_crs(9311)
     polygon_m = polygon_m.buffer(settings.VIIRSbuf)
 
     # reset geometry and convert to lat/lon
@@ -123,15 +119,6 @@ def gpd_read_file(filename, parquet=False, **kwargs):
             print(f"Attempt {itry}/{maxtries} failed.")
             if not itry < maxtries:
                 raise e
-
-
-def os_path_exists(filename):
-    """Alternative to os.path.exists that also works with S3 paths."""
-    if filename.startswith("s3://"):
-        s3 = s3fs.S3FileSystem(anon=False)
-        return s3.exists(filename)
-    else:
-        return os.path.exists(filename)
 
 
 def viirs_pixel_size(sample, band="i", rtSCAN_ANGLE=False):
@@ -218,7 +205,7 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
         the points of non vegetation fire location
     """
     fnm = (
-        FireConsts.dirextdata
+        settings.dirextdata
         + "CA/Calnvf/FCs_nv_"
         + str(y0)
         + "-"
@@ -246,15 +233,15 @@ def VNP14IMGML_filepath(t: TimeStep, ver="C1.05"):
     year, month = t[0], t[1]
 
     file_dir = os.path.join(
-        FireConsts.dirextdata,
+        settings.dirextdata,
         "VIIRS",
         "VNP14IMGML",
     )
 
     filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.{ver}.txt.gz")
-    if not os_path_exists(filepath):
+    if not settings.fs.exists(filepath):
         filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.{ver}.txt")
-    if not os_path_exists(filepath):
+    if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
 
@@ -318,12 +305,12 @@ def VNP14IMGTDL_filepath(t: TimeStep):
     d = FireTime.t2dt(t)
 
     filepath = os.path.join(
-        FireConsts.dirextdata,
+        settings.dirextdata,
         "VIIRS",
         "VNP14IMGTDL",
         f"SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{d.strftime('%Y%j')}.txt",
     )
-    if not os_path_exists(filepath):
+    if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
 
@@ -389,13 +376,13 @@ def VJ114IMGML_filepath(t: TimeStep):
         Path to input data or None if file does not exist
     """
     filepath = os.path.join(
-        FireConsts.dirextdata,
+        settings.dirextdata,
         "VIIRS",
         "VJ114IMGML",
         str(t[0]),
         f"VJ114IMGML_{t[0]}{t[1]:02}.txt",
     )
-    if not os_path_exists(filepath):
+    if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
 
@@ -476,12 +463,12 @@ def VJ114IMGTDL_filepath(t: TimeStep):
     d = FireTime.t2dt(t)
 
     filepath = os.path.join(
-        FireConsts.dirextdata,
+        settings.dirextdata,
         "VIIRS",
         "VJ114IMGTDL",
         f"J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_{d.strftime('%Y%j')}.txt",
     )
-    if not os_path_exists(filepath):
+    if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
 
@@ -555,8 +542,8 @@ def AFP_regfilter(df, shp_Reg):
     # Do detailed filtering (within shp_Reg)
     gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
 
-    # drop geometry column
-    df_filtered = AFP_toprj(gdf_filtered, epsg=FireConsts.epsg)
+    # drop geometry column and project to epsg
+    df_filtered = AFP_toprj(gdf_filtered)
 
     return df_filtered
 
@@ -609,14 +596,14 @@ def AFP_setampm(df):
     return df_withampm
 
 
-def AFP_toprj(gdf, epsg=32610):
+def AFP_toprj(gdf):
     """Transforms lat/lon coordinates to projected coordinate system for computations in m
     for global studies probably proj:cea would be a good choice
     for the boreals we use North Pole LAEA (epsg:3571)
     for CA may use WGS 84 / UTM zone 10N (epsg: 32610)
     for US may use US National Atlas Equal Area (epsg: 9311)"""
 
-    gdf = gdf.to_crs(epsg=epsg)
+    gdf = gdf.to_crs(epsg=settings.EPSG_CODE)
     gdf["x"] = gdf.geometry.x
     gdf["y"] = gdf.geometry.y
     df = pd.DataFrame(gdf.drop(columns="geometry"))
@@ -642,7 +629,7 @@ def read_mcd64_pixels(year, ext=[]):
     df: pd.dataframe, dataframe containing lat, lon and day of burning
         from modis burned area"""
 
-    mcd64dir = os.path.join(FireConsts.dirextdata, "MCD64A1")
+    mcd64dir = os.path.join(settings.dirextdata, "MCD64A1")
     # filelist_viirs = glob.glob(dirpjdata+str(year)+'/Snapshot/*_NFP.txt')
     # df = pd.concat([pd.read_csv(i, dtype = {'lat':np.float64, 'lon':np.float64},
     #                             usecols = ['lat', 'lon'])
@@ -686,9 +673,8 @@ def load_mcd64(year, xoff=0, yoff=0, xsize=None, ysize=None):
 
     # TODO: remove dead codepath
     import gdal
-    from fireatlas.FireConsts import dirextdata
 
-    mcd64dir = os.path.join(dirextdata, "MCD64A1")
+    mcd64dir = os.path.join(settings.dirextdata, "MCD64A1")
     fnm = os.path.join(mcd64dir, "mcd64_" + str(year) + ".tif")
     ds = gdal.Open(fnm)
     # arr = ds.ReadAsArray(xsize=xsize, ysize=ysize)
@@ -706,7 +692,7 @@ def get_any_shp(filename):
         the shapefile names saved in the directory dirextdata/shapefiles/
     """
     # find the california shapefile
-    dirshape = os.path.join(FireConsts.dirextdata, "shapefiles")
+    dirshape = os.path.join(settings.dirextdata, "shapefiles")
     statefnm = os.path.join(dirshape, filename)
 
     # read the geometry
@@ -721,7 +707,7 @@ def get_Cal_shp():
         will be deleted or modified later !!!
     """
     # find the california shapefile
-    statefnm = os.path.join(FireConsts.dirextdata, "CA", "Calshape", "California.shp")
+    statefnm = os.path.join(settings.dirextdata, "CA", "Calshape", "California.shp")
 
     # read the geometry
     shp_Cal = gpd_read_file(statefnm).iloc[0].geometry
@@ -737,7 +723,7 @@ def get_Cty_shp(ctr):
     ctr : str
         country name
     """
-    ctyfnm = os.path.join(FireConsts.dirextdata, "World", "country.shp")
+    ctyfnm = os.path.join(settings.dirextdata, "World", "country.shp")
 
     gdf_cty = gpd_read_file(ctyfnm)
 
@@ -806,7 +792,7 @@ def get_LCT(locs):
         land cover types for all input active fires
     """
     # read NLCD 500m data
-    fnmLCT = os.path.join(FireConsts.dirextdata, "CA", "nlcd_510m.tif")
+    fnmLCT = os.path.join(settings.dirextdata, "CA", "nlcd_510m.tif")
     dataset = rasterio.open(fnmLCT)
     transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
     locs_crs_x, locs_crs_y = transformer.transform(
@@ -860,7 +846,7 @@ def get_LCT_Global(locs):
     vLCT : list of ints
         land cover types for all input active fires
     """
-    fnmLCT = os.path.join(FireConsts.dirextdata, "GlobalLC", "global_lc_mosaic.tif")
+    fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic.tif")
     dataset = rasterio.open(fnmLCT)
 
     # previous LC data sources were in a different crs and needed a transform
@@ -884,7 +870,7 @@ def get_LCT_NLCD(locs):
         land cover types for all input active fires
     """
     # read NLCD 500m data
-    fnmLCT = os.path.join(FireConsts.dirextdata, "CA", "nlcd_510m_latlon.tif")
+    fnmLCT = os.path.join(settings.dirextdata, "CA", "nlcd_510m_latlon.tif")
     dataset = rasterio.open(fnmLCT)
     vLCT = dataset.sample(locs, indexes=1)
     vLCT = [lc[0] for lc in vLCT]  # list values
@@ -911,7 +897,7 @@ def get_FM1000(t, lon, lat):
     warnings.simplefilter("ignore")
 
     # read annual fm1000 data
-    dirGridMET = os.path.join(FireConsts.dirextdata, "GridMET") + "/"
+    dirGridMET = os.path.join(settings.dirextdata, "GridMET") + "/"
     fnm = dirGridMET + "fm1000_" + t.strftime("%Y") + ".zarr"
     ds = xr.open_zarr(fnm)
     FM1000_all = ds["dead_fuel_moisture_1000hr"]
@@ -1014,7 +1000,7 @@ def get_fobj_fnm(t, regnm, activeonly=False):
     # fnm = dirpjdata+regnm+'/'+d.strftime('%Y')+'/Serialization/'+d.strftime('%Y%m%d')+t[-1]+'.pkl'
     if activeonly:
         fnm = os.path.join(
-            FireConsts.diroutdata,
+            settings.diroutdata,
             regnm,
             d.strftime("%Y"),
             "Serialization",
@@ -1022,7 +1008,7 @@ def get_fobj_fnm(t, regnm, activeonly=False):
         )
     else:
         fnm = os.path.join(
-            FireConsts.diroutdata,
+            settings.diroutdata,
             regnm,
             d.strftime("%Y"),
             "Serialization",
@@ -1041,7 +1027,7 @@ def check_fobj(t, regnm, activeonly=False):
     """
 
     fnm = get_fobj_fnm(t, regnm, activeonly=activeonly)
-    return os_path_exists(fnm)
+    return settings.fs.exists(fnm)
 
 
 def save_fobj(allfires, t, regnm, activeonly=False):
@@ -1162,7 +1148,7 @@ def get_gdfobj_fnm(t, regnm, op=""):
     d = date(*t[:-1])
     if op == "":
         fnm = os.path.join(
-            FireConsts.diroutdata,
+            settings.diroutdata,
             regnm,
             d.strftime("%Y"),
             "Snapshot",
@@ -1170,7 +1156,7 @@ def get_gdfobj_fnm(t, regnm, op=""):
         )
     else:
         fnm = os.path.join(
-            FireConsts.diroutdata,
+            settings.diroutdata,
             regnm,
             d.strftime("%Y"),
             "Snapshot",
@@ -1193,7 +1179,7 @@ def get_gpkgobj_fnm(t, regnm):
     """
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(FireConsts.diroutdata, regnm, d.strftime("%Y"), "Snapshot")
+    strdir = os.path.join(settings.diroutdata, regnm, d.strftime("%Y"), "Snapshot")
 
     # get the output file name
     fnm = os.path.join(strdir, d.strftime("%Y%m%d") + t[-1])
@@ -1214,7 +1200,7 @@ def get_gpkgsfs_fnm(t, fid, regnm):
     """
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(FireConsts.diroutdata, regnm, d.strftime("%Y"), "Largefire")
+    strdir = os.path.join(settings.diroutdata, regnm, d.strftime("%Y"), "Largefire")
 
     # get the output file name
     fnm = os.path.join(strdir, "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1])
@@ -1236,7 +1222,7 @@ def get_gpkgsfs_dir(yr, regnm):
         gpkg file name
     """
     # determine output dir
-    strdir = os.path.join(FireConsts.diroutdata, regnm, str(yr), "Largefire")
+    strdir = os.path.join(settings.diroutdata, regnm, str(yr), "Largefire")
 
     return strdir
 
@@ -1254,7 +1240,7 @@ def get_NFPlistsfs_fnm(t, fid, regnm):
     """
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(FireConsts.diroutdata, regnm, d.strftime("%Y"), "Largefire")
+    strdir = os.path.join(settings.diroutdata, regnm, d.strftime("%Y"), "Largefire")
 
     # get the output file name
     fnm = os.path.join(
@@ -1277,7 +1263,7 @@ def check_gpkgobj(t, regnm):
     # d = date(*t[:-1])
     fnm = get_gpkgobj_fnm(t, regnm)
 
-    return os_path_exists(fnm)
+    return settings.fs.exists(fnm)
 
 
 def check_gdfobj(t, regnm, op=""):
@@ -1296,7 +1282,7 @@ def check_gdfobj(t, regnm, op=""):
     d = date(*t[:-1])
     fnm = get_gdfobj_fnm(t, regnm)
 
-    return os_path_exists(fnm)
+    return settings.fs.exists(fnm)
 
 
 def save_gdfobj(gdf, t, regnm, param="", fid="", op=""):
@@ -1327,7 +1313,7 @@ def save_gdfobj(gdf, t, regnm, param="", fid="", op=""):
 
         # get file name
         fnm = os.path.join(
-            FireConsts.diroutdata,
+            settings.diroutdata,
             regnm,
             d.strftime("%Y"),
             "Summary",
@@ -1379,17 +1365,17 @@ def save_gpkgobj(
     # save file
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
-        if FireConsts.export_to_veda:
+        if settings.export_to_veda:
             copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb", regnm)
 
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
-        if FireConsts.export_to_veda:
+        if settings.export_to_veda:
             copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb", regnm)
 
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
-        if FireConsts.export_to_veda:
+        if settings.export_to_veda:
             copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb", regnm)
 
     if gdf_uptonow is not None:
@@ -1544,7 +1530,7 @@ def save_newyearfidmapping(fidmapping, year, regnm):
     df = pd.DataFrame(fidmapping, columns=["oldfid", "newfid"])
 
     # determine output file name
-    strdir = os.path.join(FireConsts.diroutdata, regnm, str(year), "Summary")
+    strdir = os.path.join(settings.diroutdata, regnm, str(year), "Summary")
     fnmout = os.path.join(strdir, "CrossyrFidmapping_" + str(year) + ".csv")
     check_filefolder(fnmout)
 
@@ -1584,7 +1570,7 @@ def load_FP_txt(t, regnm):
     fnm = get_gdfobj_fnm(t, regnm, op="NFP")
     fnm = fnm[:-4] + "txt"  # change ending to txt
 
-    if os_path_exists(fnm):
+    if settings.fs.exists(fnm):
         df = pd.read_csv(fnm, parse_dates=["datetime"], index_col=0)
         return df
 
@@ -1607,7 +1593,7 @@ def load_lake_geoms(t, fid, regnm):
 
     # get file name
     fnm_lakes = os.path.join(
-        FireConsts.diroutdata,
+        settings.diroutdata,
         regnm,
         d.strftime("%Y"),
         "Summary",
@@ -1643,7 +1629,7 @@ def get_gdfobj_sf_fnm(t, fid, regnm, op=""):
 
     if op == "":
         fnm = os.path.join(
-            FireConsts.diroutdata,
+            settings.diroutdata,
             regnm,
             d.strftime("%Y"),
             "Largefire",
@@ -1651,7 +1637,7 @@ def get_gdfobj_sf_fnm(t, fid, regnm, op=""):
         )
     else:
         fnm = os.path.join(
-            FireConsts.diroutdata,
+            settings.diroutdata,
             regnm,
             d.strftime("%Y"),
             "Largefire",
@@ -1682,9 +1668,9 @@ def get_gdfobj_sf_fnms_year(year, fid, regnm, op=""):
         geojson file names
     """
     if op == "":
-        fnms = glob(
+        fnms = settings.fs.glob(
             os.path.join(
-                FireConsts.diroutdata,
+                settings.diroutdata,
                 regnm,
                 str(year),
                 "Largefire",
@@ -1692,9 +1678,9 @@ def get_gdfobj_sf_fnms_year(year, fid, regnm, op=""):
             )
         )
     else:
-        fnms = glob(
+        fnms = settings.fs.glob(
             os.path.join(
-                FireConsts.diroutdata,
+                settings.diroutdata,
                 regnm,
                 str(year),
                 "Largefire",
@@ -1767,7 +1753,7 @@ def get_summary_fnm(t, regnm):
     """
     d = date(*t[:-1])
     fnm = os.path.join(
-        FireConsts.diroutdata,
+        settings.diroutdata,
         regnm,
         d.strftime("%Y"),
         "Summary",
@@ -1793,9 +1779,9 @@ def get_summary_fnm_lt(t, regnm):
         the lastest time step with summary file
     """
     # if there's no summary file for this year, return the first time step of the year
-    fnms = glob(
+    fnms = settings.fs.glob(
         os.path.join(
-            FireConsts.diroutdata, regnm, str(t[0]), "Summary", "fsummary_*.nc"
+            settings.diroutdata, regnm, str(t[0]), "Summary", "fsummary_*.nc"
         )
     )
     if len(fnms) == 0:
@@ -1805,7 +1791,7 @@ def get_summary_fnm_lt(t, regnm):
     endloop = False
     pt = FireTime.t_nb(t, nb="previous")
     while endloop == False:
-        if os_path_exists(get_summary_fnm(pt, regnm)):
+        if settings.fs.exists(get_summary_fnm(pt, regnm)):
             return pt
         else:
             pt = FireTime.t_nb(pt, nb="previous")
@@ -1825,7 +1811,7 @@ def check_summary(t, regnm):
     fnm = get_summary_fnm(t, regnm)
 
     # return if it's present
-    return os_path_exists(fnm)
+    return settings.fs.exists(fnm)
 
 
 def save_summary(ds, t, regnm):
@@ -1883,7 +1869,7 @@ def save_summarycsv(df, year, regnm, op="heritage"):
         option, 'heritage'|'large'
     """
     fnm = os.path.join(
-        FireConsts.diroutdata,
+        settings.diroutdata,
         regnm,
         str(year),
         "Summary",
@@ -1910,7 +1896,7 @@ def read_summarycsv(year, regnm, op="heritage"):
         the data
     """
     fnm = os.path.join(
-        FireConsts.diroutdata,
+        settings.diroutdata,
         regnm,
         str(year),
         "Summary",
@@ -1924,8 +1910,8 @@ def get_lts_VNP14IMGTDL(year=None):
     if year == None:
         year = date.today().year
 
-    dirFC = os.path.join(FireConsts.dirextdata, "VNP14IMGTDL") + "/"
-    fnms = glob(
+    dirFC = os.path.join(settings.dirextdata, "VNP14IMGTDL") + "/"
+    fnms = settings.fs.glob(
         os.path.join(
             dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + str(year) + "*.txt"
         )
@@ -1941,17 +1927,11 @@ def get_lts_serialization(regnm, year=None):
     if year == None:
         year = date.today().year
 
-    if FireConsts.diroutdata.startswith("s3://"):
-        # Can't use glob for S3. Use s3.ls instead.
-        s3 = s3fs.S3FileSystem(anon=False)
-        s3path = os.path.join(FireConsts.diroutdata, regnm, str(year), "Serialization")
-        fnms = [f for f in s3.ls(s3path) if f.endswith(".pkl")]
-    else:
-        fnms = glob(
-            os.path.join(
-                FireConsts.diroutdata, regnm, str(year), "Serialization", "*.pkl"
-            )
+    fnms = settings.fs.glob(
+        os.path.join(
+            settings.diroutdata, regnm, str(year), "Serialization", "*.pkl"
         )
+    )
 
     if len(fnms) > 0:
         fnms.sort()
@@ -2134,15 +2114,14 @@ def copy_from_local_to_s3(filepath: str, **tags):
     """
     s3 = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
-    dst = filepath.replace(FireConsts.dirdata_local_path, f"s3://{FireConsts.dirdata_s3_bucket}/{FireConsts.dirdata_s3_path}")
+    dst = filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
     logger.info(f"uploading file {filepath} to {dst}")
 
     s3.put_file(filepath, dst)
 
     default_tags = {
         "processedBy": os.environ.get("CHE_WORKSPACE_NAMESPACE", None) or os.environ.get("JUPYTERHUB_USER", None),
-        "epsg": FireConsts.epsg,
-        "remove_static_sources_bool": FireConsts.remove_static_sources_bool,
+        **settings.model_dump_json(),
     }
     tags = {str(k): str(v) for k, v in {**default_tags, **tags}.items() if v is not None}
 

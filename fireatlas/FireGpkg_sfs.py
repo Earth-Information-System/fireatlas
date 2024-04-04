@@ -23,15 +23,12 @@ import os
 import warnings
 import multiprocessing
 import geopandas as gpd
-from glob import glob
 import pandas as pd
 import time
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-from fireatlas import FireIO
-from fireatlas import FireTime
-from fireatlas import FireConsts
+from fireatlas import FireIO, FireTime, settings
 from fireatlas.FireLog import logger
 
 
@@ -287,7 +284,7 @@ def make_sf_nfplist(allfires, t, regnm, fids):
                 df.columns = sfkeys
                 gdf_1f = gpd.GeoDataFrame(
                     df,
-                    crs="epsg:" + str(FireConsts.epsg),
+                    crs="epsg:" + str(settings.EPSG_CODE),
                     geometry=gpd.points_from_xy(df.x, df.y),
                 )
 
@@ -560,7 +557,7 @@ def save_sfts_trng(
 
     queue = multiprocessing.Queue()
     workers = []
-    for i in range(FireConsts.number_of_multi_proc_workers):
+    for i in range(settings.number_of_multi_proc_workers):
         p = multiprocessing.Process(target=worker_save_sfts_1f, args=(queue,))
         p.start()
         workers.append(p)
@@ -585,7 +582,7 @@ def save_sfts_trng(
         t = FireTime.t_nb(t, nb="next")
 
     # add poison pill to stop work
-    for i in range(FireConsts.number_of_multi_proc_workers):
+    for i in range(settings.number_of_multi_proc_workers):
         queue.put(None)
 
     # wait all writer workers
@@ -615,7 +612,7 @@ def combine_sfts(regnm,yr,addFRAP=False):
 
     # get a list of all fids
     fids = []
-    for f in glob(strdir+'/*.gpkg'):
+    for f in settings.fs.glob(strdir+'/*.gpkg'):
         fid = int(os.path.basename(f).split('.')[0].split('_')[0][1:])
         fids.append(fid)
 
@@ -624,7 +621,7 @@ def combine_sfts(regnm,yr,addFRAP=False):
     for fid in set(fids):
         print(fid,end=',')
         # for each fire, find the last gpkg file
-        fnmlast = sorted(glob(strdir+'/F'+str(fid)+'_*.gpkg'))[-1]
+        fnmlast = sorted(settings.fs.glob(strdir+'/F'+str(fid)+'_*.gpkg'))[-1]
 
         # read the data (four layers)
         gdf_perim = FireIO.gpd_read_file(fnmlast,layer='perimeter').to_crs(epsg=4326)
@@ -709,7 +706,7 @@ def convert_sfts(regnm,yr,fids):
     for fid in set(fids):
         print(fid,end=',')
         # for each fire, find the last gpkg file
-        fnmlast = sorted(glob(strdir+'/F'+str(fid)+'_*.gpkg'))[-1]
+        fnmlast = sorted(settings.fs.glob(strdir+'/F'+str(fid)+'_*.gpkg'))[-1]
 
         # read the data (four layers)
         gdf_perim = FireIO.gpd_read_file(fnmlast,layer='perimeter').to_crs(epsg=4326)

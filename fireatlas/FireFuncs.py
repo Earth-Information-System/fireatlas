@@ -7,14 +7,12 @@ def get_CONNECTIVITY_FIRE(fire):
 
     Constants
     ---------
-    CONT_opt : int
-        option number of CONNECTIVITY_FIRE_KM calculation
-    CONT_preset : float
-        the preset CONNECTIVITY_FIRE_KM value for option 0
-    CONT_CA : dict
-        the preset CONNECTIVITY_FIRE_KM lookup table for option 1
-    FTYP_Glb : dict
-        the preset CONNECTIVITY_FIRE_KM lookup table for option 2
+    CONT_OPT : str
+        continuity threshold option
+    CONT : float
+        the lookup table for CONNECTIVITY_FIRE_KM values
+    FTYP : dict
+        the lookup table for fire type names
 
     Parameters
     ----------
@@ -26,24 +24,22 @@ def get_CONNECTIVITY_FIRE(fire):
     v : float
         the CONNECTIVITY_FIRE_KM (km)
     """
-    from fireatlas import FireConsts
+    from fireatlas import FireConsts, settings
 
-    if FireConsts.CONT_opt == 0:  # use preset values
-        return FireConsts.CONT_preset
-    elif FireConsts.CONT_opt == 1:  # use lookup table from CAFEDS
-        return FireConsts.CONT_CA[fire.ftype]
-    elif FireConsts.CONT_opt == 2:  # use lookup table for global universal run
-        ftype = FireConsts.FTYP_Glb[fire.ftype]
+    if settings.CONT_OPT in ["preset", "CA"]:
+        return FireConsts.CONT[settings.CONT_OPT][fire.ftype]
+    elif settings.CONT_OPT == "global":
+        ftype_name = FireConsts.FTYP["global"][fire.ftype]
 
         fnpix = min(fire.n_pixels, 25)  # set an upper limit
 
-        if ftype == "Temp Forest":
+        if ftype_name == "Temp Forest":
             v = fnpix * 2 / 25 + 0.8  # 0.8 (0) - 2.8 (25)
-        elif ftype == "Trop Forest":
+        elif ftype_name == "Trop Forest":
             v = fnpix * 0.7 / 25 + 0.7  # 0.7 (0) - 1.4 (25)
-        elif ftype == "Bore Forest":
+        elif ftype_name == "Bore Forest":
             v = fnpix * 3.2 / 25 + 1.0  # 1.0 (0) - 4.2 (25)
-        elif ftype == "Savana":
+        elif ftype_name == "Savana":
             v = fnpix * 2.5 / 25 + 0.9  # 0.9 (0) - 3.4 (25)
         else:
             v = 0.7
@@ -59,18 +55,16 @@ def set_ftype(fire):
         the fire associated with the CONNECTIVITY_FIRE_KM
 
     """
-    from fireatlas import FireConsts, FireIO
+    from fireatlas import FireConsts, FireIO, settings
     from fireatlas.FireLog import logger
 
-    # 0 - use preset ftype (defined as FTYP_preset in FireConsts) for all fires
-    # 1 - use the CA type classification (dtermined using LCTmax)
-    # 2 - use the global type classfication (need more work...)
+    # "preset" - use preset ftype (defined as FTYP in FireConsts) for all fires
+    # "CA" - use the CA type classification (determined using LCTmax)
+    # "global" - use the global type classification (need more work...)
 
-    if FireConsts.FTYP_opt == 0:  # use preset ftype for all fires
-        ftype = FireConsts.FTYP_preset[0]
-    elif (
-        FireConsts.FTYP_opt == 1
-    ):  # use CA type classifications (determined using LCTmax)
+    if settings.FTYP_OPT == "preset":  # use preset ftype for all fires
+        ftype = FireConsts.FTYP_preset
+    elif settings.FTYP_OPT == "CA":  
         # update or read LCTmax; calculated using all newlocs
         if fire.n_newpixels < 1000:
             uselocs = fire.newlocs_geo
@@ -110,7 +104,7 @@ def set_ftype(fire):
         else:
             logger.info(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0
-    elif FireConsts.FTYP_opt == 2:  # global type classification
+    elif settings.FTYP_OPT == "global":
         # update or read LCTmax; calculated using all newlocs
         if fire.n_newpixels < 1000:
             uselocs = fire.newlocs_geo
@@ -157,29 +151,3 @@ def set_ftype(fire):
                 ftype = 3  # boreal
     return ftype
 
-
-def set_ftypename(fire):
-    """return Fire type name
-
-    Parameters
-    ----------
-    fire : fire object
-        the fire associated with the CONNECTIVITY_FIRE_KM
-
-    Returns
-    -------
-    ftname : str
-        the fire type name of the given fire
-
-    """
-    from fireatlas import FireConsts
-
-    if FireConsts.FTYP_opt == 0:  # use preset ftype for all fires
-        ftname = FireConsts.FTYP_preset[0]
-    elif (
-        FireConsts.FTYP_opt == 1
-    ):  # use CA type classifications (determined using LCTmax)
-        ftname = FireConsts.FTYP_CA[fire.ftype]
-    elif FireConsts.FTYP_opt == 2:  # global type classification
-        ftname = FireConsts.FTYP_Glb[fire.ftype]
-    return ftname
