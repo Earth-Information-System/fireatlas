@@ -1,5 +1,4 @@
 import os
-from typing import Literal
 
 import fsspec
 import numpy as np
@@ -17,7 +16,7 @@ from fireatlas.FireTime import t2dt, t_generator
 from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireGpkg import getdd as snapshot_getdd
 from fireatlas import settings
-from fireatlas import FireConsts
+
 
 def all_dir(tst: TimeStep, region: Region, location: Location | None = None):
     return os.path.join(settings.get_path(location), settings.OUTPUT_DIR, region[0], str(tst[0]))
@@ -55,6 +54,7 @@ def allpixels_filepath(
 ):
     filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
     return os.path.join(all_dir(tst, region, location), filename)
+
 
 @timed
 def save_allpixels(allpixels, tst: TimeStep, ted: TimeStep, region: Region):
@@ -119,7 +119,7 @@ def snapshot_folder(
     location: Location | None = None,
 ):
     return os.path.join(
-        all_dir(tst, region, location=location)
+        all_dir(tst, region, location=location),
         "Snapshot",
         f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}",
     )
