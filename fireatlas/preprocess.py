@@ -18,7 +18,7 @@ from fireatlas.FireTime import t_generator, t2dt
 from fireatlas import FireIO, FireMain, settings
 
 
-def preprocessed_region_filename(region: Region, location: Location | None = None):
+def preprocessed_region_filename(region: Region, location: Location = None):
     return os.path.join(
         settings.get_path(location), settings.PREPROCESSED_DIR, region[0], f"{region[0]}.json"
     )
@@ -45,7 +45,7 @@ def preprocess_region(region: Region, force=False):
 
 
 @timed
-def read_region(region: Region, location: Location | None = None):
+def read_region(region: Region, location: Location = None):
     filepath = preprocessed_region_filename(region, location=location)
 
     # use fsspec here b/c it could be s3 or local
@@ -56,7 +56,7 @@ def read_region(region: Region, location: Location | None = None):
 
 def preprocessed_landcover_filename(
     filename="nlcd_export_510m_simplified",
-    location: Location | None = None,
+    location: Location = None,
 ):
     return os.path.join(settings.get_path(location), settings.PREPROCESSED_DIR, f"{filename}_latlon.tif")
 
@@ -102,10 +102,10 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
 
 def preprocessed_filename(
     t: TimeStep,
-    sat: Literal["NOAA20", "SNPP"] | None = None,
+    sat: Optional[Literal["NOAA20", "SNPP"]] = None,
     region: Optional[Region] = None,
     suffix="",
-    location: Location | None = None
+    location: Location = None
 ):
     if sat is None:
         sat = settings.FIRE_SOURCE
@@ -172,7 +172,7 @@ def check_preprocessed_file(
     ted: TimeStep,
     sat: Literal["SNPP", "NOAA20"],
     freq: Literal["monthly", "NRT"] = "monthly",
-    location: Location | None = None
+    location: Location = None
 ):
     """Before running preprocess_monthly_file, check if the file already exists
     for that satellite using a list of time steps
@@ -299,7 +299,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def read_preprocessed_input(
     t: TimeStep,
     sat: Literal["NOAA20", "SNPP"],
-    location: Location | None = None,
+    location: Location = None,
 ):
     filename = preprocessed_filename(t, sat=sat, location=location)
     df = pd.read_csv(filename)
@@ -310,7 +310,7 @@ def read_preprocessed_input(
 def read_preprocessed(
     t: TimeStep,
     region: Region,
-    location: Location | None = None,
+    location: Location = None,
 ):
     filename = preprocessed_filename(t, region=region, location=location)
     df = pd.read_csv(filename).set_index("uuid").assign(t=t2dt(t))
@@ -322,8 +322,8 @@ def preprocess_region_t(
     t: TimeStep,
     region: Region,
     force: bool = False,
-    read_location: Location | None = None,
-    read_region_location: Location | None = None,
+    read_location: Location = None,
+    read_region_location: Location = None,
 ):
 
     # if regional output already exists, exit early so we don't reprocess

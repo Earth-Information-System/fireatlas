@@ -53,7 +53,7 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
 
     logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
-    allfires, allpixels = Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=True)
     allpixels_filepath = save_allpixels(allpixels, tst, ted, region)
     allfires_filepath = save_allfires_gdf(allfires.gdf, tst, ted, region)
 

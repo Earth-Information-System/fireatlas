@@ -2107,7 +2107,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     s3.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
 
 
-def copy_from_local_to_s3(filepath: str, **tags):
+def copy_from_local_to_s3(filepath: str):
     """ Copy from local to s3 adding any specified tags
 
     Some default tags will be added from the environment and specified FireConsts
