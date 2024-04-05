@@ -21,6 +21,6 @@ def test_snapshot_folder(location):
     tst = (2023, 11, 9, "AM")
     ted = (2023, 11, 9, "PM")
     region = ["TESTING123", None]
-    snapshot_folder = postprocess.snapshot_folder(tst, ted, region, location=location)
+    snapshot_folder = postprocess.snapshot_folder(region, tst, ted, location=location)
     assert "/FEDSoutput-v3/TESTING123/2023/Snapshot" in snapshot_folder
 

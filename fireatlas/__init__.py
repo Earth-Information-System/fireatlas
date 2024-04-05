@@ -10,5 +10,5 @@ from fireatlas import (
 
 from fireatlas.FireConsts import Settings
 
-# instantiate pydantic settingss
+# instantiate pydantic settings
 settings = Settings()

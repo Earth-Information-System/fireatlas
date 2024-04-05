@@ -16,6 +16,12 @@ root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 
 class Settings(BaseSettings):
+    # read in all env vars prefixed with `FEDS_` they can be in a .env file
+    model_config = {
+        "env_file": ".env",
+        "extra": "ignore",
+        "env_prefix": "FEDS_",
+    }
     # ------------------------------------------------------------------------------
     # where data is stored
     # ------------------------------------------------------------------------------
