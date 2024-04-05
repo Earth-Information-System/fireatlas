@@ -9,6 +9,7 @@ from pandas import Series
 import os
 from fireatlas.FireLog import logger
 from fireatlas.utils import timed
+from fireatlas import settings
 
 
 def Yearbatchrun(year, tst=None, ted=None, restart=False):
@@ -74,6 +75,8 @@ def CreekSamplerun(firesrc='SNPP'):
     ted = (2020, 9, 8, "PM")
     region = ("CreekMAAPDEMO"+firesrc, [-119.5, 36.8, -118.9, 37.7])
 
+    settings.FIRE_SOURCE = firesrc
+
     # # do fire tracking
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
     #
@@ -96,6 +99,8 @@ def DixieSamplerun(firesrc='SNPP'):
     tst = (2021, 7, 13, "AM")
     ted = (2021, 9, 16, "PM")
     region = ("Dixie"+firesrc, [-121.6, 39.8, -120.1, 40.8])
+
+    settings.FIRE_SOURCE = firesrc
 
     # # do fire tracking
     # FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region)
@@ -195,15 +200,15 @@ def ChileSampleRun():
 
 
 def BorealNA():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireEnums
-    # NOTE: this set up has to happen before `import FireConsts`
+    # NOTE: this set up has to happen before `from fireatlas import settings`
     # so set os environ variables that will override
-    # `FireConsts.settings` for all Python interpreters
+    # `FireConsts.Settings` for all Python interpreters
     # (meaning even those spawned during fork in multiple processes)
-    os.environ['EPSG_CODE'] = FireEnums.EPSG.HI_LAT
-    os.environ['FTYP_OPT'] = 2
-    os.environ['CONT_OPT'] = 2
-    from fireatlas import FireConsts
+    os.environ['EPSG_CODE'] = 3571
+    os.environ['FTYP_OPT'] = "global"
+    os.environ['CONT_OPT'] = "global"
+    
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     ctime = datetime.now()
     region = ("BOREAL_NRT_3571", [-169, 44, -48, 75])
@@ -242,7 +247,7 @@ def BorealNA():
     
 
 def ItalyGreeceNRT():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
     ctime = datetime.now()
     region = ("ItalyGreeceNRT_DPS", [11, 36, 28, 42])
@@ -282,7 +287,7 @@ def ItalyGreeceNRT():
 
 
 def QuebecSampleRun():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
     ctime = datetime.now()
     #tst = (2023, 1, 1, 'AM')
     #ted = (2023, 6, 7, "AM")
@@ -424,9 +429,9 @@ def CONUSrunNRT():
 
 def WesternUSrunNRT():
     
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
-    if FireConsts.firenrt != True:
-        print('Please set firenrt to True')
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    if settings.FIRE_NRT != True:
+        print('Please set FIRE_NRT to True')
         return
     
     ctime = datetime.now()
@@ -448,7 +453,7 @@ def WesternUSrunNRT():
     
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+    print(f"Running code from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
@@ -456,10 +461,10 @@ def WesternUSrunNRT():
     
     
 def SouthEastUSrunNRT():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
-    if FireConsts.firenrt != True:
-        print('Please set firenrt to True')
+    if settings.FIRE_NRT != True:
+        print('Please set FIRE_NRT to True')
         return
     
     ctime = datetime.now()
@@ -483,16 +488,16 @@ def SouthEastUSrunNRT():
     
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+    print(f"Running code from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 def SouthEastUS_LF_ONLY():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
-    if FireConsts.firenrt != True:
-        print('Please set firenrt to True')
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
+    if settings.FIRE_NRT != True:
+        print('Please set FIRE_NRT to True')
         return
     
     ctime = datetime.now()
@@ -517,17 +522,18 @@ def SouthEastUS_LF_ONLY():
     ted = [2023,2,22,'PM']
     #ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+    print(f"Running code from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     #FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     #FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
+
     
 def NorthEastUSrunNRT():
-    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs, FireConsts
+    from fireatlas import FireIO, FireMain, FireGpkg, FireGpkg_sfs
 
-    if FireConsts.firenrt != True:
-        print('Please set firenrt to True')
+    if settings.FIRE_NRT != True:
+        print('Please set FIRE_NRT to True')
         return
     
     ctime = datetime.now()
@@ -550,7 +556,7 @@ def NorthEastUSrunNRT():
     #tst = [ctime.year, 1, 1, 'AM']    
     ted = [ctime.year, ctime.month, ctime.day, ampm]
     #ted = [2022,1,10,'AM']
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+    print(f"Running code from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
@@ -565,7 +571,7 @@ def WesternUSYrRun(year):
     tst = (year, 1, 1, "AM")
     ted = (year, 12, 31, "PM")
     
-    print(f"Running code from {tst} to {ted} with source {FireConsts.firesrc}")
+    print(f"Running code from {tst} to {ted} with source {settings.FIRE_SOURCE}")
     
     FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
     FireGpkg.save_gdf_trng(tst=tst, ted=ted, regnm=region[0])
@@ -579,6 +585,9 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
     Saves the outpts too--allpixels, allfires, and individual fires.
     """
     from fireatlas import FireTime, preprocess, FireMain, postprocess
+    from fireatlas import settings
+
+    settings.FIRE_SOURCE = sat
 
     # convert gdf to a series if it is not already
     if not isinstance(perimeter_gdf, Series):
@@ -609,10 +618,10 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
     # filter VIIRS to the perimeter for each time step
     region = preprocess.read_region(region)
     for t in list_of_ts:
-        preprocess.preprocess_region_t(t, sensor=sat, region=region)
+        preprocess.preprocess_region_t(t, region=region)
 
     # finally run fire_forward
-    allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, sat=sat, restart=False, region=region)
+    allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
 
     # Save outputs
     postprocess.save_allpixels(allpixels, tst, ted, region)

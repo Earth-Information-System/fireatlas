@@ -6,11 +6,11 @@ from unittest.mock import MagicMock
 from pathlib import Path
 
 from fireatlas import preprocess
-from fireatlas import FireConsts
 from fireatlas import FireClustering
 from fireatlas import FireMain
 from fireatlas import FireIO
 from fireatlas.FireTypes import TimeStep, Region
+from fireatlas import settings
 
 try:
     from shapely import to_geojson, from_geojson
@@ -21,32 +21,28 @@ from unittest.mock import call
 
 
 @pytest.mark.parametrize(
-    "region, location, new_s3_bucket, new_s3_path, expected_filepath",
+    "region, location, new_s3_path, expected_filepath",
     [
         (
             ["TestDefault", None],
             "s3",
             None,
-            None,
-            f"s3://{FireConsts.dirdata_s3_bucket}/{FireConsts.dirdata_s3_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
+            f"{settings.S3_PATH}/FEDSpreprocessed/TestDefault/TestDefault.json",
         ),
         (
             ["TestOverride", None],
             "s3",
-            "big-bucket",
-            "small-path/whatever",
+            "s3://big-bucket/small-path/whatever",
             f"s3://big-bucket/small-path/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
         ),
     ],
 )
 def test_preprocessed_region_filename_s3(monkeypatch, region: Region,
-                                         location: str, new_s3_bucket: str, new_s3_path: str,
+                                         location: str, new_s3_path: str,
                                          expected_filepath: str):
     # arrange
-    if new_s3_bucket:
-        monkeypatch.setattr(FireConsts, "dirdata_s3_bucket", new_s3_bucket)
     if new_s3_path:
-        monkeypatch.setattr(FireConsts, "dirdata_s3_path", new_s3_path)
+        monkeypatch.setattr(settings, "S3_PATH", new_s3_path)
 
     # act
     actual_filepath = preprocess.preprocessed_region_filename(region, location)
@@ -56,31 +52,29 @@ def test_preprocessed_region_filename_s3(monkeypatch, region: Region,
 
 
 @pytest.mark.parametrize(
-    "region, location, new_dir_path, expected_filepath",
+    "region, new_dir_path, expected_filepath",
     [
         (
             ["TestDefault", None],
-            "local",
             None,
-            f"{FireConsts.dirdata_local_path}/FEDSpreprocessed/TestDefault/TestDefault.json",
+            f"{settings.LOCAL_PATH}/FEDSpreprocessed/TestDefault/TestDefault.json",
         ),
         (
             ["TestOverride", None],
-            "local",
             "big-data/whatever",
             f"big-data/whatever/FEDSpreprocessed/TestOverride/TestOverride.json",
         ),
     ],
 )
 def test_preprocessed_region_filename_local(monkeypatch, region: Region,
-                                         location: str, new_dir_path: str,
+                                         new_dir_path: str,
                                          expected_filepath: str):
     # arrange
     if new_dir_path:
-        monkeypatch.setattr(FireConsts, "dirdata_local_path", new_dir_path)
+        monkeypatch.setattr(settings, "LOCAL_PATH", new_dir_path)
 
     # act
-    actual_filepath = preprocess.preprocessed_region_filename(region, location)
+    actual_filepath = preprocess.preprocessed_region_filename(region, location="local")
 
     # assert
     assert actual_filepath == expected_filepath
@@ -88,27 +82,32 @@ def test_preprocessed_region_filename_local(monkeypatch, region: Region,
 
 def test_preprocess_region(tmpdir, monkeypatch):
     # arrange
-    monkeypatch.setattr(
-        preprocess,
-        "preprocessed_region_filename",
-        lambda region, location: str(tmpdir / Path('Test123.json'))
-    )
-    monkeypatch.setattr(FireMain, "maybe_remove_static_sources", lambda region, s3extdata: region)
+    monkeypatch.setattr(settings, "LOCAL_PATH", str(tmpdir))
+    monkeypatch.setattr(FireMain, "maybe_remove_static_sources", lambda region: region)
     test_region = ["Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)])]
 
     # act
-    preprocess.preprocess_region(test_region)
+    output_filepath = preprocess.preprocess_region(test_region)
 
     # assert
-    with open(f"{tmpdir}/{test_region[0]}.json", "r") as f:
+    with open(output_filepath, "r") as f:
         assert test_region[1] == from_geojson(f.read())
+
+    assert str(tmpdir) in output_filepath
 
 
 def test_read_region(tmpdir, monkeypatch):
     # arrange
-    monkeypatch.setattr(FireConsts, "dirprpdata", tmpdir)
+    monkeypatch.setattr(settings, "S3_PATH", str(tmpdir))
     expected_region = ("Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)]))
-    with open(f"{tmpdir}{expected_region[0]}.json", "w") as f:
+
+    data_dir = tmpdir / settings.PREPROCESSED_DIR
+    data_dir.mkdir()
+
+    expected_dir = tmpdir / settings.PREPROCESSED_DIR / expected_region[0]
+    expected_dir.mkdir()
+    
+    with open(expected_dir / f"{expected_region[0]}.json", "w") as f:
         f.write(to_geojson(expected_region[1]))
 
     # act
@@ -120,13 +119,16 @@ def test_read_region(tmpdir, monkeypatch):
 
 def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
     # arrange
-    monkeypatch.setattr(FireConsts, "dirextdata", tmpdir)
+    monkeypatch.setattr(settings, "LOCAL_PATH", str(tmpdir))
+    monkeypatch.setattr(settings, "S3_PATH", str(tmpdir))
 
-    tmpdir = tmpdir.join("NLCD")
-    tmpdir.mkdir()
+    data_dir = tmpdir / settings.INPUT_DIR
+    data_dir.mkdir()
+    test_dir = data_dir / "NLCD"
+    test_dir.mkdir()
 
     file_basename = "nlcd_export_510m_simplified"
-    file_path = os.path.join(FireConsts.dirextdata, "NLCD", f"{file_basename}.tif")
+    file_path = os.path.join(settings.dirextdata, "NLCD", f"{file_basename}.tif")
     with open(file_path, "w") as f:
         f.write("")
 
@@ -139,7 +141,7 @@ def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
 
     actual_second_call_args = mock_rasterio.open.call_args_list[1]
     assert actual_second_call_args == call(
-        os.path.join(FireConsts.dirextdata, "NLCD", f"{file_basename}_latlon.tif"), "w"
+        os.path.join(settings.LOCAL_PATH, settings.PREPROCESSED_DIR, f"{file_basename}_latlon.tif"), "w"
     )
 
     mock_rasterio.warp.calculate_default_transform.assert_called()
@@ -152,19 +154,17 @@ def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
     "timestep, sat",
     [
         ((2023, 11, 9, "AM"), "NOAA20"),
-        (
-            (2023, 11, 9, "AM"),
-            "SNPP",
-        ),
+        ((2023, 11, 9, "AM"), "SNPP"),
     ],
 )
 def test_preprocess_NRT_file(timestep: TimeStep, sat: str, monkeypatch, test_data_dir):
-    monkeypatch.setattr(FireConsts, "dirextdata", test_data_dir)
+    monkeypatch.setattr(settings, "READ_LOCATION", "local")
+    monkeypatch.setattr(settings, "LOCAL_PATH", test_data_dir)
 
     if sat == "SNPP":
-        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat)
+        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat=sat)
     else:
-        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat)
+        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat=sat)
     assert len(df_filtered_paths) == 2
 
     # TODO: more assertions on the filtered CSVs
@@ -193,15 +193,11 @@ def test_preprocess_region_t(
     region_shape_to_filter,
     output_should_already_exist,
 ):
-    # arrange
-    monkeypatch.setattr(FireConsts, "dirextdata", str(inputdirs))
-    monkeypatch.setattr(FireConsts, "dirprpdata", str(inputdirs / "processed"))
-
     # return a preprocessed SNPP file fixture with a couple pixels
     input_df = pd.read_csv(preprocessed_nrt_snpp_tmpfile)
 
-    monkeypatch.setattr(preprocess, "read_preprocessed", lambda x, sat=None: input_df)
-
+    monkeypatch.setattr(preprocess, "read_preprocessed_input", lambda t, sat=None, location=None: input_df)
+    monkeypatch.setattr(preprocess, "read_region", lambda x, location=None: region)
     monkeypatch.setattr(FireIO, "get_reg_shp", lambda x: region_shape_to_filter)
 
     if output_should_already_exist:
@@ -212,7 +208,7 @@ def test_preprocess_region_t(
         monkeypatch.setattr(
             preprocess,
             "preprocessed_filename",
-            lambda x, y, region=None: "force_exit.txt",
+            lambda x: "force_exit.txt",
         )
 
         monkeypatch.setattr(os.path, "exists", lambda x: True)
@@ -223,10 +219,11 @@ def test_preprocess_region_t(
         # we should have separate unit tests that really exercise `FireClustering.do_clustering`
         # and `FireClustering.compute_all_spatial_distances` so just return the input DataFrame for now
         monkeypatch.setattr(FireClustering, "do_clustering", lambda x, y: input_df)
-
-        # we pass a fake sat/sensor so we can trigger the `else` branch for a single `read_preprocessed` mock
+        monkeypatch.setattr(settings, "FIRE_SOURCE", "TESTING123")
+        
+        # we pass a fake fire source so we can trigger the `else` branch for a single `read_preprocessed` mock
         outfile_df_path = preprocess.preprocess_region_t(
-            (2023, 11, 9, "AM"), "TESTING123", region
+            (2023, 11, 9, "AM"), region
         )
 
         # assert

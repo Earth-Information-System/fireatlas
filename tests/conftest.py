@@ -7,8 +7,7 @@ from datetime import datetime
 from shapely.geometry import Point
 from unittest.mock import MagicMock
 
-from fireatlas import preprocess
-from fireatlas.FireConsts import remove_static_sources_sourcefile
+from fireatlas import preprocess, settings
 
 
 @pytest.fixture
@@ -27,8 +26,9 @@ def mock_rasterio(monkeypatch):
 
 
 @pytest.fixture
-def inputdirs(tmpdir):
-    """create the intended input directory structure in tmpdir
+def inputdirs(tmpdir, monkeypatch):
+    """create the intended input directory structure in tmpdir and monkeypatch 
+    settings to read from it
 
     :param tmpdir:
     :return:
@@ -37,14 +37,14 @@ def inputdirs(tmpdir):
     viirs_subdirs = ["VNP14IMGML", "VNP14IMGTDL", "VJ114IMGML", "VJ114IMGTDL"]
 
     for subdir in first_level_subdirs:
-        newdir = tmpdir / subdir
-        newdir.mkdir()
+        os.makedirs(str(tmpdir / settings.INPUT_DIR / subdir), exist_ok=True)
         if subdir == "VIIRS":
             for subdir2 in viirs_subdirs:
-                newdir = tmpdir / subdir / subdir2
-                newdir.mkdir()
+                os.makedirs(str(tmpdir / settings.INPUT_DIR / subdir / subdir2), exist_ok=True)
 
-    return tmpdir
+    monkeypatch.setattr(settings, "S3_PATH", str(tmpdir))
+    monkeypatch.setattr(settings, "LOCAL_PATH", str(tmpdir))
+    return tmpdir / settings.INPUT_DIR
 
 
 #### static sources file fixtures
@@ -94,7 +94,7 @@ def static_source_file_real(inputdirs):
 
     df = pd.DataFrame(data)
     subdir = inputdirs / "static_sources"
-    file_path = subdir.join(f"{remove_static_sources_sourcefile}")
+    file_path = subdir.join(f"{settings.remove_static_sources_sourcefile}")
     df.to_csv(file_path, index=False)
     return str(file_path)
 
@@ -117,7 +117,7 @@ def static_source_dir_fake(inputdirs):
 
     df = pd.DataFrame(data)
     subdir = inputdirs / "static_sources"
-    file_path = subdir.join(f"{remove_static_sources_sourcefile}")
+    file_path = subdir.join(f"{settings.remove_static_sources_sourcefile}")
     df.to_csv(file_path, index=False)
     return str(inputdirs)
 
@@ -138,13 +138,14 @@ def preprocessed_nrt_snpp_tmpfile(tmpdir):
         "DS": [0.46, 0.4],
         "datetime": ["2023-08-28 00:03:00", "2023-08-28 00:03:00"],
         "ampm": ["AM", "AM"],
+        "input_filename": "VNP14IMGTDL.foo.otherstuff.txt"
     }
 
     df = pd.DataFrame(data)
-    subdir = tmpdir / "preprocessed" / "NOAA20"
+    subdir = tmpdir / settings.PREPROCESSED_DIR / "SNPP"
     os.makedirs(str(subdir), exist_ok=True)
     # TODO: mimic the actual filename name used
-    file_path = subdir.join(f"{remove_static_sources_sourcefile}")
+    file_path = subdir.join(f"{settings.remove_static_sources_sourcefile}")
     df.to_csv(file_path, index=False)
     return str(file_path)
 
@@ -162,13 +163,14 @@ def preprocessed_nrt_noaa20_tmpfile(tmpdir):
         "DS": [1, 2],
         "datetime": ["flare", "flare"],
         "ampm": ["T1", "T2"],
+        "input_filename": "VJ114IMGTDL_otherstuff.txt"
     }
 
     df = pd.DataFrame(data)
-    subdir = tmpdir / "preprocessed" / "SNPP"
+    subdir = tmpdir / "preprocessed" / "NOAA20"
     os.makedirs(str(subdir), exist_ok=True)
     # TODO: mimic the actual filename name used
-    file_path = subdir.join(f"{remove_static_sources_sourcefile}")
+    file_path = subdir.join(f"{settings.remove_static_sources_sourcefile}")
     df.to_csv(file_path, index=False)
     return str(inputdirs)
 

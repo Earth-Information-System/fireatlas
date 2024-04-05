@@ -37,6 +37,7 @@ dependencies = [
   "rtree",
   "scikit-learn",
   "pyarrow",
+  "pydantic-settings",
   "rasterio",
   "pyproj",
   "tqdm",

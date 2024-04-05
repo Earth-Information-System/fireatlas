@@ -8,7 +8,7 @@ import math
 import itertools
 
 from sklearn.neighbors import BallTree
-from fireatlas import FireConsts
+from fireatlas import settings
 from fireatlas.utils import timed
 
 
@@ -170,7 +170,7 @@ def cal_distance(loc1, loc2):
     )
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-    distance = FireConsts.EARTH_RADIUS_KM * c
+    distance = settings.EARTH_RADIUS_KM * c
     return distance
 
 

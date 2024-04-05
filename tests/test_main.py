@@ -1,12 +1,12 @@
 from shapely.geometry import Polygon
 import pytest
 
-from fireatlas import FireConsts
+from fireatlas import settings
 from fireatlas.FireMain import maybe_remove_static_sources
 from fireatlas.FireTypes import Region
 
 @pytest.mark.parametrize(
-    "original_region, should_remove_static_sources_bool",
+    "original_region, should_remove_static_sources",
     [
         (["Test1", [0, 0, 1, 1]], True),  # remove static sources
         (
@@ -16,22 +16,19 @@ from fireatlas.FireTypes import Region
     ],
 )
 def test_maybe_remove_static_sources(
-    monkeypatch,
     static_source_dir_fake,
     original_region: Region,
-    should_remove_static_sources_bool: bool,
+    should_remove_static_sources: bool,
+    monkeypatch,
 ):
     # arrange
-    if should_remove_static_sources_bool:
-        monkeypatch.setattr(FireConsts, 'remove_static_sources_bool', True)
-    else:
-        monkeypatch.setattr(FireConsts, 'remove_static_sources_bool', False)
-
+    monkeypatch.setattr(settings, "remove_static_sources", should_remove_static_sources)
+    
     # act
-    result_region = maybe_remove_static_sources(original_region, static_source_dir_fake)
+    result_region = maybe_remove_static_sources(original_region)
 
     # assert
-    if not should_remove_static_sources_bool:
+    if not should_remove_static_sources:
         assert result_region != original_region
         name, geom = result_region
         assert isinstance(geom, Polygon)
