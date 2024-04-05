@@ -2107,7 +2107,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     s3.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
 
 
-def copy_from_local_to_s3(filepath: str):
+def copy_from_local_to_s3(filepath: str, **tags):
     """ Copy from local to s3 adding any specified tags
 
     Some default tags will be added from the environment and specified FireConsts
@@ -2125,16 +2125,17 @@ def copy_from_local_to_s3(filepath: str):
         "remove_static_sources",
         "FTYP_OPT",
     ]
-    default_tags = {
-        "processedBy": os.environ.get("CHE_WORKSPACE_NAMESPACE", None) or os.environ.get("JUPYTERHUB_USER", None),
-        **settings.model_dump(include=settings_to_include_in_tags),
-    }
-    tags = {k: v for k, v in {**default_tags, **tags}.items() if v is not None}
 
-    # there are some limitations on tags in s3:
-    #   - objects can only have 10 tags
-    #   - tag keys have a utf-16 limit of 128
-    #   - tag values have a utf-16 limit of 256
-    tags = dict([(str(k)[:64], str(v)[:128]) for k, v in tags.items()][-10:])
-
-    s3.put_tags(dst, tags)
+    # default_tags = {
+    #     "processedBy": os.environ.get("CHE_WORKSPACE_NAMESPACE", None) or os.environ.get("JUPYTERHUB_USER", None),
+    #     **settings.model_dump(include=settings_to_include_in_tags),
+    # }
+    # tags = {k: v for k, v in {**default_tags, **tags}.items() if v is not None}
+    #
+    # # there are some limitations on tags in s3:
+    # #   - objects can only have 10 tags
+    # #   - tag keys have a utf-16 limit of 128
+    # #   - tag values have a utf-16 limit of 256
+    # tags = dict([(str(k)[:64], str(v)[:128]) for k, v in tags.items()][-10:])
+    #
+    # s3.put_tags(dst, tags)
