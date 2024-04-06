@@ -18,11 +18,11 @@ from fireatlas.FireGpkg import getdd as snapshot_getdd
 from fireatlas import settings
 
 
-def all_dir(tst: TimeStep, region: Region, location: Location | None = None):
+def all_dir(tst: TimeStep, region: Region, location: Location = None):
     return os.path.join(settings.get_path(location), settings.OUTPUT_DIR, region[0], str(tst[0]))
 
 
-def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, location: Location | None = None):
+def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, location: Location = None):
     """Look at the files in a given location and figure out the t of the last
     allfires run. 
     
@@ -50,7 +50,7 @@ def allpixels_filepath(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Location | None = None,
+    location: Location = None,
 ):
     filename = f"allpixels_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.csv"
     return os.path.join(all_dir(tst, region, location), filename)
@@ -72,7 +72,7 @@ def read_allpixels(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Location | None = None,
+    location: Location = None,
 ):
     filepath = allpixels_filepath(tst, ted, region, location=location)
 
@@ -83,7 +83,7 @@ def allfires_filepath(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Location | None = None,
+    location: Location = None,
 ):
     filename = f"allfires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.parq"
     return os.path.join(all_dir(tst, region, location), filename)
@@ -105,7 +105,7 @@ def read_allfires_gdf(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    location: Location | None = None,
+    location: Location = None,
 ):
     filepath = allfires_filepath(tst, ted, region, location=location)
 
@@ -116,7 +116,7 @@ def snapshot_folder(
     region: Region,
     tst: TimeStep,
     ted: TimeStep,
-    location: Location | None = None,
+    location: Location = None,
 ):
     return os.path.join(
         all_dir(tst, region, location=location),
@@ -208,7 +208,7 @@ def find_largefires(allfires_gdf):
     return last_large.fireID.values
 
 
-def largefire_folder(region: Region, fid, tst: TimeStep, location: Location | None = None):
+def largefire_folder(region: Region, fid, tst: TimeStep, location: Location = None):
     return os.path.join(
         all_dir(tst, region, location=location),
         "Largefire",
@@ -305,7 +305,7 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
         save_fire_layers(data, region, fid, tst)
 
 
-def individual_fires_path(tst, ted, region, location: Location | None = None):
+def individual_fires_path(tst, ted, region, location: Location = None):
     return os.path.join(
         all_dir(tst, region, location=location),
         f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"

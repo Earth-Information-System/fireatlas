@@ -1,7 +1,7 @@
-from typing import Dict, Tuple, Literal
+from typing import Dict, Tuple, Literal, Optional
 
 Bbox = Tuple[float, float, float, float]
 Region = Tuple[str, Bbox]
 AMPM = Literal["AM", "PM"]
 TimeStep = Tuple[int, int, int, AMPM]
-Location = Literal["s3", "local"]
+Location = Optional[Literal["s3", "local"]]

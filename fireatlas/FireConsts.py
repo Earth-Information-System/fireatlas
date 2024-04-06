@@ -119,7 +119,7 @@ class Settings(BaseSettings):
     def diroutdata(self):
         return f"{self.get_path()}/{self.OUTPUT_DIR}/"
         
-    def get_path(self, location: Location | None = None):
+    def get_path(self, location: Location = None):
         """Path to data - dependent on specified location or READ_LOCATION"""
         if location is None:
             location = self.READ_LOCATION
