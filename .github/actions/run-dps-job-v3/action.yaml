@@ -39,4 +39,4 @@ runs:
             ${{ inputs.username }} \
             ${{ inputs.queue }} \
             ${{ inputs.maap_image_env }} \
-            --params "${{ inputs.json_params }}"
+            --params ${{ inputs.json_params }}
