@@ -24,7 +24,6 @@ classifiers = [
 license = { text = "Apache-2.0" }
 keywords = ["eis", "fireatlas"]
 dependencies = [
-  "gdal",
   "xarray",
   "pandas",
   "dask",

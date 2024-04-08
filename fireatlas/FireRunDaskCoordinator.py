@@ -2,6 +2,8 @@ import json
 import argparse
 import os
 import glob
+import s3fs
+
 from typing import Tuple
 from dask.distributed import Client
 from dask import delayed
@@ -30,6 +32,10 @@ from fireatlas import settings
 # AWS r5.2xlarge instance with 64gb RAM and 8 CPUs
 MAX_WORKERS = 6
 
+# NOTE: this expects credentials to be resolvable globally
+# via boto3/botocore common resolution paths
+fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
+
 
 def validate_json(s):
     try:
@@ -57,8 +63,8 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
     allpixels_filepath = save_allpixels(allpixels, tst, ted, region)
     allfires_filepath = save_allfires_gdf(allfires.gdf, tst, ted, region)
 
-    copy_from_local_to_s3(allpixels_filepath)
-    copy_from_local_to_s3(allfires_filepath)
+    copy_from_local_to_s3(allpixels_filepath, fs)
+    copy_from_local_to_s3(allfires_filepath, fs)
 
     save_snapshots(allfires.gdf, region, tst, ted)
 
@@ -69,10 +75,10 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
     data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
 
     for filepath in glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")):
-        copy_from_local_to_s3(filepath)
+        copy_from_local_to_s3(filepath, fs)
 
     for filepath in glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb")):
-        copy_from_local_to_s3(filepath)
+        copy_from_local_to_s3(filepath, fs)
 
 
 def job_preprocess_region_t(
@@ -80,12 +86,12 @@ def job_preprocess_region_t(
         eventual_result2: Delayed, region: Region, t: TimeStep):
     logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
     filepath = preprocess_region_t(t, region=region)
-    copy_from_local_to_s3(filepath)
+    copy_from_local_to_s3(filepath, fs)
 
 
 def job_preprocess_region(region: Region):
     filepath = preprocess_region(region)
-    copy_from_local_to_s3(filepath)
+    copy_from_local_to_s3(filepath, fs)
 
 
 def job_data_update_checker():
@@ -99,7 +105,7 @@ def job_data_update_checker():
         logger.exception(exc)
     finally:
         for filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt"):
-            copy_from_local_to_s3(filepath)
+            copy_from_local_to_s3(filepath, fs)
 
 
 @timed

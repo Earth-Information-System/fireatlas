@@ -1,6 +1,7 @@
 import os
 import pytest
 import pandas as pd
+import pydantic_settings
 import pathlib
 import geopandas as gpd
 from datetime import datetime
@@ -27,7 +28,7 @@ def mock_rasterio(monkeypatch):
 
 @pytest.fixture
 def inputdirs(tmpdir, monkeypatch):
-    """create the intended input directory structure in tmpdir and monkeypatch 
+    """create the intended input directory structure in tmpdir and monkeypatch
     settings to read from it
 
     :param tmpdir:
@@ -40,7 +41,9 @@ def inputdirs(tmpdir, monkeypatch):
         os.makedirs(str(tmpdir / settings.INPUT_DIR / subdir), exist_ok=True)
         if subdir == "VIIRS":
             for subdir2 in viirs_subdirs:
-                os.makedirs(str(tmpdir / settings.INPUT_DIR / subdir / subdir2), exist_ok=True)
+                os.makedirs(
+                    str(tmpdir / settings.INPUT_DIR / subdir / subdir2), exist_ok=True
+                )
 
     monkeypatch.setattr(settings, "S3_PATH", str(tmpdir))
     monkeypatch.setattr(settings, "LOCAL_PATH", str(tmpdir))
@@ -138,7 +141,7 @@ def preprocessed_nrt_snpp_tmpfile(tmpdir):
         "DS": [0.46, 0.4],
         "datetime": ["2023-08-28 00:03:00", "2023-08-28 00:03:00"],
         "ampm": ["AM", "AM"],
-        "input_filename": "VNP14IMGTDL.foo.otherstuff.txt"
+        "input_filename": "VNP14IMGTDL.foo.otherstuff.txt",
     }
 
     df = pd.DataFrame(data)
@@ -163,7 +166,7 @@ def preprocessed_nrt_noaa20_tmpfile(tmpdir):
         "DS": [1, 2],
         "datetime": ["flare", "flare"],
         "ampm": ["T1", "T2"],
-        "input_filename": "VJ114IMGTDL_otherstuff.txt"
+        "input_filename": "VJ114IMGTDL_otherstuff.txt",
     }
 
     df = pd.DataFrame(data)
@@ -240,3 +243,39 @@ def monthly_noaa20_tmpfile(request):
     subpath = abs_path / "VIIRS" / "VJ114IMGML"
     dt = datetime(2023, 11, 9)
     return str(subpath / f"VJ114IMGML_{dt.year}{dt.month:02}.txt")
+
+
+@pytest.fixture
+def tmp_settings_context_manager():
+    """pytest currently doesn't allow us to wrap classes as test fixtures
+
+    so this is a hacky workaround
+    """
+
+    class TmpSettingsContextManager:
+        """use this in tests as a context manger to temp override settings
+
+        usage:
+
+        with TmpSettingsContextManager(fireatlas.settings, LOCAL_PATH='/data'):
+            pass
+        """
+
+        def __init__(
+            self, base_settings: pydantic_settings.BaseSettings, **temporary_overrides
+        ):
+            self.base_settings = base_settings
+            self.temporary_overrides = temporary_overrides
+            self.original_values = {}
+
+        def __enter__(self):
+            for key, new_value in self.temporary_overrides.items():
+                if hasattr(self.base_settings, key):
+                    self.original_values[key] = getattr(self.base_settings, key)
+                    setattr(self.base_settings, key, new_value)
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            for key, original_value in self.original_values.items():
+                setattr(self.base_settings, key, original_value)
+
+    return TmpSettingsContextManager
