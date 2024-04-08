@@ -45,18 +45,6 @@ def validate_json(s):
 
 
 def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: TimeStep, ted: TimeStep):
-    ctime = datetime.now()
-
-    if tst in (None, ""):  # if no start is given, run from beginning of year
-        tst = [ctime.year, 1, 1, 'AM']
-
-    if ted in (None, ""):  # if no end time is given, set it as the most recent time
-        if ctime.hour >= 18:
-            ampm = 'PM'
-        else:
-            ampm = 'AM'
-        ted = [ctime.year, ctime.month, ctime.day, ampm]
-
     logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
@@ -110,6 +98,18 @@ def job_data_update_checker():
 
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep):
+
+    ctime = datetime.now()
+    if tst in (None, "", []):  # if no start is given, run from beginning of year
+        tst = [ctime.year, 1, 1, 'AM']
+
+    if ted in (None, "", []):  # if no end time is given, set it as the most recent time
+        if ctime.hour >= 18:
+            ampm = 'PM'
+        else:
+            ampm = 'AM'
+        ted = [ctime.year, ctime.month, ctime.day, ampm]
+
     list_of_timesteps = list(t_generator(tst, ted))
     dask_client = Client(n_workers=MAX_WORKERS)
     logger.info(f"dask workers = {len(dask_client.cluster.workers)}")
