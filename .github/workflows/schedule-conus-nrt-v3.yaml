@@ -34,16 +34,16 @@ jobs:
         echo "User UID: $UID"
 
     - name: set ted now
-        run: |
-          FULL_YEAR=$(date +"%Y")
-          MONTH_INT=$(date +"%-m") # Remove zero padding for month
-          DAY_INT=$(date +"%-d") # Remove zero padding for day
-          HOUR=$(date +"%I") # Use 12-hour format
-          MERIDIAN=$(date +"%p") # Get AM/PM
-          # NOTE: this has to be JSON encoded
-          echo "NOW_TED=\"[$FULL_YEAR, $MONTH_INT, $DAY_INT, \\\"$MERIDIAN\\\"]\"" >> $GITHUB_ENV
-          echo "##########################"
-          echo $NOW_TED
+      run: |
+        FULL_YEAR=$(date +"%Y")
+        MONTH_INT=$(date +"%-m") # Remove zero padding for month
+        DAY_INT=$(date +"%-d") # Remove zero padding for day
+        HOUR=$(date +"%I") # Use 12-hour format
+        MERIDIAN=$(date +"%p") # Get AM/PM
+        # NOTE: this has to be JSON encoded
+        echo "NOW_TED=\"[$FULL_YEAR, $MONTH_INT, $DAY_INT, \\\"$MERIDIAN\\\"]\"" >> $GITHUB_ENV
+        echo "##########################"
+        echo $NOW_TED
 
     - name: kick off the DPS job
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
