@@ -1,4 +1,4 @@
-name: data update checker
+name: data update checker v3
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     - cron:  '0 */4 * * *'
 
 jobs:
-  data_update_checker:
+  run_dps_job_v3:
     if: contains('["ranchodeluxe"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
@@ -34,18 +34,14 @@ jobs:
         echo "User UID: $UID"
 
     - name: kick off the DPS job
-      run: |
-        docker run \
-          --env MAAP_PGT=${{ secrets.MAAP_PGT }} \
-          --env MAAP_CONF=/maap-py \
-          --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
-          --rm mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4 \
-          /opt/conda/envs/vanilla/bin/python maap_runtime/submit-dps-job.py \
-          eis-feds-dask-coordinator-v3 \
-          1.0.0 \
-          gcorradini \
-          maap-dps-eis-worker-64gb \
-          ubuntu \
-          --params '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with:
+        algo_name: eis-feds-dask-coordinator-v3
+        github_ref: 1.0.0
+        username: gcorradini
+        queue: maap-dps-eis-worker-64gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
 
 
