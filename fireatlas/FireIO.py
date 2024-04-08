@@ -205,12 +205,7 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
         the points of non vegetation fire location
     """
     fnm = (
-        settings.dirextdata
-        + "CA/Calnvf/FCs_nv_"
-        + str(y0)
-        + "-"
-        + str(y1)
-        + ".geojson"
+        settings.dirextdata + "CA/Calnvf/FCs_nv_" + str(y0) + "-" + str(y1) + ".geojson"
     )
     gdf = gpd_read_file(fnm)
 
@@ -1780,9 +1775,7 @@ def get_summary_fnm_lt(t, regnm):
     """
     # if there's no summary file for this year, return the first time step of the year
     fnms = settings.fs.glob(
-        os.path.join(
-            settings.diroutdata, regnm, str(t[0]), "Summary", "fsummary_*.nc"
-        )
+        os.path.join(settings.diroutdata, regnm, str(t[0]), "Summary", "fsummary_*.nc")
     )
     if len(fnms) == 0:
         return None
@@ -1928,9 +1921,7 @@ def get_lts_serialization(regnm, year=None):
         year = date.today().year
 
     fnms = settings.fs.glob(
-        os.path.join(
-            settings.diroutdata, regnm, str(year), "Serialization", "*.pkl"
-        )
+        os.path.join(settings.diroutdata, regnm, str(year), "Serialization", "*.pkl")
     )
 
     if len(fnms) > 0:
@@ -2107,17 +2098,15 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     s3.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
 
 
-def copy_from_local_to_s3(filepath: str, **tags):
-    """ Copy from local to s3 adding any specified tags
+def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
+    """Copy from local to s3 adding any specified tags
 
     Some default tags will be added from the environment and specified FireConsts
     """
-    s3 = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
-
     dst = filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
     logger.info(f"uploading file {filepath} to {dst}")
 
-    s3.put_file(filepath, dst)
+    fs.put_file(filepath, dst)
 
     tags = {}
     settings_to_include_in_tags = [
@@ -2126,6 +2115,7 @@ def copy_from_local_to_s3(filepath: str, **tags):
         "FTYP_OPT",
     ]
 
+    # TODO: wait until JPL changes bucket policies for DPS workers to allow this
     # default_tags = {
     #     "processedBy": os.environ.get("CHE_WORKSPACE_NAMESPACE", None) or os.environ.get("JUPYTERHUB_USER", None),
     #     **settings.model_dump(include=settings_to_include_in_tags),

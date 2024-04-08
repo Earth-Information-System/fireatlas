@@ -1,8 +1,12 @@
+import os
+from unittest.mock import MagicMock
+
 import pytest
 import geopandas as gpd
 import pandas as pd
 from shapely.geometry import Point, Polygon
 
+import fireatlas
 from fireatlas import FireIO
 
 
@@ -106,3 +110,34 @@ def test_afp_regfilter(
         assert df_expected_count == len(df_filtered)
     else:
         assert df_expected_count > len(df_filtered)
+
+
+@pytest.mark.parametrize(
+    "local_settings_dir, s3_settings_dir, filename, fs_mock",
+    [
+        ("/data", "s3://magic-mike", "firelines.fgb", MagicMock()),
+        ("/data", "s3://magic-mike", "allfires.parq", MagicMock()),
+    ],
+)
+def test_copy_from_local_to_s3(
+    tmp_settings_context_manager,
+    local_settings_dir,
+    s3_settings_dir,
+    filename,
+    fs_mock
+):
+    # arrange
+    expected_local_filepath = os.path.join(local_settings_dir, filename)
+    expected_s3_filepath = os.path.join(s3_settings_dir, filename)
+    fs_mock.put_file = MagicMock()
+
+    # act
+    with tmp_settings_context_manager(
+        fireatlas.settings,
+        LOCAL_PATH=local_settings_dir,
+        S3_PATH=s3_settings_dir
+    ):
+        FireIO.copy_from_local_to_s3(expected_local_filepath, fs_mock)
+
+        # assert
+        fs_mock.put_file.assert_called_with(expected_local_filepath, expected_s3_filepath)

@@ -119,12 +119,12 @@ pushd "$basedir"
 
   popd
   echo "Copying log to special output dir"
-  cp "$basedir/running.log" "$output_dir"
+  cp "$basedir/../running.log" "$output_dir"
 
 } || { # catch
   popd
   echo "Copying log to special output dir"
-  cp "$basedir/running.log" "$output_dir"
+  cp "$basedir/../running.log" "$output_dir"
 }
 )
 echo "Done!"
