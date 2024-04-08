@@ -7,7 +7,7 @@ on:
 
 jobs:
   run_dps_job_v2:
-    if: contains('["ranchodeluxe"]', github.actor)
+    if: contains('["ranchodeluxe", "mccabete"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -35,7 +35,7 @@ jobs:
         algo_name: eis-fire-feds-dps-data-checker-v2
         github_ref: conus-dps
         username: gcorradini
-        queue: maap-dps-eis-worker-32gb
+        queue: maap-dps-eis-worker-64gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
 

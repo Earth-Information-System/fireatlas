@@ -1,9 +1,9 @@
-name: data update checker v3
+name: western usa nrt v3
 
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 */4 * * *'
+    - cron:  '0 */11 * * *'
 
 jobs:
   run_dps_job_v3:
@@ -42,6 +42,6 @@ jobs:
         queue: maap-dps-eis-worker-64gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
+        json_params: '{"regnm": "WesternUS", "bbox": "[-125.698046875, 31.676476158707615, -101.00078125, 49.51429477264348]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'
 
 
