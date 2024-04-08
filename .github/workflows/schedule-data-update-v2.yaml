@@ -37,5 +37,6 @@ jobs:
         username: gcorradini
         queue: maap-dps-eis-worker-32gb
         maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
 
 

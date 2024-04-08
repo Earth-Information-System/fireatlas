@@ -17,6 +17,9 @@ inputs:
   maap_image_env:
     description: 'MAAP image environment'
     required: true
+  maap_pgt_secret:
+    description: 'MAAP_PGT'
+    required: true
   json_params:
     description: 'json encoded params to pass to the job'
     required: true
@@ -26,7 +29,7 @@ runs:
     - shell: bash
       run: |
         docker run \
-          --env MAAP_PGT=${{ secrets.MAAP_PGT }} \
+          --env MAAP_PGT=${{ inputs.maap_pgt_secret }} \
           --env MAAP_CONF=/maap-py \
           --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
           --rm mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4 \
