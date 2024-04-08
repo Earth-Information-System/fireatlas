@@ -6,7 +6,7 @@ from maap.maap import MAAP
 
 parser = argparse.ArgumentParser()
 parser.add_argument("algo", type=str, help="the name of the registered algorithm in MAAP")
-parser.add_argument("version", type=str, help="the git branch to run against")
+parser.add_argument("github_ref", type=str, help="the git branch or tag to run against")
 parser.add_argument("username", type=str, help="the username who submits the job")
 parser.add_argument("queue", type=str, help="the queue where we want the job to run")
 parser.add_argument("maap_environment", type=str, help="the MAAP image environment to run the job inside of")
@@ -15,12 +15,12 @@ parser.add_argument("--params", type=str, help="an optional json serialized stri
                     default="{}")
 
 
-def submit_job(algo_id, version, username, queue, maap_environment, params={}):
+def submit_job(algo_id, github_ref, username, queue, maap_environment, params={}):
     maap = MAAP(maap_host='api.maap-project.org')
     return maap.submitJob(
-        identifier=f"job-{algo_id}:{version}",
+        identifier=f"job-{algo_id}:{github_ref}",
         algo_id=f"{algo_id}",  # MAAP seems to expect `submitJob` to identify things this way
-        version=version,
+        version=github_ref,
         username=username,
         queue=queue,
         **params
@@ -30,7 +30,7 @@ def submit_job(algo_id, version, username, queue, maap_environment, params={}):
 if __name__ == '__main__':
     args = parser.parse_args()
     deserialized_params = json.loads(args.params)
-    pargs = [args.algo, args.version, args.username, args.queue, args.maap_environment]
+    pargs = [args.algo, args.github_ref, args.username, args.queue, args.maap_environment]
     print(f"[ ARGS ]: {pargs}")
     response = submit_job(*pargs, params=deserialized_params)
     print(response)
