@@ -1,9 +1,9 @@
-name: data update checker v3
+name: conus nrt v3
 
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 */4 * * *'
+    - cron:  '0 */11 * * *'
 
 jobs:
   run_dps_job_v3:
@@ -33,6 +33,18 @@ jobs:
         echo "Docker GID: $DOCKER_GID"
         echo "User UID: $UID"
 
+    - name: set ted now
+        run: |
+          FULL_YEAR=$(date +"%Y")
+          MONTH_INT=$(date +"%-m") # Remove zero padding for month
+          DAY_INT=$(date +"%-d") # Remove zero padding for day
+          HOUR=$(date +"%I") # Use 12-hour format
+          MERIDIAN=$(date +"%p") # Get AM/PM
+          # NOTE: this has to be JSON encoded
+          echo "NOW_TED=\"[$FULL_YEAR, $MONTH_INT, $DAY_INT, \\\"$MERIDIAN\\\"]\"" >> $GITHUB_ENV
+          echo "##########################"
+          echo $NOW_TED
+
     - name: kick off the DPS job
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with:
@@ -41,6 +53,6 @@ jobs:
         username: gcorradini
         queue: maap-dps-eis-worker-64gb
         maap_image_env: ubuntu
-        json_params '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
+        json_params: '{"regnm": "CONUS", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2024,1,1,\"AM\"]", "ted": $NOW_TED, "operation": "--coordinate-all"}'
 
 

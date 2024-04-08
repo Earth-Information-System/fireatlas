@@ -1,4 +1,4 @@
-name: data update checker v3
+name: data update checker v2
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     - cron:  '0 */4 * * *'
 
 jobs:
-  run_dps_job_v3:
+  run_dps_job_v2:
     if: contains('["ranchodeluxe"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
@@ -14,11 +14,7 @@ jobs:
     - name: checkout repository
       uses: actions/checkout@v2
       with:
-        ref: primarykeyv2
-
-    - name: pip install fireatlas
-      run: |
-        pip install .
+        ref: conus-dps
 
     - name: get docker GID and set DOCKER_GID environment variable
       run: |
@@ -34,13 +30,12 @@ jobs:
         echo "User UID: $UID"
 
     - name: kick off the DPS job
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v2@conus-dps
       with:
-        algo_name: eis-feds-dask-coordinator-v3
-        github_ref: 1.0.0
+        algo_name: eis-fire-feds-dps-data-checker-v2
+        github_ref: conus-dps
         username: gcorradini
-        queue: maap-dps-eis-worker-64gb
+        queue: maap-dps-eis-worker-32gb
         maap_image_env: ubuntu
-        json_params '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
 
 
