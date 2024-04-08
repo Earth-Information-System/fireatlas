@@ -41,6 +41,6 @@ jobs:
         username: gcorradini
         queue: maap-dps-eis-worker-64gb
         maap_image_env: ubuntu
-        json_params '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
+        json_params: '{"regnm": "", "bbox": "[]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
 
 
