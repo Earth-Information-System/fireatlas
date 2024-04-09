@@ -21,7 +21,7 @@ on:
         required: false
         default: 'ubuntu'
       json_params:
-        description: 'JSON encoded params to pass to the job e.g.: \'{"regnm": "NewMexicoV3", "bbox": "[-125,31,-101,49]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}\''
+        description: 'JSON encoded params to pass to the job e.g.: {"regnm": "NewMexicoV3", "bbox": "[-125,31,-101,49]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'
         required: true
 
 jobs:
