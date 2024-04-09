@@ -8,8 +8,11 @@ This module include functions used to read and save data
 
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
-import s3fs
+from typing import Tuple
+
+import asyncio
 import os
+import s3fs
 import pandas as pd
 import numpy as np
 import geopandas as gpd
@@ -2098,6 +2101,30 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     s3.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
 
 
+async def concurrent_copy_from_local_to_s3(
+    filepaths: Tuple[str,], fs: s3fs.S3FileSystem, **tags
+):
+    """Copy from local to s3 adding any specified tags leveraging coroutines"""
+    # use for loop here for logging purposes
+    dst_filepaths = []
+    for filepath in filepaths:
+        dst = filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
+        dst_filepaths.append(dst)
+        logger.info(f"uploading file {filepath} to {dst}")
+
+    coroutines = [
+        fs._put_file(
+            source_filepath,
+            dst_filepath,
+        )
+        for source_filepath, dst_filepath in zip(filepaths, dst_filepaths)
+    ]
+
+    # TODO: wait until JPL changes bucket policies for DPS workers to allow tags
+    results = await asyncio.gather(*coroutines)
+    return results
+
+
 def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
     """Copy from local to s3 adding any specified tags
 
@@ -2108,14 +2135,13 @@ def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
 
     fs.put_file(filepath, dst)
 
-    tags = {}
-    settings_to_include_in_tags = [
-        "EPSG_CODE",
-        "remove_static_sources",
-        "FTYP_OPT",
-    ]
-
-    # TODO: wait until JPL changes bucket policies for DPS workers to allow this
+    # TODO: wait until JPL changes bucket policies for DPS workers to allow tags
+    # tags = {}
+    # settings_to_include_in_tags = [
+    #     "EPSG_CODE",
+    #     "remove_static_sources",
+    #     "FTYP_OPT",
+    # ]
     # default_tags = {
     #     "processedBy": os.environ.get("CHE_WORKSPACE_NAMESPACE", None) or os.environ.get("JUPYTERHUB_USER", None),
     #     **settings.model_dump(include=settings_to_include_in_tags),

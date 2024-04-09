@@ -1,5 +1,7 @@
+import asyncio
 import os
-from unittest.mock import MagicMock
+from typing import Tuple
+from unittest.mock import MagicMock, AsyncMock, call
 
 import pytest
 import geopandas as gpd
@@ -113,7 +115,7 @@ def test_afp_regfilter(
 
 
 @pytest.mark.parametrize(
-    "local_settings_dir, s3_settings_dir, filename, fs_mock",
+    "local_settings_dir_override, s3_settings_dir_override, filename, fs_mock",
     [
         ("/data", "s3://magic-mike", "firelines.fgb", MagicMock()),
         ("/data", "s3://magic-mike", "allfires.parq", MagicMock()),
@@ -121,23 +123,77 @@ def test_afp_regfilter(
 )
 def test_copy_from_local_to_s3(
     tmp_settings_context_manager,
-    local_settings_dir,
-    s3_settings_dir,
+    local_settings_dir_override,
+    s3_settings_dir_override,
     filename,
-    fs_mock
+    fs_mock,
 ):
     # arrange
-    expected_local_filepath = os.path.join(local_settings_dir, filename)
-    expected_s3_filepath = os.path.join(s3_settings_dir, filename)
+    expected_local_filepath = os.path.join(local_settings_dir_override, filename)
+    expected_s3_filepath = os.path.join(s3_settings_dir_override, filename)
     fs_mock.put_file = MagicMock()
 
     # act
     with tmp_settings_context_manager(
         fireatlas.settings,
-        LOCAL_PATH=local_settings_dir,
-        S3_PATH=s3_settings_dir
+        LOCAL_PATH=local_settings_dir_override,
+        S3_PATH=s3_settings_dir_override,
     ):
         FireIO.copy_from_local_to_s3(expected_local_filepath, fs_mock)
 
         # assert
-        fs_mock.put_file.assert_called_with(expected_local_filepath, expected_s3_filepath)
+        fs_mock.put_file.assert_called_with(
+            expected_local_filepath, expected_s3_filepath
+        )
+
+
+@pytest.mark.parametrize(
+    "local_settings_dir_override, s3_settings_dir_override, filenames",
+    [
+        (
+            "/data",
+            "s3://magic-mike",
+            # multiple files
+            [
+                "firelines.fgb",
+                "allfires.parq",
+            ],
+        )
+    ],
+)
+def test_concurrent_copy_from_local_to_s3(
+    tmp_settings_context_manager,
+    local_settings_dir_override,
+    s3_settings_dir_override,
+    filenames: Tuple[str,],
+):
+    # arrange
+    fs_mock = MagicMock()
+    fs_mock._put_file = AsyncMock()
+    expected_source_filepaths = [
+        os.path.join(local_settings_dir_override, filename) for filename in filenames
+    ]
+    expected_s3_filepaths = [
+        os.path.join(s3_settings_dir_override, filename) for filename in filenames
+    ]
+
+    # act
+    with tmp_settings_context_manager(
+        fireatlas.settings,
+        LOCAL_PATH=local_settings_dir_override,
+        S3_PATH=s3_settings_dir_override,
+    ):
+        results = asyncio.run(
+            FireIO.concurrent_copy_from_local_to_s3(expected_source_filepaths, fs_mock)
+        )
+        print(results)
+
+        # assert
+        for expected_source_filepath, expected_s3_filepath in zip(
+            expected_source_filepaths, expected_s3_filepaths
+        ):
+            fs_mock._put_file.assert_has_calls(
+                [
+                    call(expected_source_filepath, expected_s3_filepath),
+                ]
+            )

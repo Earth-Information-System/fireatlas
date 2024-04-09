@@ -1,3 +1,4 @@
+import asyncio
 import json
 import argparse
 import os
@@ -23,7 +24,7 @@ from fireatlas.postprocess import (
 )
 from fireatlas.preprocess import preprocess_region_t, preprocess_region
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from fireatlas.FireIO import copy_from_local_to_s3
+from fireatlas.FireIO import copy_from_local_to_s3, concurrent_copy_from_local_to_s3
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 from fireatlas import settings
@@ -62,11 +63,11 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
 
     data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
 
-    for filepath in glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")):
-        copy_from_local_to_s3(filepath, fs)
+    filepaths = glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb"))
+    asyncio.run(concurrent_copy_from_local_to_s3(filepaths, fs))
 
-    for filepath in glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb")):
-        copy_from_local_to_s3(filepath, fs)
+    filepaths = glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
+    asyncio.run(concurrent_copy_from_local_to_s3(filepaths, fs))
 
 
 def job_preprocess_region_t(
@@ -92,8 +93,8 @@ def job_data_update_checker():
     except Exception as exc:
         logger.exception(exc)
     finally:
-        for filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt"):
-            copy_from_local_to_s3(filepath, fs)
+        filepaths = glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
+        asyncio.run(concurrent_copy_from_local_to_s3(filepaths, fs))
 
 
 @timed
