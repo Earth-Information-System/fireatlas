@@ -2122,7 +2122,7 @@ async def concurrent_copy_from_local_to_s3(
 
     # TODO: wait until JPL changes bucket policies for DPS workers to allow tags
     results = await asyncio.gather(*coroutines)
-    yield results
+    return results
 
 
 def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
