@@ -8,7 +8,7 @@ This module include functions used to read and save data
 
 # Try to read a Geopandas file several times. Sometimes, the read fails the
 # first time for mysterious reasons.
-from typing import Tuple
+from typing import Tuple, Optional
 
 import asyncio
 import os
@@ -2102,7 +2102,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
 
 
 async def concurrent_copy_from_local_to_s3(
-    filepaths: Tuple[str,], fs: s3fs.S3FileSystem, **tags
+    filepaths: Tuple[str,], fs: Optional[s3fs.S3FileSystem] = None, **tags
 ):
     """Copy from local to s3 adding any specified tags leveraging coroutines"""
     # use for loop here for logging purposes
@@ -2122,7 +2122,7 @@ async def concurrent_copy_from_local_to_s3(
 
     # TODO: wait until JPL changes bucket policies for DPS workers to allow tags
     results = await asyncio.gather(*coroutines)
-    return results
+    yield results
 
 
 def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
