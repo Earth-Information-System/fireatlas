@@ -314,6 +314,7 @@ def read_preprocessed(
 ):
     filename = preprocessed_filename(t, region=region, location=location)
     df = pd.read_csv(filename).set_index("uuid").assign(t=t2dt(t))
+    df["datetime"] = pd.to_datetime(df["datetime"], format='ISO8601')
     return df
 
 
