@@ -139,7 +139,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     ]
 
     # take the DAG and run it
-    fgb_upload_results.compute()
+    fgb_upload_results[0].compute()
     dask_client.close()
 
 
