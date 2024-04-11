@@ -132,8 +132,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     # blocks on region_and_t_results and then runs fire forward algorithm (which cannot be run in parallel)
     fire_forward_results = delayed(job_fire_forward)(region_and_t_results, region, tst, ted)
 
-    # for some reason we can't run this step as part of the above DAG?
-    # uploads all snapshots/largefire outputs in parallel
+    # block on fire forward output and upload all snapshots/largefire outputs in parallel
     data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
     fgb_upload_results = [
         delayed(concurrent_copy_outputs_from_local_to_s3)([fire_forward_results,], local_filepath)
