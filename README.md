@@ -4,8 +4,8 @@
 
 * [Getting Started](./docs/getting_started.md)
 * [Running Tests](./docs/running_tests.md)
-* [Notebooks Exploration](./docs/notebooks.md)
-* [Algorithm Explanation](./docs/algorithm_explanation.md)
+* [Notebook Exploration](./docs/notebooks.md)
+* [Algorithm](./docs/algorithm_explanation.md)
 * [Async Task Runner](./maap_runtime/MAAP-DPS.md)
 
 ## Overview:
