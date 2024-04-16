@@ -1,8 +1,10 @@
-import json
-import argparse
+import glob
 
+from dask import delayed
 from fireatlas.utils import timed
 from fireatlas import FireRunDaskCoordinator
+from fireatlas import settings
+
 
 
 @timed
@@ -14,7 +16,14 @@ def Run():
 
     :return: None
     """
-    FireRunDaskCoordinator.job_data_update_checker()
+    data_update_results = FireRunDaskCoordinator.job_data_update_checker()
+
+    data_upload_results = [
+        FireRunDaskCoordinator.concurrent_copy_inputs_from_local_to_s3([data_update_results,], local_filepath)
+        for local_filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
+    ]
+    dag = delayed(lambda x: x)(data_upload_results)
+    dag.compute()
 
 
 if __name__ == "__main__":

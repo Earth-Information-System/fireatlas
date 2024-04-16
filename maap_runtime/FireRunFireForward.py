@@ -1,8 +1,14 @@
 import json
+import glob
+import os
 import argparse
 import fireatlas
+
+from dask import delayed
+from itertools import chain
 from fireatlas.utils import timed
 from fireatlas import FireRunDaskCoordinator
+from fireatlas import settings
 
 
 def validate_json(s):
@@ -15,8 +21,21 @@ def validate_json(s):
 
 @timed
 def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted: fireatlas.FireTypes.TimeStep):
-    FireRunDaskCoordinator.job_fire_forward([None, ], region, tst, ted)
+    """
+    """
+    fire_forward_results = FireRunDaskCoordinator.job_fire_forward([None, ], region, tst, ted)
 
+    # take all fire forward output and upload all snapshots/largefire outputs in parallel
+    data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
+    fgb_upload_results = [
+        FireRunDaskCoordinator.concurrent_copy_outputs_from_local_to_s3(fire_forward_results, local_filepath)
+        for local_filepath in list(chain(
+            glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
+            glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
+        ))
+    ]
+    dag = delayed(lambda x: x)(fgb_upload_results)
+    dag.compute()
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period

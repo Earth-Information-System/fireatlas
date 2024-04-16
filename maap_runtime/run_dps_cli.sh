@@ -108,7 +108,7 @@ pushd "$basedir"
       --outfile "${output_dir}/profile.html" --- FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
   elif [[ $selected_flag == "preprocess-region-t" ]]; then
     scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-      --outfile "${output_dir}/profile.html" --- FireRunByRegionAndT.py --regnm=$regnm --tst="$tst"
+      --outfile "${output_dir}/profile.html" --- FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
   elif [[ $selected_flag == "fire-forward" ]]; then
     scalene --cli --no-browser --reduced-profile --html --column-width 180 \
       --outfile "${output_dir}/profile.html" --- FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
