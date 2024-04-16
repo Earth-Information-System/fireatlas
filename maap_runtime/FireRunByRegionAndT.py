@@ -18,7 +18,7 @@ def validate_json(s):
 
 
 @timed
-def Run(region: fireatlas.FireType.Region, tst: fireatlas.FireType.TimeStep, ted: fireatlas.FireType.TimeStep):
+def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted: fireatlas.FireTypes.TimeStep):
     FireLog.logger.info(f"Running preprocess region-at-t code for {region[0]} at {tst=} with source {settings.FIRE_SOURCE}")
     list_of_timesteps = list(t_generator(tst, ted))
     region_and_t_results = [
@@ -41,4 +41,4 @@ if __name__ == "__main__":
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
     args = parser.parse_args()
-    Run([args.regnm, None], args.tst)
+    Run([args.regnm, None], args.tst, args.ted)
