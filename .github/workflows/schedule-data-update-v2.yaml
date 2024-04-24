@@ -3,7 +3,7 @@ name: data update checker v2
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 */4 * * *'
+    - cron:  '*/15 6-10,18-22 * * *'
 
 jobs:
   run_dps_job_v2:
