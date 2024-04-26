@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eo pipefail
 
-# force all datetimes to be EST/EDT
-export TZ="America/New_York"
+# force all datetimes to be UTC
+export TZ="Etc/UTC"
 
 # check if the number of arguments is less than 4 (minimum required)
 if [ $# -lt 5 ]; then
