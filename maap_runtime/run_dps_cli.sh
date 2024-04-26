@@ -1,6 +1,9 @@
 #!/bin/bash
 set -eo pipefail
 
+# force all datetimes to be EST/EDT
+export TZ="America/New_York"
+
 # check if the number of arguments is less than 4 (minimum required)
 if [ $# -lt 5 ]; then
     echo "Usage: $0 regnm bbox tst ted --flag"
