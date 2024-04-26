@@ -29,7 +29,7 @@ def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, t
     # take all fire forward output and upload all snapshots/largefire outputs in parallel
     data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
     fgb_upload_results = [
-        FireRunDaskCoordinator.concurrent_copy_outputs_from_local_to_s3([None,], local_filepath)
+        FireRunDaskCoordinator.concurrent_copy_from_local_to_s3([None,], local_filepath)
         for local_filepath in list(chain(
             glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
             glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))

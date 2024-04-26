@@ -48,18 +48,13 @@ def validate_json(s):
 
 
 @delayed
-def concurrent_copy_inputs_from_local_to_s3(eventual_results: Tuple[Delayed], local_filepath: str):
-    copy_from_local_to_s3(local_filepath, fs)
-
-
-@delayed
-def concurrent_copy_outputs_from_local_to_s3(eventual_results: Tuple[Delayed], local_filepath: str):
+def concurrent_copy_from_local_to_s3(eventual_results: Tuple[Delayed], local_filepath: str):
     copy_from_local_to_s3(local_filepath, fs)
 
 
 @delayed
 def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: TimeStep, ted: TimeStep):
-    logger.info(f"Running code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
+    logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
     allpixels_filepath = save_allpixels(allpixels, tst, ted, region)
@@ -79,13 +74,14 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
 def job_preprocess_region_t(
         eventual_results: Tuple[Delayed],
         region: Region, t: TimeStep):
-    logger.info(f"Running preprocessing code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
+    logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
     filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(filepath, fs)
 
 
 @delayed
 def job_preprocess_region(region: Region):
+    logger.info(f"Running preprocess-region JSON for {region[0]}")
     filepath = preprocess_region(region)
     copy_from_local_to_s3(filepath, fs)
 
@@ -124,16 +120,18 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
 
     # block on the first two jobs, then uploads raw satellite files from `job_data_update_checker` in parallel
     data_upload_results = [
-        concurrent_copy_inputs_from_local_to_s3([data_input_results, region_results], local_filepath)
+        concurrent_copy_from_local_to_s3([data_input_results, region_results], local_filepath)
         for local_filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     ]
+    # block and execute dag
+    dag = delayed(lambda x: x)(data_upload_results)
+    dag.compute()
 
-    # blocks on data upload results, then runs all region-plus-t in parallel
+    # then run all region-plus-t in parallel
     region_and_t_results = [
-        job_preprocess_region_t(data_upload_results, region, t)
+        job_preprocess_region_t([None,], region, t)
         for t in list_of_timesteps
     ]
-
     # blocks on region_and_t_results and then runs fire forward algorithm (which cannot be run in parallel)
     fire_forward_results = job_fire_forward(region_and_t_results, region, tst, ted)
     fire_forward_results.compute()
@@ -141,7 +139,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     # take all fire forward output and upload all snapshots/largefire outputs in parallel
     data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
     fgb_upload_results = [
-        concurrent_copy_outputs_from_local_to_s3([None,], local_filepath)
+        concurrent_copy_from_local_to_s3([None,], local_filepath)
         for local_filepath in list(chain(
             glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
             glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
