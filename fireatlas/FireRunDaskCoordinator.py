@@ -117,14 +117,17 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     # run the first two jobs in parallel
     data_input_results = job_data_update_checker()
     region_results = job_preprocess_region(region)
+    # block and execute dag
+    dag = delayed(lambda x,y: None)(data_input_results, region_results)
+    dag.compute()
 
     # block on the first two jobs, then uploads raw satellite files from `job_data_update_checker` in parallel
     data_upload_results = [
-        concurrent_copy_from_local_to_s3([data_input_results, region_results], local_filepath)
+        concurrent_copy_from_local_to_s3([None, None], local_filepath)
         for local_filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     ]
     # block and execute dag
-    dag = delayed(lambda x: x)(data_upload_results)
+    dag = delayed(lambda x: None)(data_upload_results)
     dag.compute()
 
     # then run all region-plus-t in parallel
@@ -146,7 +149,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         ))
     ]
     # block and execute dag
-    dag = delayed(lambda x: x)(fgb_upload_results)
+    dag = delayed(lambda x: None)(fgb_upload_results)
     dag.compute()
 
     dask_client.close()
