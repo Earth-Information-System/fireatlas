@@ -250,6 +250,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
                 newfire = Fire(id_newfire, allfires.t, allpixels)
                 newfire.t_st = newfire.t
                 newfire.pixels = pixels
+                newfire.extpixels = pixels
                 newfire.hull = hull
                 newfire.updatefline()
                 newfire.updateftype()  # update the fire type
@@ -270,7 +271,6 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
 
             # update current time, end time
             f.t = allfires.t
-            f.t_ed = allfires.t
 
             # extend pixels with newpixels
             f.pixels = pd.concat([f.pixels, newpixels])
@@ -280,6 +280,10 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
 
             # update the fire type
             f.updateftype()
+
+            # update the end time after everything else
+            f.t_ed = allfires.t
+
 
     # remove duplicates and sort the fid_expanded
     fids_expanded = sorted(set(fids_expanded))
@@ -416,14 +420,14 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             f_source = allfires.fires[fid1]
             f_target = allfires.fires[fid2]
 
-            # - target fire t_ed set to current time
+            # - target fire t to current time
             f_target.t = allfires.t
-            f_target.t_ed = allfires.t
 
             # just in case: set target to valid (is this needed?)
             f_target.invalid = False
 
-            # - target fire add source pixels to pixels and newpixels
+            # - target fire add source pixels to pixels, extpixels
+            f_target.extpixels = f_source.extpixels
             f_target.pixels = pd.concat([f_target.pixels, f_source.pixels])
 
             # - update the hull using previous hull and new pixels
@@ -436,6 +440,9 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
 
             # update target fire ftype
             f_target.updateftype()
+            
+            # - target fire set end time to current time
+            f_target.t_ed = allfires.t
 
             # record the heritages
             allfires.heritages.append((fid1, fid2))

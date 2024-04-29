@@ -611,12 +611,11 @@ class Fire:
 
     @property
     def extpixels(self):
-        """External pixels at the previous timestep + new pixels"""
-        pdt = t2dt(t_nb(self.t, "previous"))
+        """External pixels at the previous active timestep + new pixels"""
         return self.allpixels[
             (self.allpixels["fid"] == self.fireID)
             & (
-                (self.allpixels["ext_until"] == pdt)
+                (self.allpixels["ext_until"] >= t2dt(self.t_ed))
                 | (self.allpixels["t"] == t2dt(self.t))
             )
         ]
