@@ -1,5 +1,6 @@
 import os
 
+import datetime
 import fsspec
 import numpy as np
 import pandas as pd
@@ -261,6 +262,44 @@ def save_fire_layers(allfires_gdf_fid, region, fid, tst):
 
         data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 
+@timed
+def fill_activefire_rows(allfires_gdf, ted):
+    """For a subset of allfires data, add any rows where a fire is still
+    active, but is not burning.
+    """
+    dd = singlefire_getdd("all")
+    
+    if allfires_gdf.index.names == ['fireID', 't']:
+        gdf = allfires_gdf.reset_index()
+    else:
+        gdf = allfires_gdf
+
+    dt = t2dt(ted)
+    all_new_rows = []
+    for fid, allfires_gdf_fid in gdf.groupby("fireID"):
+        d = allfires_gdf_fid.set_index("t")
+        
+        # set last timestep so we fill after the fire has stopped burning
+        if not d.iloc[-1]["invalid"]:
+            last_t = d.index[-1]
+            if last_t != dt:
+                last_t = min(last_t + datetime.timedelta(days=settings.maxoffdays), dt)
+                d.loc[last_t] = None
+
+        ffilled = d.resample("12H").ffill(limit=settings.limoffdays*2).dropna(how="all")
+
+        # get all the rows that are new
+        new_rows = ffilled[~ffilled.index.isin(d.index)]
+
+        # set values that should not be forward filled.
+        new_rows.loc[:,["n_newpixels", "meanFRP", "nfp"]] = 0, None, None
+        
+        all_new_rows.append(new_rows.reset_index())
+            
+    output = pd.concat([gdf, *all_new_rows]).sort_values(["t", "fireID"])
+    for k, tp in dd.items():
+        output[k] = output[k].astype(tp)
+    return output
 
 @timed
 def merge_rows(allfires_gdf_fid):
@@ -290,9 +329,14 @@ def merge_rows(allfires_gdf_fid):
 
 
 @timed
-def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
+def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
     gdf = allfires_gdf.reset_index()
 
+    gdf = gdf[gdf["fireID"].isin(large_fires) | gdf["mergeid"].isin(large_fires)]
+    
+    # forward fill any timesteps that are mising
+    gdf = fill_activefire_rows(gdf, ted)
+    
     merge_needed = (gdf.mergeid != gdf.fireID) & (gdf.invalid == False)
     print(f"{merge_needed.sum()} rows that potentially need a merge")
 
@@ -303,7 +347,6 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst):
         # merge any rows that have the same t
         if data.t.duplicated().any():
             data = merge_rows(data)
-
         save_fire_layers(data, region, fid, tst)
 
 
