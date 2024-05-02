@@ -121,7 +121,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     dag = delayed(lambda x,y: None)(data_input_results, region_results)
     dag.compute()
 
-    # block on the first two jobs, then uploads raw satellite files from `job_data_update_checker` in parallel
+    # uploads raw satellite files from `job_data_update_checker` in parallel
     data_upload_results = [
         concurrent_copy_from_local_to_s3([None, None], local_filepath)
         for local_filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
