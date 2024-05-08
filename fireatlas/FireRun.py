@@ -609,7 +609,7 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
 
     # get lists of times to run fire_forward
     list_of_ts = list(FireTime.t_generator(tst, ted))
-    unique_ym = preprocess.check_preprocessed_file(list_of_ts, sat)
+    unique_ym = preprocess.check_preprocessed_file(tst, ted, sat)
 
     # preprocess the monthly files--will only do for those not already processed
     for ym in unique_ym:
