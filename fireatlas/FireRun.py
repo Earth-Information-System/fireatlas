@@ -584,7 +584,7 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
     preprocesses the monthly data for the region and runs fire_forward.
     Saves the outpts too--allpixels, allfires, and individual fires.
     """
-    from fireatlas import FireTime, preprocess, FireMain, postprocess
+    from fireatlas import FireTime, preprocess, FireMain, postprocess, FireIO
     from fireatlas import settings
 
     settings.FIRE_SOURCE = sat
@@ -609,23 +609,24 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
 
     # get lists of times to run fire_forward
     list_of_ts = list(FireTime.t_generator(tst, ted))
-    unique_ym = preprocess.check_preprocessed_file(tst, ted, sat)
-
+    unique_ym = preprocess.check_preprocessed_file(tst, ted, sat, 'monthly')
+    
     # preprocess the monthly files--will only do for those not already processed
     for ym in unique_ym:
-        preprocess.preprocess_monthly_file(ym, sat)
+        output_files = preprocess.preprocess_monthly_file(ym, sat)
+        for f in output_files:
+            FireIO.copy_from_local_to_s3(f, settings.fs)
 
     # filter VIIRS to the perimeter for each time step
-    region = preprocess.read_region(region)
+    region = preprocess.read_region(region, 'local')
     for t in list_of_ts:
-        preprocess.preprocess_region_t(t, region=region)
+        preprocess.preprocess_region_t(t, region=region, read_region_location='local')
 
     # finally run fire_forward
-    allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region)
+    allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region,
+                                                read_location = 'local', read_saved_location = 'local')
 
     # Save outputs
-    postprocess.save_allpixels(allpixels, tst, ted, region)
-    postprocess.save_allfires_gdf(allfires.gdf, tst, ted, region)
     postprocess.save_individual_fire(allfires.gdf, tst, ted, region)
 
 
