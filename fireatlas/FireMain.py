@@ -431,7 +431,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             f_target.pixels = pd.concat([f_target.pixels, f_source.pixels])
 
             # - update the hull using previous hull and new pixels
-            f_target.updatefhull()
+            f_target.updatefhull(f_source.hull)
             f_target.updatefline()
 
             # invalidate and deactivate source object

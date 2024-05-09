@@ -11,6 +11,7 @@ FOUR LAYERS OF OBJECTS
 import geopandas as gpd
 from datetime import date, timedelta
 from shapely.geometry import MultiLineString, MultiPoint
+from shapely.ops import unary_union
 
 from fireatlas.utils import timed
 from fireatlas.FireTime import t2dt, dt2t, t_nb, t_dif
@@ -667,7 +668,7 @@ class Fire:
         """
         self.ftype = set_ftype(self)
 
-    def updatefhull(self):
+    def updatefhull(self, *hulls):
         """Update the hull using old hull and new locs"""
         # get previous hull, and nex pixels + external pixels from previous timesteps
         phull = self.hull
@@ -677,10 +678,10 @@ class Fire:
         hull = FireVector.cal_hull(pixels[["x", "y"]].values)
 
         # use the union of the newly calculated hull and the previous hull
-        self.hull = phull.union(hull)
+        self.hull = unary_union([hull, phull, *hulls])
 
         # find the pixels that are near the hull and record findings
-        self.extpixels = pixels[FireVector.get_ext_pixels(pixels, hull)]
+        self.extpixels = pixels[FireVector.get_ext_pixels(pixels, self.hull)]
 
     def updatefline(self):
 

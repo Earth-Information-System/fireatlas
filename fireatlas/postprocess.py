@@ -208,7 +208,8 @@ def find_largefires(allfires_gdf):
     last_large = last_seen[
         (last_seen.farea > settings.LARGEFIRE_FAREA) & (last_seen.invalid == False)
     ]
-    return last_large.fireID.values
+    # don't include fires that later get merged in.
+    return last_large["mergeid"].unique()
 
 
 def largefire_folder(region: Region, fid, tst: TimeStep, location: Location = None):
@@ -306,27 +307,26 @@ def merge_rows(allfires_gdf_fid):
     """For a subset of allfires data containing only one fire, merge any
     rows that have the same `t`
     """
-    output = allfires_gdf_fid.drop_duplicates(subset=["t"]).set_index("t").copy()
-
-    # clean up any merges that are needed
-    for dt, rows in allfires_gdf_fid[allfires_gdf_fid.t.duplicated(False)].groupby("t"):
-        # first get the weighted sums for pixden and meanFRP
-        pixweight = (rows["pixden"] * rows["farea"]).sum()
-        FRPweight = (rows["meanFRP"] * rows["n_pixels"]).sum()
-
-        for col in ["n_pixels", "n_newpixels", "farea", "fperim", "flinelen"]:
-            output.loc[dt, col] = rows[col].sum()
-
-        output.loc[dt, "t_st"] = rows["t_st"].min()
-        output.loc[dt, "pixden"] = pixweight / output.loc[dt, "farea"]
-        output.loc[dt, "meanFRP"] = FRPweight / output.loc[dt, "n_pixels"]
-
-        dissolved = rows.dissolve()
-        for col in ["hull", "fline", "nfp"]:
-            output.loc[dt, col] = dissolved[col].item()
-
+    output = allfires_gdf_fid.dissolve(
+        by="t",
+        aggfunc={
+            "meanFRP": lambda x: (
+                None 
+                if (n_newpixels := allfires_gdf_fid.loc[x.index, "n_newpixels"]).sum() == 0 
+                else (x * n_newpixels).sum() / n_newpixels.sum()
+            ),
+            "n_newpixels": "sum",
+            "duration": "max",
+            "fline": unary_union,  # still questioning if this will give the right outcome
+            "nfp": unary_union,
+        },
+    )
+    output["n_pixels"] = output.n_newpixels.cumsum()
+    output["farea"] = output.hull.area / 1e6  # km2
+    output["fperim"] = output.hull.length / 1e3  # km
+    output["flinelen"] = output.fline.apply(lambda x: 0 if x is None else x.length) / 1e3  # km
+    output["pixden"] = output.n_pixels / output.farea
     return output.reset_index()
-
 
 @timed
 def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
@@ -347,21 +347,7 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
         # merge any rows that have the same t
         if data.t.duplicated().any():
             data = merge_rows(data)
-        save_fire_layers(data, region, fid, tst)
-
-
-def individual_fires_path(tst, ted, region, location: Location = None):
-    return os.path.join(
-        all_dir(tst, region, location=location),
-        f"mergedDailyFires_{ted[0]}{ted[1]:02}{ted[2]:02}_{ted[3]}.fgb"
-    )
-
-
-def cumunion(x):
-    for i in range(1, len(x)):
-        x[i] = unary_union([x[i - 1], x[i]])
-    return x
-
+        save_fire_layers(data, region, int(fid), tst)
 
 @timed
 def save_individual_fire(allfires_gdf, tst, ted, region):
@@ -369,54 +355,13 @@ def save_individual_fire(allfires_gdf, tst, ted, region):
     and key to this function is unioning the hulls from previous days, regardless of
     the original fireID/mergeid.
     """
+    gdf = allfires_gdf.reset_index()
 
-    allfires_gdf = allfires_gdf.reset_index()
+    # forward fill any timesteps that are mising
+    gdf = fill_activefire_rows(gdf, ted)
 
-    # summarize file by t. make sure you dissolve the hull
-    merged_t = (
-        allfires_gdf.set_geometry("hull")
-        .dissolve(
-            by="t",
-            aggfunc={
-                "meanFRP": lambda x: (
-                    allfires_gdf.loc[x.index, "meanFRP"]
-                    * allfires_gdf.loc[x.index, "n_newpixels"]
-                ).sum()
-                / allfires_gdf.loc[x.index, "n_newpixels"].sum(),
-                "n_newpixels": "sum",
-                "duration": "max",
-            },
-        )
-        .reset_index()
-    )
+    # merge any rows that need merging across t
+    data = merge_rows(gdf)
 
-    # calculate cumulative sum of n_newpixels
-    merged_t["n_pixels"] = merged_t["n_newpixels"].cumsum()
-
-    # combine the hulls from previous days
-    merged_t["hull"] = cumunion(merged_t["hull"].tolist())
-
-    # do the rest of the calculations
-    merged_t["farea"] = merged_t["hull"].area / 10**6  # convert to km^2
-    merged_t["pixden"] = merged_t["n_pixels"] / merged_t["farea"]
-
-    # reorder columns
-    col_order = [
-        "t",
-        "duration",
-        "n_pixels",
-        "n_newpixels",
-        "meanFRP",
-        "pixden",
-        "farea",
-        "hull",
-    ]
-    merged_t = merged_t[col_order]
-
-    # get file output name
-    output_filepath = individual_fires_path(tst, ted, region, location="local")
-    # make path if necessary
-    os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
-
-    # save
-    merged_t.to_file(output_filepath, driver="FlatGeobuf")
+    # save fire layers - use region name as fid
+    save_fire_layers(data, region, region[0], tst)
