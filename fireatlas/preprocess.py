@@ -194,12 +194,11 @@ def check_preprocessed_file(
     -------
     list of unique combos of years and months (and days if NRT) that need to be processed
     """
-    fs = fsspec.filesystem(location)
     # check that there's viirs data for these dates and if not, keep track
     needs_processing = []
     for t in t_generator(tst, ted):
         filepath = preprocessed_filename(t, sat=sat, location=location)
-        if not fs.exists(filepath):
+        if not settings.fs.exists(filepath):
             needs_processing.append(t)
 
     if freq == "monthly":
