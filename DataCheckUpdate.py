@@ -250,11 +250,9 @@ def wget(url, **kwargs):
     if len(kwargs) > 0:
         print(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
 
-    # Using the requests library to handle the HTTP GET request
     response = requests.get(url, headers=headers)
     response.raise_for_status()  # This will raise an HTTPError for bad requests (4XX or 5XX)
 
-    # Save the content to the file
     with fsspec.open(target_file, "wb") as f:
         f.write(response.content)
 
