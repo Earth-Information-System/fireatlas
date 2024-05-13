@@ -234,26 +234,6 @@ def check_data_avail(year, month, day):
 # ------------------------------------------------------------------------------
 # update external dataset
 # ------------------------------------------------------------------------------
-# def wget(url, **kwargs):
-#     import urllib.request
-#     import os
-#     import fsspec
-#
-#     target_dir = "."
-#     if "locdir" in kwargs:
-#         target_dir = kwargs.pop("locdir")
-#     target_file = os.path.join(target_dir, os.path.basename(url))
-#     print(f"Downloading {url} to {target_file}")
-#     opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
-#     request = urllib.request.Request(url)
-#     if "header" in kwargs:
-#         header = kwargs.pop("header")
-#         assert header == "NASA", f"Non-standard header is not implemented: {header}"
-#     if len(kwargs) > 0:
-#         print(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
-#     with opener.open(request) as response, fsspec.open(target_file, "wb") as f:
-#         f.write(response.read())
-
 def wget(url, **kwargs):
     target_dir = "."
     if "locdir" in kwargs:
