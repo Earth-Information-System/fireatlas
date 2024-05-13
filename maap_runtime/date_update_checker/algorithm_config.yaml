@@ -1,0 +1,14 @@
+algorithm_description: "Map active fire perimeters."
+algorithm_name: eis-fire-feds-dps-data-checker-v2
+algorithm_version: conus-dps
+environment: ubuntu
+repository_url: https://github.com/Earth-Information-System/fireatlas.git
+docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
+queue: "maap-dps-eis-worker-32gb"
+run_command: "fireatlas/run_dps.sh 'DataUpdateChecker'"
+build_command: ""
+disk_space: "10GB"
+inputs:
+  config: []
+  file: []
+  positional: []
