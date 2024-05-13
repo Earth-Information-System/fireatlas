@@ -1,6 +1,7 @@
 #!/bin/bash
 # set -euxo pipefail
 set -eo pipefail
+export TZ="Etc/UTC"
 mkdir output
 basedir=$( cd "$(dirname "$0")"; pwd -P )
 echo "Basedir: $basedir"

@@ -1,0 +1,42 @@
+name: data update checker v2
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '*/15 6-10,18-22 * * *'
+
+jobs:
+  run_dps_job_v2:
+    if: contains('["ranchodeluxe", "mccabete"]', github.actor)
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: conus-dps
+
+    - name: get docker GID and set DOCKER_GID environment variable
+      run: |
+        echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> $GITHUB_ENV
+
+    - name: get current user UID and set UID environment variable
+      run: |
+        echo "UID=$(id -u)" >> $GITHUB_ENV
+
+    - name: print DOCKER_GID and UID
+      run: |
+        echo "Docker GID: $DOCKER_GID"
+        echo "User UID: $UID"
+
+    - name: kick off the DPS job
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v2@conus-dps
+      with:
+        algo_name: eis-fire-feds-dps-data-checker-v2
+        github_ref: conus-dps
+        username: gcorradini
+        queue: maap-dps-eis-worker-64gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+
+

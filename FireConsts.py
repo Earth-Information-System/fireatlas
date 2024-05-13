@@ -130,6 +130,6 @@ remove_static_sources_bool = True  # remove areas with known flaring/gas sources
 remove_static_sources_sourcefile = "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv"
 remove_static_sources_buffer = 0.01 # Buffer around static source points. Units defined by epsg. 
 
-opt_rmstatfire = True  # do the removal of small fires with high pixel density
+opt_rmstatfire = False  # do the removal of small fires with high pixel density
 
 number_of_multi_proc_workers = 8
