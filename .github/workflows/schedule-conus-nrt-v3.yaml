@@ -1,0 +1,47 @@
+name: conus nrt v3
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron:  '45 6,7,8,9,18,19,20,21 * * *'
+
+jobs:
+  run_dps_job_v3:
+    if: contains('["ranchodeluxe", "mccabete"]', github.actor)
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+    - name: checkout repository
+      uses: actions/checkout@v2
+      with:
+        ref: primarykeyv2
+
+    - name: pip install fireatlas
+      run: |
+        pip install .
+
+    - name: get docker GID and set DOCKER_GID environment variable
+      run: |
+        echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> $GITHUB_ENV
+
+    - name: get current user UID and set UID environment variable
+      run: |
+        echo "UID=$(id -u)" >> $GITHUB_ENV
+
+    - name: print DOCKER_GID and UID
+      run: |
+        echo "Docker GID: $DOCKER_GID"
+        echo "User UID: $UID"
+
+    - name: kick off the DPS job
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with:
+        algo_name: eis-feds-dask-coordinator-v3
+        github_ref: 1.0.0
+        username: gcorradini
+        queue: maap-dps-eis-worker-64gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"regnm": "CONUS", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'
+
+

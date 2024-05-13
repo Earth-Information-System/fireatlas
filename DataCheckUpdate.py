@@ -1,10 +1,13 @@
 """ DataUpdate
 This module include functions used to check and update needed data files
 """
+import os
+
 from FireConsts import dirextdata
-import subprocess
+import requests
 from datetime import date, timedelta
 import pandas as pd
+import fsspec
 
 from FireIO import os_path_exists
 
@@ -232,25 +235,26 @@ def check_data_avail(year, month, day):
 # update external dataset
 # ------------------------------------------------------------------------------
 def wget(url, **kwargs):
-    import urllib.request
-    import os
-    import fsspec
-
     target_dir = "."
     if "locdir" in kwargs:
         target_dir = kwargs.pop("locdir")
     target_file = os.path.join(target_dir, os.path.basename(url))
     print(f"Downloading {url} to {target_file}")
-    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor())
-    request = urllib.request.Request(url)
+
+    headers = {}
     if "header" in kwargs:
         header = kwargs.pop("header")
         assert header == "NASA", f"Non-standard header is not implemented: {header}"
-        request.add_header("Authorization", "Bearer ZW9ybGFuZDpaV3hwYW1Gb0xtOXliR0Z1WkVCdVlYTmhMbWR2ZGc9PToxNjQyNzE4ODAyOjQyYzMzM2ViODViOWI3OTVlYzAyYTdmYWE2ZjYwYjFjZTc5MGJmNDg")
+        headers["Authorization"] = "Bearer eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6ImdzZmNfbGFuZHNsaWRlcyIsImV4cCI6MTcyMDgxNzI5OSwiaWF0IjoxNzE1NjMzMjk5LCJpc3MiOiJFYXJ0aGRhdGEgTG9naW4ifQ.mgwyy26sW8i6cEopY2QOdt27Mb0e_kbLOO9aEFn_yhqpOqHwuvV7-RSv1w5P0p3xtVM_jV-Lji0dL9plvtNCrx1rlew3Re7orjCF7cwfcBgjHmvA3Qdf9SR-JEsXTeJUmCgXFElAEYXj8jGtIR6r4jGHylfcOveZqUebVMtBlk_nJnavRfJrsg5Jq-t2GDFDaYXvm4tbtPtoXSZBsHIiuaXnxtTX1MXC_KZZv5sLT9vw-iYNGdm_64DVnY10nPLsfv9AoEKHL81EWbTTcs8LDJIqMVaMF7X9sHxPidF0qF0S2gEKkCU5G5Thl0c7ijQzUorZ878L_HbTX3ezjm_TwQ"
+
     if len(kwargs) > 0:
         print(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
-    with opener.open(request) as response, fsspec.open(target_file, "wb") as f:
-        f.write(response.read())
+
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()  # This will raise an HTTPError for bad requests (4XX or 5XX)
+
+    with fsspec.open(target_file, "wb") as f:
+        f.write(response.content)
 
 def update_VNP14IMGTDL(local_dir=None):
 
