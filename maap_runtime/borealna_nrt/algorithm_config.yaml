@@ -2,10 +2,10 @@ algorithm_description: "Map active fire perimeters."
 algorithm_name: eis-fire-borealna-nrt_largefire
 algorithm_version: eli_global_boreal_largefire_only
 environment: ubuntu
-repository_url: https://repo.maap-project.org/gcorradini/fireatlas_nrt.git
+repository_url: https://github.com/Earth-Information-System/fireatlas.git
 docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
 queue: "maap-dps-worker-32gb"
-run_command: "fireatlas_nrt/run_dps.sh 'BorealNA'"
+run_command: "fireatlas/run_dps.sh 'BorealNA'"
 build_command: ""
 disk_space: "100GB"
 inputs:
