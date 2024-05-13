@@ -203,7 +203,7 @@ def wget(url, **kwargs):
     if "locdir" in kwargs:
         target_dir = kwargs.pop("locdir")
     target_file = os.path.join(target_dir, os.path.basename(url))
-    logger.debug(f"Downloading {url} to {target_file}")
+    logger.info(f"Downloading {url} to {target_file}")
 
     headers = {}
     if "header" in kwargs:
@@ -237,7 +237,7 @@ def update_VNP14IMGTDL():
     dstart = date(today.year,1,1) + timedelta(days=ndays)
     # to avoid any incomplete data just check the last 10 days
     # this shoudl be very quick and it's okay if we are duplicating efforts
-    dstart = dstart - timedelta(days=10)
+    dstart = dstart - timedelta(days=5)
 
     # Do the download process
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
@@ -267,7 +267,7 @@ def update_VJ114IMGTDL():
     dstart = date(today.year,1,1) + timedelta(days=ndays)
     # to avoid any incomplete data just check the last 10 days
     # this shoudl be very quick and it's okay if we are duplicating efforts
-    dstart = dstart - timedelta(days=10)
+    dstart = dstart - timedelta(days=5)
 
     # Do the download process
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
