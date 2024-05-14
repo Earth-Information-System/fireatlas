@@ -6,14 +6,14 @@ from itertools import chain
 
 import s3fs
 
-from typing import Tuple
+from typing import Tuple, Literal
 from dask.distributed import Client
 from dask import delayed
 from dask.delayed import Delayed
 from datetime import datetime
 
 from fireatlas.FireMain import Fire_Forward
-from fireatlas.FireTypes import Region, TimeStep
+from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
 from fireatlas.postprocess import (
     save_allpixels,
@@ -23,7 +23,7 @@ from fireatlas.postprocess import (
     save_large_fires_layers,
     save_large_fires_nplist,
 )
-from fireatlas.preprocess import preprocess_region_t, preprocess_region
+from fireatlas.preprocess import preprocess_region_t, preprocess_region, preprocessed_filename
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3
 from fireatlas.FireTime import t_generator
@@ -45,6 +45,25 @@ def validate_json(s):
     except ValueError:
         raise argparse.ArgumentTypeError("Not a valid JSON string")
 
+
+def get_region_t_files_needing_processing(
+    tst: TimeStep,
+    ted: TimeStep,
+    region: Region,
+    sat = None,
+    freq = "NRT",
+    location: Location = None
+):
+    needs_processing = []
+    for t in t_generator(tst, ted):
+        filepath = preprocessed_filename(t, sat=sat, region=region, location=location)
+        if not settings.fs.exists(filepath):
+            needs_processing.append(t)
+
+    if freq == "monthly":
+        return list(set([(t[0], t[1]) for t in needs_processing]))
+    else:
+        return list(set([(t[0], t[1], t[2]) for t in needs_processing]))
 
 
 @delayed
