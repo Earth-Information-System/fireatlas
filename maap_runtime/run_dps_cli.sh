@@ -103,6 +103,9 @@ source activate /opt/conda/envs/vanilla
 pushd "$basedir"
 { # try
   echo "Running in directory: $(pwd -P)"
+  # we now secretly look for s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/<regnm>/.env
+  # and copy it locally to ../fireatlas/.env so that pydantic can pick up our overrides
+  aws s3 cp "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
 
   if [[ $selected_flag == "data-update" ]]; then
     scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output_dir}/profile.html" --- FireRunDataUpdateChecker.py
