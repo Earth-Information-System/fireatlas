@@ -46,7 +46,7 @@ def validate_json(s):
         raise argparse.ArgumentTypeError("Not a valid JSON string")
 
 
-def get_region_t_files_needing_processing(
+def get_timesteps_needing_region_t_processing(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
@@ -63,7 +63,11 @@ def get_region_t_files_needing_processing(
     if freq == "monthly":
         return list(set([(t[0], t[1]) for t in needs_processing]))
     else:
-        return list(set([(t[0], t[1], t[2]) for t in needs_processing]))
+        timesteps = []
+        for t in needs_processing:
+            timesteps.append((t[0], t[1], t[2], 'AM'))
+            timesteps.append((t[0], t[1], t[2], 'PM'))
+        return list(set(timesteps))
 
 
 @delayed
@@ -149,13 +153,21 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     dag = delayed(lambda x: None)(data_upload_results)
     dag.compute()
 
-    # then run all region-plus-t in parallel
-    region_and_t_results = [
-        job_preprocess_region_t([None,], region, t)
-        for t in list_of_timesteps
-    ]
-    # blocks on region_and_t_results and then runs fire forward algorithm (which cannot be run in parallel)
-    fire_forward_results = job_fire_forward(region_and_t_results, region, tst, ted)
+    # then run all region-plus-t in parallel that need it
+    timesteps_needing_processing = get_timesteps_needing_region_t_processing(
+        tst, ted, region
+    )
+    if timesteps_needing_processing:
+        region_and_t_results = [
+            job_preprocess_region_t([None,], region, t)
+            for t in timesteps_needing_processing
+        ]
+        # block and execute dag
+        dag = delayed(lambda x: None)(region_and_t_results)
+        dag.compute()
+
+    # then run fire forward algorithm (which cannot be run in parallel)
+    fire_forward_results = job_fire_forward([None,], region, tst, ted)
     fire_forward_results.compute()
 
     # take all fire forward output and upload all snapshots/largefire outputs in parallel
