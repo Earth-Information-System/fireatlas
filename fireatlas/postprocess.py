@@ -316,11 +316,13 @@ def merge_rows(allfires_gdf_fid):
                 else (x * n_newpixels).sum() / n_newpixels.sum()
             ),
             "n_newpixels": "sum",
-            "duration": "max",
             "fline": unary_union,  # still questioning if this will give the right outcome
             "nfp": unary_union,
+            "t_ed": "max",
         },
     )
+    t_diff = output["t_ed"] - output.index.min()
+    output["duration"] = t_diff.dt.seconds / 24 / 3600 + t_diff.dt.days
     output["n_pixels"] = output.n_newpixels.cumsum()
     output["farea"] = output.hull.area / 1e6  # km2
     output["fperim"] = output.hull.length / 1e3  # km

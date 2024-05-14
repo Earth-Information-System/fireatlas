@@ -456,7 +456,12 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
     return allfires
 
 @timed
-def Fire_Forward_one_step(allfires, allpixels, t, region):
+def Fire_Forward_one_step(allfires, allpixels, tst, t, region):
+    from fireatlas.postprocess import (
+        save_allpixels,
+        save_allfires_gdf
+    )
+    
     logger.info("--------------------")
     logger.info(f"Fire tracking at {t}")
 
@@ -501,6 +506,10 @@ def Fire_Forward_one_step(allfires, allpixels, t, region):
     # 10. update allfires gdf
     allfires.update_gdf()
 
+    # 11. save allpixels and allfires locally for up to t
+    save_allpixels(allpixels, tst, t, region)
+    save_allfires_gdf(allfires.gdf, tst, t, region)
+    
     return allfires
 
 
@@ -529,8 +538,6 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
     from fireatlas.postprocess import (
         get_t_of_last_allfires_run,
         read_allpixels,
-        save_allpixels,
-        save_allfires_gdf
     )
     from fireatlas.FireObj import Allfires
 
@@ -579,7 +586,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         for col in allpixels_saved.columns:
             allpixels[col] = allpixels[col].astype(allpixels_saved[col].dtype)    
 
-        allpixels = pd.concat([allpixels_saved, allpixels])  
+        allpixels = pd.concat([allpixels_saved, allpixels])
         allfires = Allfires.rehydrate(
             tst,
             t_saved,
@@ -594,10 +601,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
 
     # loop over every t during the period, mutate allfires, allpixels, save
     for t in list_of_ts:
-        allfires = Fire_Forward_one_step(allfires, allpixels, t, region)
-        # save allpixels and allfires locally for up to t
-        save_allpixels(allpixels, tst, t, region)
-        save_allfires_gdf(allfires.gdf, tst, t, region)
+        allfires = Fire_Forward_one_step(allfires, allpixels, tst, t, region)
 
     return allfires, allpixels
 

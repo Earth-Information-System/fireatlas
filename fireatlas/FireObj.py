@@ -106,17 +106,29 @@ class Allfires:
             dt_st = gdf_fid.t_st.min()
             dt_ed = gdf_fid.t_ed.max()
 
-            f.t_st = dt2t(dt_st)
-            f.t_ed = dt2t(dt_ed)
+            if len(gdf_fid) > 1:
+                f.fline_prior = gdf_fid.iloc[-2].fline
 
             gdf_fid_t = gdf_fid.loc[(fid, dt_ed)]
             for k, v in gdf_fid_t.items():
-                if k in ["hull", "ftype", "fline", "invalid"]:
+                if not isinstance(getattr(Fire, k, None), property):
                     setattr(f, k, v)
-            if f.isignition:
-                allfires.fids_new.append(fid)
-            else:
-                allfires.fids_expanded.append(fid)
+            
+            f.t_st = dt2t(dt_st)
+            f.t_ed = dt2t(dt_ed)
+
+            if f.mergeid != fid:
+                allfires.heritages.append((fid, f.mergeid))
+            
+            if f.t_ed == ted:
+                if f.isignition:
+                    allfires.fids_new.append(fid)
+                elif f.mergeid != fid:
+                    allfires.fids_invalid.append(fid)
+                    if f.mergeid not in allfires.fids_merged:
+                        allfires.fids_merged.append(f.mergeid)
+                else:
+                    allfires.fids_expanded.append(fid)
             allfires.fires[fid] = f
         return allfires
 
