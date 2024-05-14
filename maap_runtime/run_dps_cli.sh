@@ -4,6 +4,17 @@ set -eo pipefail
 # force all datetimes to be UTC
 export TZ="Etc/UTC"
 
+copy_s3_object() {
+    local from_path="$1"
+    local to_path="$2"
+    if ! aws s3 cp "$from_path" "$to_path" >/dev/null 2>&1; then
+        # log the error quietly, do not stop the script if fails
+        echo "Copy failed from $from_path to $to_path, continuing..." >&2
+    else
+        echo "Copy succeeded from $from_path to $to_path"
+    fi
+}
+
 # check if the number of arguments is less than 4 (minimum required)
 if [ $# -lt 5 ]; then
     echo "Usage: $0 regnm bbox tst ted --flag"
@@ -105,7 +116,7 @@ pushd "$basedir"
   echo "Running in directory: $(pwd -P)"
   # we now secretly look for s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/<regnm>/.env
   # and copy it locally to ../fireatlas/.env so that pydantic can pick up our overrides
-  aws s3 cp "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
+  copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
 
   if [[ $selected_flag == "data-update" ]]; then
     scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output_dir}/profile.html" --- FireRunDataUpdateChecker.py
