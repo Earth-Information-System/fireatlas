@@ -25,7 +25,7 @@ from fireatlas.postprocess import (
 )
 from fireatlas.preprocess import preprocess_region_t, preprocess_region, preprocessed_filename
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from fireatlas.FireIO import copy_from_local_to_s3
+from fireatlas.FireIO import copy_from_local_to_s3, copy_from_maap_to_veda_s3
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 from fireatlas import settings
@@ -72,6 +72,11 @@ def get_timesteps_needing_region_t_processing(
 @delayed
 def concurrent_copy_from_local_to_s3(eventual_results: Tuple[Delayed], local_filepath: str):
     copy_from_local_to_s3(local_filepath, fs)
+
+
+@delayed
+def concurrent_copy_from_local_to_veda(eventual_results: Tuple[Delayed], local_filepath: str, region: Region):
+    copy_from_maap_to_veda_s3(local_filepath, region[0])
 
 
 @delayed
@@ -180,6 +185,18 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     ]
     # block and execute dag
     dag = delayed(lambda x: None)(fgb_upload_results)
+    dag.compute()
+
+    # take all fire forward output and upload all snapshots/largefire outputs in parallel to veda s3
+    veda_upload_results = [
+        concurrent_copy_from_local_to_veda([None,], local_filepath, region)
+        for local_filepath in list(chain(
+            glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
+            glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
+        ))
+    ]
+    # block and execute dag
+    dag = delayed(lambda x: None)(veda_upload_results)
     dag.compute()
 
     dask_client.close()

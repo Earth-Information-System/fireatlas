@@ -2009,7 +2009,8 @@ def pixel2World(gt, Xpixel, Ypixel):
     return (Xgeo, Ygeo)
 
 
-def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
+def copy_from_maap_to_veda_s3(local_filepath: str, regnm: str):
+    from_maap_s3_path = local_filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
     s3 = s3fs.S3FileSystem()
     filename = os.path.basename(from_maap_s3_path)
     filename_no_ext = os.path.splitext(filename)[0]
@@ -2072,11 +2073,11 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     if "lf_" in from_maap_s3_path:
         new_key_layer_name = f"{filename_no_ext}_{new_region_name}.gpkg"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
-        to_veda_s3_path = f"EIS/FEDSoutput/LFArchive/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput-v3/LFArchive/{new_key_layer_name}"
     else:
         new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.gpkg"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
-        to_veda_s3_path = f"EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput-v3/Snapshot/{new_key_layer_name}"
 
     gdf = gpd.read_file(from_maap_s3_path)
 
