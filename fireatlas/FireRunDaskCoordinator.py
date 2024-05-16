@@ -6,7 +6,7 @@ from itertools import chain
 
 import s3fs
 
-from typing import Tuple, Literal
+from typing import Tuple
 from dask.distributed import Client
 from dask import delayed
 from dask.delayed import Delayed
@@ -65,8 +65,7 @@ def get_timesteps_needing_region_t_processing(
     else:
         timesteps = []
         for t in needs_processing:
-            timesteps.append((t[0], t[1], t[2], 'AM'))
-            timesteps.append((t[0], t[1], t[2], 'PM'))
+            timesteps.append(t)
         return list(set(timesteps))
 
 
@@ -122,7 +121,7 @@ def job_data_update_checker():
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep):
 
-    ctime = datetime.now()
+    ctime = datetime.utcnow()
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
 
