@@ -3,11 +3,11 @@ name: conus nrt v2
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '45 6,7,8,9,18,19,20,21 * * *'
+    - cron:  '45 6,9,18,21 * * *'
 
 jobs:
   run_dps_job_v2:
-    if: contains('["ranchodeluxe", "mccabete"]', github.actor)
+    if: contains('["ranchodeluxe", "mccabete"]', github.actor)  && ${{ vars.SKIP_SCHEDULING != 'true' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
