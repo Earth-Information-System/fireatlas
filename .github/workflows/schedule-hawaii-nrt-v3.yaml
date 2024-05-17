@@ -1,4 +1,4 @@
-name: hawaii usa nrt v3
+name: hawaii nrt v3
 
 on:
   workflow_dispatch:
