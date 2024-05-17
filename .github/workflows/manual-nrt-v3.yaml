@@ -32,9 +32,9 @@ jobs:
       - name: echo vars
         run: |
           echo ${{ vars.SCHEDULING_ON }}
-          echo ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && (vars.SCHEDULING_ON == 'true') }}
+          echo ${{ contains(fromJSON('["ranchodeluxe", "mccabete"]'), github.actor) && (vars.SCHEDULING_ON == 'true') }}
   run_dps_job_v3:
-    if: ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && (vars.SCHEDULING_ON == 'true') }}
+    if: ${{ contains(fromJSON('["ranchodeluxe", "mccabete"]'), github.actor) && (vars.SCHEDULING_ON == 'true') }}
     runs-on: ubuntu-latest
     environment: production
     steps:
