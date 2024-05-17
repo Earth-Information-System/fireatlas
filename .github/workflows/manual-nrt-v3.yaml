@@ -25,15 +25,8 @@ on:
         required: true
 
 jobs:
-  echo_server:
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: echo vars
-        run: |
-          echo ${{ vars.SCHEDULING_ON }}
   run_dps_job_v3:
-    if: ${{ !!vars.SCHEDULING_ON }}
+    if: contains('["ranchodeluxe", "mccabete"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
     steps:
