@@ -10,7 +10,7 @@ from typing import Tuple
 from dask.distributed import Client
 from dask import delayed
 from dask.delayed import Delayed
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fireatlas.FireMain import Fire_Forward
 from fireatlas.FireTypes import Region, TimeStep, Location
@@ -26,7 +26,7 @@ from fireatlas.postprocess import (
 from fireatlas.preprocess import preprocess_region_t, preprocess_region, preprocessed_filename
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3, copy_from_maap_to_veda_s3
-from fireatlas.FireTime import t_generator
+from fireatlas.FireTime import t_generator, t2dt, dt2t
 from fireatlas.FireLog import logger
 from fireatlas import settings
 
@@ -54,11 +54,16 @@ def get_timesteps_needing_region_t_processing(
     freq = "NRT",
     location: Location = None
 ):
+    # only do the preprocess check for ted minus the last three days
+    # and always preprocess the last three days
+    t_three_days_ago = dt2t(t2dt(ted) - timedelta(days=3))
     needs_processing = []
-    for t in t_generator(tst, ted):
+    for t in t_generator(tst, t_three_days_ago):
         filepath = preprocessed_filename(t, sat=sat, region=region, location=location)
         if not settings.fs.exists(filepath):
             needs_processing.append(t)
+
+    needs_processing += list(t_generator(t_three_days_ago, ted))
 
     if freq == "monthly":
         return list(set([(t[0], t[1]) for t in needs_processing]))
