@@ -31,6 +31,7 @@ jobs:
     steps:
       - name: echo vars
         run: |
+          echo ${{ vars.SCHEDULING_ON }}
           echo ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && (vars.SCHEDULING_ON == 'true') }}
   run_dps_job_v3:
     if: ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && (vars.SCHEDULING_ON == 'true') }}
