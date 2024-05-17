@@ -26,6 +26,7 @@ on:
 
 jobs:
   echo_server:
+    runs-on: ubuntu-latest
     environment: production
     steps:
       - name: echo vars
