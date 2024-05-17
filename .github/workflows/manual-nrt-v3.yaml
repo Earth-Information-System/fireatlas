@@ -26,15 +26,17 @@ on:
 
 jobs:
   echo_server:
-
     runs-on: ubuntu-latest
     environment: production
     steps:
       - name: echo vars
         run: |
-          echo ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && vars.SKIP_SCHEDULING != true }}
+          echo ${{ fromJSON(true) }}
+          echo ${{ !fromJSON(true) }}
+          echo ${{ fromJSON('true') }}
+          echo ${{ !fromJSON('true') }}
   run_dps_job_v3:
-    if: ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && vars.SKIP_SCHEDULING != true }}
+    if: ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && !fromJSON(vars.SKIP_SCHEDULING) }}
     runs-on: ubuntu-latest
     environment: production
     steps:
