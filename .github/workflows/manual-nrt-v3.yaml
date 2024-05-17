@@ -32,9 +32,9 @@ jobs:
     steps:
       - name: echo vars
         run: |
-          echo ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && !vars.SKIP_SCHEDULING }}
+          echo ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && vars.SKIP_SCHEDULING != 'false' }}
   run_dps_job_v3:
-    if: ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && !vars.SKIP_SCHEDULING }}
+    if: ${{ contains('["ranchodeluxe", "mccabete"]', github.actor) && vars.SKIP_SCHEDULING != 'false' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
