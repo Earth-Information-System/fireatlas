@@ -31,9 +31,9 @@ jobs:
     steps:
       - name: test
         run: |
-          echo ${{ startsWith('true', vars.SCHEDULING_ON) }}
+          echo ${{ contains('on', vars.SCHEDULING_ON) }}
   run_dps_job_v3:
-    if: ${{ startsWith('true', vars.SCHEDULING_ON) }}
+    if: ${{ contains('on', vars.SCHEDULING_ON) }}
     runs-on: ubuntu-latest
     environment: production
     steps:
