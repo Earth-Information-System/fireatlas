@@ -71,7 +71,7 @@ def get_timesteps_needing_region_t_processing(
         timesteps = []
         for t in needs_processing:
             timesteps.append((t[0], t[1], t[2], t[3]))
-        return list(set(timesteps))
+        return sorted(list(set(timesteps)))
 
 
 @delayed
