@@ -33,7 +33,7 @@ jobs:
         run: |
           echo ${{ contains('on', vars.SCHEDULING_ON) }}
   run_dps_job_v3:
-    if: vars.SCHEDULING_ON ||  'false'
+    if: ${{  vars.SCHEDULING_ON == 'on' }}
     runs-on: ubuntu-latest
     environment: production
     steps:
