@@ -26,7 +26,7 @@ on:
 
 jobs:
   run_dps_job_v3:
-    if: contains('["ranchodeluxe", "mccabete"]', github.actor)
+    if: startsWith('true', ${{ vars.SCHEDULING_ON }})
     runs-on: ubuntu-latest
     environment: production
     steps:
