@@ -107,7 +107,7 @@ def job_preprocess_region_t(
         eventual_results: Tuple[Delayed],
         region: Region, t: TimeStep):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
-    filepath = preprocess_region_t(t, region=region)
+    filepath = preprocess_region_t(t, region=region, force=True)
     copy_from_local_to_s3(filepath, fs)
 
 
@@ -197,7 +197,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         concurrent_copy_from_local_to_veda([None,], local_filepath, region)
         for local_filepath in list(chain(
             glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
-            glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
+            #glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
         ))
     ]
     # block and execute dag
