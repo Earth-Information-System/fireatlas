@@ -556,9 +556,11 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
             logger.warn("No saved version of allfires and allpixels")
         elif t_saved == ted:
             logger.warn(
-                "Nothing left to do. There is already a saved version "
-                f"of allfires and allpixels at {t_saved=}. Reprocessing.."
+                f"Nothing left to do. There is already a saved version "
+                f"of allfires and allpixels at {t_saved=}."
             )
+            t_saved = FireTime.t_nb(t_saved, "previous")
+            logger.warn(f"Reprocessing from previous timestep {t_saved=} to {ted=}")
     if t_saved:
         # list of all the timesteps that we still need to run on
         list_of_ts = list(FireTime.t_generator(FireTime.t_nb(t_saved, "next"), ted))
