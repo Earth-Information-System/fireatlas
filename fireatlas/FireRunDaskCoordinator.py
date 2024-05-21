@@ -107,7 +107,7 @@ def job_preprocess_region_t(
         eventual_results: Tuple[Delayed],
         region: Region, t: TimeStep):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
-    filepath = preprocess_region_t(t, region=region, force=True)
+    filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(filepath, fs)
 
 
