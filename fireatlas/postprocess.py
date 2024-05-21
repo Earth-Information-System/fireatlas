@@ -185,7 +185,7 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
         )
 
         # drop the columns we don't actually need
-        data = data.drop(columns=["invalid", "fireID"])
+        data = data.drop(columns=["invalid"])
 
         data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 

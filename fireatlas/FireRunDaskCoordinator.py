@@ -197,7 +197,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         concurrent_copy_from_local_to_veda([None,], local_filepath, region)
         for local_filepath in list(chain(
             glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
-            glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
+            #glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
         ))
     ]
     # block and execute dag

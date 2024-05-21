@@ -555,9 +555,9 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         if t_saved is None:
             logger.warn("No saved version of allfires and allpixels")
         elif t_saved == ted:
-            raise KeyError(
+            logger.warn(
                 "Nothing left to do. There is already a saved version "
-                f"of allfires and allpixels at {t_saved=}."
+                f"of allfires and allpixels at {t_saved=}. Reprocessing.."
             )
     if t_saved:
         # list of all the timesteps that we still need to run on
