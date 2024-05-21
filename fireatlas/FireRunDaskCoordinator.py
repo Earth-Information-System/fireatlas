@@ -192,13 +192,12 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     dag = delayed(lambda x: None)(fgb_upload_results)
     dag.compute()
 
-    # take all fire forward output and upload all snapshots/largefire outputs in parallel to veda s3
+    # take the latest snapshot outputs for ted and copy all files to s3
     veda_upload_results = [
         concurrent_copy_from_local_to_veda([None,], local_filepath, region)
-        for local_filepath in list(chain(
-            glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
-            #glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
-        ))
+        for local_filepath in list(
+            glob.glob(os.path.join(data_dir, "Snapshot", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
+        )
     ]
     # block and execute dag
     dag = delayed(lambda x: None)(veda_upload_results)
