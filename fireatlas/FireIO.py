@@ -2093,10 +2093,7 @@ def copy_from_maap_to_veda_s3(local_filepath: str, regnm: str):
             pass
         gdf = gdf.rename(columns={"t_ed": "t"})
 
-    # fiona has a bug where it cannot write GPKG files to s3 even though FileGeobuf work fine
-    # so to work around this issue we just write them locally to /tmp first
-    gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
-    s3.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
+    gdf[select_cols].to_file(f"s3://veda-data-store-staging/{to_veda_s3_path}", driver="FlatGeobuf")
 
 
 def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
