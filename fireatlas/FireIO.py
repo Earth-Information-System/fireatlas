@@ -2071,11 +2071,11 @@ def copy_from_maap_to_veda_s3(local_filepath: str, regnm: str):
     new_region_name = regnm.lower().replace("_", "")
 
     if "lf_" in from_maap_s3_path:
-        new_key_layer_name = f"{filename_no_ext}_{new_region_name}.gpkg"
+        new_key_layer_name = f"{filename_no_ext}_{new_region_name}.fgb"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
         to_veda_s3_path = f"EIS/FEDSoutput-v3/LFArchive/{new_key_layer_name}"
     else:
-        new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.gpkg"
+        new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.fgb"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
         to_veda_s3_path = f"EIS/FEDSoutput-v3/Snapshot/{new_key_layer_name}"
 
