@@ -1,4 +1,4 @@
-name: conus nrt v2
+name: boreal lf v2
 
 on:
   workflow_dispatch:
