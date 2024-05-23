@@ -1,4 +1,4 @@
-name: conus nrt v3
+name: boreal lf v2
 
 on:
   workflow_dispatch:
@@ -6,7 +6,7 @@ on:
     - cron:  '45 6,9,18,21 * * *'
 
 jobs:
-  run_dps_job_v3:
+  run_dps_job_v2:
     if: contains('["ranchodeluxe", "mccabete"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
@@ -14,11 +14,7 @@ jobs:
     - name: checkout repository
       uses: actions/checkout@v2
       with:
-        ref: primarykeyv2
-
-    - name: pip install fireatlas
-      run: |
-        pip install .
+        ref: eli_global_boreal_largefire_only
 
     - name: get docker GID and set DOCKER_GID environment variable
       run: |
@@ -34,14 +30,13 @@ jobs:
         echo "User UID: $UID"
 
     - name: kick off the DPS job
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v2@conus-dps
       with:
-        algo_name: eis-feds-dask-coordinator-v3
-        github_ref: 1.0.0
-        username: gcorradini
+        algo_name: eis-fire-borealna-nrt_largefire
+        github_ref: eli_global_boreal_largefire_only
+        username: mccabete
         queue: maap-dps-eis-worker-64gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"regnm": "CONUS", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'
 
 
