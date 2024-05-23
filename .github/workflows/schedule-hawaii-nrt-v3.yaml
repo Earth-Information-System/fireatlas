@@ -7,7 +7,7 @@ on:
 
 jobs:
   run_dps_job_v3:
-    if: false  # contains('["ranchodeluxe", "mccabete"]', github.actor)
+    if: contains('["ranchodeluxe", "mccabete"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
     steps:
