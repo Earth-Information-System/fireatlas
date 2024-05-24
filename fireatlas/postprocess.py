@@ -179,11 +179,11 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
 
         data["region"] = str(region[0])
 
-        data['t_iso'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+        data['t'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
         # primary key is: region + fireID + 12hr slice
         data["primarykey"] = (
-            data["region"] + "|" + data["fireID"].astype(str) + "|" + data["t_iso"]
+            data["region"] + "|" + data["fireID"].astype(str) + "|" + data["t"]
         )
 
         # drop the columns we don't actually need
