@@ -179,8 +179,7 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
 
         data["region"] = str(region[0])
 
-        # not a vectorized operation but we need the `t` in isoformat
-        data['t_iso'] = [dt.isoformat() for dt in data['t'].dt.to_pydatetime()]
+        data['t_iso'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
         # primary key is: region + fireID + 12hr slice
         data["primarykey"] = (
