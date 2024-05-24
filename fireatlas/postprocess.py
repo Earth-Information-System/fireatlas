@@ -293,11 +293,13 @@ def save_combined_large_fire_layers(allfires_gdf, tst: TimeStep, ted: TimeStep, 
         data = data.set_geometry("geometry")
         data = data[data.geometry.notna() & ~data.geometry.is_empty]
 
+
         if layer == "perimeter":
             # figure out the fire state given current t
             data["isignition"] = dt == data["t_st"]
             data["t_inactive"] = (dt - data["t_ed"]).dt.days
 
+            data['invalid'] = data['invalid'].fillna(False)
             data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= settings.maxoffdays)
             data["isdead"] = ~data["invalid"] & (data["t_inactive"] > settings.limoffdays)
             data["mayreactivate"] = (
@@ -323,11 +325,11 @@ def save_combined_large_fire_layers(allfires_gdf, tst: TimeStep, ted: TimeStep, 
 
         data["region"] = str(region[0])
 
-        data['t_iso'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+        data['t'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
 
         # primary key is: region + fireID + 12hr slice
         data["primarykey"] = (
-                data["region"] + "|" + data["fireID"].astype(str) + "|" + data['t_iso']
+                data["region"] + "|" + data["fireID"].astype(str) + "|" + data['t']
         )
 
         # drop the columns we don't actually need
