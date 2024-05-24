@@ -323,9 +323,11 @@ def save_combined_large_fire_layers(allfires_gdf, tst: TimeStep, ted: TimeStep, 
 
         data["region"] = str(region[0])
 
+        data['t_iso'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+
         # primary key is: region + fireID + 12hr slice
         data["primarykey"] = (
-                data["region"] + "|" + data["fireID"].astype(str) + "|" + dt.isoformat()
+                data["region"] + "|" + data["fireID"].astype(str) + "|" + data['t_iso']
         )
 
         # drop the columns we don't actually need
