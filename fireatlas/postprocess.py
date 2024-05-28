@@ -178,7 +178,7 @@ def create_snapshot_data(
             data["geom_counts"] > 5, 1, 0
         )  # if more than 5 geometries are present, flag it
 
-        # only show isactive perimeters
+        # only include perimeters what are active or may reactivate
         data = data[(data['isactive'] == 1) | (data['mayreactivate'] == 1)]
 
     data["region"] = str(region[0])
