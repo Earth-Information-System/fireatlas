@@ -154,6 +154,7 @@ def create_snapshot_data(
         data["isignition"] = ted == data["t_st"]
         data["t_inactive"] = (ted - data["t_ed"]).dt.days
 
+        data['invalid'] = data['invalid'].fillna(False)
         data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= settings.maxoffdays)
         data["isdead"] = ~data["invalid"] & (data["t_inactive"] > settings.limoffdays)
         data["mayreactivate"] = (
@@ -297,6 +298,7 @@ def save_combined_large_fire_layers(allfires_gdf, tst: TimeStep, ted: TimeStep, 
     for layer in ["perimeter", "fireline", "newfirepix"]:
         data = create_snapshot_data(allfires_gdf, layer, region, dt)
         data.to_file(os.path.join(output_dir, f"lf_{layer}.fgb"), driver="FlatGeobuf")
+
 
 @timed
 def fill_activefire_rows(allfires_gdf, ted):
