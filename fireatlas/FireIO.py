@@ -2081,10 +2081,7 @@ def copy_from_maap_to_veda_s3(local_filepath: str, regnm: str):
 
     gdf = gpd.read_file(from_maap_s3_path)
 
-    # rename columns for large fires
-    if "lf_" in from_maap_s3_path:
-        gdf = gdf.rename(columns={"id": "fireID"})
-    else:
+    if not "lf_" in from_maap_s3_path:
         # rename columns for snapshots
         # but get rid of any possible duplicate columns first
         try:
