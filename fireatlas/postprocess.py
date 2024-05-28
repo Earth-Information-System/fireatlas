@@ -369,7 +369,11 @@ def merge_rows(allfires_gdf_fid):
 
 
 @timed
-def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, combine_all=False):
+def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
+    """will save individual large fire artifacts as well as
+
+    a combined perimeter, newpixel and fireline artifact of all large fires
+    """
     gdf = allfires_gdf.reset_index()
 
     gdf = gdf[gdf["fireID"].isin(large_fires) | gdf["mergeid"].isin(large_fires)]
@@ -389,14 +393,14 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, combine
         if data.t.duplicated().any():
             data = merge_rows(data)
 
-        if combine_all:
-            processed_gdfs.append(data)
-        else:
-            save_fire_layers(data, region, int(fid), tst)
+        # accumulate each fid for combined large fires
+        processed_gdfs.append(data)
+        # save off single large fire artifacts
+        save_fire_layers(data, region, int(fid), tst)
 
-    if combine_all:
-        single_gdf = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
-        save_combined_large_fire_layers(single_gdf, tst, ted, region)
+    # save off all large fire artifacts
+    all_gdfs = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
+    save_combined_large_fire_layers(all_gdfs, tst, ted, region)
 
 
 @timed

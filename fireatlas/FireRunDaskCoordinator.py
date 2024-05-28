@@ -99,8 +99,7 @@ def job_fire_forward(eventual_results: Tuple[Delayed], region: Region, tst: Time
 
     large_fires = find_largefires(allfires.gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
-    save_large_fires_layers(allfires.gdf, region, large_fires, tst, ted, combine_all=False)
-    save_large_fires_layers(allfires.gdf, region, large_fires, tst, ted, combine_all=True)
+    save_large_fires_layers(allfires.gdf, region, large_fires, tst, ted)
 
 
 @delayed
