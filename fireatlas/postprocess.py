@@ -1,6 +1,8 @@
 import os
 
 import datetime
+from typing import Literal
+
 import fsspec
 import numpy as np
 import pandas as pd
@@ -127,6 +129,70 @@ def snapshot_folder(
         f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}",
     )
 
+@timed
+def create_snapshot_data(
+        allfires_gdf,
+        layer: Literal["perimeter", "fireline", "newfirepix"],
+        region: Region,
+        ted: datetime.datetime
+):
+    columns = [col for col in snapshot_getdd(layer)]
+    data = allfires_gdf[[*columns, "invalid", "fireID"]].copy()
+
+    if layer == "perimeter":
+        data["geometry"] = allfires_gdf["hull"]
+    if layer == "newfirepix":
+        data["geometry"] = allfires_gdf["nfp"]
+    if layer == "fireline":
+        data["geometry"] = allfires_gdf["fline"]
+
+    data = data.set_geometry("geometry")
+    data = data[data.geometry.notna() & ~data.geometry.is_empty]
+
+    if layer == "perimeter":
+        # figure out the fire state given current t
+        data["isignition"] = ted == data["t_st"]
+        data["t_inactive"] = (ted - data["t_ed"]).dt.days
+
+        data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= settings.maxoffdays)
+        data["isdead"] = ~data["invalid"] & (data["t_inactive"] > settings.limoffdays)
+        data["mayreactivate"] = (
+                ~data["invalid"]
+                & (settings.maxoffdays < data["t_inactive"])
+                & (data["t_inactive"] <= settings.limoffdays)
+        )
+
+        # map booleans to integers
+        for col in ["isignition", "isactive", "isdead", "mayreactivate"]:
+            data[col] = data[col].astype(int)
+
+        # apply filter flag
+        data["geom_counts"] = (
+            data[["fireID", "geometry"]]
+                .explode(index_parts=True)
+                .groupby(["fireID"])
+                .nunique()["geometry"]
+        )  # count number of polygons
+        data["low_confidence_grouping"] = np.where(
+            data["geom_counts"] > 5, 1, 0
+        )  # if more than 5 geometries are present, flag it
+
+        # only show isactive perimeters
+        data = data[(data['isactive'] == 1) | (data['mayreactivate'] == 1)]
+
+    data["region"] = str(region[0])
+
+    data['t'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
+
+    # primary key is: region + fireID + 12hr slice
+    data["primarykey"] = (
+            data["region"] + "|" + data["fireID"].astype(str) + "|" + data['t']
+    )
+
+    # drop the columns we don't actually need
+    data = data.drop(columns=["invalid"])
+    return data
+
 
 @timed
 def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: TimeStep):
@@ -136,59 +202,7 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
     dt = t2dt(ted)
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
-        columns = [col for col in snapshot_getdd(layer)]
-        data = allfires_gdf_t[[*columns, "invalid", "fireID"]].copy()
-
-        if layer == "perimeter":
-            data["geometry"] = allfires_gdf_t["hull"]
-        if layer == "newfirepix":
-            data["geometry"] = allfires_gdf_t["nfp"]
-        if layer == "fireline":
-            data["geometry"] = allfires_gdf_t["fline"]
-
-        data = data.set_geometry("geometry")
-        data = data[data.geometry.notna() & ~data.geometry.is_empty]
-
-        if layer == "perimeter":
-            # figure out the fire state given current t
-            data["isignition"] = dt == data["t_st"]
-            data["t_inactive"] = (dt - data["t_ed"]).dt.days
-
-            data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= settings.maxoffdays)
-            data["isdead"] = ~data["invalid"] & (data["t_inactive"] > settings.limoffdays)
-            data["mayreactivate"] = (
-                ~data["invalid"]
-                & (settings.maxoffdays < data["t_inactive"])
-                & (data["t_inactive"] <= settings.limoffdays)
-            )
-
-            # map booleans to integers
-            for col in ["isignition", "isactive", "isdead", "mayreactivate"]:
-                data[col] = data[col].astype(int)
-
-            # apply filter flag
-            data["geom_counts"] = (
-                data[["fireID", "geometry"]]
-                .explode(index_parts=True)
-                .groupby(["fireID"])
-                .nunique()["geometry"]
-            )  # count number of polygons
-            data["low_confidence_grouping"] = np.where(
-                data["geom_counts"] > 5, 1, 0
-            )  # if more than 5 geometries are present, flag it
-
-        data["region"] = str(region[0])
-
-        data['t'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-
-        # primary key is: region + fireID + 12hr slice
-        data["primarykey"] = (
-            data["region"] + "|" + data["fireID"].astype(str) + "|" + data["t"]
-        )
-
-        # drop the columns we don't actually need
-        data = data.drop(columns=["invalid"])
-
+        data = create_snapshot_data(allfires_gdf_t, layer, region, dt)
         data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 
 
@@ -280,61 +294,8 @@ def save_combined_large_fire_layers(allfires_gdf, tst: TimeStep, ted: TimeStep, 
     os.makedirs(output_dir, exist_ok=True)
 
     dt = t2dt(ted)
-
     for layer in ["perimeter", "fireline", "newfirepix"]:
-        columns = [col for col in snapshot_getdd(layer)]
-        data = allfires_gdf[[*columns, "invalid", "fireID"]].copy()
-
-        if layer == "perimeter":
-            data["geometry"] = allfires_gdf["hull"]
-        if layer == "newfirepix":
-            data["geometry"] = allfires_gdf["nfp"]
-        if layer == "fireline":
-            data["geometry"] = allfires_gdf["fline"]
-
-        data = data.set_geometry("geometry")
-        data = data[data.geometry.notna() & ~data.geometry.is_empty]
-
-        if layer == "perimeter":
-            # figure out the fire state given current t
-            data["isignition"] = dt == data["t_st"]
-            data["t_inactive"] = (dt - data["t_ed"]).dt.days
-
-            data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= settings.maxoffdays)
-            data["isdead"] = ~data["invalid"] & (data["t_inactive"] > settings.limoffdays)
-            data["mayreactivate"] = (
-                    ~data["invalid"]
-                    & (settings.maxoffdays < data["t_inactive"])
-                    & (data["t_inactive"] <= settings.limoffdays)
-            )
-
-            # map booleans to integers
-            for col in ["isignition", "isactive", "isdead", "mayreactivate"]:
-                data[col] = data[col].astype(int)
-
-            # apply filter flag
-            data["geom_counts"] = (
-                data[["fireID", "geometry"]]
-                    .explode(index_parts=True)
-                    .groupby(["fireID"])
-                    .nunique()["geometry"]
-            )  # count number of polygons
-            data["low_confidence_grouping"] = np.where(
-                data["geom_counts"] > 5, 1, 0
-            )  # if more than 5 geometries are present, flag it
-
-        data["region"] = str(region[0])
-
-        data['t_iso'] = data['t'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-
-        # primary key is: region + fireID + 12hr slice
-        data["primarykey"] = (
-                data["region"] + "|" + data["fireID"].astype(str) + "|" + data['t_iso']
-        )
-
-        # drop the columns we don't actually need
-        data = data.drop(columns=["invalid"])
-
+        data = create_snapshot_data(allfires_gdf, layer, region, dt)
         data.to_file(os.path.join(output_dir, f"lf_{layer}.fgb"), driver="FlatGeobuf")
 
 @timed
