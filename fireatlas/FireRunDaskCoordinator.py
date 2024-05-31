@@ -179,6 +179,8 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     # block until half-day timesteps and region are on s3
     client.gather([*data_upload_futures, region_future])
 
+    logger.info("------------- Done with preprocessing t -------------")
+
     # then run all region-plus-t in parallel that need it
     timesteps_needing_processing = get_timesteps_needing_region_t_processing(
         tst, ted, region
@@ -189,7 +191,9 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     )
     # block until preprocessing is complete
     client.gather(region_and_t_futures)
-
+    
+    logger.info("------------- Done with preprocessing region + t -------------")
+    
     # run fire forward algorithm (which cannot be run in parallel)
     job_fire_forward(region=region, tst=tst, ted=ted)
 
@@ -207,6 +211,9 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     )
     # block until everything is uploaded
     client.gather([*fgb_s3_upload_futures, *fgb_veda_upload_futures])
+
+    logger.info("------------- Done -------------")
+
     client.close()
 
 
