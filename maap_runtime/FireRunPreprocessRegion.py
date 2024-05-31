@@ -15,8 +15,7 @@ def validate_json(s):
 
 @timed
 def Run(region: fireatlas.FireTypes.Region):
-    dag = FireRunDaskCoordinator.job_preprocess_region(region)
-    dag.compute()
+    FireRunDaskCoordinator.job_preprocess_region(region)
 
 
 if __name__ == "__main__":

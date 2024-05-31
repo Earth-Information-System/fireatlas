@@ -7,17 +7,21 @@ from functools import partial
 import s3fs
 
 from dask.distributed import Client
-from datetime import datetime, date, UTC
+from datetime import datetime, date, timezone, timedelta
 
 from fireatlas.FireMain import Fire_Forward
 from fireatlas.FireTypes import Region, TimeStep
 from fireatlas.utils import timed
 from fireatlas.postprocess import (
     all_dir,
+    allfires_filepath,
+    allpixels_filepath,
     save_snapshots,
     find_largefires,
     save_large_fires_layers,
     save_large_fires_nplist,
+    read_allfires_gdf,
+    read_allpixels,
 )
 from fireatlas.preprocess import (
     check_preprocessed_file,
@@ -25,11 +29,12 @@ from fireatlas.preprocess import (
     preprocess_input_file,
     preprocess_region_t,
     preprocess_region,
+    preprocessed_region_filename,
 )
 
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath
-from fireatlas.FireTime import t_generator, t2dt, dt2t
+from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 from fireatlas import settings
 
@@ -66,28 +71,36 @@ def get_timesteps_needing_region_t_processing(
 def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
-    allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
-    
-    allpixels_filepath = allpixels_filepath(tst, ted, region, location="local")
-    allfires_filepath = allfires_filepath(tst, ted, region, location="local")
-    
-    copy_from_local_to_s3(allpixels_filepath, fs)
-    copy_from_local_to_s3(allfires_filepath, fs)
+    try:
+        allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
+        copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
+        copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
 
-    save_snapshots(allfires.gdf, region, tst, ted)
+        allfires_gdf = allfires.gdf
+    except KeyError as e:
+        logger.warning(f"Fire forward has already run. {e}")
+        allpixels = read_allpixels(tst, ted, region)
+        allfires_gdf = read_allfires_gdf(tst, ted, region)
 
-    large_fires = find_largefires(allfires.gdf)
+    save_snapshots(allfires_gdf, region, tst, ted)
+
+    large_fires = find_largefires(allfires_gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
-    save_large_fires_layers(allfires.gdf, region, large_fires, tst, ted)
+    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted)
 
 
-def job_preprocess_region_t(region: Region, t: TimeStep):
+def job_preprocess_region_t(t: TimeStep, region: Region):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
     filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(filepath, fs)
 
 
 def job_preprocess_region(region: Region):
+    output_filepath = preprocessed_region_filename(region)
+    if settings.fs.exists(output_filepath):
+        logger.info(f"Preprocessed region is already on {settings.READ_LOCATION}.")
+        return
+    
     logger.info(f"Running preprocess-region JSON for {region[0]}")
     filepath = preprocess_region(region)
     copy_from_local_to_s3(filepath, fs)
@@ -100,7 +113,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     if source == "VIIRS":
         sats = ["SNPP", "NOAA20"]
     else:
-        sats = [sat]
+        sats = [source]
     
     for sat in sats:
         if sat == "SNPP":
@@ -125,16 +138,19 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
         # calculate any remaining missing dates
         missing_dates = [date(*t) for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
+
+        # don't actually worry about dates that are more than 30 days ago
+        dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=10))]
         
         # set up NRT jobs
-        futures.extend(client.map(NRT_update_func, missing_dates))
+        futures.extend(client.map(NRT_update_func, dates))
 
     return futures
 
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep):
 
-    ctime = datetime.now(tz=UTC)
+    ctime = datetime.now(tz=timezone.utc)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
 
@@ -150,7 +166,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
  
     # run the first two jobs in parallel
     data_update_futures = job_data_update_checker(client, tst, ted)
-    region_futures = client.submit(job_preprocess_region, region)
+    region_future = client.submit(job_preprocess_region, region)
     
     # block until data update is complete
     client.gather(data_update_futures)
@@ -161,7 +177,9 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     )
     # block until half-day timesteps and region are on s3
-    client.gather([*data_upload_futures, *region_futures])
+    client.gather([*data_upload_futures, region_future])
+
+    logger.info("------------- Done with preprocessing t -------------")
 
     # then run all region-plus-t in parallel that need it
     timesteps_needing_processing = get_timesteps_needing_region_t_processing(
@@ -173,23 +191,29 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     )
     # block until preprocessing is complete
     client.gather(region_and_t_futures)
-
+    
+    logger.info("------------- Done with preprocessing region + t -------------")
+    
     # run fire forward algorithm (which cannot be run in parallel)
     job_fire_forward(region=region, tst=tst, ted=ted)
 
     # take all fire forward output and upload all outputs in parallel
+    data_dir = all_dir(tst, region, location="local")
     fgb_s3_upload_futures = client.map(
         partial(copy_from_local_to_s3, fs=fs),
-        glob.glob(os.path.join(all_dir, "*", "*", "*.fgb"))
+        glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
     )
 
     # take latest fire forward output and upload to VEDA S3 in parallel
     fgb_veda_upload_futures = client.map(
         partial(copy_from_local_to_veda_s3, fs=fs, regnm=region[0]),
-        glob.glob(os.path.join(all_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
+        glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
     )
     # block until everything is uploaded
     client.gather([*fgb_s3_upload_futures, *fgb_veda_upload_futures])
+
+    logger.info("------------- Done -------------")
+
     client.close()
 
 

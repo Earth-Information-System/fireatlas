@@ -8,7 +8,7 @@ import fireatlas
 from dask.distributed import Client
 
 from fireatlas import FireRunDaskCoordinator
-from fireatlas.FireIO import copy_from_local_to_s3
+from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3
 from fireatlas.utils import timed
 from fireatlas.postprocess import all_dir
 
@@ -29,13 +29,20 @@ def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, t
 
     client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
 
-    # take all fire forward output and upload all snapshots/largefire outputs in parallel
-    fgb_upload_futures = client.map(
-        partial(copy_from_local_to_s3, FireRunDaskCoordinator.fs),
-        glob.glob(os.path.join(all_dir, "*", "*", "*.fgb"))
+    # take all fire forward output and upload all outputs in parallel
+    data_dir = all_dir(tst, region, location="local")
+    fgb_s3_upload_futures = client.map(
+        partial(copy_from_local_to_s3, fs=FireRunDaskCoordinator.fs),
+        glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
+    )
+
+    # take latest fire forward output and upload to VEDA S3 in parallel
+    fgb_veda_upload_futures = client.map(
+        partial(copy_from_local_to_veda_s3, fs=FireRunDaskCoordinator.fs, regnm=region[0]),
+        glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
     )
     # block until everything is uploaded
-    client.gather(fgb_upload_futures)
+    client.gather([*fgb_s3_upload_futures, *fgb_veda_upload_futures])
     client.close()
 
 

@@ -50,11 +50,10 @@ def update_VNP14IMGTDL(d: date):
     urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
     try:
         downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        preprocess_input_file(downloaded_filepath)
     except Exception as e:
-        print("\nCould not download VNP14IMGTDL data for",d)
-        print('Error message:',e)
-
-    preprocess_input_file(downloaded_filepath)
+        logger.warning(f"Could not download VNP14IMGTDL data for {d}")
+        logger.warning(f"Error message: {str(e)}")
 
 
 def update_VJ114IMGTDL(d: date):
@@ -67,11 +66,10 @@ def update_VJ114IMGTDL(d: date):
     urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
     try:
         downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
-    except Exception as e: 
-        print("\nCould not download VJ114IMGTDL data for",d)
-        print('Error message:',e)
-
-    preprocess_input_file(downloaded_filepath)
+        preprocess_input_file(downloaded_filepath)
+    except Exception as e:
+        logger.warning(f"Could not download VJ114IMGTDL data for {d}")
+        logger.warning(f"Error message: {str(e)}")
 
 
 def update_GridMET_fm1000():
