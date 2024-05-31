@@ -7,7 +7,7 @@ from functools import partial
 import s3fs
 
 from dask.distributed import Client
-from datetime import datetime
+from datetime import datetime, date
 
 from fireatlas.FireMain import Fire_Forward
 from fireatlas.FireTypes import Region, TimeStep
@@ -19,9 +19,14 @@ from fireatlas.postprocess import (
     save_large_fires_layers,
     save_large_fires_nplist,
 )
-from fireatlas.preprocess import preprocess_region_t, preprocess_region
+from fireatlas.preprocess import (
+    check_preprocessed_file,
+    preprocess_input_file,
+    preprocess_region_t,
+    preprocess_region,
+)
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from fireatlas.FireIO import copy_from_local_to_s3
+from fireatlas.FireIO import copy_from_local_to_s3, VNP14IMGML_filepath, VJ114IMGML_filepath
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 from fireatlas import settings
@@ -40,10 +45,6 @@ def validate_json(s):
         return json.loads(s)
     except ValueError:
         raise argparse.ArgumentTypeError("Not a valid JSON string")
-
-
-def concurrent_copy_from_local_to_s3(local_filepath: str):
-    copy_from_local_to_s3(local_filepath, fs)
 
 
 def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
@@ -76,14 +77,43 @@ def job_preprocess_region(region: Region):
     copy_from_local_to_s3(filepath, fs)
 
 
-def job_data_update_checker():
-    try:
-        # Download SUOMI-NPP
-        update_VNP14IMGTDL()
-        # Download NOAA-20
-        update_VJ114IMGTDL()
-    except Exception as exc:
-        logger.exception(exc)
+def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
+    source = settings.FIRE_SOURCE
+
+    futures = []
+    if source == "VIIRS":
+        sats = ["SNPP", "NOAA20"]
+    else:
+        sats = [sat]
+    
+    for sat in sats:
+        if sat == "SNPP":
+            monthly_filepath_func = VNP14IMGML_filepath
+            NRT_update_func = update_VNP14IMGTDL
+        if sat == "NOAA20":
+            monthly_filepath_func = VJ114IMGML_filepath
+            NRT_update_func = update_VJ114IMGTDL
+
+        # first check if there are any monthly files that need preprocessing
+        timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
+        monthly_timesteps = list(set([(t[0], t[1]) for t in timesteps]))
+        monthly_filepaths = [monthly_filepath_func(t) for t in monthly_timesteps]
+        
+        # narrow down to the monthly filepaths and timesteps that actually exist
+        indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
+        monthly_filepaths = [monthly_filepaths[i] for i in indices]
+        monthly_timesteps = [monthly_timesteps[i] for i in indices]
+
+        # set up monthly jobs
+        futures.extend(client.map(preprocess_input_file, monthly_filepaths))
+
+        # calculate any remaining missing dates
+        missing_dates = [date(*t) for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
+        
+        # set up NRT jobs
+        futures.extend(client.map(NRT_update_func, missing_dates))
+
+    return futures
 
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep):
@@ -102,9 +132,9 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     list_of_timesteps = list(t_generator(tst, ted))
     client = Client(n_workers=MAX_WORKERS)
     logger.info(f"dask workers = {len(client.cluster.workers)}")
-
+ 
     # run the first two jobs in parallel
-    data_update_futures = client.submit(job_data_update_checker)
+    data_update_futures = job_data_update_checker(client, tst, ted)
     region_futures = client.submit(job_preprocess_region, region)
     
     # block until data update is complete
@@ -112,7 +142,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
 
     # uploads raw satellite files from `job_data_update_checker` in parallel
     data_upload_futures = client.map(
-        concurrent_copy_from_local_to_s3,
+        partial(copy_from_local_to_s3, fs=fs),
         glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     )
     # block until half-day timesteps and region are on s3
@@ -131,7 +161,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
 
     # take all fire forward output and upload all snapshots/largefire outputs in parallel
     fgb_upload_futures = client.map(
-        concurrent_copy_from_local_to_s3,
+        partial(copy_from_local_to_s3, fs=fs),
         glob.glob(os.path.join(all_dir, "*", "*", "*.fgb"))
     )
     # block until everything is uploaded

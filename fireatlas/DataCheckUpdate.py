@@ -9,7 +9,7 @@ import tempfile
 import pandas as pd
 import warnings
 
-from datetime import date, timedelta
+from datetime import date, timedelta, date
 
 from fireatlas import settings
 from fireatlas.FireLog import logger
@@ -36,65 +36,40 @@ def wget(url, **kwargs):
         f.write(response.read())
     return target_file
 
-def update_VNP14IMGTDL():
-    ''' Batch read and extract update_VJ114IMGTDL data'''
+
+def update_VNP14IMGTDL(d: date):
+    ''' Batch read and extract update_S-NPP data'''
     # The directory to save VNP14IMGTDL data
     data_dir = os.path.join(settings.dirextdata, "VIIRS", "VNP14IMGTDL/")
 
-    # Derive the date periods needed to download
-    today = date.today()
-    fnms = settings.fs.glob(os.path.join(data_dir, f'SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{str(today.year)}*.txt'))
-    if len(fnms)==0:
-        ndays = 0
-    else:
-        doys = [int(d[-7:-4]) for d in fnms]
-        ndays = max(doys)
-    dstart = date(today.year,1,1) + timedelta(days=ndays)
-    # to avoid any incomplete data just check the last 10 days
-    # this shoudl be very quick and it's okay if we are duplicating efforts
-    dstart = dstart - timedelta(days=10)
-
     # Do the download process
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
-    for d in pd.date_range(dstart,today):
-        urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
-        try:
-            downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
-        except Exception as e:
-            print("\nCould not download VNP14IMGTDL data for",d)
-            print('Error message:',e)
-            continue
-        preprocess_input_file(downloaded_filepath)
+    urlfnm = urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
+    try:
+        downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+    except Exception as e:
+        print("\nCould not download VNP14IMGTDL data for",d)
+        print('Error message:',e)
+
+    preprocess_input_file(downloaded_filepath)
 
 
-def update_VJ114IMGTDL():
-    ''' Batch read and extract update_VJ114IMGTDL data'''
-    # The directory to save VNP14IMGTDL data
+def update_VJ114IMGTDL(d: date):
+    ''' Batch read and extract update_NOAA20 data'''
+    # The directory to save VJ114IMGTDL data
     data_dir = os.path.join(settings.dirextdata, 'VIIRS', 'VJ114IMGTDL/')
-    # Derive the date periods needed to download
-    today = date.today()
-    fnms = settings.fs.glob(os.path.join(data_dir, f'J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_{str(today.year)}*.txt'))
-    if len(fnms)==0:
-        ndays = 0
-    else:
-        doys = [int(d[-7:-4]) for d in fnms]
-        ndays = max(doys)
-    dstart = date(today.year,1,1) + timedelta(days=ndays)
-    # to avoid any incomplete data just check the last 10 days
-    # this shoudl be very quick and it's okay if we are duplicating efforts
-    dstart = dstart - timedelta(days=10)
 
     # Do the download process
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
-    for d in pd.date_range(dstart,today):
-        urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
-        try:
-            downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
-        except Exception as e: 
-            print("\nCould not download VJ114IMGTDL data for",d)
-            print('Error message:',e)
-            continue
-        preprocess_input_file(downloaded_filepath)
+    urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
+    try:
+        downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+    except Exception as e: 
+        print("\nCould not download VJ114IMGTDL data for",d)
+        print('Error message:',e)
+
+    preprocess_input_file(downloaded_filepath)
+
 
 def update_GridMET_fm1000():
     ''' Get updated GridMET data (including fm1000)

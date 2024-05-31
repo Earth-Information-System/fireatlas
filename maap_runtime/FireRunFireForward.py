@@ -2,11 +2,13 @@ import json
 import glob
 import os
 import argparse
+from functools import partial
 import fireatlas
 
 from dask.distributed import Client
 
 from fireatlas import FireRunDaskCoordinator
+from fireatlas.FireIO import copy_from_local_to_s3
 from fireatlas.utils import timed
 from fireatlas.postprocess import all_dir
 
@@ -26,10 +28,10 @@ def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, t
     FireRunDaskCoordinator.job_fire_forward(region, tst, ted)
 
     client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
-    
+
     # take all fire forward output and upload all snapshots/largefire outputs in parallel
     fgb_upload_futures = client.map(
-        FireRunDaskCoordinator.concurrent_copy_from_local_to_s3,
+        partial(copy_from_local_to_s3, FireRunDaskCoordinator.fs),
         glob.glob(os.path.join(all_dir, "*", "*", "*.fgb"))
     )
     # block until everything is uploaded
