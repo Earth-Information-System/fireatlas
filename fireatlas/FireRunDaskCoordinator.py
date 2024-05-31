@@ -7,7 +7,7 @@ from functools import partial
 import s3fs
 
 from dask.distributed import Client
-from datetime import datetime, date, timezone
+from datetime import datetime, date, timezone, timedelta
 
 from fireatlas.FireMain import Fire_Forward
 from fireatlas.FireTypes import Region, TimeStep
@@ -124,10 +124,12 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
         # calculate any remaining missing dates
         missing_dates = [date(*t) for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
-        logger.info(f"looking for {[str(d) for d in missing_dates]} on {sat}")
+
+        # don't actually worry about dates that are more than 30 days ago
+        dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=10))]
         
         # set up NRT jobs
-        futures.extend(client.map(NRT_update_func, missing_dates))
+        futures.extend(client.map(NRT_update_func, dates))
 
     return futures
 
