@@ -83,15 +83,14 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
 
 def job_preprocess_region_t(t: TimeStep, region: Region):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
-
     filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(filepath, fs)
 
 
 def job_preprocess_region(region: Region):
-    output_filepath = preprocessed_region_filename(region, location="local")
+    output_filepath = preprocessed_region_filename(region)
     if settings.fs.exists(output_filepath):
-        logger.info("Preprocessed region is already on s3.")
+        logger.info(f"Preprocessed region is already on {settings.READ_LOCATION}.")
         return
     
     logger.info(f"Running preprocess-region JSON for {region[0]}")
