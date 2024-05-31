@@ -7,7 +7,7 @@ from functools import partial
 import s3fs
 
 from dask.distributed import Client
-from datetime import datetime, date, UTC
+from datetime import datetime, date, timezone
 
 from fireatlas.FireMain import Fire_Forward
 from fireatlas.FireTypes import Region, TimeStep
@@ -134,7 +134,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep):
 
-    ctime = datetime.now(tz=UTC)
+    ctime = datetime.now(tz=timezone.utc)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
 

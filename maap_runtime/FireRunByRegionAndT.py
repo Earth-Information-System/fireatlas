@@ -1,7 +1,7 @@
 import json
 import argparse
 import fireatlas
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from functools import partial
 
 from dask.distributed import Client
@@ -22,7 +22,7 @@ def validate_json(s):
 def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted: fireatlas.FireTypes.TimeStep):
     logger.info(f"Running preprocess region-at-t code for {region[0]} at {tst=} with source {settings.FIRE_SOURCE}")
     
-    ctime = datetime.now(tz=UTC)
+    ctime = datetime.now(tz=timezone.UTC)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
 

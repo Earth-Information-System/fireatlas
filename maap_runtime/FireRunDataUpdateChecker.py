@@ -1,6 +1,6 @@
 import glob
 from functools import partial
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 
 from dask.distributed import Client
 from fireatlas.utils import timed
@@ -17,7 +17,7 @@ def Run():
 
     :return: None
     """
-    ctime = datetime.now(UTC) 
+    ctime = datetime.now(timezone.utc) 
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
 

@@ -67,7 +67,7 @@ def update_VJ114IMGTDL(d: date):
     try:
         downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
         preprocess_input_file(downloaded_filepath)
-    except Exception as e: 
+    except Exception as e:
         print("\nCould not download VJ114IMGTDL data for",d)
         print('Error message:',e)
 
