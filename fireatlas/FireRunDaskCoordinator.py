@@ -20,6 +20,8 @@ from fireatlas.postprocess import (
     find_largefires,
     save_large_fires_layers,
     save_large_fires_nplist,
+    read_allfires_gdf,
+    read_allpixels,
 )
 from fireatlas.preprocess import (
     check_preprocessed_file,
@@ -71,17 +73,20 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
 
     try:
         allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
+        copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
+        copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
+
+        allfires_gdf = allfires.gdf
     except KeyError as e:
         logger.warning(f"Fire forward has already run. {str(e)}")
+        allpixels = read_allpixels(tst, ted, region)
+        allfires_gdf = read_allfires_gdf(tst, ted, region)
 
-    copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
-    copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
+    save_snapshots(allfires_gdf, region, tst, ted)
 
-    save_snapshots(allfires.gdf, region, tst, ted)
-
-    large_fires = find_largefires(allfires.gdf)
+    large_fires = find_largefires(allfires_gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
-    save_large_fires_layers(allfires.gdf, region, large_fires, tst, ted)
+    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted)
 
 
 def job_preprocess_region_t(t: TimeStep, region: Region):
