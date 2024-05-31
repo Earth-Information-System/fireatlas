@@ -69,7 +69,10 @@ def get_timesteps_needing_region_t_processing(
 def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
-    allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
+    try:
+        allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
+    except KeyError as e:
+        logger.warning(f"Fire forward has already run. {str(e)}")
 
     copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
     copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
