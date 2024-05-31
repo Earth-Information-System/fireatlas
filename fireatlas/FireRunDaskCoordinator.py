@@ -81,7 +81,7 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
     save_large_fires_layers(allfires.gdf, region, large_fires, tst, ted)
 
 
-def job_preprocess_region_t(region: Region, t: TimeStep):
+def job_preprocess_region_t(t: TimeStep, region: Region):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
     filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(filepath, fs)
