@@ -129,7 +129,6 @@ def snapshot_folder(
         f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}",
     )
 
-@timed
 def create_snapshot_data(
         allfires_gdf,
         layer: Literal["perimeter", "fireline", "newfirepix"],
@@ -355,6 +354,7 @@ def merge_rows(allfires_gdf_fid):
             "n_newpixels": "sum",
             "fline": unary_union,  # still questioning if this will give the right outcome
             "nfp": unary_union,
+            "t_st": "min",
             "t_ed": "max",
         },
     )
@@ -365,6 +365,10 @@ def merge_rows(allfires_gdf_fid):
     output["fperim"] = output.hull.length / 1e3  # km
     output["flinelen"] = output.fline.apply(lambda x: 0 if x is None else x.length) / 1e3  # km
     output["pixden"] = output.n_pixels / output.farea
+    output["fireID"] = allfires_gdf_fid.name
+    output["mergeid"] = allfires_gdf_fid.name
+    output["invalid"] = False
+    output["ftype"] = allfires_gdf_fid.ftype.mode()[0]
     return output.reset_index()
 
 

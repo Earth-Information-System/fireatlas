@@ -78,7 +78,7 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
 
         allfires_gdf = allfires.gdf
     except KeyError as e:
-        logger.warning(f"Fire forward has already run. {str(e)}")
+        logger.warning(f"Fire forward has already run. {e}")
         allpixels = read_allpixels(tst, ted, region)
         allfires_gdf = read_allfires_gdf(tst, ted, region)
 
