@@ -150,7 +150,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
  
     # run the first two jobs in parallel
     data_update_futures = job_data_update_checker(client, tst, ted)
-    region_futures = client.submit(job_preprocess_region, region)
+    region_future = client.submit(job_preprocess_region, region)
     
     # block until data update is complete
     client.gather(data_update_futures)
@@ -161,7 +161,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     )
     # block until half-day timesteps and region are on s3
-    client.gather([*data_upload_futures, *region_futures])
+    client.gather([*data_upload_futures, region_future])
 
     # then run all region-plus-t in parallel that need it
     timesteps_needing_processing = get_timesteps_needing_region_t_processing(
