@@ -27,6 +27,7 @@ from fireatlas.preprocess import (
     preprocess_input_file,
     preprocess_region_t,
     preprocess_region,
+    preprocessed_region_filename,
 )
 
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
@@ -82,11 +83,17 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
 
 def job_preprocess_region_t(t: TimeStep, region: Region):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
+
     filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(filepath, fs)
 
 
 def job_preprocess_region(region: Region):
+    output_filepath = preprocessed_region_filename(region, location="local")
+    if settings.fs.exists(output_filepath):
+        logger.info("Preprocessed region is already on s3.")
+        return
+    
     logger.info(f"Running preprocess-region JSON for {region[0]}")
     filepath = preprocess_region(region)
     copy_from_local_to_s3(filepath, fs)
