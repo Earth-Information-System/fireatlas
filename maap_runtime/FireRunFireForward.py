@@ -2,13 +2,15 @@ import json
 import glob
 import os
 import argparse
+from functools import partial
 import fireatlas
 
-from dask import delayed
-from itertools import chain
-from fireatlas.utils import timed
+from dask.distributed import Client
+
 from fireatlas import FireRunDaskCoordinator
-from fireatlas import settings
+from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3
+from fireatlas.utils import timed
+from fireatlas.postprocess import all_dir
 
 
 def validate_json(s):
@@ -21,22 +23,28 @@ def validate_json(s):
 
 @timed
 def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted: fireatlas.FireTypes.TimeStep):
+    """ run Fire_Forward and then upload outputs to s3 in parallel
     """
-    """
-    fire_forward_results = FireRunDaskCoordinator.job_fire_forward([None, ], region, tst, ted)
-    fire_forward_results.compute()
+    FireRunDaskCoordinator.job_fire_forward(region, tst, ted)
 
-    # take all fire forward output and upload all snapshots/largefire outputs in parallel
-    data_dir = os.path.join(settings.LOCAL_PATH, settings.OUTPUT_DIR, region[0], str(tst[0]))
-    fgb_upload_results = [
-        FireRunDaskCoordinator.concurrent_copy_from_local_to_s3([None,], local_filepath)
-        for local_filepath in list(chain(
-            glob.glob(os.path.join(data_dir, "Snapshot", "*", "*.fgb")),
-            glob.glob(os.path.join(data_dir, "Largefire", "*", "*.fgb"))
-        ))
-    ]
-    dag = delayed(lambda x: x)(fgb_upload_results)
-    dag.compute()
+    client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
+
+    # take all fire forward output and upload all outputs in parallel
+    data_dir = all_dir(tst, region, location="local")
+    fgb_s3_upload_futures = client.map(
+        partial(copy_from_local_to_s3, fs=FireRunDaskCoordinator.fs),
+        glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
+    )
+
+    # take latest fire forward output and upload to VEDA S3 in parallel
+    fgb_veda_upload_futures = client.map(
+        partial(copy_from_local_to_veda_s3, fs=FireRunDaskCoordinator.fs, regnm=region[0]),
+        glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
+    )
+    # block until everything is uploaded
+    client.gather([*fgb_s3_upload_futures, *fgb_veda_upload_futures])
+    client.close()
+
 
 if __name__ == "__main__":
     """ The main code to run time forwarding for a time period

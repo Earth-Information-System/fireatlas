@@ -172,9 +172,9 @@ def check_preprocessed_file(
     ted: TimeStep,
     sat: Literal["SNPP", "NOAA20"],
     freq: Literal["monthly", "NRT"] = "monthly",
-    location: Location = None
+    location: Location = None,
 ):
-    """Before running preprocess_monthly_file, check if the file already exists
+    """Before running preprocess_monthly_file, check if the preprocessed files already exist
     for that satellite using a list of time steps
 
     Parameters
@@ -194,11 +194,14 @@ def check_preprocessed_file(
     -------
     list of unique combos of years and months (and days if NRT) that need to be processed
     """
-    # check that there's viirs data for these dates and if not, keep track
+    location = location or settings.READ_LOCATION
+    fs = fsspec.filesystem(location)
+    # check that there is preprocessed data for these dates and if not, keep track
+
     needs_processing = []
     for t in t_generator(tst, ted):
         filepath = preprocessed_filename(t, sat=sat, location=location)
-        if not settings.fs.exists(filepath):
+        if not fs.exists(filepath):
             needs_processing.append(t)
 
     if freq == "monthly":

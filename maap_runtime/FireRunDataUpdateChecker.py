@@ -1,10 +1,11 @@
 import glob
+from functools import partial
+from datetime import datetime, timezone
 
-from dask import delayed
+from dask.distributed import Client
 from fireatlas.utils import timed
-from fireatlas import FireRunDaskCoordinator
-from fireatlas import settings
-
+from fireatlas import FireRunDaskCoordinator, settings
+from fireatlas.FireIO import copy_from_local_to_s3
 
 
 @timed
@@ -16,15 +17,28 @@ def Run():
 
     :return: None
     """
-    data_update_results = FireRunDaskCoordinator.job_data_update_checker()
-    data_update_results.compute()
+    ctime = datetime.now(timezone.utc) 
+    if tst in (None, "", []):  # if no start is given, run from beginning of year
+        tst = [ctime.year, 1, 1, 'AM']
 
-    data_upload_results = [
-        FireRunDaskCoordinator.concurrent_copy_from_local_to_s3([None,], local_filepath)
-        for local_filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
+    if ted in (None, "", []):  # if no end time is given, set it as the most recent time
+        if ctime.hour >= 18:
+            ampm = 'PM'
+        else:
+            ampm = 'AM'
+        ted = [ctime.year, ctime.month, ctime.day, ampm]
+
+    client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
+
+    data_update_futures = FireRunDaskCoordinator.job_data_update_checker(client, tst, ted)
+    client.gather(data_update_futures)
+
+    data_upload_futures = [
+        partial(copy_from_local_to_s3, fs=FireRunDaskCoordinator.fs),
+        glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     ]
-    dag = delayed(lambda x: x)(data_upload_results)
-    dag.compute()
+    client.gather(data_upload_futures)
+    client.close()
 
 
 if __name__ == "__main__":
