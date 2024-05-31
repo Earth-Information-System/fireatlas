@@ -1,6 +1,6 @@
 import glob
 
-from dask import delayed
+from dask.distributed import Client
 from fireatlas.utils import timed
 from fireatlas import FireRunDaskCoordinator
 from fireatlas import settings
@@ -16,15 +16,17 @@ def Run():
 
     :return: None
     """
-    data_update_results = FireRunDaskCoordinator.job_data_update_checker()
-    data_update_results.compute()
+    client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
 
-    data_upload_results = [
-        FireRunDaskCoordinator.concurrent_copy_from_local_to_s3([None,], local_filepath)
-        for local_filepath in glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
+    data_update_futures = client.submit(FireRunDaskCoordinator.job_data_update_checker)
+    client.gather(data_update_futures)
+
+    data_upload_futures = [
+        FireRunDaskCoordinator.concurrent_copy_from_local_to_s3,
+        glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     ]
-    dag = delayed(lambda x: x)(data_upload_results)
-    dag.compute()
+    client.gather(data_upload_futures)
+    client.close()
 
 
 if __name__ == "__main__":

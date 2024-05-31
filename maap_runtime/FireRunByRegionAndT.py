@@ -1,12 +1,13 @@
 import json
 import argparse
 import fireatlas
+from functools import partial
 
-from dask import delayed
+from dask.distributed import Client
 from fireatlas.utils import timed
 from fireatlas import FireRunDaskCoordinator
 from fireatlas import settings
-from fireatlas import FireLog
+from fireatlas.FireLog import logger
 from fireatlas.FireTime import t_generator
 
 
@@ -19,14 +20,16 @@ def validate_json(s):
 
 @timed
 def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted: fireatlas.FireTypes.TimeStep):
-    FireLog.logger.info(f"Running preprocess region-at-t code for {region[0]} at {tst=} with source {settings.FIRE_SOURCE}")
+    logger.info(f"Running preprocess region-at-t code for {region[0]} at {tst=} with source {settings.FIRE_SOURCE}")
     list_of_timesteps = list(t_generator(tst, ted))
-    region_and_t_results = [
-        FireRunDaskCoordinator.job_preprocess_region_t([None,], region, t)
-        for t in list_of_timesteps
-    ]
-    dag = delayed(lambda x: x)(region_and_t_results)
-    dag.compute()
+    client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
+    logger.info(f"dask workers = {len(client.cluster.workers)}")
+    region_and_t_futures = client.map(
+        partial(FireRunDaskCoordinator.job_preprocess_region_t, region=region),
+        list_of_timesteps
+    )
+    client.gather(region_and_t_futures)
+    client.close()
 
 
 if __name__ == "__main__":
