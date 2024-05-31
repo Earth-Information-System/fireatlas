@@ -125,7 +125,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
         # calculate any remaining missing dates
         missing_dates = [date(*t) for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
-        logger.info(f"looking for {missing_dates} on {sat}")
+        logger.info(f"looking for {[str(d) for d in missing_dates]} on {sat}")
         
         # set up NRT jobs
         futures.extend(client.map(NRT_update_func, missing_dates))

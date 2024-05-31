@@ -53,7 +53,7 @@ def update_VNP14IMGTDL(d: date):
         preprocess_input_file(downloaded_filepath)
     except Exception as e:
         logger.warn("\nCould not download VNP14IMGTDL data for",d)
-        logger.warn('Error message:',e)
+        logger.warn('Error message:', str(e))
 
 
 def update_VJ114IMGTDL(d: date):
@@ -69,7 +69,7 @@ def update_VJ114IMGTDL(d: date):
         preprocess_input_file(downloaded_filepath)
     except Exception as e:
         logger.warn("\nCould not download VJ114IMGTDL data for",d)
-        logger.warn('Error message:',e)
+        logger.warn('Error message:', str(e))
 
 
 def update_GridMET_fm1000():
