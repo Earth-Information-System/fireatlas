@@ -14,6 +14,8 @@ from fireatlas.FireTypes import Region, TimeStep
 from fireatlas.utils import timed
 from fireatlas.postprocess import (
     all_dir,
+    allfires_filepath,
+    allpixels_filepath,
     save_snapshots,
     find_largefires,
     save_large_fires_layers,
@@ -67,12 +69,9 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
-    
-    allpixels_filepath = allpixels_filepath(tst, ted, region, location="local")
-    allfires_filepath = allfires_filepath(tst, ted, region, location="local")
-    
-    copy_from_local_to_s3(allpixels_filepath, fs)
-    copy_from_local_to_s3(allfires_filepath, fs)
+
+    copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
+    copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
 
     save_snapshots(allfires.gdf, region, tst, ted)
 

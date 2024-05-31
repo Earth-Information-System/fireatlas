@@ -52,7 +52,7 @@ def update_VNP14IMGTDL(d: date):
         downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
         preprocess_input_file(downloaded_filepath)
     except Exception as e:
-        logger.warning(f"\nCould not download VNP14IMGTDL data for {d}")
+        logger.warning(f"Could not download VNP14IMGTDL data for {d}")
         logger.warning(f"Error message: {str(e)}")
 
 
@@ -68,7 +68,7 @@ def update_VJ114IMGTDL(d: date):
         downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
         preprocess_input_file(downloaded_filepath)
     except Exception as e:
-        logger.warning(f"\nCould not download VJ114IMGTDL data for {d}")
+        logger.warning(f"Could not download VJ114IMGTDL data for {d}")
         logger.warning(f"Error message: {str(e)}")
 
 
