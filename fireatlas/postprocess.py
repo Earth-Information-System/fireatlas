@@ -339,7 +339,7 @@ def fill_activefire_rows(allfires_gdf, ted):
     return output
 
 @timed
-def merge_rows(allfires_gdf_fid):
+def merge_rows(allfires_gdf_fid, fid: int | str):
     """For a subset of allfires data containing only one fire, merge any
     rows that have the same `t`
     """
@@ -365,8 +365,8 @@ def merge_rows(allfires_gdf_fid):
     output["fperim"] = output.hull.length / 1e3  # km
     output["flinelen"] = output.fline.apply(lambda x: 0 if x is None else x.length) / 1e3  # km
     output["pixden"] = output.n_pixels / output.farea
-    output["fireID"] = allfires_gdf_fid.name
-    output["mergeid"] = allfires_gdf_fid.name
+    output["fireID"] = fid
+    output["mergeid"] = fid
     output["invalid"] = False
     output["ftype"] = allfires_gdf_fid.ftype.mode()[0]
     return output.reset_index()
@@ -395,7 +395,7 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
     for fid, data in gdf[gdf["fireID"].isin(large_fires)].groupby("fireID"):
         # merge any rows that have the same t
         if data.t.duplicated().any():
-            data = merge_rows(data)
+            data = merge_rows(data, fid)
 
         # accumulate each fid for combined large fires
         processed_gdfs.append(data)
@@ -419,7 +419,7 @@ def save_individual_fire(allfires_gdf, tst, ted, region):
     gdf = fill_activefire_rows(gdf, ted)
 
     # merge any rows that need merging across t
-    data = merge_rows(gdf)
+    data = merge_rows(gdf, fid=region[0])
 
     # save fire layers - use region name as fid
     save_fire_layers(data, region, region[0], tst)
