@@ -11,6 +11,7 @@ FOUR LAYERS OF OBJECTS
 import geopandas as gpd
 from datetime import date, timedelta
 from shapely.geometry import MultiLineString, MultiPoint
+from shapely.ops import unary_union
 
 from fireatlas.utils import timed
 from fireatlas.FireTime import t2dt, dt2t, t_nb, t_dif
@@ -105,17 +106,29 @@ class Allfires:
             dt_st = gdf_fid.t_st.min()
             dt_ed = gdf_fid.t_ed.max()
 
-            f.t_st = dt2t(dt_st)
-            f.t_ed = dt2t(dt_ed)
+            if len(gdf_fid) > 1:
+                f.fline_prior = gdf_fid.iloc[-2].fline
 
             gdf_fid_t = gdf_fid.loc[(fid, dt_ed)]
             for k, v in gdf_fid_t.items():
-                if k in ["hull", "ftype", "fline", "invalid"]:
+                if not isinstance(getattr(Fire, k, None), property):
                     setattr(f, k, v)
-            if f.isignition:
-                allfires.fids_new.append(fid)
-            else:
-                allfires.fids_expanded.append(fid)
+            
+            f.t_st = dt2t(dt_st)
+            f.t_ed = dt2t(dt_ed)
+
+            if f.mergeid != fid:
+                allfires.heritages.append((fid, f.mergeid))
+            
+            if f.t_ed == ted:
+                if f.isignition:
+                    allfires.fids_new.append(fid)
+                elif f.mergeid != fid:
+                    allfires.fids_invalid.append(fid)
+                    if f.mergeid not in allfires.fids_merged:
+                        allfires.fids_merged.append(f.mergeid)
+                else:
+                    allfires.fids_expanded.append(fid)
             allfires.fires[fid] = f
         return allfires
 
@@ -611,12 +624,11 @@ class Fire:
 
     @property
     def extpixels(self):
-        """External pixels at the previous timestep + new pixels"""
-        pdt = t2dt(t_nb(self.t, "previous"))
+        """External pixels at the previous active timestep + new pixels"""
         return self.allpixels[
             (self.allpixels["fid"] == self.fireID)
             & (
-                (self.allpixels["ext_until"] == pdt)
+                (self.allpixels["ext_until"] >= t2dt(self.t_ed))
                 | (self.allpixels["t"] == t2dt(self.t))
             )
         ]
@@ -668,7 +680,7 @@ class Fire:
         """
         self.ftype = set_ftype(self)
 
-    def updatefhull(self):
+    def updatefhull(self, *hulls):
         """Update the hull using old hull and new locs"""
         # get previous hull, and nex pixels + external pixels from previous timesteps
         phull = self.hull
@@ -678,10 +690,10 @@ class Fire:
         hull = FireVector.cal_hull(pixels[["x", "y"]].values)
 
         # use the union of the newly calculated hull and the previous hull
-        self.hull = phull.union(hull)
+        self.hull = unary_union([hull, phull, *hulls])
 
         # find the pixels that are near the hull and record findings
-        self.extpixels = pixels[FireVector.get_ext_pixels(pixels, hull)]
+        self.extpixels = pixels[FireVector.get_ext_pixels(pixels, self.hull)]
 
     def updatefline(self):
 

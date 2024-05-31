@@ -40,7 +40,8 @@ dependencies = [
   "rasterio",
   "pyproj",
   "tqdm",
-  "scalene"
+  "scalene",
+  "awscli"
 ]
 
 # [project.urls]

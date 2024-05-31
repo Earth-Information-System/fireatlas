@@ -1361,17 +1361,17 @@ def save_gpkgobj(
     if gdf_fperim is not None:
         gdf_fperim.to_file(f"{fnm}/perimeter.fgb", driver="FlatGeobuf")
         if settings.export_to_veda:
-            copy_from_maap_to_veda_s3(f"{fnm}/perimeter.fgb", regnm)
+            copy_from_local_to_veda_s3(f"{fnm}/perimeter.fgb", regnm)
 
     if gdf_fline is not None:
         gdf_fline.to_file(f"{fnm}/fireline.fgb", driver="FlatGeobuf")
         if settings.export_to_veda:
-            copy_from_maap_to_veda_s3(f"{fnm}/fireline.fgb", regnm)
+            copy_from_local_to_veda_s3(f"{fnm}/fireline.fgb", regnm)
 
     if gdf_nfp is not None:
         gdf_nfp.to_file(f"{fnm}/newfirepix.fgb", driver="FlatGeobuf")
         if settings.export_to_veda:
-            copy_from_maap_to_veda_s3(f"{fnm}/newfirepix.fgb", regnm)
+            copy_from_local_to_veda_s3(f"{fnm}/newfirepix.fgb", regnm)
 
     if gdf_uptonow is not None:
         gdf_uptonow.to_file(f"{fnm}/uptonow.fgb", driver="FlatGeobuf")
@@ -2009,8 +2009,10 @@ def pixel2World(gt, Xpixel, Ypixel):
     return (Xgeo, Ygeo)
 
 
-def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
-    s3 = s3fs.S3FileSystem()
+def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileSystem | None = None):
+    from_maap_s3_path = local_filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
+    if fs is None:
+        fs = s3fs.S3FileSystem()
     filename = os.path.basename(from_maap_s3_path)
     filename_no_ext = os.path.splitext(filename)[0]
 
@@ -2072,18 +2074,15 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     if "lf_" in from_maap_s3_path:
         new_key_layer_name = f"{filename_no_ext}_{new_region_name}.gpkg"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
-        to_veda_s3_path = f"EIS/FEDSoutput/LFArchive/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput-v3/LFArchive/{new_key_layer_name}"
     else:
         new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.gpkg"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
-        to_veda_s3_path = f"EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput-v3/Snapshot/{new_key_layer_name}"
 
     gdf = gpd.read_file(from_maap_s3_path)
 
-    # rename columns for large fires
-    if "lf_" in from_maap_s3_path:
-        gdf = gdf.rename(columns={"id": "fireID"})
-    else:
+    if not "lf_" in from_maap_s3_path:
         # rename columns for snapshots
         # but get rid of any possible duplicate columns first
         try:
@@ -2095,7 +2094,7 @@ def copy_from_maap_to_veda_s3(from_maap_s3_path: str, regnm: str):
     # fiona has a bug where it cannot write GPKG files to s3 even though FileGeobuf work fine
     # so to work around this issue we just write them locally to /tmp first
     gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
-    s3.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
+    fs.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
 
 
 def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
