@@ -140,7 +140,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         missing_dates = [date(*t) for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
 
         # don't actually worry about dates that are more than 30 days ago
-        dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=10))]
+        dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=30))]
         
         # set up NRT jobs
         futures.extend(client.map(NRT_update_func, dates))
