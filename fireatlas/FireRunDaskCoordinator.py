@@ -29,7 +29,7 @@ from fireatlas.preprocess import (
 
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath
-from fireatlas.FireTime import t_generator, t2dt, dt2t
+from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 from fireatlas import settings
 
@@ -100,7 +100,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     if source == "VIIRS":
         sats = ["SNPP", "NOAA20"]
     else:
-        sats = [sat]
+        sats = [source]
     
     for sat in sats:
         if sat == "SNPP":
