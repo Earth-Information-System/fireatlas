@@ -91,7 +91,9 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
 
 def job_preprocess_region_t(t: TimeStep, region: Region):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
-    filepath = preprocess_region_t(t, region=region)
+    # unexplainable error where preprocess_region_t -> read_region throws FileNotFound
+    # guessing it's a delay in the fire being available on s3?
+    filepath = preprocess_region_t(t, region=region, read_region_location="local")
     copy_from_local_to_s3(filepath, fs)
 
 
