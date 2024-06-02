@@ -47,7 +47,7 @@ def preprocess_region(region: Region, force=False):
 @timed
 def read_region(region: Region, location: Location = None):
     filepath = preprocessed_region_filename(region, location=location)
-    logger.info(f"[ READ REGION ]: filepath f{filepath}")
+    logger.info(f"[ READ REGION ]: filepath {filepath}")
 
     # use fsspec here b/c it could be s3 or local
     with fsspec.open(filepath, "r") as f:
