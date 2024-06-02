@@ -74,7 +74,7 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
     try:
         # unexplainable error where preprocess_region_t -> read_region throws FileNotFound
         # guessing it's an s3 delay in the fire being available on s3?
-        allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False, read_location="local")
+        allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
         copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
         copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
 
@@ -95,7 +95,7 @@ def job_preprocess_region_t(t: TimeStep, region: Region):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
     # unexplainable error where preprocess_region_t -> read_region throws FileNotFound
     # guessing it's an s3 delay in the fire being available on s3?
-    filepath = preprocess_region_t(t, region=region, read_region_location="local")
+    filepath = preprocess_region_t(t, region=region)
     copy_from_local_to_s3(filepath, fs)
 
 
