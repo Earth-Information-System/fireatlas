@@ -603,7 +603,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
     for t in list_of_ts:
         allfires = Fire_Forward_one_step(allfires, allpixels, tst, t, region)
 
-    return allfires, allpixels
+    return allfires, allpixels, t_saved
 
 
 if __name__ == "__main__":

@@ -403,8 +403,9 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
         save_fire_layers(data, region, int(fid), tst)
 
     # save off all large fire artifacts
-    all_gdfs = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
-    save_combined_large_fire_layers(all_gdfs, tst, ted, region)
+    if len(processed_gdfs) != 0:
+        all_gdfs = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
+        save_combined_large_fire_layers(all_gdfs, tst, ted, region)
 
 
 @timed
