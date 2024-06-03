@@ -200,8 +200,9 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
 
     for layer in ["perimeter", "fireline", "newfirepix"]:
         data = create_snapshot_data(allfires_gdf_t, layer, region, dt)
-        # only include perimeters what are active or may reactivate
-        data = data[(data['isactive'] == 1) | (data['mayreactivate'] == 1)]
+        if layer == "perimeter":
+            # only include perimeters what are active or may reactivate
+            data = data[(data['isactive'] == 1) | (data['mayreactivate'] == 1)]
         data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 
 
