@@ -168,7 +168,7 @@ class Settings(BaseSettings):
 
     @property
     def fs(self):
-        return fsspec.filesystem(self.READ_LOCATION)
+        return fsspec.filesystem(self.READ_LOCATION, use_listings_cache=False)
 
     @property
     def dirextdata(self):

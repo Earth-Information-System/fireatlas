@@ -2080,7 +2080,7 @@ def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileS
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
         to_veda_s3_path = f"EIS/FEDSoutput-v3/Snapshot/{new_key_layer_name}"
 
-    gdf = gpd.read_file(from_maap_s3_path)
+    gdf = gpd.read_file(local_filepath)
 
     if not "lf_" in from_maap_s3_path:
         # rename columns for snapshots

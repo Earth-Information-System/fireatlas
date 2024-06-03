@@ -34,7 +34,7 @@ def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, loc
     t: TimeStep
        latest t within range for which there are allfires and allpixels files
     """
-    fs = fsspec.filesystem(location or settings.READ_LOCATION)
+    fs = fsspec.filesystem(location or settings.READ_LOCATION, use_listings_cache=False)
     all_filenames = {
         os.path.basename(f).split(".")[0]
         for f in [
@@ -403,8 +403,9 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
         save_fire_layers(data, region, int(fid), tst)
 
     # save off all large fire artifacts
-    all_gdfs = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
-    save_combined_large_fire_layers(all_gdfs, tst, ted, region)
+    if len(processed_gdfs) != 0:
+        all_gdfs = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
+        save_combined_large_fire_layers(all_gdfs, tst, ted, region)
 
 
 @timed

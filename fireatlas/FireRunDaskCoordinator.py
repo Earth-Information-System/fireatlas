@@ -72,7 +72,7 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     try:
-        allfires, allpixels = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
+        allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
         copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
         copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
 
@@ -81,8 +81,9 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
         logger.warning(f"Fire forward has already run. {e}")
         allpixels = read_allpixels(tst, ted, region)
         allfires_gdf = read_allfires_gdf(tst, ted, region)
+        t_saved = ted
 
-    save_snapshots(allfires_gdf, region, tst, ted)
+    save_snapshots(allfires_gdf, region, t_saved, ted)
 
     large_fires = find_largefires(allfires_gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
