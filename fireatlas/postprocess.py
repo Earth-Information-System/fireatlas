@@ -34,7 +34,7 @@ def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, loc
     t: TimeStep
        latest t within range for which there are allfires and allpixels files
     """
-    fs = fsspec.filesystem(location or settings.READ_LOCATION)
+    fs = fsspec.filesystem(location or settings.READ_LOCATION, use_listings_cache=False)
     all_filenames = {
         os.path.basename(f).split(".")[0]
         for f in [

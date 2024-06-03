@@ -195,7 +195,7 @@ def check_preprocessed_file(
     list of unique combos of years and months (and days if NRT) that need to be processed
     """
     location = location or settings.READ_LOCATION
-    fs = fsspec.filesystem(location)
+    fs = fsspec.filesystem(location, use_listings_cache=False)
     # check that there is preprocessed data for these dates and if not, keep track
 
     needs_processing = []
