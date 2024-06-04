@@ -244,7 +244,6 @@ def combined_largefire_folder(region: Region, tst: TimeStep, ted: TimeStep, loca
     )
 
 
-@timed
 def save_fire_nplist(allpixels_fid, region, fid, tst):
     output_dir = largefire_folder(region, fid, tst, location="local")
     os.makedirs(output_dir, exist_ok=True)
@@ -266,7 +265,6 @@ def save_large_fires_nplist(allpixels, region, large_fires, tst):
         save_fire_nplist(data, region, fid, tst)
 
 
-@timed
 def save_fire_layers(allfires_gdf_fid, region, fid, tst):
 
     output_dir = largefire_folder(region, fid, tst, location="local")
@@ -338,7 +336,7 @@ def fill_activefire_rows(allfires_gdf, ted):
         output[k] = output[k].astype(tp)
     return output
 
-@timed
+
 def merge_rows(allfires_gdf_fid, fid: int | str):
     """For a subset of allfires data containing only one fire, merge any
     rows that have the same `t`
