@@ -32,7 +32,7 @@ dependencies = [
   "fiona",
   "shapely",
   "fsspec",
-  "s3fs==2024.5.0",
+  "s3fs==2024.6.0",
   "rtree",
   "scikit-learn",
   "pyarrow",
