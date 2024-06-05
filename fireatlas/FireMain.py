@@ -570,7 +570,12 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         read_preprocessed(t, region=region, location=read_location)
         for t in list_of_ts
     ]
-    allpixels = pd.concat([df for df in list_of_allpixels if not df.empty])
+    non_empty_dfs = [df for df in list_of_allpixels if not df.empty]
+    if len(list_of_allpixels) > 0 and len(non_empty_dfs) == 0:
+        logger.warning(f"There are no new pixels for {ted}")
+        allpixels = list_of_allpixels[0]
+    else:
+        allpixels = pd.concat(non_empty_dfs)
 
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
