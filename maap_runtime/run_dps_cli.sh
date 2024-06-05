@@ -109,6 +109,7 @@ echo "Python: $(which python)"
 
 python --version
 source activate /opt/conda/envs/vanilla
+conda list | grep s3fs
 
 (
 pushd "$basedir"
