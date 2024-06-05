@@ -121,23 +121,23 @@ pushd "$basedir"
 
   if [[ $selected_flag == "data-update" ]]; then
     #scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output_dir}/profile.html" --- FireRunDataUpdateChecker.py
-    FireRunDataUpdateChecker.py
+    python FireRunDataUpdateChecker.py
   elif [[ $selected_flag == "preprocess-region" ]]; then
     #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
     #  --outfile "${output_dir}/profile.html" --- FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
-    FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
+    python FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
   elif [[ $selected_flag == "preprocess-region-t" ]]; then
     #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
     #  --outfile "${output_dir}/profile.html" --- FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
-    FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
+    python FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
   elif [[ $selected_flag == "fire-forward" ]]; then
     #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
     #  --outfile "${output_dir}/profile.html" --- FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
-    FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
+    python FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
   elif [[ $selected_flag == "coordinate-all" ]]; then
     #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
     #  --outfile "${output_dir}/profile.html" --- ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
-    ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
+    python ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
   fi
 
   popd
