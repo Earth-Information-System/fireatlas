@@ -81,6 +81,12 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
         logger.warning(f"Fire forward has already run. {e}")
         allpixels = read_allpixels(tst, ted, region)
         allfires_gdf = read_allfires_gdf(tst, ted, region)
+        t_saved = None
+
+    if t_saved is None:
+        # this can happen in a couple different scenarios:
+        # 1) if we're running a region full-on from start to finish that has never been run before
+        # 2) or if we've already found an allfires and allpixels output for the ted timestep and throw KeyError
         t_saved = ted
 
     save_snapshots(allfires_gdf, region, t_saved, ted)
