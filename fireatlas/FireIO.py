@@ -2103,7 +2103,6 @@ def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
     Some default tags will be added from the environment and specified FireConsts
     """
     dst = filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
-    logger.info(f"uploading file {filepath} to {dst}")
 
     fs.put_file(filepath, dst)
 
