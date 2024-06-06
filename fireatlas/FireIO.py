@@ -212,7 +212,7 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
     return gdf
 
 
-def VNP14IMGML_filepath(t: TimeStep, ver="C1.05"):
+def VNP14IMGML_filepath(t: TimeStep):
     """Filepath for monthly S-NPP VIIRS data
 
     Parameters
@@ -233,9 +233,9 @@ def VNP14IMGML_filepath(t: TimeStep, ver="C1.05"):
         "VNP14IMGML",
     )
 
-    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.{ver}.txt.gz")
+    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
     if not settings.fs.exists(filepath):
-        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.{ver}.txt")
+        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
     if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
