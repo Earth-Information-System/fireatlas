@@ -33,7 +33,7 @@ from fireatlas.preprocess import (
 )
 
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath
+from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath, VJ114IMGTDL_filepath, VNP14IMGTDL_filepath
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 from fireatlas import settings
@@ -126,9 +126,11 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     for sat in sats:
         if sat == "SNPP":
             monthly_filepath_func = VNP14IMGML_filepath
+            NRT_filepath_func = VNP14IMGTDL_filepath
             NRT_update_func = update_VNP14IMGTDL
         if sat == "NOAA20":
             monthly_filepath_func = VJ114IMGML_filepath
+            NRT_filepath_func = VJ114IMGTDL_filepath
             NRT_update_func = update_VJ114IMGTDL
 
         # first check if there are any monthly files that need preprocessing
@@ -144,12 +146,24 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         # set up monthly jobs
         futures.extend(client.map(preprocess_input_file, monthly_filepaths))
 
-        # calculate any remaining missing dates
-        missing_dates = [date(*t) for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
+        # calculate any remaining missing timesteps
+        missing_timesteps = [t for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
+        NRT_filepaths = [NRT_filepath_func(t) for t in missing_timesteps]
+        
+        # narrow down to the NRT filepaths and timesteps that actually exist
+        indices = [i for i, f in enumerate(NRT_filepaths) if f is not None]
+        NRT_filepaths = [NRT_filepaths[i] for i in indices]
+        NRT_timesteps = [missing_timesteps[i] for i in indices]
+        
+        # set up NRT jobs
+        futures.extend(client.map(preprocess_input_file, NRT_filepaths))
+
+        # if there are any dates that are still missing, try to wget the files
+        missing_dates = [date(*t) for t in missing_timesteps if t not in NRT_timesteps]
 
         # don't actually worry about dates that are more than 30 days ago
         dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=30))]
-        
+
         # set up NRT jobs
         futures.extend(client.map(NRT_update_func, dates))
 
