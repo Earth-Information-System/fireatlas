@@ -178,7 +178,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     )
     # block until half-day timesteps and region are on s3
-    timed(client.gather, text="Dask upload")([*data_upload_futures, region_future])
+    timed(client.gather, text=f"Dask upload of {len(data_upload_futures) + 1} files")([*data_upload_futures, region_future])
 
     logger.info("------------- Done with preprocessing t -------------")
 
@@ -211,7 +211,8 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
     )
     # block until everything is uploaded
-    timed(client.gather, text="Dask upload")([*fgb_s3_upload_futures, *fgb_veda_upload_futures])
+    futures = [*fgb_s3_upload_futures, *fgb_veda_upload_futures]
+    timed(client.gather, text=f"Dask upload of {len(futures)} files")(futures)
 
     logger.info("------------- Done -------------")
 
