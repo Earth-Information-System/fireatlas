@@ -161,6 +161,8 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         else:
             ampm = 'AM'
         ted = [ctime.year, ctime.month, ctime.day, ampm]
+    
+    logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 
     client = Client(n_workers=MAX_WORKERS)
     logger.info(f"dask workers = {len(client.cluster.workers)}")
