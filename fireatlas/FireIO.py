@@ -297,7 +297,7 @@ def VNP14IMGTDL_filepath(t: TimeStep):
     filepath : str
         Path to input data or None if file does not exist
     """
-    d = FireTime.t2dt(t)
+    d = date(t[0], t[1], t[2])
 
     filepath = os.path.join(
         settings.dirextdata,
@@ -455,7 +455,7 @@ def VJ114IMGTDL_filepath(t: TimeStep):
     filepath : str
         Path to input data or None if file does not exist
     """
-    d = FireTime.t2dt(t)
+    d = date(t[0], t[1], t[2])
 
     filepath = os.path.join(
         settings.dirextdata,
