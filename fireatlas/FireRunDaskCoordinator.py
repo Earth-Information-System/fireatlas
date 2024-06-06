@@ -68,7 +68,7 @@ def get_timesteps_needing_region_t_processing(
     return needs_processing
 
 
-def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
+def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeStep):
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     try:
@@ -87,7 +87,7 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
 
     large_fires = find_largefires(allfires_gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
-    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted)
+    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
 
 
 def job_preprocess_region_t(t: TimeStep, region: Region):
@@ -196,7 +196,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     logger.info("------------- Done with preprocessing region + t -------------")
     
     # run fire forward algorithm (which cannot be run in parallel)
-    job_fire_forward(region=region, tst=tst, ted=ted)
+    job_fire_forward(region=region, tst=tst, ted=ted, client=client)
 
     # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
