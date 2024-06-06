@@ -75,19 +75,20 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
         allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
         copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
         copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
-
         allfires_gdf = allfires.gdf
+        if t_saved is None:
+            # NOTE: this happens if we're running a region full-on
+            # from start to finish that has never been run before
+            # and therefore no existin allpixels/allfires save has been found
+            t_saved = tst
     except KeyError as e:
         logger.warning(f"Fire forward has already run. {e}")
         allpixels = read_allpixels(tst, ted, region)
         allfires_gdf = read_allfires_gdf(tst, ted, region)
-        t_saved = None
-
-    if t_saved is None:
-        # this can happen in a couple different scenarios:
-        # 1) if we're running a region full-on from start to finish that has never been run before
-        # 2) or if we've already found an allfires and allpixels output for the ted timestep and throw KeyError
+        # NOTE: this means we've already found an
+        # allfires and allpixels save for this ted timestep
         t_saved = ted
+
 
     save_snapshots(allfires_gdf, region, t_saved, ted)
 
