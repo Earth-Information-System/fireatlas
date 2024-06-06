@@ -12,6 +12,9 @@ from shapely.ops import unary_union
 import warnings
 
 warnings.filterwarnings("ignore", "GeoSeries.notna", UserWarning)
+warnings.filterwarnings("ignore", "Large object * detected in task graph", UserWarning)
+warnings.filterwarnings("ignore", "Sending large graph", UserWarning)
+
 
 from fireatlas.utils import timed
 from fireatlas.FireTypes import Region, TimeStep, Location
