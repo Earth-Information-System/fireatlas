@@ -49,6 +49,8 @@ class Settings(BaseSettings):
         description="Final storage place for written files. This is where everything reads from",
     )
 
+    LOG_FILENAME: str = Field("running.log", description="Where to write logs to.")
+
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
     # ------------------------------------------------------------------------------
