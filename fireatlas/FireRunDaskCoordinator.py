@@ -41,9 +41,6 @@ from fireatlas import settings
 
 dask.config.set({'logging.distributed': 'error'})
 
-# NOTE: the current eis queue 64gb is set up as an
-# AWS r5.2xlarge instance with 64gb RAM and 8 CPUs
-MAX_WORKERS = 6
 
 # NOTE: this expects credentials to be resolvable globally
 # via boto3/botocore common resolution paths
@@ -189,7 +186,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     
     logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 
-    client = Client(n_workers=MAX_WORKERS)
+    client = Client(n_workers=settings.N_DASK_WORKERS)
     logger.info(f"dask workers = {len(client.cluster.workers)}")
  
     # run the first two jobs in parallel

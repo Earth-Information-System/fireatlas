@@ -143,6 +143,9 @@ class Settings(BaseSettings):
     export_to_veda: bool = Field(
         False, description="whether to export data from MAAP to VEDA s3"
     )
+    N_DASK_WORKERS: bool = Field(
+        6, description="How many dask workers to use for Run."
+    )
 
     # ------------------------------------------------------------------------------
     # fire type related parameters
