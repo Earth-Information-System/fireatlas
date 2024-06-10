@@ -92,12 +92,13 @@ def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeSte
         # allfires and allpixels save for this ted timestep
         t_saved = ted
 
-
-    save_snapshots(allfires_gdf, region, t_saved, ted)
+    snapshot_futures = save_snapshots(allfires_gdf, region, t_saved, ted, client=client)
 
     large_fires = find_largefires(allfires_gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
     save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
+    
+    client.gather(snapshot_futures)
 
 
 def job_preprocess_region_t(t: TimeStep, region: Region):

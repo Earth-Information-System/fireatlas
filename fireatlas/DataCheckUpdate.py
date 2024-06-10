@@ -65,7 +65,7 @@ def update_VJ114IMGTDL(d: date):
     urldir = "https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
     urlfnm = urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_"+d.strftime('%Y%j')+".txt"
     try:
-        wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
+        downloaded_filepath = wget(url=urlfnm,locdir=data_dir,robots_off=True,no_wget=False,timestamping=True,header='NASA')
         preprocess_input_file(downloaded_filepath)
     except Exception as e:
         logger.warning(f"Could not download VJ114IMGTDL data for {d}")

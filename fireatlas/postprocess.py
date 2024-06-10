@@ -194,7 +194,6 @@ def create_snapshot_data(
     return data
 
 
-@timed
 def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: TimeStep):
     output_dir = snapshot_folder(region, tst, ted, location="local")
     os.makedirs(output_dir, exist_ok=True)
@@ -210,13 +209,18 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
 
 
 @timed
-def save_snapshots(allfires_gdf, region, tst, ted):
+def save_snapshots(allfires_gdf, region, tst, ted, client=None):
     gdf = allfires_gdf.reset_index()
 
+    futures = []
     for t in t_generator(tst, ted):
         dt = t2dt(t)
         data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last")
-        save_snapshot_layers(data, region, tst, t)
+        if client:
+            futures.append(client.submit(save_snapshot_layers, data, region, tst, t))
+        else:
+            save_snapshot_layers(data, region, tst, t)
+    return futures
 
 
 @timed
