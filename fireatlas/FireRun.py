@@ -578,22 +578,28 @@ def WesternUSYrRun(year):
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 
-def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
+def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat = 'SNPP', data_source='FRAP', id_col='INC_NUM'):
     """
+    Runs fire_forward within the specified time range and constrains viirs pixels to the supplied fire perimeters.
     Derives region from the perimeter and updates tst/ted based on the fire start/end dates.
     preprocesses the monthly data for the region and runs fire_forward.
     Saves the outpts too--allpixels, allfires, and individual fires.
     """
+
     from fireatlas import FireTime, preprocess, FireMain, postprocess, FireIO
     from fireatlas import settings
 
+    # preprocessing steps to do at the start
+    preprocess.preprocess_landcover()
+
+    # read perimeter data + preprocess
+    perimeter_gdf = gpd.read_file(perimeter_gdf_path)
+    perimeter_gdf = FireIO.preprocess_polygon(perimeter_gdf, data_source=data_source, id_col=id_col)
+
     settings.FIRE_SOURCE = sat
 
-    # convert gdf to a series if it is not already
-    if not isinstance(perimeter_gdf, Series):
-        perimeter = perimeter_gdf.iloc[0]
-    else:
-        perimeter = perimeter_gdf
+    # convert gdf to a series
+    perimeter = perimeter_gdf.iloc[0]
 
     # update the time window based on the fire start/end dates
     tst, ted = FireTime.update_tst_ted(perimeter, tst, ted)
@@ -614,8 +620,9 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
     # preprocess the monthly files--will only do for those not already processed
     for ym in unique_ym:
         output_files = preprocess.preprocess_monthly_file(ym, sat)
-        for f in output_files:
-            FireIO.copy_from_local_to_s3(f, settings.fs)
+        if settings.READ_LOCATION == 's3':
+            for f in output_files:
+                FireIO.copy_from_local_to_s3(f, settings.fs)
 
     # filter VIIRS to the perimeter for each time step
     region = preprocess.read_region(region, 'local')
@@ -623,53 +630,10 @@ def constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat='SNPP'):
         preprocess.preprocess_region_t(t, region=region, read_region_location='local')
 
     # finally run fire_forward
-    allfires, allpixels = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region,
-                                                read_location = 'local', read_saved_location = 'local')
+    allfires, allpixels, t_saved = FireMain.Fire_Forward(tst=tst, ted=ted, restart=False, region=region, read_location = 'local', read_saved_location = 'local')
 
     # Save outputs
     postprocess.save_individual_fire(allfires.gdf, tst, ted, region)
-
-
-def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat = 'SNPP', data_source='FRAP', id_col='INC_NUM'):
-    """
-    Runs fire_forward within the specified time range and constrains viirs pixels to the supplied fire perimeters.
-    Accomodates multiple perimeters (will loop through each one) or a single perimeter.
-    Time window further filtered based on the fire start/end dates.
-
-    Parameters
-    ----------
-    tst : list
-        Min start time (year, month, day, "AM" or "PM").
-    ted : list
-        Max end time (year, month, day, "AM" or "PM").
-    perimeter_gdf_path : path to geopandas.GeoDataFrame of fire perimeters
-    sat: 'SNPP'--currently the only option for montly VIIRS data
-
-    Returns
-    -------
-    allpixels csv file, allfires geoparquet, fgb of individual fire with perimeters merged by day
-    """
-    from fireatlas import FireIO, preprocess
-
-    # preprocessing steps to do at the start
-    preprocess.preprocess_landcover()
-
-    # read perimeter data + preprocess
-    perimeter_gdf = gpd.read_file(perimeter_gdf_path)
-    perimeter_gdf = FireIO.preprocess_polygon(perimeter_gdf, data_source=data_source, id_col=id_col)
-
-    # if there's more than one perimeter, loop through each one
-    # wrap fire_forward in a try/except block to catch any errors and continue processing
-    def Fire_Forward_try(tst, ted, perimeter_series, sat=sat):
-        try:
-            constrainByShape_Fire_Forward(tst, ted, perimeter_series, sat)
-        except Exception as e:
-            logger.error(e)
-            pass
-    if len(perimeter_gdf) > 1:
-        perimeter_gdf.apply(lambda x: Fire_Forward_try(tst, ted, x), axis=1)
-    else:
-        constrainByShape_Fire_Forward(tst, ted, perimeter_gdf, sat)
 
 
 if __name__ == "__main__":
