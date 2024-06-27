@@ -145,7 +145,7 @@ def create_snapshot_data(
     if layer == "fireline":
         data["geometry"] = allfires_gdf["fline"]
 
-    data = data.set_geometry("geometry")
+    data = data.set_geometry("geometry", crs=settings.EPSG_CODE)
     data = data[data.geometry.notna() & ~data.geometry.is_empty]
 
     if layer == "perimeter":
@@ -253,7 +253,7 @@ def save_fire_nplist(allpixels_fid, region, fid, tst):
     ].copy()
     data.columns = ["x", "y", "frp", "DS", "DT", "ampm", "datetime", "sat"]
     data["geometry"] = gpd.points_from_xy(data.x, data.y)
-    data = data.set_geometry("geometry")
+    data = data.set_geometry("geometry", crs=settings.EPSG_CODE)
 
     data.to_file(os.path.join(output_dir, "nfplist.fgb"), driver="FlatGeobuf")
 
@@ -280,7 +280,7 @@ def save_fire_layers(allfires_gdf_fid, region, fid, tst):
         elif layer == "fireline":
             data["geometry"] = allfires_gdf_fid["fline"]
 
-        data = data.set_geometry("geometry")
+        data = data.set_geometry("geometry", crs=settings.EPSG_CODE)
         data = data[data.geometry.notna() & ~data.geometry.is_empty]
 
         data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
