@@ -145,10 +145,10 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------------------
     # fire type related parameters
     # ------------------------------------------------------------------------------
-    FTYP_OPT: Literal["preset", "CA", "Global"] = Field(
+    FTYP_OPT: Literal["preset", "CA", "global"] = Field(
         "CA", description="fire type option"
     )
-    CONT_OPT: Literal["preset", "CA", "Global"] = Field(
+    CONT_OPT: Literal["preset", "CA", "global"] = Field(
         "CA", description="continuity threshold option"
     )
 
