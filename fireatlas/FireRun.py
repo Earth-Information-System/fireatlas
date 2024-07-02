@@ -18,21 +18,38 @@ def CreekFireforwardTestRun():
     #     FIRE_NRT: False
     #.    remove_static_sources: False
     
-    from fireatlas import FireMain, postprocess
+    from fireatlas import FireMain, postprocess, FireTime, preprocess
     
-    tst = (2020, 9, 5, "AM")
-    ted = (2020, 11, 5, "PM")
+    tst = [2020, 9, 5, "AM"]
+    ted = [2020, 11, 5, "PM"]
     region = ("v3_test_data_for_Creek_SNPP", [-119.5, 36.8, -118.9, 37.7])
 
     # do preprocessing ahead of time and save in test/data/FEDSpreprocessed
+    list_of_ts = list(FireTime.t_generator(tst, ted))
+
+    preprocess.preprocess_region(region, force=True) 
+
+    months = set()
+    for t in list_of_ts:
+        months.add(tuple(t[:2]))
+    for sat in ["SNPP"]:
+        for m in months:
+            preprocess.preprocess_monthly_file(m, sat)
+    for t in list_of_ts:
+        preprocess.preprocess_region_t(t, region=region, read_location="local", force=True)
     
     # Run, reading from local. Will call preprocess.read_preprocessed with 
     # read_location="local"
     # In test, local will be overwritten with the test/data directory. 
-    allfires_gdf, allpixels, t_saved = FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region, read_location="local")
+    allfires, allpixels, t_saved = FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region, read_location="local")
 
     # test allfires outputs here 
     
+    
+    allpixels = postprocess.read_allpixels(tst, ted, region, location="local")
+    allfires_gdf = postprocess.read_allfires_gdf(tst, ted, region, location="local")
+
+
     # Save largefire outputs
     large_fires = postprocess.find_largefires(allfires_gdf)
     postprocess.save_large_fires_nplist(allpixels, region, large_fires, tst)
