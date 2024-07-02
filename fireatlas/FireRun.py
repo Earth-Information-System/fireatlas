@@ -11,6 +11,35 @@ from fireatlas.FireLog import logger
 from fireatlas.utils import timed
 from fireatlas import settings
 
+def CreekFireforwardTestRun():
+    # For comparing outputs against version 2 outputs
+    # Settings in FireConsts.py: 
+    #     FIRE_SOURCE: "SNPP"
+    #     FIRE_NRT: False
+    #.    remove_static_sources: False
+    
+    from fireatlas import FireMain, postprocess
+    
+    tst = (2020, 9, 5, "AM")
+    ted = (2020, 11, 5, "PM")
+    region = ("v3_test_data_for_Creek_SNPP", [-119.5, 36.8, -118.9, 37.7])
+
+    # do preprocessing ahead of time and save in test/data/FEDSpreprocessed
+    
+    # Run, reading from local. Will call preprocess.read_preprocessed with 
+    # read_location="local"
+    # In test, local will be overwritten with the test/data directory. 
+    allfires_gdf, allpixels, t_saved = FireMain.Fire_Forward(tst=tst, ted=ted, restart=True, region=region, read_location="local")
+
+    # test allfires outputs here 
+    
+    # Save largefire outputs
+    large_fires = postprocess.find_largefires(allfires_gdf)
+    postprocess.save_large_fires_nplist(allpixels, region, large_fires, tst)
+    postprocess.save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted)
+    
+    
+
 
 def Yearbatchrun(year, tst=None, ted=None, restart=False):
     """ Run the code for each single year
