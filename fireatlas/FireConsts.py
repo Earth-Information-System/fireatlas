@@ -49,6 +49,8 @@ class Settings(BaseSettings):
         description="Final storage place for written files. This is where everything reads from",
     )
 
+    LOG_FILENAME: str = Field("running.log", description="Where to write logs to.")
+
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
     # ------------------------------------------------------------------------------
@@ -140,6 +142,9 @@ class Settings(BaseSettings):
     )
     export_to_veda: bool = Field(
         False, description="whether to export data from MAAP to VEDA s3"
+    )
+    N_DASK_WORKERS: int = Field(
+        6, description="How many dask workers to use for Run."
     )
 
     # ------------------------------------------------------------------------------

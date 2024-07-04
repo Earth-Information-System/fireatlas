@@ -1,5 +1,6 @@
 import logging
 import os
+from fireatlas import settings
 
 _logger_configured = False
 
@@ -18,7 +19,7 @@ def get_logger(name):
         ch.setLevel(logging.INFO)
 
         # create a file handler as well
-        fh = logging.FileHandler(os.path.join(root_dir, "running.log"))
+        fh = logging.FileHandler(os.path.join(root_dir, settings.LOG_FILENAME))
         fh.setLevel(logging.INFO)
 
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

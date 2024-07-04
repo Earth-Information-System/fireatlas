@@ -6,6 +6,7 @@ from functools import partial
 
 import s3fs
 
+import dask.config
 from dask.distributed import Client
 from datetime import datetime, date, timezone, timedelta
 
@@ -33,14 +34,13 @@ from fireatlas.preprocess import (
 )
 
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath
+from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath, VJ114IMGTDL_filepath, VNP14IMGTDL_filepath
 from fireatlas.FireTime import t_generator
 from fireatlas.FireLog import logger
 from fireatlas import settings
 
-# NOTE: the current eis queue 64gb is set up as an
-# AWS r5.2xlarge instance with 64gb RAM and 8 CPUs
-MAX_WORKERS = 6
+dask.config.set({'logging.distributed': 'error'})
+
 
 # NOTE: this expects credentials to be resolvable globally
 # via boto3/botocore common resolution paths
@@ -68,7 +68,7 @@ def get_timesteps_needing_region_t_processing(
     return needs_processing
 
 
-def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
+def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeStep):
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     try:
@@ -89,12 +89,13 @@ def job_fire_forward(region: Region, tst: TimeStep, ted: TimeStep):
         # allfires and allpixels save for this ted timestep
         t_saved = ted
 
-
-    save_snapshots(allfires_gdf, region, t_saved, ted)
+    snapshot_futures = save_snapshots(allfires_gdf, region, t_saved, ted, client=client)
 
     large_fires = find_largefires(allfires_gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
-    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted)
+    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
+    
+    client.gather(snapshot_futures)
 
 
 def job_preprocess_region_t(t: TimeStep, region: Region):
@@ -126,9 +127,11 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     for sat in sats:
         if sat == "SNPP":
             monthly_filepath_func = VNP14IMGML_filepath
+            NRT_filepath_func = VNP14IMGTDL_filepath
             NRT_update_func = update_VNP14IMGTDL
         if sat == "NOAA20":
             monthly_filepath_func = VJ114IMGML_filepath
+            NRT_filepath_func = VJ114IMGTDL_filepath
             NRT_update_func = update_VJ114IMGTDL
 
         # first check if there are any monthly files that need preprocessing
@@ -144,12 +147,24 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         # set up monthly jobs
         futures.extend(client.map(preprocess_input_file, monthly_filepaths))
 
-        # calculate any remaining missing dates
-        missing_dates = [date(*t) for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
+        # calculate any remaining missing timesteps
+        missing_timesteps = [t for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
+        NRT_filepaths = [NRT_filepath_func(t) for t in missing_timesteps]
+        
+        # narrow down to the NRT filepaths and timesteps that actually exist
+        indices = [i for i, f in enumerate(NRT_filepaths) if f is not None]
+        NRT_filepaths = [NRT_filepaths[i] for i in indices]
+        NRT_timesteps = [missing_timesteps[i] for i in indices]
+        
+        # set up NRT jobs
+        futures.extend(client.map(preprocess_input_file, NRT_filepaths))
+
+        # if there are any dates that are still missing, try to wget the files
+        missing_dates = [date(*t) for t in missing_timesteps if t not in NRT_timesteps]
 
         # don't actually worry about dates that are more than 30 days ago
         dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=30))]
-        
+
         # set up NRT jobs
         futures.extend(client.map(NRT_update_func, dates))
 
@@ -168,8 +183,10 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         else:
             ampm = 'AM'
         ted = [ctime.year, ctime.month, ctime.day, ampm]
+    
+    logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 
-    client = Client(n_workers=MAX_WORKERS)
+    client = Client(n_workers=settings.N_DASK_WORKERS)
     logger.info(f"dask workers = {len(client.cluster.workers)}")
  
     # run the first two jobs in parallel
@@ -185,7 +202,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
     )
     # block until half-day timesteps and region are on s3
-    client.gather([*data_upload_futures, region_future])
+    timed(client.gather, text=f"Dask upload of {len(data_upload_futures) + 1} files")([*data_upload_futures, region_future])
 
     logger.info("------------- Done with preprocessing t -------------")
 
@@ -203,7 +220,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
     logger.info("------------- Done with preprocessing region + t -------------")
     
     # run fire forward algorithm (which cannot be run in parallel)
-    job_fire_forward(region=region, tst=tst, ted=ted)
+    job_fire_forward(region=region, tst=tst, ted=ted, client=client)
 
     # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
@@ -218,7 +235,8 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
     )
     # block until everything is uploaded
-    client.gather([*fgb_s3_upload_futures, *fgb_veda_upload_futures])
+    futures = [*fgb_s3_upload_futures, *fgb_veda_upload_futures]
+    timed(client.gather, text=f"Dask upload of {len(futures)} files")(futures)
 
     logger.info("------------- Done -------------")
 
