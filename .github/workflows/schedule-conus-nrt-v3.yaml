@@ -39,7 +39,7 @@ jobs:
         algo_name: eis-feds-dask-coordinator-v3
         github_ref: 1.0.0
         username: gcorradini
-        queue: maap-dps-eis-worker-64gb
+        queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
         json_params: '{"regnm": "CONUS", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'

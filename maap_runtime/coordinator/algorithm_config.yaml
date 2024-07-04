@@ -4,7 +4,7 @@ algorithm_version: 1.0.0
 environment: ubuntu
 repository_url: https://github.com/Earth-Information-System/fireatlas.git
 docker_container_url: "mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4"
-queue: "maap-dps-eis-worker-64gb"
+queue: "maap-dps-eis-worker-128gb"
 run_command: "fireatlas/maap_runtime/run_dps_cli.sh"
 build_command: "fireatlas/maap_runtime/run_dps_build.sh"
 disk_space: "250GB"
