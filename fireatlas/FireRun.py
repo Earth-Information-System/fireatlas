@@ -29,12 +29,6 @@ def CreekFireforwardTestRun():
 
     preprocess.preprocess_region(region, force=True) 
 
-    months = set()
-    for t in list_of_ts:
-        months.add(tuple(t[:2]))
-    for sat in ["SNPP"]:
-        for m in months:
-            preprocess.preprocess_monthly_file(m, sat)
     for t in list_of_ts:
         preprocess.preprocess_region_t(t, region=region, read_location="local", force=True)
     
