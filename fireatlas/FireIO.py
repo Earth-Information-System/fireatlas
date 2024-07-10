@@ -2127,3 +2127,61 @@ def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
     # tags = dict([(str(k)[:64], str(v)[:128]) for k, v in tags.items()][-10:])
     #
     # s3.put_tags(dst, tags)
+
+def convert_v2_pkl_to_csv(files, output_dir, sat):
+    """Convert tmp data pickles created by v2 runs
+    into preprocessed daily files to input into v3. 
+
+    Used for setting up new tests, where converted 
+    v2 pickles can be used as the input data source
+    for newer versions. This ensures that both versions
+    being compared are running on the same input data. 
+
+    Parameters
+    ----------
+    files : list of strings
+        list of pathnames to v2 pickles to convert
+    output_dir : string
+        directory to write output files to
+    sat : string
+        satellite, e.g. SNPP
+
+    
+    Returns
+    -------
+    output_paths : list of strings
+        list of files written
+    """
+    output_paths = []
+    for file in files:
+        
+        with open(file, "rb") as f:
+            df = pickle.load(f)
+            df["datetime"] = pd.to_datetime(
+                df["YYYYMMDD_HHMM"], format="%Y%m%d %H%M"
+            )
+
+            df["Sat"] = sat
+            df["input_filename"] = file.split("/")[-1]
+            
+            df = df.loc[df["Type"] == 0] # type filtering
+
+            df = df[
+                ["Lat", "Lon", "FRP", "Sat", "DT", "DS",
+                 "input_filename", "datetime", "ampm"]
+            ]
+
+            gb = df.groupby(df["datetime"].dt.date)
+
+            for day, data in gb: 
+                for ampm in ["AM", "PM"]:
+                    time_filtered_df = data.loc[df["ampm"] == ampm]
+
+                    output_filepath = (output_dir
+                                         + sat + "/" + day.strftime("%Y%m%d")
+                                         + "_" + ampm + ".txt")
+
+                    time_filtered_df.to_csv(output_filepath, index=False)
+                    output_paths.append(output_filepath)
+                    
+    return output_paths
