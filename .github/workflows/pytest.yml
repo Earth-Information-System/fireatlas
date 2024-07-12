@@ -2,9 +2,9 @@ name: pytest
 
 on:
   push:
-    branches: [ "conus-dps", "primarykeyv2" ]
+    branches: [ "primarykeyv2" ]
   pull_request:
-    branches: [ "conus-dps", "primarykeyv2" ]
+    branches: [ "primarykeyv2" ]
 
 permissions:
   contents: read
