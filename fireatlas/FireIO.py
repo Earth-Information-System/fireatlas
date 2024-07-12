@@ -212,7 +212,7 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
     return gdf
 
 
-def VNP14IMGML_filepath(t: TimeStep, ver="C1.05"):
+def VNP14IMGML_filepath(t: TimeStep):
     """Filepath for monthly S-NPP VIIRS data
 
     Parameters
@@ -233,9 +233,9 @@ def VNP14IMGML_filepath(t: TimeStep, ver="C1.05"):
         "VNP14IMGML",
     )
 
-    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.{ver}.txt.gz")
+    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
     if not settings.fs.exists(filepath):
-        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.{ver}.txt")
+        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
     if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
@@ -297,7 +297,7 @@ def VNP14IMGTDL_filepath(t: TimeStep):
     filepath : str
         Path to input data or None if file does not exist
     """
-    d = FireTime.t2dt(t)
+    d = date(t[0], t[1], t[2])
 
     filepath = os.path.join(
         settings.dirextdata,
@@ -455,7 +455,7 @@ def VJ114IMGTDL_filepath(t: TimeStep):
     filepath : str
         Path to input data or None if file does not exist
     """
-    d = FireTime.t2dt(t)
+    d = date(t[0], t[1], t[2])
 
     filepath = os.path.join(
         settings.dirextdata,
@@ -2103,7 +2103,6 @@ def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
     Some default tags will be added from the environment and specified FireConsts
     """
     dst = filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
-    logger.info(f"uploading file {filepath} to {dst}")
 
     fs.put_file(filepath, dst)
 

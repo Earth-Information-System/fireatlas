@@ -12,6 +12,9 @@ from shapely.ops import unary_union
 import warnings
 
 warnings.filterwarnings("ignore", "GeoSeries.notna", UserWarning)
+warnings.filterwarnings("ignore", "Large object * detected in task graph", UserWarning)
+warnings.filterwarnings("ignore", "Sending large graph", UserWarning)
+
 
 from fireatlas.utils import timed
 from fireatlas.FireTypes import Region, TimeStep, Location
@@ -191,7 +194,6 @@ def create_snapshot_data(
     return data
 
 
-@timed
 def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: TimeStep):
     output_dir = snapshot_folder(region, tst, ted, location="local")
     os.makedirs(output_dir, exist_ok=True)
@@ -207,13 +209,18 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
 
 
 @timed
-def save_snapshots(allfires_gdf, region, tst, ted):
+def save_snapshots(allfires_gdf, region, tst, ted, client=None):
     gdf = allfires_gdf.reset_index()
 
+    futures = []
     for t in t_generator(tst, ted):
         dt = t2dt(t)
         data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last")
-        save_snapshot_layers(data, region, tst, t)
+        if client:
+            futures.append(client.submit(save_snapshot_layers, data, region, tst, t))
+        else:
+            save_snapshot_layers(data, region, tst, t)
+    return futures
 
 
 @timed
@@ -371,7 +378,7 @@ def merge_rows(allfires_gdf_fid, fid: int | str):
 
 
 @timed
-def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
+def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=None):
     """will save individual large fire artifacts as well as
 
     a combined perimeter, newpixel and fireline artifact of all large fires
@@ -389,16 +396,26 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted):
     # we'll set the "fireID" to "mergeid" in those spots
     gdf.loc[merge_needed, "fireID"] = gdf.loc[merge_needed, "mergeid"]
 
-    processed_gdfs = []
-    for fid, data in gdf[gdf["fireID"].isin(large_fires)].groupby("fireID"):
+    def merge_and_save_fire(data, fid):
         # merge any rows that have the same t
         if data.t.duplicated().any():
             data = merge_rows(data, fid)
 
-        # accumulate each fid for combined large fires
-        processed_gdfs.append(data)
         # save off single large fire artifacts
         save_fire_layers(data, region, int(fid), tst)
+        
+        # accumulate each fid for combined large fires
+        return data
+
+    futures = []
+    processed_gdfs = []
+    for fid, data in gdf[gdf["fireID"].isin(large_fires)].groupby("fireID"):
+        if client:
+            futures.append(client.submit(merge_and_save_fire, data, fid))
+        else:
+            processed_gdfs.append(merge_and_save_fire(data, fid))
+    if futures:
+        processed_gdfs = client.gather(futures)
 
     # save off all large fire artifacts
     if len(processed_gdfs) != 0:

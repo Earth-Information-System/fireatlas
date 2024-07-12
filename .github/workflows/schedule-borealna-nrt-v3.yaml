@@ -39,7 +39,7 @@ jobs:
         algo_name: eis-feds-dask-coordinator-v3
         github_ref: 1.0.0
         username: gcorradini
-        queue: maap-dps-eis-worker-64gb
+        queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
         json_params: '{"regnm": "BorealNA", "bbox": "[-169, 44, -48, 75]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'

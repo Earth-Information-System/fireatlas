@@ -3,7 +3,7 @@ from time import time
 from fireatlas.FireLog import logger
 
 
-def timed(f):
+def timed(f, text: str | None = None):
 
     @wraps(f)
     def wrap(*args, **kwargs):
@@ -28,7 +28,7 @@ def timed(f):
             took = f"{t_diff * 1000:.2f} ms"
 
         # log the time that the function took
-        logger.info(f"func:{f.__name__} took: {took}")
+        logger.info(f"func:{text or f.__name__} took: {took}")
         return result
 
     return wrap

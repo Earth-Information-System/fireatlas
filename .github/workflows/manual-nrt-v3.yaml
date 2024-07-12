@@ -6,6 +6,7 @@ on:
       algo_name:
         description: 'Algorithm name'
         required: true
+        default: 'eis-feds-dask-coordinator-v3'
       github_ref:
         description: 'Branch name or tag'
         required: true
@@ -15,7 +16,7 @@ on:
       queue:
         description: 'Queue'
         required: false
-        default: 'maap-dps-eis-worker-64gb'
+        default: 'maap-dps-eis-worker-128gb'
       maap_image_env:
         description: 'MAAP image environment'
         required: false
