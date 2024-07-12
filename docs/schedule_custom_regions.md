@@ -82,7 +82,7 @@ the only thing to mention is that the JSON encoded param input will look somethi
 enclosed in single quotes or double quotes but rather naked:
 
     ```bash
-    {"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[]", "ted": "[2024,3,1,\"AM\"]", "operation": "--coordinate-all"}
+    {"regnm": "RussiaEast", "bbox": "[97.16172779881556,46.1226744036175,168.70469654881543,77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}
     ```
 
 
@@ -108,5 +108,5 @@ enclosed in single quotes or double quotes but rather naked:
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,05,01,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+        json_params: '{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
    ```
