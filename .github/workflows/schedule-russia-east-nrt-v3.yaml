@@ -1,29 +1,9 @@
-name: manual nrt v3
+name: russia east nrt v3
 
 on:
   workflow_dispatch:
-    inputs:
-      algo_name:
-        description: 'Algorithm name'
-        required: true
-        default: 'eis-feds-dask-coordinator-v3'
-      github_ref:
-        description: 'Branch name or tag'
-        required: true
-      username:
-        description: 'Username'
-        required: true
-      queue:
-        description: 'Queue'
-        required: false
-        default: 'maap-dps-eis-worker-128gb'
-      maap_image_env:
-        description: 'MAAP image environment'
-        required: false
-        default: 'ubuntu'
-      json_params:
-        description: 'JSON encoded params to pass to the job e.g.: {"regnm": "NewMexicoV3", "bbox": "[-125,31,-101,49]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'
-        required: true
+  schedule:
+    - cron:  '45 6,9,18,21 * * *'
 
 jobs:
   run_dps_job_v3:
@@ -58,12 +38,13 @@ jobs:
     - name: kick off the DPS job
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with:
-        algo_name: ${{ inputs.algo_name }}
-        github_ref: ${{ inputs.github_ref }}
-        username: ${{ inputs.username }}
-        queue: ${{ inputs.queue }}
-        maap_image_env: ${{ inputs.maap_image_env }}
+        algo_name: eis-feds-dask-coordinator-v3
+        github_ref: 1.0.0
+        username: gcorradini
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: ${{ inputs.json_params }}
+        json_params: '{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,05,01,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+
 
 
