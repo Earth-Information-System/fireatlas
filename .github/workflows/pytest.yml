@@ -1,0 +1,28 @@
+name: pytest 
+
+on:
+  push:
+    branches: [ "conus-dps", "primarykeyv2" ]
+  pull_request:
+    branches: [ "conus-dps", "primarykeyv2" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4 
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+    - name: Install fireatlas and dependencies 
+      run: |
+        cd fireatlas/
+        python -m pip install '.[test]'
+    - name: Run all tests with pytest
+      run: pytest -v --runslow tests/
