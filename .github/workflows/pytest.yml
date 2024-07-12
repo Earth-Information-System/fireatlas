@@ -23,6 +23,7 @@ jobs:
     - name: Install fireatlas and dependencies 
       run: |
         cd fireatlas/
+        pwd
         python -m pip install '.[test]'
     - name: Run all tests with pytest
       run: pytest -v --runslow tests/
