@@ -7,7 +7,7 @@ from typing import Literal
 import os
 
 import fsspec
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, validator
 
 from fireatlas.FireTypes import Location
@@ -17,11 +17,9 @@ root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 class Settings(BaseSettings):
     # read in all env vars prefixed with `FEDS_` they can be in a .env file
-    model_config = {
-        "env_file": ".env",
-        "extra": "ignore",
-        "env_prefix": "FEDS_",
-    }
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_prefix="FEDS_")
+    
     # ------------------------------------------------------------------------------
     # where data is stored
     # ------------------------------------------------------------------------------
@@ -60,9 +58,14 @@ class Settings(BaseSettings):
     LARGEFIRE_FAREA: int = Field(
         4, description="fire area threshold for determining large fires"
     )
-    EPSG_CODE: Literal[9311, 32610, 3571] = Field(
-        9311,
-        description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
+    
+    # EPSG_CODE: Literal[9311, 32610, 3571] = Field(
+    #     9311,
+    #     description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
+    # )
+
+    EPSG_CODE: int = Field(
+        9311, description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
 
     # temporal parameters for fire object definition
