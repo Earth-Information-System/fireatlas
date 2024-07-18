@@ -6,7 +6,7 @@ algorithm_version: eli_global_boreal_snap_only
 environment: ubuntu
 repository_url: https://github.com/Earth-Information-System/fireatlas.git
 docker_container_url: "mas.dit.maap-project.org/root/maap-workspaces/base_images/eis_feds:42644eb"
-queue: "maap-dps-worker-32gb"
+queue: "maap-dps-eis-worker-64gb"
 run_command: "fireatlas/run_dps.sh 'BorealNA'"
 build_command: ""
 disk_space: "100GB"
