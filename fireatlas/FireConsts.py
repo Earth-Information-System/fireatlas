@@ -114,14 +114,14 @@ class Settings(BaseSettings):
     FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
         "NOAA20", description="fire source data"
     )
-    FIRE_NRT: bool = Field(False, description="whether to use NRT data")
+    FIRE_NRT: bool = Field(True, description="whether to use NRT data")
     FIRE_SENSOR: Literal["viirs", "mcd64"] = Field("viirs", description="fire sensor")
 
     # ------------------------------------------------------------------------------
     # static fire parameters
     # ------------------------------------------------------------------------------
     remove_static_sources: bool = Field(
-        False, description="remove areas with known flaring/gas sources from region"
+        True, description="remove areas with known flaring/gas sources from region"
     )
     remove_static_sources_sourcefile: str = Field(
         "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv",
