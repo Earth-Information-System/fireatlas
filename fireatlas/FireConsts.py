@@ -8,7 +8,7 @@ import os
 
 import fsspec
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field, validator
+from pydantic import Field, validator, field_validator
 
 from fireatlas.FireTypes import Location
 
@@ -59,14 +59,17 @@ class Settings(BaseSettings):
         4, description="fire area threshold for determining large fires"
     )
     
-    # EPSG_CODE: Literal[9311, 32610, 3571] = Field(
-    #     9311,
-    #     description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
-    # )
 
     EPSG_CODE: int = Field(
         9311, description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
+    
+    @field_validator('EPSG_CODE')
+    @classmethod
+    def check_epsg(cls, epsg: int):
+        if epsg not in (3571, 32610, 9311):
+            raise ValueError(f"EPSG projection code {epsg} not recognized as one of: 3571, 32610, or 9311.")
+        return epsg
 
     # temporal parameters for fire object definition
     maxoffdays: int = Field(
