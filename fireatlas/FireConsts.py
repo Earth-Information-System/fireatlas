@@ -14,11 +14,12 @@ from fireatlas.FireTypes import Location
 
 root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
+DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
 
 class Settings(BaseSettings):
     # read in all env vars prefixed with `FEDS_` they can be in a .env file
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", env_prefix="FEDS_")
+    model_config = SettingsConfigDict(env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_")
     
     # ------------------------------------------------------------------------------
     # where data is stored
