@@ -118,6 +118,7 @@ pushd "$basedir"
   # we now secretly look for s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/<regnm>/.env
   # and copy it locally to ../fireatlas/.env so that pydantic can pick up our overrides
   copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
+  ls -lah ../fireatlas/
 
   if [[ $selected_flag == "data-update" ]]; then
     #scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output_dir}/profile.html" --- FireRunDataUpdateChecker.py

@@ -46,6 +46,7 @@ dask.config.set({'logging.distributed': 'error'})
 # via boto3/botocore common resolution paths
 fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
+logger.info(settings.model_dump())
 
 def validate_json(s):
     try:
