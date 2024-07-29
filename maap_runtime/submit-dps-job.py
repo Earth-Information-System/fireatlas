@@ -39,6 +39,8 @@ if __name__ == '__main__':
     job = submit_job(*pargs, params=deserialized_params)
     print(job)
     job_dict = dict(job)
+    print(job_dict)
+    print(type(job_dict))
     if job_dict['status'] == 'failed':
         msg = 'Job submission failed, please checkout logs for a message. If message is "Not Authorized" your PGT token might be old'
         print(msg)
