@@ -38,10 +38,7 @@ if __name__ == '__main__':
     print(f"[ KWARGS ]: {deserialized_params}")
     job = submit_job(*pargs, params=deserialized_params)
     print(job)
-    job_dict = dict(job)
-    print(job_dict)
-    print(type(job_dict))
-    if job_dict['status'] == 'failed':
+    if job.status == 'failed':
         msg = 'Job submission failed, please checkout logs for a message. If message is "Not Authorized" your PGT token might be old'
         print(msg)
         sys.exit(1)  # exit with a non-zero status to bubble up failure into GH actions
