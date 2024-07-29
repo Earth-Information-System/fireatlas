@@ -2,6 +2,7 @@
 import uuid
 import argparse
 import json
+import sys
 from maap.maap import MAAP
 
 parser = argparse.ArgumentParser()
@@ -39,6 +40,8 @@ if __name__ == '__main__':
     print(job)
     job_dict = dict(job)
     if job_dict['status'] == 'failed':
-        raise Exception('Job submission failed, please checkout logs for a message. If message is "Not Authorized" your PGT token might be old')
+        msg = 'Job submission failed, please checkout logs for a message. If message is "Not Authorized" your PGT token might be old'
+        print(msg)
+        sys.exit(1)  # exit with a non-zero status to bubble up failure into GH actions
 
 
