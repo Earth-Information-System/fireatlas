@@ -35,7 +35,10 @@ if __name__ == '__main__':
     pargs = [args.algo, args.github_ref, args.username, args.queue, args.maap_environment]
     print(f"[ ARGS ]: {pargs}")
     print(f"[ KWARGS ]: {deserialized_params}")
-    response = submit_job(*pargs, params=deserialized_params)
-    print(response)
+    job = submit_job(*pargs, params=deserialized_params)
+    print(job)
+    job_dict = dict(job)
+    if job_dict['status'] == 'failed':
+        raise Exception('Job submission failed, please checkout logs for a message. If message is "Not Authorized" your PGT token might be old')
 
 
