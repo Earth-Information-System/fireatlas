@@ -172,7 +172,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     return futures
 
 @timed
-def Run(region: Region, tst: TimeStep, ted: TimeStep):
+def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
 
     ctime = datetime.now(tz=timezone.utc)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
@@ -230,14 +230,15 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep):
         glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
     )
 
-    # take latest fire forward output and upload to VEDA S3 in parallel
-    fgb_veda_upload_futures = client.map(
-        partial(copy_from_local_to_veda_s3, fs=fs, regnm=region[0]),
-        glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
-    )
-    # block until everything is uploaded
-    futures = [*fgb_s3_upload_futures, *fgb_veda_upload_futures]
-    timed(client.gather, text=f"Dask upload of {len(futures)} files")(futures)
+    if copy_to_veda:
+        # take latest fire forward output and upload to VEDA S3 in parallel
+        fgb_veda_upload_futures = client.map(
+            partial(copy_from_local_to_veda_s3, fs=fs, regnm=region[0]),
+            glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
+        )
+        # block until everything is uploaded
+        futures = [*fgb_s3_upload_futures, *fgb_veda_upload_futures]
+        timed(client.gather, text=f"Dask upload of {len(futures)} files")(futures)
 
     logger.info("------------- Done -------------")
 
@@ -257,5 +258,7 @@ if __name__ == "__main__":
     parser.add_argument("--bbox", type=validate_json)
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
+    parser.add_argument('--no-veda-copy', dest='copy_to_veda', action='store_false', default=True,
+                        help="defaults to True but if passed will stop a copy to VEDA s3 bucket")
     args = parser.parse_args()
-    Run([args.regnm, args.bbox], args.tst, args.ted)
+    Run([args.regnm, args.bbox], args.tst, args.ted, args.copy_to_veda)
