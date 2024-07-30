@@ -666,7 +666,7 @@ def read_AFPVIIRSNRT(
     elif sat == "NOAA20":
         df = read_VJ114IMGTDL(t)
     else:
-        print("please set SNPP or NOAA20 for sat")
+        raise Exception("please set SNPP or NOAA20 for sat")
 
     if df is None:
         return None
@@ -737,10 +737,9 @@ def read_AFP(t, src="SNPP", nrt=False, region=None):
     elif src == "BAMOD":
         vlist = read_BAMOD(t, region)
     else:
-        print("Please set src to SNPP, NOAA20, or BAMOD")
-        return None
-    
-    if vlist is None: 
+        raise Exception("Please set src to SNPP, NOAA20, or BAMOD")
+
+    if vlist is None:
         print("No data available for this source for time",t) 
         return
     

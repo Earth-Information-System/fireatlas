@@ -609,7 +609,7 @@ def Fire_Forward(tst, ted, restart=False, region=None):
                     raise e
         
         # 4.5. if active fire pixels are detected, do fire expansion/merging
-        if len(afp) > 0:
+        if afp is not None and len(afp) > 0:
             # 4. do fire expansion/creation using afp
             t_expand = time.time()
             allfires = Fire_expand_rtree(allfires, afp, fids_ea)
