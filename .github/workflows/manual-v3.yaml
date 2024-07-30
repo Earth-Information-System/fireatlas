@@ -1,4 +1,4 @@
-name: manual nrt v3
+name: manual v3
 
 on:
   workflow_dispatch:
@@ -55,6 +55,21 @@ jobs:
         echo "Docker GID: $DOCKER_GID"
         echo "User UID: $UID"
 
+    - name: install jq
+      run: |
+        sudo apt-get update -y
+        sudo apt-get install -y jq
+
+    - name: override the default flag for manual runs
+      id: json_params
+      run: |
+        JSON_INPUT='${{ inputs.json_params }}'
+        JSON_OVERRIDE='{"operation": "--coordinate-all-no-veda-copy"}'
+        MERGED_JSON=$(jq -s '.[0] * .[1]' <(echo "$JSON_INPUT") <(echo "$JSON_OVERRIDE"))
+        MERGED_JSON_STRING=$(echo "$MERGED_JSON" | jq -c .)
+        echo "JSON params: $MERGED_JSON_STRING"
+        echo "json_params=$MERGED_JSON_STRING" >> $GITHUB_OUTPUT
+
     - name: kick off the DPS job
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with:
@@ -64,6 +79,6 @@ jobs:
         queue: ${{ inputs.queue }}
         maap_image_env: ${{ inputs.maap_image_env }}
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: ${{ inputs.json_params }}
+        json_params: ${{ steps.json_params.outputs.json_params }}
 
 
