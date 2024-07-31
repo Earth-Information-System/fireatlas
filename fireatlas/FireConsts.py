@@ -68,8 +68,9 @@ class Settings(BaseSettings):
     @field_validator('EPSG_CODE')
     @classmethod
     def check_epsg(cls, epsg: int):
-        if epsg not in (3571, 32610, 9311):
-            raise ValueError(f"EPSG projection code {epsg} not recognized as one of: 3571, 32610, or 9311.")
+        allowed = (3571, 32610, 9311, 6933)
+        if epsg not in allowed:
+            raise ValueError(f"EPSG projection code {epsg} not recognized as one of: {allowed}")
         return epsg
 
     # temporal parameters for fire object definition
