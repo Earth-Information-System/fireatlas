@@ -57,11 +57,12 @@ include = ["fireatlas", "maap_runtime", "tests"]
 [tool.setuptools.package-data]
 fireatlas = ["py.typed"]
 
+[tool.setuptools.dynamic]
+version = {attr = "setuptools_scm.get_version"}
 
 [tool.setuptools_scm]
 write_to = "fireatlas/_version.py"
 write_to_template = "__version__ = '{version}'"
-
 
 [project.optional-dependencies]
 test = [
