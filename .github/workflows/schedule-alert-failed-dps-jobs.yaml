@@ -1,9 +1,10 @@
-name: release
+name: alert-failed-dps-jobs
 
 on:
-  release:
-    types: [published]
-
+  workflow_dispatch:
+  schedule:
+    # every hour
+    - cron:  '0 * * * *'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,11 +17,6 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
-
-      - name: build deps
-        run: |
-          python -m pip install --upgrade pip
-          pip install setuptools setuptools_scm wheel twine
 
       - name: get docker GID and set DOCKER_GID environment variable
         run: |
@@ -35,17 +31,9 @@ jobs:
           echo "Docker GID: $DOCKER_GID"
           echo "User UID: $UID"
 
-# TODO: uncomment once we have PYPI credentials in place
-#      - name: build and publish to pypi
-#        run: |
-#          python -m build
-#          twine upload dist/*
-#        env:
-#          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-
-      - name: kick off the DPS job
-        uses: Earth-Information-System/fireatlas/.github/actions/release@primarykeyv2
+      - name: filter DPS failed jobs and alert
+        uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@primarykeyv2
         with:
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+          email_pw_secret: ${{ secrets.EMAIL_PW }}
 
