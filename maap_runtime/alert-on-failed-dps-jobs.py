@@ -67,5 +67,7 @@ def list_jobs():
 if __name__ == '__main__':
     jobs = list_jobs()
     failed_jobs = filter_jobs_last_hour(jobs['jobs'], 'job-failed')
+    print(f"[ FOUND ]: {len(failed_jobs)} failed jobs")
+    print(failed_jobs)
     send_email(failed_jobs)
 
