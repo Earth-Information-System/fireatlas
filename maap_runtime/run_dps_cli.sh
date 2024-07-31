@@ -157,9 +157,12 @@ pushd "$basedir"
   cp "$basedir/../running.log" "$output_dir"
 
 } || { # catch
+  # capture exit signal of last command
+  local exit_status=$?
   popd
   echo "Copying log to special output dir"
   cp "$basedir/../running.log" "$output_dir"
+  exit $exit_status
 }
 )
 echo "Done!"
