@@ -155,16 +155,15 @@ pushd "$basedir"
   popd
   echo "Copying log to special output dir"
   cp "$basedir/../running.log" "$output_dir"
-
+  echo "Done!"
+  exit 0
 } || { # catch
-  # capture exit signal of last command
-  local exit_status=$?
   popd
   echo "Copying log to special output dir"
   cp "$basedir/../running.log" "$output_dir"
-  exit $exit_status
+  # force the calling process to know we've encountered an error put this in DPS failed state
+  exit 128
 }
 )
-echo "Done!"
+exit 1
 
-exit
