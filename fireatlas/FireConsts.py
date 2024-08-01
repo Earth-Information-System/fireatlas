@@ -5,10 +5,12 @@ running controls
 
 from typing import Literal
 import os
+import warnings
 
 import fsspec
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, validator, field_validator
+
 
 from fireatlas.FireTypes import Location
 
@@ -70,7 +72,7 @@ class Settings(BaseSettings):
     def check_epsg(cls, epsg: int):
         allowed = (3571, 32610, 9311, 6933)
         if epsg not in allowed:
-            raise ValueError(f"EPSG projection code {epsg} not recognized as one of: {allowed}")
+            warnings.warn(f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)")
         return epsg
 
     # temporal parameters for fire object definition
