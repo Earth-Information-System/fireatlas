@@ -118,52 +118,54 @@ python --version
 source activate /opt/conda/envs/vanilla
 conda list | grep s3fs
 
-(
-pushd "$basedir"
-{ # try
-  echo "Running in directory: $(pwd -P)"
-  # we now secretly look for s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/<regnm>/.env
-  # and copy it locally to ../fireatlas/.env so that pydantic can pick up our overrides
-  copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
-  ls -lah ../fireatlas/
-
-  if [[ $selected_flag == "data-update" ]]; then
-    #scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output_dir}/profile.html" --- FireRunDataUpdateChecker.py
-    python FireRunDataUpdateChecker.py
-  elif [[ $selected_flag == "preprocess-region" ]]; then
-    #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-    #  --outfile "${output_dir}/profile.html" --- FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
-    python FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
-  elif [[ $selected_flag == "preprocess-region-t" ]]; then
-    #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-    #  --outfile "${output_dir}/profile.html" --- FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
-    python FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
-  elif [[ $selected_flag == "fire-forward" ]]; then
-    #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-    #  --outfile "${output_dir}/profile.html" --- FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
-    python FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
-  elif [[ $selected_flag == "coordinate-all" ]]; then
-    #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-    #  --outfile "${output_dir}/profile.html" --- ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
-    python ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
-  elif [[ $selected_flag == "coordinate-all-no-veda-copy" ]]; then
-    #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
-    #  --outfile "${output_dir}/profile.html" --- ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
-    python ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted" --no-veda-copy
-  fi
-
-  popd
-  echo "Copying log to special output dir"
-  cp "$basedir/../running.log" "$output_dir"
-  echo "Done!"
-  exit 0
-} || { # catch
+handle_exit() {
   popd
   echo "Copying log to special output dir"
   cp "$basedir/../running.log" "$output_dir"
   # force the calling process to know we've encountered an error put this in DPS failed state
   exit 128
 }
-)
-exit 1
+
+trap 'handle_exit' EXIT
+
+pushd "$basedir"
+echo "Running in directory: $(pwd -P)"
+# we now secretly look for s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/<regnm>/.env
+# and copy it locally to ../fireatlas/.env so that pydantic can pick up our overrides
+copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
+ls -lah ../fireatlas/
+
+if [[ $selected_flag == "data-update" ]]; then
+  #scalene --cli --no-browser --reduced-profile --html --column-width 180 --outfile "${output_dir}/profile.html" --- FireRunDataUpdateChecker.py
+  python FireRunDataUpdateChecker.py
+elif [[ $selected_flag == "preprocess-region" ]]; then
+  #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
+  #  --outfile "${output_dir}/profile.html" --- FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
+  python FireRunPreprocessRegion.py --regnm=$regnm --bbox="$bbox"
+elif [[ $selected_flag == "preprocess-region-t" ]]; then
+  #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
+  #  --outfile "${output_dir}/profile.html" --- FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
+  python FireRunByRegionAndT.py --regnm=$regnm --tst="$tst" --ted="$ted"
+elif [[ $selected_flag == "fire-forward" ]]; then
+  #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
+  #  --outfile "${output_dir}/profile.html" --- FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
+  python FireRunFireForward.py --regnm=$regnm --tst="$tst" --ted="$ted"
+elif [[ $selected_flag == "coordinate-all" ]]; then
+  #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
+  #  --outfile "${output_dir}/profile.html" --- ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
+  python ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
+elif [[ $selected_flag == "coordinate-all-no-veda-copy" ]]; then
+  #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
+  #  --outfile "${output_dir}/profile.html" --- ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
+  python ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted" --no-veda-copy
+fi
+
+popd
+echo "Copying log to special output dir"
+cp "$basedir/../running.log" "$output_dir"
+
+# unset trap since we are successful and send exit
+trap - EXIT
+echo "Done!"
+exit 0
 
