@@ -37,9 +37,9 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with:
         algo_name: eis-feds-dask-coordinator-v3
-        github_ref: 1.0.0
+        github_ref: 1.1.1
         username: gcorradini
-        queue: maap-dps-eis-worker-64gb
+        queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
         json_params: '{"regnm": "Hawaii", "bbox": "[-160.62150215971252, 18.55881382325731, -154.20548653471252, 22.508528755761755]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'
