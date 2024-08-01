@@ -1,7 +1,8 @@
 import smtplib
+import os
+import sys
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import os
 from datetime import datetime, timezone, timedelta
 from maap.maap import MAAP
 maap = MAAP(maap_host='api.maap-project.org')
@@ -75,6 +76,10 @@ if __name__ == '__main__':
     failed_jobs = filter_jobs_last_hour(jobs['jobs'], 'job-failed')
     print(f"[ FOUND ]: {len(failed_jobs)} failed jobs")
     for job in failed_jobs:
-        print(job)
-    send_email(failed_jobs)
+        job_id, cmd, tag = job
+        print(f"{job_id} running command='{cmd}' with tag='{tag}' failed")
+    if failed_jobs:
+        # make sure calling process gets an bad exit code so it bubbles as failure
+        sys.exit(1)
+    #send_email(failed_jobs)
 
