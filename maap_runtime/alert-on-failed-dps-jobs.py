@@ -10,13 +10,13 @@ now_utc = datetime.now(timezone.utc)
 
 
 def send_email(job_info: list):
-
     if not job_info:
         return
 
     sender_email = "fireatlatalerts@gmail.com"
     password = os.environ['EMAIL_PW']
-    receiver_emails = "gregcorradini@gmail.com, tempest.mccabe@nasa.gov, elijah.orland@nasa.gov"
+    #receiver_emails = "gregcorradini@gmail.com, tempest.mccabe@nasa.gov, elijah.orland@nasa.gov"
+    receiver_emails = "gregcorradini@gmail.com"
 
     subject = f"Job Failures Since {now_utc-timedelta(hours=1)}"
 
@@ -24,7 +24,7 @@ def send_email(job_info: list):
     for job in job_info:
         job_id, cmd, tag = job
         body.append(f"{job_id} running command='{cmd}' with tag='{tag}' failed")
-    body = body.join("\n")
+    body = "\n".join(body)
 
     message = MIMEMultipart()
     message["From"] = sender_email
@@ -45,17 +45,23 @@ def send_email(job_info: list):
 
 
 def filter_jobs_last_hour(jobs, status):
-    filtered_jobs = []
-    for job_dict in jobs:
-        # ignore key and get the value
+    now_utc = datetime.now(timezone.utc)
+
+    def job_within_last_hour(job_dict):
         job_value_dict = list(job_dict.values())[0]
-        if job_value_dict['status'] == status:
-            time_end_iso = job_value_dict['job']['job_info']['time_end']
-            time_end_dt = datetime.fromisoformat(time_end_iso.replace('Z', '+00:00'))
-            time_end_dt = time_end_dt.astimezone(timezone.utc)
-            time_difference = abs(now_utc - time_end_dt)
-            if time_difference <= timedelta(hours=1):
-                filtered_jobs.append([job_value_dict['payload_id'], job_value_dict['job']['params']['_command'], job_value_dict['job']['tag']])
+        if job_value_dict['status'] != status:
+            return False
+
+        time_end_iso = job_value_dict['job']['job_info']['time_end']
+        time_end_dt = datetime.fromisoformat(time_end_iso.replace('Z', '+00:00')).astimezone(timezone.utc)
+        return abs(now_utc - time_end_dt) <= timedelta(hours=1)
+
+    filtered_jobs = [
+        [job_value_dict['payload_id'], job_value_dict['job']['params']['_command'], job_value_dict['job']['tag']]
+        for job_dict in jobs
+        if (job_value_dict := list(job_dict.values())[0]) and job_within_last_hour(job_dict)
+    ]
+
     return sorted(filtered_jobs, key=lambda l: l[0])
 
 
@@ -68,6 +74,7 @@ if __name__ == '__main__':
     jobs = list_jobs()
     failed_jobs = filter_jobs_last_hour(jobs['jobs'], 'job-failed')
     print(f"[ FOUND ]: {len(failed_jobs)} failed jobs")
-    print(failed_jobs)
+    for job in failed_jobs:
+        print(job)
     send_email(failed_jobs)
 

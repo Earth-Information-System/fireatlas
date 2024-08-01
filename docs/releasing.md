@@ -30,13 +30,25 @@ and decide if the minor or patch version should be incremented:
 
 ## Create a new PR for DPS Jobs
 
-Once the releaser has a version number, then will need to create a PR that modifies the
-algorithm config `algorithm_version` in `./maap_runtime/coordinator/algorithm_config.yaml`:
+Once the releaser has a version number, then will need to create a PR that modifies version in a couple places:
+
+* the algorithm config `algorithm_version` in `./maap_runtime/coordinator/algorithm_config.yaml`:
 
 ```yaml
 algorithm_description: "coordinator for all regional jobs, preprocess and FireForward steps"
 algorithm_version: <NEW VERSION NUMBER HERE>
 environment: ubuntu
+```
+
+* unfortunately all the scheduled jobs also pass this version to kick off jobs and therefore also need to be updated in `./.github/workflows/schedule-*.yaml`:
+
+```yaml
+- name: kick off the DPS job
+  uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+  with:
+    algo_name: eis-feds-dask-coordinator-v3
+    github_ref: <NEW VERSION NUMBER HERE>
+    username: gcorradini
 ```
 
 ## Merge PR and Manually Release
