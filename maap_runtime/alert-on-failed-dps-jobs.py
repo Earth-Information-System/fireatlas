@@ -1,48 +1,9 @@
-import smtplib
-import os
 import sys
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timezone, timedelta
 from maap.maap import MAAP
 maap = MAAP(maap_host='api.maap-project.org')
 
 now_utc = datetime.now(timezone.utc)
-
-
-def send_email(job_info: list):
-    if not job_info:
-        return
-
-    sender_email = "fireatlatalerts@gmail.com"
-    password = os.environ['EMAIL_PW']
-    #receiver_emails = "gregcorradini@gmail.com, tempest.mccabe@nasa.gov, elijah.orland@nasa.gov"
-    receiver_emails = "gregcorradini@gmail.com"
-
-    subject = f"Job Failures Since {now_utc-timedelta(hours=1)}"
-
-    body = []
-    for job in job_info:
-        job_id, cmd, tag = job
-        body.append(f"{job_id} running command='{cmd}' with tag='{tag}' failed")
-    body = "\n".join(body)
-
-    message = MIMEMultipart()
-    message["From"] = sender_email
-    message["To"] = receiver_emails
-    message["Subject"] = subject
-    message.attach(MIMEText(body, "plain"))
-
-    try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_emails.split(","), message.as_string())
-        print("Email sent successfully")
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        server.quit()
 
 
 def filter_jobs_last_hour(jobs, status):
@@ -81,5 +42,4 @@ if __name__ == '__main__':
     if failed_jobs:
         # make sure calling process gets an bad exit code so it bubbles as failure
         sys.exit(1)
-    #send_email(failed_jobs)
 
