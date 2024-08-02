@@ -42,6 +42,6 @@ jobs:
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"regnm": "Hawaii", "bbox": "[-160.62150215971252, 18.55881382325731, -154.20548653471252, 22.508528755761755]", "tst": "[]", "ted": "[]", "operation": "--coordinate-all"}'
+        json_params: '{"regnm": "Hawaii", "bbox": "[-160.62150215971252, 18.55881382325731, -154.20548653471252, 22.508528755761755]", "tst": "[2024,3,25,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
 
 
