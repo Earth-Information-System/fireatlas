@@ -7,9 +7,10 @@ on:
 
 jobs:
   run_dps_job_v3:
-    if: |
-      ${{ vars.SCHEDULER_ENABLED == 'true' }} &&
-      contains('["ranchodeluxe", "mccabete", "jsignell", "zebbecker", "eorland"]', github.actor)
+    if: false
+#    if: |
+#      ${{ vars.SCHEDULER_ENABLED == 'true' }} &&
+#      contains('["ranchodeluxe", "mccabete", "jsignell", "zebbecker", "eorland"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
     steps:
