@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          ref: primarykeyv2
 
       - name: python setup
         uses: actions/setup-python@v2
@@ -34,7 +32,7 @@ jobs:
           echo "User UID: $UID"
 
       - name: filter DPS failed jobs and alert
-        uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@primarykeyv2
+        uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@conus-dps
         with:
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
           email_pw_secret: ${{ secrets.EMAIL_PW }}

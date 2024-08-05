@@ -1,0 +1,23 @@
+algorithm_name: eis-feds-dask-coordinator-v3
+algorithm_description: "coordinator for all regional jobs, preprocess and FireForward steps"
+algorithm_version: 1.1.1
+environment: ubuntu
+repository_url: https://github.com/Earth-Information-System/fireatlas.git
+docker_container_url: "mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4"
+queue: "maap-dps-eis-worker-128gb"
+run_command: "fireatlas/maap_runtime/run_dps_cli.sh"
+build_command: "fireatlas/maap_runtime/run_dps_build.sh"
+disk_space: "250GB"
+inputs:
+  config: [ ]
+  positional:
+  - name: regnm # name of output folder
+    download: False
+  - name: bbox # xmin, ymin, xmax, ymax of region bbox in lat/lon
+    download: False
+  - name: tst # [year, month, day, ampm]
+    download: False
+  - name: ted # [year, month, day, ampm]
+    download: False
+  - name: operation # --data-update || --preprocess-region || --preprocess-region-t || --fire-forward || --coordinate-all
+    download: False

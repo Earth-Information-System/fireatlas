@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v2
-        with:
-          ref: primarykeyv2
 
       - name: python setup
         uses: actions/setup-python@v2
@@ -47,7 +45,7 @@ jobs:
 #          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
       - name: kick off the DPS job
-        uses: Earth-Information-System/fireatlas/.github/actions/release@primarykeyv2
+        uses: Earth-Information-System/fireatlas/.github/actions/release@conus-dps
         with:
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
 

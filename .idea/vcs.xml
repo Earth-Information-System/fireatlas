@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../Platform" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../asyncpg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../azuretf/stactools-pipelines-mspc" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../beam" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../beam_pyspark_runner_rancho" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../charts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../crunchyexample" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../eoAPI" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../eoapi-k8s" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../eoapi-k8s-dblocal" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../eoapi-k8s-terraform" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../eoepca-plus" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../filesystem_spec_rancho" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../gdal-emr-serverless" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../helm-charts" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../httpfs_sync_rancho" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../pangeo-forge-runner-ssh" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../peptest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../postgres-operator" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../postgres-operator-examples" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../pypgstac" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../s3fs_rancho" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../stac-fastapi-pgstac-rancho" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../stactools-pipelines" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../system-test-rancho" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../tipg_rancho" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../um-identity-api" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../veda-backend" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../veda-data-airflow" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../veda-features-api-cdk" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../veda-features-api-terraform" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../veda-pforge-job-runner" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../venvception" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../xarray" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/../zoo-project-charts" vcs="Git" />
+  </component>
+</project>
