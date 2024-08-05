@@ -2074,11 +2074,11 @@ def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileS
     if "lf_" in from_maap_s3_path:
         new_key_layer_name = f"{filename_no_ext}_{new_region_name}.gpkg"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
-        to_veda_s3_path = f"EIS/FEDSoutput-v3/LFArchive/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput/LFArchive/{new_key_layer_name}"
     else:
         new_key_layer_name = f"snapshot_{filename_no_ext}_nrt_{new_region_name}.gpkg"
         local_tmp_filepath = f"/tmp/{new_key_layer_name}"
-        to_veda_s3_path = f"EIS/FEDSoutput-v3/Snapshot/{new_key_layer_name}"
+        to_veda_s3_path = f"EIS/FEDSoutput/Snapshot/{new_key_layer_name}"
 
     gdf = gpd.read_file(local_filepath)
 
