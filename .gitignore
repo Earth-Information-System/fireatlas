@@ -6,3 +6,9 @@ __pycache__/
 bk/
 running.log
 .conda/
+import/
+.coverage
+_version.py
+./data/
+fireatlas.egg-info/
+running.log

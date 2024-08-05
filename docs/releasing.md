@@ -1,0 +1,94 @@
+# How to Release
+In this context "releasing" means the folloing things:
+
+* tagging the algorithm with a certain [semantic version](https://semver.org/) (semver for short) 
+
+
+* build and publishing `fireatlas` on PyPI
+
+
+* building an image off that tag that will be used in some async task runner (currently only DPS) to run the regional algorithm jobs asynchronously.
+
+Most of this can be automated but since [semver](https://semver.org/) is often about
+considering if the newest set of changes we are packaging up under a version is backward
+compatible it does require a human to choose the version. 
+
+That said, the `fireatlas` code
+isn't a library that others will be using in their code and so that also relieves us of considering
+backward incompatible changes. Therefore, we will probably never increment the major release number and only minor or patch
+in `<major>.<minor>.<patch>`. Another way of saying that is we `fireatlas` will always be releasing within the 
+`>=1.0.0,<2.0.0` range
+
+---
+## Choose a Version Number
+
+The releaser should look at the [current release tags and versions](https://github.com/Earth-Information-System/fireatlas/tags)
+and decide if the minor or patch version should be incremented:
+
+* are all the merged changes in this release just bug fixes? then bump the patch (`1.<minor>.<patch>`) version by one
+* did any of the merged changes going out include new features? then bump the minor (`1.<minor>.<patch>`) version by one
+
+## Create a new PR for DPS Jobs
+
+Once the releaser has a version number, then will need to create a PR that modifies version in a couple places:
+
+* the algorithm config `algorithm_version` in `./maap_runtime/coordinator/algorithm_config.yaml`:
+
+```yaml
+algorithm_description: "coordinator for all regional jobs, preprocess and FireForward steps"
+algorithm_version: <NEW VERSION NUMBER HERE>
+environment: ubuntu
+```
+
+* unfortunately all the scheduled jobs also pass this version to kick off jobs and therefore also need to be updated in `./.github/workflows/schedule-*.yaml`:
+
+```yaml
+- name: kick off the DPS job
+  uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+  with:
+    algo_name: eis-feds-dask-coordinator-v3
+    github_ref: <NEW VERSION NUMBER HERE>
+    username: gcorradini
+```
+
+## Merge PR and Manually Release
+
+The releaser can merge the above PR and then kick off a new release by doing the following:
+
+0. Go to [https://github.com/Earth-Information-System/fireatlas/releases](https://github.com/Earth-Information-System/fireatlas/releases)
+
+1. click "Draft New Release"
+
+2. create a new tag for this release that matches the version chosen above
+
+3. click the "Generate release notes"
+
+4. review the release notes and clean up
+
+5. click the "Publish release"
+
+
+## Release Publish Workflow
+
+The manual step in the last section will kick off an async GH actions workflow that does the following
+
+* uses our version information and builds a python package using `twine`
+
+
+* publishes the package to PyPI with that version number
+
+
+* kicks off a DPS job that builds a new image
+
+## Verify DPS Image Build
+
+The biggest thing that can wrong with this workflow is that the DPS image builder fails to build our image. Then
+the algorithm will not be running the newest code. In the GH release action job you should be able see in the logs
+where the DPS image job is building and check the status:
+
+```json
+# EXAMPLE LOG
+{"code": 200, "message": {"id": "ec3202d4adeb02f7d887d88d2af9784184e60344", "short_id": "ec3202d4", "created_at": "2024-07-30T20:34:28.000+00:00", "parent_ids": ["91dfb3a4edff20c7049825101f015b67c8a05d3a"], "title": "Registering algorithm: eis-feds-dask-coordinator-v3", "message": "Registering algorithm: eis-feds-dask-coordinator-v3", "author_name": "root", "author_email": "root@845666954fdb", "authored_date": "2024-07-30T20:34:28.000+00:00", "committer_name": "root", "committer_email": "root@845666954fdb", "committed_date": "2024-07-30T20:34:28.000+00:00", "trailers": {}, "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/commit/ec3202d4adeb02f7d887d88d2af9784184e60344", "stats": {"additions": 7, "deletions": 7, "total": 14}, "status": "created", "project_id": 3, "last_pipeline": {"id": 14293, "iid": 1332, "project_id": 3, "sha": "ec3202d4adeb02f7d887d88d2af9784184e60344", "ref": "main", "status": "created", "source": "push", "created_at": "2024-07-30T20:34:29.737Z", "updated_at": "2024-07-30T20:34:29.737Z", "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/pipelines/14293"}, "job_web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578", "job_log_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578/raw"}}
+```
+
+Please verify that the job succeeds or you'll have to manually trigger an image build again via `./maap_runtime/register-all.ipynb`

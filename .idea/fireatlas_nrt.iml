@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="pangeo-forge-recipes" />
+    <orderEntry type="module" module-name="s3fs_rancho" />
+    <orderEntry type="module" module-name="filesystem_spec_rancho" />
+    <orderEntry type="module" module-name="httpfs_sync_rancho" />
+    <orderEntry type="module" module-name="pypgstac" />
+    <orderEntry type="module" module-name="tipg_rancho" />
+    <orderEntry type="module" module-name="veda-backend" />
+    <orderEntry type="module" module-name="veda-features-api" />
+    <orderEntry type="module" module-name="eoapi-k8s-terraform" />
+    <orderEntry type="module" module-name="zoo-project-charts" />
+    <orderEntry type="module" module-name="gdal-emr-serverless" />
+    <orderEntry type="module" module-name="veda-pforge-job-runner" />
+    <orderEntry type="module" module-name="beam" />
+    <orderEntry type="module" module-name="beam_pyspark_runner_rancho" />
+    <orderEntry type="module" module-name="pangeo-forge-runner-ssh" />
+    <orderEntry type="module" module-name="venvception" />
+    <orderEntry type="module" module-name="xarray" />
+    <orderEntry type="module" module-name="Platform" />
+    <orderEntry type="module" module-name="veda-data-airflow" />
+    <orderEntry type="module" module-name="eoapi-k8s" />
+    <orderEntry type="module" module-name="postgres-operator-examples" />
+    <orderEntry type="module" module-name="asyncpg" />
+    <orderEntry type="module" module-name="postgres-operator" />
+    <orderEntry type="module" module-name="stactools-pipelines-mspc" />
+    <orderEntry type="module" module-name="stactools-pipelines" />
+    <orderEntry type="module" module-name="eoepca-plus" />
+    <orderEntry type="module" module-name="stac-fastapi-pgstac-rancho" />
+    <orderEntry type="module" module-name="system-test-rancho" />
+    <orderEntry type="module" module-name="charts" />
+    <orderEntry type="module" module-name="eoapi-k8s-dblocal" />
+    <orderEntry type="module" module-name="crunchyexample" />
+    <orderEntry type="module" module-name="helm-charts" />
+    <orderEntry type="module" module-name="peptest" />
+    <orderEntry type="module" module-name="um-identity-api" />
+    <orderEntry type="module" module-name="veda-features-api-cdk" />
+    <orderEntry type="module" module-name="eoapi-pep" />
+    <orderEntry type="module" module-name="eoAPI" />
+  </component>
+  <component name="PyDocumentationSettings">
+    <option name="format" value="PLAIN" />
+    <option name="myDocStringFormat" value="Plain" />
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="py.test" />
+  </component>
+</module>

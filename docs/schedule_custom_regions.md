@@ -1,0 +1,112 @@
+# How to Schedule Custom Regions for DPS Jobs
+
+Most custom regions will require their EPSG codes and other settings (stored in `FireConsts.py:Settings`) to change for runs.
+This doc explains how to change those settings and create a new scheduler v3 job to run on DPS.
+
+## How DPS Jobs Pick up Custom Settings
+
+There's nothing special about changing these environment variables. All that is needed for this to work is to put a `.env` file
+in the `Settings.PREPROCESSED_DIR` region folder to be picked up. A couple points will describe how this all works:
+
+1. All DPS jobs are kicked off via the `/maap_runtime/run_dps_cli.sh` script. In that file there's a single function and line
+that attempts (and gracefully exists) to bring over the `.env` file for a DPS run:
+
+    ```bash
+    # TODO: this will have to be changed to be passed dynamically once we want to use other s3 buckets
+    copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
+    ```
+   
+2. We use the package [pydantic-settings](https://github.com/pydantic/pydantic-settings) in the fireatlas code to manage 
+our settings. If you look at the class declaration in `FireConts.py` you'll see this piece of config below. This tells us
+a few different things:
+
+    ```bash
+   class Settings(BaseSettings):
+    # read in all env vars prefixed with `FEDS_` they can be in a .env file
+    model_config = {
+        "env_file": ".env",
+        "extra": "ignore",
+        "env_prefix": "FEDS_",
+    }
+    ```
+
+    * if there is a `.env` file available read it and use the key/values there to override any defaults listed in this class
+    * if there are variables in the `.env` file that are not declared in this class do not use them
+    * everything in the `.env` that will act as an override is prefixed with `FEDS_` 
+    (so to override `LOCAL_PATH` in the `.env` you would declare `FEDS_LOCAL_PATH=<value>`)
+
+
+That's it. Then any imports of the `fireatlas` package should now have these overrides including calls to `python3 FireRunDaskCoordinator.py`
+
+
+## Defining a New Region
+
+In the future this should definitely be a more rigid (and only additive) workflow. But the fire time will need to define this more. 
+For now there's only a requirement to pick
+a decent sounding region name. The example below will use the newly created "RussiaEast" region to explain how this is done.
+
+
+1. Pick a region name (e.g. "RussiaEast")
+
+
+1. Create a folder in `Settings.PREPROCESSED_DIR` with a `.env` file. You'll probably be doing this in a MAAP or VEDA JupyterHub and depending
+on the bucket parameters things outside JH might be restricted. So from within JH you can use the pre-installed `aws-cli` tool to do this.
+The command below assumes you've already created a local `.env` file you're going to copy:
+
+    ```bash
+    # just showing how to list bucket key contents
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/
+                           PRE BorealManualV2/
+                           PRE BorealNA/
+                           PRE CONUS/
+   
+    # what's the RussiaEast .env look like?
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# cat .env 
+    FEDS_FTYP_OPT="global"
+    FEDS_CONT_OPT="global"
+    FEDS_EPSG_CODE=6933
+   
+   
+    # copy the .env to a new FEDSpreprocessed folder
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env
+    upload: ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env
+  
+    # check that it exists 
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/
+    2024-07-12 05:55:19         66 .env
+    ```
+
+2. Now that the region is defined we can immediately test it out with the GH Action "manual-nrt-v3" workflow to make sure it works 
+before we move on to scheduling it permanently. There will be more documentation about how to run this in the future. For now
+the only thing to mention is that the JSON encoded param input will look something like this. And remember to NOT pass it 
+enclosed in single quotes or double quotes but rather naked:
+
+    ```bash
+    {"regnm": "RussiaEast", "bbox": "[97.16172779881556,46.1226744036175,168.70469654881543,77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}
+    ```
+
+
+## Defining a New Region Schedule Run
+
+1. Find an existing v3 scheduled worklow in the `.github/workflows/*.yaml` such as `.github/workflows/schedule-conus-nrt-v3.yaml` and copy it
+
+   ```bash
+   cp .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-russian-east-nrt-v3.yaml
+   ```
+
+2. Edit the new workflow and make sure to change some of the following sections and values. Note that leaving `tst` or `ted` as `[]` means it will run from current year 01/01 to now:
+
+   ```bash
+   name: <your region name> nrt v3
+   ...
+       - name: kick off the DPS job
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with:
+        algo_name: eis-feds-dask-coordinator-v3
+        github_ref: 1.0.0
+        username: gcorradini
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+   ```

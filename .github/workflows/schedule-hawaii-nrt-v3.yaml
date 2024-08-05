@@ -13,8 +13,6 @@ jobs:
     steps:
     - name: checkout repository
       uses: actions/checkout@v2
-      with:
-        ref: primarykeyv2
 
     - name: pip install fireatlas
       run: |
