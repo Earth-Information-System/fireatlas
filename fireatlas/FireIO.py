@@ -2082,14 +2082,14 @@ def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileS
 
     gdf = gpd.read_file(local_filepath)
 
-    if not "lf_" in from_maap_s3_path:
-        # rename columns for snapshots
-        # but get rid of any possible duplicate columns first
-        try:
-            gdf = gdf.drop(columns=["t"])
-        except:
-            pass
-        gdf = gdf.rename(columns={"t_ed": "t"})
+    # rename columns for snapshots
+    # but get rid of any possible duplicate columns first
+    try:
+        gdf = gdf.drop(columns=["t"])
+    except:
+        pass
+    # all LF and Snapshot outpus should have `t_ed` at this point
+    gdf = gdf.rename(columns={"t_ed": "t"})
 
     # fiona has a bug where it cannot write GPKG files to s3 even though FileGeobuf work fine
     # so to work around this issue we just write them locally to /tmp first
