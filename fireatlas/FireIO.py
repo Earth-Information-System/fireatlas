@@ -2043,7 +2043,7 @@ def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileS
         ]
 
     # for combine_largefire
-    elif "lf_permimeter" in from_maap_s3_path:
+    elif "lf_perimeter" in from_maap_s3_path:
         select_cols = [
             "n_pixels",
             "n_newpixels",
