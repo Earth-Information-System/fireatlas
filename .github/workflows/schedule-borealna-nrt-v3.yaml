@@ -3,7 +3,7 @@ name: borealna nrt v3
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '45 6,9,18,21 * * *'
+    - cron:  '0 12,18,21 * * *'
 
 jobs:
   run_dps_job_v3:
