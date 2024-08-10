@@ -12,3 +12,4 @@ _version.py
 ./data/
 fireatlas.egg-info/
 running.log
+.idea/
