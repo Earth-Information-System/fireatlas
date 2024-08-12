@@ -42,6 +42,6 @@ jobs:
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"operation": "--data-update"}'
-
+        # for data update the script expects all params so we can pass nonesense, the only used one is "operation"
+        json_params: '{"regnm": "NA", "bbox": "[0,0,0,0]", "tst": "[]", "ted": "[]", "operation": "--data-update"}'
 
