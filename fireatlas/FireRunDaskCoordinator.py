@@ -60,17 +60,12 @@ def get_timesteps_needing_region_t_processing(
     ted: TimeStep,
     region: Region,
     sat = None,
-    force_last_day = False,
+    force = False,
 ):
     needs_processing = []
     for t in t_generator(tst, ted):
         filepath = preprocessed_filename(t, sat=sat, region=region)
-        if not settings.fs.exists(filepath):
-            needs_processing.append(t)
-
-    if force_last_day:
-        ted_one_day_prev = t_nb(ted, nb="previous")
-        for t in t_generator(ted_one_day_prev, ted):
+        if force or not settings.fs.exists(filepath):
             needs_processing.append(t)
     return needs_processing
 
@@ -137,8 +132,7 @@ def job_nrt_current_day_updates(client: Client):
             NRT_update_func = update_VNP14IMGTDL
         if sat == "NOAA20":
             NRT_update_func = update_VJ114IMGTDL
-
-    futures.extend(client.map(NRT_update_func, [now,]))
+        futures.extend(client.map(NRT_update_func, [now,]))
     return futures
 
 
@@ -235,7 +229,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
 
     # then run all region-plus-t in parallel that need it
     timesteps_needing_processing = get_timesteps_needing_region_t_processing(
-        tst, ted, region, force_last_day=True
+        tst, ted, region, force=True
     )
     region_and_t_futures = client.map(
         partial(job_preprocess_region_t, region=region),
