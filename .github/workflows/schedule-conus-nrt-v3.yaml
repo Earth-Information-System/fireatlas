@@ -3,7 +3,7 @@ name: conus nrt v3
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 12,18,21 * * *'
+    - cron:  '40 14,23 * * *'
 
 jobs:
   run_dps_job_v3:
