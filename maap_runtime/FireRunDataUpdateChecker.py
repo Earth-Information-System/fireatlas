@@ -13,7 +13,7 @@ fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
 @timed
 def Run():
-    client = Client(n_workers=FireRunDaskCoordinator.N_DASK_WORKERS)
+    client = Client(n_workers=settings.N_DASK_WORKERS)
 
     data_update_futures = FireRunDaskCoordinator.job_nrt_current_day_updates(client)
     client.gather(data_update_futures)
