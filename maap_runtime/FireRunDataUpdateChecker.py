@@ -1,43 +1,30 @@
 import glob
-from functools import partial
-from datetime import datetime, timezone
+import s3fs
 
+from functools import partial
 from dask.distributed import Client
 from fireatlas.utils import timed
 from fireatlas import FireRunDaskCoordinator, settings
 from fireatlas.FireIO import copy_from_local_to_s3
 
+# NOTE: this expects credentials to be resolvable globally
+# via boto3/botocore common resolution paths
+fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
 @timed
 def Run():
-    """ download data from different satellite sensors at the
-    start of every 2nd hour from 1am through 11pm: `0 1-23/2 * * *`
+    client = Client(n_workers=settings.N_DASK_WORKERS)
 
-    the jobs are being scheduled here: https://repo.ops.maap-project.org/eorland_gee/fireatlas_nrt/-/pipeline_schedules
-
-    :return: None
-    """
-    ctime = datetime.now(timezone.utc) 
-    if tst in (None, "", []):  # if no start is given, run from beginning of year
-        tst = [ctime.year, 1, 1, 'AM']
-
-    if ted in (None, "", []):  # if no end time is given, set it as the most recent time
-        if ctime.hour >= 18:
-            ampm = 'PM'
-        else:
-            ampm = 'AM'
-        ted = [ctime.year, ctime.month, ctime.day, ampm]
-
-    client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
-
-    data_update_futures = FireRunDaskCoordinator.job_data_update_checker(client, tst, ted)
+    data_update_futures = FireRunDaskCoordinator.job_nrt_current_day_updates(client)
     client.gather(data_update_futures)
 
-    data_upload_futures = [
-        partial(copy_from_local_to_s3, fs=FireRunDaskCoordinator.fs),
+    # uploads raw satellite files from `job_nrt_current_day_updates` in parallel
+    data_upload_futures = client.map(
+        partial(copy_from_local_to_s3, fs=fs),
         glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
-    ]
-    client.gather(data_upload_futures)
+    )
+    # block until half-day timesteps and region are on s3
+    timed(client.gather, text=f"Dask upload of {len(data_upload_futures) + 1} files")([*data_upload_futures])
     client.close()
 
 

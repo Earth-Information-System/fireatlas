@@ -1,16 +1,15 @@
-name: borealna nrt v3
+name: nrt current day update
 
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '40 15,23 * * *'
+    - cron:  '0 11-23 * * *'
 
 jobs:
   run_dps_job_v3:
-    if: false
-#    if: |
-#      ${{ vars.SCHEDULER_ENABLED == 'true' }} &&
-#      contains('["ranchodeluxe", "mccabete", "jsignell", "zebbecker", "eorland"]', github.actor)
+    if: |
+      ${{ vars.SCHEDULER_ENABLED == 'true' }} &&
+      contains('["ranchodeluxe", "mccabete", "jsignell", "zebbecker", "eorland"]', github.actor)
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -43,6 +42,6 @@ jobs:
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"regnm": "BorealNA", "bbox": "[-169, 44, -48, 75]", "tst": "[2024,3,25,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+        json_params: '{"operation": "--data-update"}'
 
 
