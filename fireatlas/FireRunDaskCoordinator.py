@@ -75,7 +75,8 @@ def get_timesteps_needing_region_t_processing(
         dtst = date(*ted[:-1]) - timedelta(days=1)
         dted = date(*ted[:-1])
         if dtst < dted:
-            needs_processing.extend([t for t in t_generator(d2t(dtst.year, dtst.month, dtst.day, 'AM'), ted)])
+            needs_processing.extend([t for t in t_generator(d2t(dtst.year, dtst.month, dtst.day, 'AM'), ted)
+                                     if t not in needs_processing])
     return needs_processing
 
 
