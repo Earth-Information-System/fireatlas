@@ -73,7 +73,7 @@ def get_timesteps_needing_region_t_processing(
         # is constantly being refreshed to incorporate batch updates
         # and ignore if a couple extra timesteps end up duplicate processing
         ted = date(*t[:-1]) - timedelta(days=2)
-        needs_processing.extend([t in t_generator(tst, ted)])
+        needs_processing.extend([t for t in t_generator(tst, ted)])
     return needs_processing
 
 
