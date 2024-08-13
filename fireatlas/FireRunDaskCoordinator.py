@@ -72,8 +72,7 @@ def get_timesteps_needing_region_t_processing(
         # for NRT make sure the current two day window
         # is constantly being refreshed to incorporate batch updates
         # and ignore if a couple extra timesteps end up duplicate processing
-        ted_minus_two_days = (date(*t[:-1]) - timedelta(days=2))
-        ted = ted_minus_two_days if tst != ted_minus_two_days else ted
+        ted = date(*ted[:-1]) - timedelta(days=1)
         needs_processing.extend([t for t in t_generator(tst, ted)])
     return needs_processing
 
@@ -140,7 +139,7 @@ def job_nrt_current_day_updates(client: Client):
             NRT_update_func = update_VNP14IMGTDL
         if sat == "NOAA20":
             NRT_update_func = update_VJ114IMGTDL
-        futures.extend(client.map(NRT_update_func, [now,]))
+        futures.extend(client.map(NRT_update_func, [now, now-timedelta(days=1)]))
     return futures
 
 
