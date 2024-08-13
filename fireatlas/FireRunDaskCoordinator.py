@@ -35,7 +35,7 @@ from fireatlas.preprocess import (
 
 from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
 from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath, VJ114IMGTDL_filepath, VNP14IMGTDL_filepath
-from fireatlas.FireTime import t_generator, t_nb
+from fireatlas.FireTime import t_generator, t_nb, t2dt, dt2t, d2t
 from fireatlas.FireLog import logger
 from fireatlas import settings
 
@@ -65,8 +65,18 @@ def get_timesteps_needing_region_t_processing(
     needs_processing = []
     for t in t_generator(tst, ted):
         filepath = preprocessed_filename(t, sat=sat, region=region)
-        if force or not settings.fs.exists(filepath):
+        if not settings.fs.exists(filepath):
             needs_processing.append(t)
+
+    if force:
+        # for NRT make sure the current day window
+        # is constantly being refreshed to incorporate batch updates
+        # and ignore if a extra timesteps end up duplicated in processing
+        dtst = date(*ted[:-1]) - timedelta(days=1)
+        dted = date(*ted[:-1])
+        if dtst < dted:
+            needs_processing.extend([t for t in t_generator(d2t(dtst.year, dtst.month, dtst.day, 'AM'), ted)
+                                     if t not in needs_processing])
     return needs_processing
 
 
@@ -132,7 +142,7 @@ def job_nrt_current_day_updates(client: Client):
             NRT_update_func = update_VNP14IMGTDL
         if sat == "NOAA20":
             NRT_update_func = update_VJ114IMGTDL
-        futures.extend(client.map(NRT_update_func, [now,]))
+        futures.extend(client.map(NRT_update_func, [now, now-timedelta(days=1)]))
     return futures
 
 
