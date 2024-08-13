@@ -72,7 +72,8 @@ def get_timesteps_needing_region_t_processing(
         # for NRT make sure the current two day window
         # is constantly being refreshed to incorporate batch updates
         # and ignore if a couple extra timesteps end up duplicate processing
-        ted = date(*t[:-1]) - timedelta(days=2)
+        ted_minus_two_days = (date(*t[:-1]) - timedelta(days=2))
+        ted = ted_minus_two_days if tst != ted_minus_two_days else ted
         needs_processing.extend([t for t in t_generator(tst, ted)])
     return needs_processing
 
