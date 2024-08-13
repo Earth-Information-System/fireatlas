@@ -65,8 +65,15 @@ def get_timesteps_needing_region_t_processing(
     needs_processing = []
     for t in t_generator(tst, ted):
         filepath = preprocessed_filename(t, sat=sat, region=region)
-        if force or not settings.fs.exists(filepath):
+        if not settings.fs.exists(filepath):
             needs_processing.append(t)
+
+    if force:
+        # for NRT make sure the current two day window
+        # is constantly being refreshed to incorporate batch updates
+        # and ignore if a couple extra timesteps end up duplicate processing
+        ted = date(*t[:-1]) - timedelta(days=2)
+        needs_processing.extend([t in t_generator(tst, ted)])
     return needs_processing
 
 
