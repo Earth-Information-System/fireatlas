@@ -3,7 +3,7 @@ name: nrt current day update
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 11-23 * * *'
+    - cron:  '0 9-23 * * *'
 
 jobs:
   run_dps_job_v3:
