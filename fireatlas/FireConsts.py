@@ -52,6 +52,8 @@ class Settings(BaseSettings):
 
     LOG_FILENAME: str = Field("running.log", description="Where to write logs to.")
 
+    LOG_SUBDIR: bool = Field(False, description="should the logs be saved within region/year subdirectories?")
+    
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
     # ------------------------------------------------------------------------------
