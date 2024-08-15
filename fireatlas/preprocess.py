@@ -10,7 +10,8 @@ from tqdm import tqdm
 import rasterio
 import rasterio.warp
 
-from fireatlas.FireLog import logger
+from fireatlas.FireLog import logger, logger_subdir
+from fireatlas.postprocess import all_dir
 from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
 from fireatlas.FireClustering import do_clustering
@@ -320,6 +321,7 @@ def read_preprocessed(
     return df
 
 
+@logger_subdir(all_dir, 0, 1)
 @timed
 def preprocess_region_t(
     t: TimeStep,

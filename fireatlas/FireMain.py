@@ -26,10 +26,11 @@ import collections
 from fireatlas.FireTypes import Region, TimeStep
 from fireatlas.utils import timed
 from fireatlas import FireTime
-from fireatlas.FireLog import logger
+from fireatlas.FireLog import logger, logger_subdir
 from fireatlas import FireClustering
 from fireatlas import FireVector
 from fireatlas import FireIO
+from fireatlas.postprocess import all_dir
 from fireatlas import settings
 
 
@@ -504,6 +505,7 @@ def Fire_Forward_one_step(allfires, allpixels, tst, t, region):
     return allfires
 
 
+@logger_subdir(all_dir, 0, 3)
 @timed
 def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_location=None, read_saved_location=None):
     """ The wrapper function to progressively track all fire events for a time period
@@ -533,6 +535,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         save_allpixels,
     )
     from fireatlas.FireObj import Allfires
+    from fireatlas.postprocess import all_dir
 
     if read_saved_location is None:
         read_saved_location = read_location

@@ -21,6 +21,7 @@ from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.FireTime import t2dt, t_generator
 from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireGpkg import getdd as snapshot_getdd
+from fireatlas.FireLog import logger_subdir
 from fireatlas import settings
 
 
@@ -423,6 +424,7 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=
         save_combined_large_fire_layers(all_gdfs, tst, ted, region)
 
 
+@logger_subdir(all_dir, 1, 3)
 @timed
 def save_individual_fire(allfires_gdf, tst, ted, region):
     """save daily perimeters for an individual fire. This function ignores fids
