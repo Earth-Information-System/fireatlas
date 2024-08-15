@@ -1,10 +1,7 @@
 import logging
 import os
 from fireatlas import settings
-from fireatlas.FireConsts import root_dir
 from functools import wraps 
-
-DEFAULT_FILE_PATH = os.path.join(root_dir, settings.LOG_FILENAME)
 
 _logger_configured = False
 
@@ -29,7 +26,7 @@ def get_logger(name):
         create_handler(logger, ch)
 
         # create a file handler as well
-        fh = logging.FileHandler(DEFAULT_FILE_PATH)
+        fh = logging.FileHandler(settings.LOG_PATH)
         create_handler(logger, fh)
         
         # add file handler as an attribute in order to possibly update
@@ -48,7 +45,7 @@ def get_logger(name):
 def update_fh(logger, dirpath):
     # remove the old one
     logger.removeHandler(logger.fh)
-    newpath = DEFAULT_FILE_PATH.replace(os.path.dirname(DEFAULT_FILE_PATH), dirpath)
+    newpath = settings.LOG_PATH.replace(os.path.dirname(settings.LOG_PATH), dirpath)
     os.makedirs(dirpath, exist_ok=True)
 
     # create new file handler
@@ -59,11 +56,12 @@ def update_fh(logger, dirpath):
 
 
 def reset_fh(logger):
-    return update_fh(logger, os.path.dirname(DEFAULT_FILE_PATH))
+    return update_fh(logger, os.path.dirname(settings.LOG_PATH))
 
-# a decorator to apply to certain fuctions in order to change the file handler path
 def logger_subdir(all_dir_func, tst_pos: int, region_pos: int):
-    ''' a decorator to be applied to certain fuctions in order to change the file handler path
+    ''' a decorator to be applied to certain fuctions in order to change the file handler path.
+    logging file will be located in the FEDSoutput subdirectory for a given region/year.
+    Subdirectory path resets after function runs.
     
     Parameters
     ----------

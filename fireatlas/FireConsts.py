@@ -50,9 +50,12 @@ class Settings(BaseSettings):
         description="Final storage place for written files. This is where everything reads from",
     )
 
-    LOG_FILENAME: str = Field("running.log", description="Where to write logs to.")
+    LOG_PATH: str = Field(
+        os.path.join(root_dir, 'running.log'), description="absolute path for log file"
+    )
 
-    LOG_SUBDIR: bool = Field(False, description="should the logs be saved within region/year subdirectories?")
+    LOG_SUBDIR: bool = Field(False, description="should the region/year-specific logs be saved within subdirectories?")
+
     
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
