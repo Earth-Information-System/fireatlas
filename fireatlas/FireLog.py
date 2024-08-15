@@ -62,7 +62,19 @@ def reset_fh(logger):
     return update_fh(logger, os.path.dirname(DEFAULT_FILE_PATH))
 
 # a decorator to apply to certain fuctions in order to change the file handler path
-def logger_subdir(all_dir_func, tst_pos, region_pos):
+def logger_subdir(all_dir_func, tst_pos: int, region_pos: int):
+    ''' a decorator to be applied to certain fuctions in order to change the file handler path
+    
+    Parameters
+    ----------
+
+    all_dir_func : `preprocess.all_dir`. Unfortunately this function needs to be called outside of 
+    `FireLog` due to circular dependencies. `logger_subdir` is not designed to work with any other 
+    function. 
+    tst_pos: index position of the tst argument in whatever function this decorator is applied to
+    region_pos: index position of the region argument in whatever function this decorator is applied to
+
+    '''
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
@@ -76,7 +88,7 @@ def logger_subdir(all_dir_func, tst_pos, region_pos):
 
             result = f(*args, **kwargs)
             
-                # reset logging path to default
+            # reset logging path to default
             if settings.LOG_SUBDIR and tst and region:
                 reset_fh(logger)
                 
