@@ -424,7 +424,7 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=
         save_combined_large_fire_layers(all_gdfs, tst, ted, region)
 
 
-@logger_subdir(all_dir, 1, 3)
+# @logger_subdir(all_dir, 1, 3)
 @timed
 def save_individual_fire(allfires_gdf, tst, ted, region):
     """save daily perimeters for an individual fire. This function ignores fids
