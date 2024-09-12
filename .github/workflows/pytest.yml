@@ -31,4 +31,4 @@ jobs:
           pwd
           python -m pip install '.[test]'
     - name: Run all tests with pytest
-      run: pytest -v --runslow tests/
+      run: python -m pytest -v --runslow tests/
