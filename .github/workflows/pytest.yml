@@ -1,0 +1,34 @@
+name: pytest 
+
+on:
+  push:
+    branches: [ "conus-dps" ]
+  pull_request:
+    branches: [ "conus-dps" ]
+
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4 
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.11"
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with: 
+        aws-region: us-east-1
+        role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+    - name: Install fireatlas and dependencies 
+      run: |
+          pwd
+          python -m pip install '.[test]'
+    - name: Run all tests with pytest
+      run: python -m pytest -v --runslow tests/
