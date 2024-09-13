@@ -1,5 +1,5 @@
 # Fire Object Tracking
-
+[![pytest](https://github.com/Earth-Information-System/fireatlas/actions/workflows/pytest.yml/badge.svg)](https://github.com/Earth-Information-System/fireatlas/actions/workflows/pytest.yml)
 ## TOC:
 
 * [Getting Started](./docs/getting_started.md)
