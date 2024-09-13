@@ -1,6 +1,7 @@
 name: pytest 
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "conus-dps" ]
   pull_request:
@@ -11,10 +12,8 @@ permissions:
   contents: read    # This is required for actions/checkout
 
 jobs:
-  build:
-
+  unit-test:
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4 
     - name: Set up Python 3.11

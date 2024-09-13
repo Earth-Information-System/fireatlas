@@ -28,7 +28,7 @@ dependencies = [
   "pandas",
   "dask",
   "distributed",
-  "geopandas==0.14.2",
+  "geopandas==0.14.4",
   "fiona",
   "shapely",
   "fsspec",
