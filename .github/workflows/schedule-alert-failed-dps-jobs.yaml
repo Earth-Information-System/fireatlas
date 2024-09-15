@@ -36,9 +36,6 @@ jobs:
         with:
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
           email_pw_secret: ${{ secrets.EMAIL_PW }}
-
-      - name: Force failure for testing 
-        run: exit 1
         
       - name: send alert on Slack if failure
         if: always() 
