@@ -36,4 +36,15 @@ jobs:
         with:
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
           email_pw_secret: ${{ secrets.EMAIL_PW }}
-
+        
+      - name: send alert on Slack if failure
+        if: always() 
+        uses: ravsamhq/notify-slack-action@2.5.0
+        with: 
+          status: ${{ job.status }}
+          notify_when: 'failure'
+          notification_title: "DPS Job Failed - <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|View Failed Run>"
+          footer: "<${{github.server_url}}/${{github.repository}}/issues/|Open GitHub Issues>"
+        env: 
+          SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK_WEBHOOK_URL }}
+            
