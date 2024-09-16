@@ -1,6 +1,6 @@
 algorithm_name: eis-feds-dask-coordinator-v3
 algorithm_description: "coordinator for all regional jobs, preprocess and FireForward steps"
-algorithm_version: 1.2.2
+algorithm_version: 1.2.3
 environment: ubuntu
 repository_url: https://github.com/Earth-Information-System/fireatlas.git
 docker_container_url: "mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4"
