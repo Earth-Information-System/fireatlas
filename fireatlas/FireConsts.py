@@ -18,11 +18,14 @@ root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
 
+
 class Settings(BaseSettings):
     # read in all env vars prefixed with `FEDS_` they can be in a .env file
 
-    model_config = SettingsConfigDict(env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_")
-    
+    model_config = SettingsConfigDict(
+        env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_"
+    )
+
     # ------------------------------------------------------------------------------
     # where data is stored
     # ------------------------------------------------------------------------------
@@ -61,18 +64,20 @@ class Settings(BaseSettings):
     LARGEFIRE_FAREA: int = Field(
         4, description="fire area threshold for determining large fires"
     )
-    
 
     EPSG_CODE: int = Field(
-        9311, description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
+        9311,
+        description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
-    
-    @field_validator('EPSG_CODE')
+
+    @field_validator("EPSG_CODE")
     @classmethod
     def check_epsg(cls, epsg: int):
         allowed = (3571, 32610, 9311, 6933)
         if epsg not in allowed:
-            warnings.warn(f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)")
+            warnings.warn(
+                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)"
+            )
         return epsg
 
     # temporal parameters for fire object definition
@@ -116,7 +121,7 @@ class Settings(BaseSettings):
 
     # fire source data
     FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
-        "VIIRS", description="fire source data"
+        "NOAA20", description="fire source data"
     )
     FIRE_NRT: bool = Field(True, description="whether to use NRT data")
     FIRE_SENSOR: Literal["viirs", "mcd64"] = Field("viirs", description="fire sensor")
@@ -153,9 +158,7 @@ class Settings(BaseSettings):
     export_to_veda: bool = Field(
         False, description="whether to export data from MAAP to VEDA s3"
     )
-    N_DASK_WORKERS: int = Field(
-        6, description="How many dask workers to use for Run."
-    )
+    N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
 
     # ------------------------------------------------------------------------------
     # fire type related parameters
