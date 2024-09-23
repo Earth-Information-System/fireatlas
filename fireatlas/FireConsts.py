@@ -77,11 +77,11 @@ class Settings(BaseSettings):
 
     # temporal parameters for fire object definition
     maxoffdays: int = Field(
-        5,
+        20,
         description="fire becomes inactive after this number of consecutive days without active fire detection",
     )
     limoffdays: int = Field(
-        20,
+        25,
         description="fire keeps sleeper status even at inactive but with inactive dates smaller than this value",
     )
     CONNECTIVITY_CLUSTER_KM: float = Field(
@@ -116,7 +116,7 @@ class Settings(BaseSettings):
 
     # fire source data
     FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
-        "NOAA20", description="fire source data"
+        "VIIRS", description="fire source data"
     )
     FIRE_NRT: bool = Field(True, description="whether to use NRT data")
     FIRE_SENSOR: Literal["viirs", "mcd64"] = Field("viirs", description="fire sensor")
