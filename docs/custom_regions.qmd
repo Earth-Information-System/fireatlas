@@ -139,3 +139,4 @@ Once you have tested your job manually, you can schedule it to run at constant i
         json_params: '{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
    ```
 
+3. Make sure to add the username you use to register the new scheduled job to the `maap_runtime/alert-on-failed-dps-jobs.py` [script](https://github.com/Earth-Information-System/fireatlas/blob/5007e66ee592940cb7f07483addbe5adee261a46/maap_runtime/alert-on-failed-dps-jobs.py#L30) if you want the alerting system to warn us when your scheduled job fails after being submitted to DPS. 
