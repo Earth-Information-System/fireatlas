@@ -19,5 +19,7 @@ inputs:
     download: False
   - name: ted # [year, month, day, ampm]
     download: False
+  - name: timeout_param # aprox number of seconds before cutting off fire_forward. int or None. 
+    download: False
   - name: operation # --data-update || --preprocess-region || --preprocess-region-t || --fire-forward || --coordinate-all
     download: False

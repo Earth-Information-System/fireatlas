@@ -22,10 +22,10 @@ def validate_json(s):
 
 
 @timed
-def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted: fireatlas.FireTypes.TimeStep):
+def Run(region: fireatlas.FireTypes.Region, tst: fireatlas.FireTypes.TimeStep, ted: fireatlas.FireTypes.TimeStep, timeout_param: fireatlas.FireTypes.Timeout_param):
     """ run Fire_Forward and then upload outputs to s3 in parallel
     """
-    FireRunDaskCoordinator.job_fire_forward(region, tst, ted)
+    FireRunDaskCoordinator.job_fire_forward(region, tst, ted, timeout_param)
 
     client = Client(n_workers=FireRunDaskCoordinator.MAX_WORKERS)
 
@@ -57,5 +57,6 @@ if __name__ == "__main__":
     parser.add_argument("--regnm", type=str)
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
+    parser.add_argument("--timeout_param", type=validate_json)
     args = parser.parse_args()
-    Run([args.regnm, None], args.tst, args.ted)
+    Run([args.regnm, None], args.tst, args.ted, args.timeout_param)

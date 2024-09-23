@@ -15,8 +15,9 @@ copy_s3_object() {
     fi
 }
 
-# check if the number of arguments is less than 5 (minimum required)
-if [ $# -lt 5 ]; then
+n_params=6
+# check if the number of arguments is less than the number of required params (minimum required)
+if [ $# -lt $n_params ]; then
     echo "Usage: $0 regnm bbox tst ted --flag"
     echo ""
     echo "Usage: all arguments are passed positionally..."
@@ -27,14 +28,15 @@ if [ $# -lt 5 ]; then
     exit 1
 fi
 
-# required arguments
+# required arguments (should be one less than n_params)
 regnm=$1
 bbox=$2
 tst=$3
 ted=$4
+timeout_param=$5
 
 # shift the first four arguments to access the flags
-shift 4
+shift $((n_params-1))
 
 selected_flag=""
 
@@ -103,6 +105,7 @@ echo "regnm: $regnm"
 echo "bbox: $bbox"
 echo "tst: $tst"
 echo "ted: $ted"
+echo "timeout_param: $timeout_param"
 echo "flag: $selected_flag"
 
 output_dir=${PWD}/output

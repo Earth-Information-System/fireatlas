@@ -42,7 +42,7 @@ jobs:
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"regnm": "RussiaEast", "bbox": "[100.371094, 49.699613, 166.113281, 72.231640]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+        json_params: '{"regnm": "RussiaEast", "bbox": "[100.371094, 49.699613, 166.113281, 72.231640]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "timeout_param": "None", "operation": "--coordinate-all"}'
 
 
 
