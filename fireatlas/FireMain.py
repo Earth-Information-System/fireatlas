@@ -505,7 +505,7 @@ def Fire_Forward_one_step(allfires, allpixels, tst, t, region):
 
 
 @timed
-def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_location=None, read_saved_location=None):
+def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_location=None, read_saved_location=None, timeout_param=None):
     """ The wrapper function to progressively track all fire events for a time period
 
     Parameters
@@ -520,6 +520,8 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         where to read preprocessed files from
     read_saved_location:
         where to read saved allfires and allpixels from
+    timeout_param: int
+        Number of seconds that algorithm will take on fire-forward. If None, will continue to execute untill ted. 
     Returns
     -------
     allfires : FireObj allfires object
@@ -598,8 +600,16 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         allfires = Allfires(tst)
 
     # loop over every t during the period, mutate allfires, allpixels, save
+    start_t = time.time()
+    timeout = start_t + timeout_param
     for t in list_of_ts:
         allfires = Fire_Forward_one_step(allfires, allpixels, tst, t, region)
+        if (timeout_param is not None):
+            now = time.time()
+            if(now >= timeout):
+                ted = t # Setting last compleated t to ted. 
+                print(f'Fire Forward executed for {(now - start_t)/(60*60)} hours. Timing out after {t}.')
+                break
 
     # save allpixels and allfires locally for ted
     save_allpixels(allpixels, tst, ted, region)
