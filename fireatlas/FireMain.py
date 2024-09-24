@@ -600,8 +600,9 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         allfires = Allfires(tst)
 
     # loop over every t during the period, mutate allfires, allpixels, save
-    start_t = time.time()
-    timeout = start_t + timeout_param
+    if (timeout_param is not None):
+        start_t = time.time()
+        timeout = start_t + timeout_param
     for t in list_of_ts:
         allfires = Fire_Forward_one_step(allfires, allpixels, tst, t, region)
         if (timeout_param is not None):
