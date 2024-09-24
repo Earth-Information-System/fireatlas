@@ -1,0 +1,29 @@
+---
+title: Wildfire Tracking Lab
+format:
+    html:
+        toc: false
+---
+
+![Spread of the Dixie fire between July 14 and October 22, 2021, with the fire line for each 12-hour step in time shown in a different color.](images/dixie_feds.jpg)
+
+## Our Work 
+
+Our understanding of fire behavior, specifically its predictability on near-term time-scales as well as its impact on ecosystems and air quality, requires routine and comprehensive observations of fire spread and fire intensity alongside ancillary environmental information. Satellite observations provide high-resolution information on fire location and intensity with sub-daily temporal resolution.   
+In contrast to traditional representation of active fires and their corresponding burned areas as a series of gridded pixels, fire tracking groups individual pixels based on their locations in space and time, and treats them as discrete objects that persist, expand, and evolve together. This “event-based” tracking strategy allows for detailed, regular monitoring of large fires as they spread across a landscape. 
+
+## Resources
+Our team and collaborators develop and maintain the Fire Event Data Suite, or FEDS. The FEDS code is open source and available [on GitHub](https://github.com/Earth-Information-System/fireatlas). 
+
+With FEDS, we continously generate subdaily estimated fire perimeters using data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites. We currently make data available for several regions of interest, including the continental United States, on our public [API](api.qmd).
+
+Researchers interested in exploring our data can read more about our [data products](data_overview.qmd) and recent publications, and are welcome to contact us for further discussion. 
+
+Developers should consult our [technical documentation](system_architecture.qmd) and engage with our community on GitHub.  
+
+
+
+## Team
+Team and affiliations (Irvine, NASA, etc.)
+
+

@@ -1,0 +1,45 @@
+# Contributing 
+
+## Editing Docs
+
+Edit locally with VSCode Quarto extension: 
+
+1. [Download Quarto](https://quarto.org/docs/download/)
+
+2. Install jupyter if needed (`pip install jupyter`)
+
+3. Install [Quarto extension](https://marketplace.visualstudio.com/items?itemName=quarto.quarto) in VSCode
+
+4. Clone this repo and open it in VSCode. 
+
+5. Make edits to `.qmd`, `.md` or `.ipynb` files.
+
+::: callout-tip
+Open the Command Palette (cmd-shift-p on Mac) and select `Quarto: Edit in Visual Mode` for What You See Is What You Get editing. Select `Quarto: Edit in Source Mode` to go back. 
+:::
+
+6.  Preview website. Select the Preview icon in upper right, use the keyboard shortcut cmd-shift-k, or use the `Quarto: Preview` command from the Command Palette. 
+
+7. Once everything looks good, commit your changes and push to GitHub. If you pushed directly to main, GitHub will automatically build and deploy the new website reflecting your changes. If you are working on a branch, GitHub will build and deploy your changes when you create a pull request and merge your branch into main. 
+
+Edit in your browser
+
+1. For simple edits, you can edit markdown (`.qmd` and `.md`) files directly on GitHub. Again, as soon as you push to main, the website will rebuild to reflect your changes. 
+
+Edit in the MAAP ADE
+
+1. You could also clone the repo in the ADE and use that interface to edit markdown and Jupyter Notebooks, then commit to GitHub the same way. 
+
+2. Preview coming soon???
+
+
+
+## Running Tests
+
+```bash
+$ git clone <this-repo> fireatlas
+$ cd fireatlas/
+$ pip install -e '.[test]'
+$ pytest -v tests/
+$ pytest -v --runslow tests/ # include long-running tests
+```

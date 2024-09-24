@@ -1,0 +1,5 @@
+---
+title: Data Overview
+---
+
+The following sections describe the near real-time (NRT) data available via our public API or through NASA FIRMS, as well as previously published static datasets over specific geographic regions.  Navigate to a section using the left menu bar for more detailed dataset descriptions and data access. 
