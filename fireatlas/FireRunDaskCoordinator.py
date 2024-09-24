@@ -288,6 +288,7 @@ if __name__ == "__main__":
     parser.add_argument("--bbox", type=validate_json)
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
+    parser.add_argument("--timeout_param", type=validate_json)
     parser.add_argument('--no-veda-copy', dest='copy_to_veda', action='store_false', default=True,
                         help="defaults to True but if passed will stop a copy to VEDA s3 bucket")
     args = parser.parse_args()
