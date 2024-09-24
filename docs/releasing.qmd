@@ -1,3 +1,8 @@
+---
+title: "Releasing"
+author: GC
+---
+
 # How to Release
 In this context "releasing" means the folloing things:
 

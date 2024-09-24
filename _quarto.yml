@@ -1,0 +1,70 @@
+project:
+  type: website
+
+website:
+
+  title: "Wildfire Tracking Lab"
+  repo-url: "https://github.com/zebbecker/quarto-example"
+  repo-actions: [edit, issue]
+  bread-crumbs: true
+
+  navbar:
+    background: "#0032A0"
+    title: "Wildfire Tracking Lab"
+    logo-href: index.qmd
+
+  sidebar:
+    logo: docs/images/nasa.png
+    logo-href: index.qmd
+    pinned: true
+    align: center
+    tools:
+      - icon: globe
+        href: https://fire.eis.smce.nasa.gov/
+      - icon: github
+        href: https://github.com/zebbecker/quarto-example
+    style: "docked"
+    search: true
+    contents: 
+      - text: "Home"
+        href: docs/index.qmd
+      - section: "Data"
+        href: docs/data_overview.qmd
+        contents:
+          - docs/data_overview.qmd
+          - docs/api.qmd
+          - docs/firms.qmd
+          - section: Published Datasets
+            contents:
+              - docs/liu2024.qmd
+              - docs/mccabe2024.qmd
+              - docs/orland2024.qmd
+              - docs/scholten2024.qmd
+              - docs/andela2022.qmd
+              - docs/chen2022.qmd
+              - docs/andela2019.qmd
+              - docs/amazondashboard.qmd
+      - section: "Developer Documentation"
+        contents: 
+          - docs/system_architecture.qmd
+          - docs/fireatlas_core.qmd
+          - docs/custom_regions.qmd
+          - docs/contributing.qmd
+          - docs/releasing.qmd
+          - docs/playbook_dps_debug.md
+
+
+  page-footer:
+    right: "This page is built with ❤️ and [Quarto](https://quarto.org/)."
+    left: "LICENSE"
+
+
+
+format:
+  html:
+    theme: cosmo
+    css: docs/styles.css
+    toc: true
+
+execute:
+  freeze: auto

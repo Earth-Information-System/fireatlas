@@ -1,0 +1,5 @@
+---
+title: FEDS Algorithm 
+---
+
+TODO: explanation of core functions from `fireatlas` package (FireForward, etc,).
