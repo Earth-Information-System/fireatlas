@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>FIRMS – Wildfire Tracking Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../docs/styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../docs/index.html">
+    <span class="navbar-title">Wildfire Tracking Lab</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/firms.html">FIRMS</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="../docs/index.html" class="sidebar-logo-link">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
+    <a href="https://fire.eis.smce.nasa.gov/" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-globe"></i></a>
+    <a href="https://github.com/zebbecker/quarto-example" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data Overview</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/firms.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">FIRMS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Published Datasets</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+ <span class="menu-text">docs/liu2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/mccabe2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/orland2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/scholten2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/andela2022.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/chen2022.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/andela2019.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/amazondashboard.qmd</span>
+  </li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Developer Documentation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/system_architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NRT System Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FEDS Algorithm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">How to Define Custom Regions for DPS Jobs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/releasing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Releasing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/playbook_dps_debug.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DPS Debugging Playbook</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#viirs-modeled-fire-perimeters" id="toc-viirs-modeled-fire-perimeters" class="nav-link active" data-scroll-target="#viirs-modeled-fire-perimeters">VIIRS Modeled Fire Perimeters</a>
+  <ul class="collapse">
+  <li><a href="#faqs-viirs-modeled-fire-perimeter-product" id="toc-faqs-viirs-modeled-fire-perimeter-product" class="nav-link" data-scroll-target="#faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/zebbecker/quarto-example/edit/main/docs/firms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/zebbecker/quarto-example/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/firms.html">FIRMS</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">FIRMS</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p><strong><em>Disclaimer:</em></strong> <em>The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.</em></p>
+<section id="viirs-modeled-fire-perimeters" class="level2">
+<h2 class="anchored" data-anchor-id="viirs-modeled-fire-perimeters">VIIRS Modeled Fire Perimeters</h2>
+<p>The VIIRS Modeled Fire Perimeters product uses the Fire Event Data Suite (FEDS) algorithm (<a href="https://doi.org/10.1038/s41597-022-01343-0">Chen et al., 2022</a>), an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (hereafter “modeled fire perimeters”).</p>
+<p>The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites (see Disclaimer, above) and models the fire perimeter every 12 hours to generate a vector output. The VIIRS Modeled Fire Perimeter data are produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</p>
+<p>For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.</p>
+<p>The source code used to generate the VIIRS Modeled Fire Perimeter data using the FEDS algorithm is available on <a href="https://github.com/Earth-Information-System/fireatlas">GitHub</a>, and an <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform. Finally, the VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>.</p>
+<p>The VIIRS Modeled fire Perimeter data are provided by the NASA Earth Information System (EIS) Project. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., 2022</a>).</p>
+<section id="faqs-viirs-modeled-fire-perimeter-product" class="level3">
+<h3 class="anchored" data-anchor-id="faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</h3>
+<p><strong>1. What is the VIIRS Modeled Fire Perimeter Product?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter Product uses the Fire Event Database Suite (FEDS) algorithm (Chen et al., 2022) to cluster VIIRS 375 m active fire detection data into individual fire events and track fire spread and behavior every 12 hours (Figure 1). The FEDS algorithm uses an alpha shape approach to model the fire perimeter, estimate the active portion of the fire perimeter, and quantify metrics of fire behavior for each 12-hour time step. The FEDS algorithm currently uses the 375 m active fire detections from the VIIRS sensors onboard the Suomi-NPP and NOAA-20 satellites to model the fire perimeter.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/feds.png" class="img-fluid figure-img"></p>
+<figcaption><strong>Figure 1. A schematic diagram of the FEDS fire tracking algorithm (Chen et al., 2022).</strong> (a) Two idealized fire objects (Fire 1, Fire 2) at the time step t. Colored and grey dots represent newly detected and previously detected VIIRS 375 m active fire pixels, respectively. The brown segments along the fire perimeter are the modeled estimate of the active portions of the fire perimeter. (b) At the next time step t+1, new fire pixels (in red) are clustered (C1, C2, C3), and are used for forming a new fire object (C1 for Fire 3), or for the growth of an existing fire object (C2 for Fire 1). Expanded fire objects (Fire 2) are merged with an existing active fire object (Fire 1) if they grow close enough (due to the addition of C3). Vector shapes of the modeled fire perimeter and active fire line segments for each fire object are updated at each 12-hour time step.</figcaption>
+</figure>
+</div>
+<p>The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm includes three different types of information about each ongoing fire event in the Continental United States (CONUS) and Canada, updated approximately four hours after each VIIRS overpass: 1) the modeled perimeter of each large fire event, 2) the active portion of the modeled fire perimeter (i.e., the active fire line or “hot edge” of the modeled fire perimeter), and 3) the instantaneous fire radiative power (FRP) from all active fire detections associated with a given fire event during each overpass time, including fire detections at the hot edge and residual flaming or smoldering activity within the modeled fire perimeter (see Figure 1a). By clustering and tracking fire detections into individual fire events, the FEDS algorithm provides a consistent assessment of the change in fire behavior and intensity with each successive VIIRS overpass (nominally at 01:30 and 13:30 local time).</p>
+<p><strong>2. What is the source of the VIIRS Modeled Fire Perimeter Data?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are provided by the NASA Earth Information System (EIS) Project, which harnesses the full power of NASA’s satellite observations, models, and scientific expertise to deliver information for societal benefit that is open, accessible, and actionable. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., 2022</a>).</p>
+<p><strong>3. What is the temporal frequency of the VIIRS Modeled FIre Perimeter Data?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are updated twice per day using the VIIRS 375 m active fire information from the morning (01:30) and afternoon (13:30) Suomi-NPP and NOAA-20 satellite overpasses over each fire event. The vector output from the FEDS algorithm is produced within approximately 4 hours following the availability of VIIRS 375 m active fire data in FIRMS.</p>
+<p><strong>4. What is the spatial resolution of the VIIRS Modeled Fire Perimeter data?</strong></p>
+<p><strong>A:</strong> Although the vector data in the VIIRS Modeled Fire Perimeter product has no defined spatial resolution, the product is derived from the VIIRS 375 m active fire detections, and therefore reflects the spatial resolution and geolocation accuracy of those products from the Suomi-NPP and NOAA-20 satellites. The FEDS algorithm uses an alpha hull approach to cluster new active fire detections and model the updated fire perimeter every 12 hours. The alpha hull approach groups individual fire detection points from the VIIRS sensors on two satellite platforms to model their combined spatial extent and distribution at each 12-hour time step. Compared to a convex hull, the alpha hull approach is better able to capture irregular shapes of active fire events and changes in shape over time. See <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a> for additional details.</p>
+<p><strong>5. Why are the VIIRS Modeled Fire Perimeter Data based on the FEDS algorithm only available for the Continental United States (CONUS) and Canada?</strong></p>
+<p><strong>A:</strong> The FEDS algorithm was originally developed and tested for large fires in California (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a>). The EIS Fire team has scaled the production of the fire event tracking approach to cover CONUS and Canada, with data available via OGC API. Data for additional regions, including Alaska and Hawaii, will be released through FIRMS when available.</p>
+<p><strong>6. What is the temporal extent of VIIRS Modeled Fire Perimeter data in FIRMS?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are currently available through FIRMS beginning January 1, 2024. Archive data for prior years is available via <a href="https://firenrt.delta-backend.com/">OGC API</a>. This <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> demonstrates how to subset, analyze, and visualize these data outside of FIRMS.</p>
+<p><strong>7. What validation of the VIIRS Modeled Fire Perimeter data has been performed?</strong></p>
+<p><strong>A:</strong> <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a> provide a rigorous validation of the FEDS algorithm for large fire events in California between 2012-2020. The study compared the final FEDS perimeter data to official year-end fire perimeter data from the Fire and Resource Assessment Program (FRAP), established by the California Department of Forestry and Fire Protection. <a href="https://www.nature.com/articles/s41597-022-01343-0/tables/7">Table 6</a> in Chen et al.&nbsp;(2022) summarizes the comparison between FEDS and FRAP data for large fires in California in 2018 using standard comparison metrics (e.g., Accuracy, Precision, Recall, and Intersection Over Union). Overall, the FEDS data compare favorably to the FRAP year-end data. Validation for other regions and other fire types is an area of ongoing research by the EIS Fire Project team, and updates from these ongoing studies will be added, as available.</p>
+<p><strong>8. How does the VIIRS Modeled Fire Perimeter Data product differ from the USA Fire Perimeter layers in FIRMS?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter Data product provides situational awareness for large fire events in CONUS and Canada every 12 hours, based on the FEDS algorithm and available 375 m VIIRS active fire detection data from Suomi-NPP and NOAA-20. The modeled perimeter is an estimate of the fire-affected area, active portion of the fire perimeter, and metrics of fire behavior. The VIIRS Modeled Fire Perimeter data also provides a history of modeled large fire growth every 12 hours for all fire events detected by VIIRS in CONUS and Canada. By contrast, the USA Fire Perimeter layer is the most recent official incident perimeter data. Official incident data provide a more precise estimate of the perimeter of large fire events in the US than the VIIRS Modeled Fire Perimeter data. The USA Fire Perimeter layer is updated periodically with new official incident perimeter data.</p>
+<p><strong>9. What are the attributes of the VIIRS Modeled Fire Perimeter data based on the FEDS algorithm?</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+<th>Type/Unit</th>
+<th>Displayed on FIRMS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>fireid</td>
+<td>Fire ID. Unique for each fire. Matches fireid.</td>
+<td>Numeric ID</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>pixden</td>
+<td>Pixel density, the number of pixels divided by area of the estimated perimeter.</td>
+<td>pixels/km<sup>2</sup></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>duration</td>
+<td>Number of days since first observation of fire. Fires with a single observation have a duration of zero.</td>
+<td>Days</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>flinelen</td>
+<td>Length of active fire line, based on new pixels. If no new pixels are detected, flinelen is set to zero.</td>
+<td>km</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>fperim</td>
+<td>Length of estimated fire perimeter.</td>
+<td>km</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>farea</td>
+<td>Area within estimated fire perimeter.</td>
+<td>km<sup>2</sup></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>n_newpixels</td>
+<td>Number of pixels newly detected since last overpass.</td>
+<td>pixels</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>n_pixels</td>
+<td>Number of pixel detections in history of fire.</td>
+<td>pixels</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>isactive</td>
+<td>Have new fire pixels been detected in the last 5 days?</td>
+<td>Boolean</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>ogc_fid</td>
+<td>The ID used by the OGC API to sort perimeters.</td>
+<td>Numeric ID</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>geometry</td>
+<td>The shape of the estimated perimeter.</td>
+<td>Geometry</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>10. What is the rationale for the 5-day threshold on new fire pixels?</strong></p>
+<p><strong>A:</strong> The FEDS algorithm uses spatial and temporal search criteria to cluster VIIRS 375 m active fire detections into existing or new fire objects. The use of the 5-day threshold to associate new fire detections with an existing fire object reflects the nature of large fire behavior and periodic gaps in active fire detection data. Large fire events often exhibit episodic growth in response to changes in fire weather, suppression activity, and fuels. Periods with less intense fire activity may not generate active fire detections from VIIRS, leading to temporal gaps (12-hour, 24-hour, etc.) in fire detection information. The 5-day threshold allows the FEDS algorithm to connect future fire detections to the same fire object, or event, rather than splitting a large fire into multiple objects. In addition to periods of lower fire intensity, gaps in fire detection can occur due to satellite outages or observing conditions such as clouds that impact the VIIRS fire detection algorithm. The 5-day threshold reduces the influence of these data gaps on the fragmentation of large fire events in the FEDS algorithm output.</p>
+<p><strong>11. How can I find more information about the FEDS algorithm, VIIRS Modeled Fire Perimeter data product versions, and related analyses?</strong></p>
+<p><strong>A:</strong> Additional information about the FEDS algorithm can be found in <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a>. The source code used to generate the VIIRS Modeled Fire Perimeter data product is available on <a href="https://github.com/Earth-Information-System/fireatlas">GitHub</a>, and an <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the FEDS output outside of FIRMS is available on NASA’s VEDA platform. Finally, the data products from the FEDS algorithm are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>.</p>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/Earth-Information-System\.github\.io\/fireatlas\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>LICENSE</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/zebbecker/quarto-example/edit/main/docs/firms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/zebbecker/quarto-example/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

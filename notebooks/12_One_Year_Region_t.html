@@ -1,0 +1,2004 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.5.57">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>One Year Preprocess Region t – Wildfire Tracking Lab</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+<link rel="stylesheet" href="../docs/styles.css">
+</head>
+
+<body class="nav-sidebar docked nav-fixed">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="index.qmd">
+    <span class="navbar-title">Wildfire Tracking Lab</span>
+    </a>
+  </div>
+        <div class="quarto-navbar-tools tools-end">
+</div>
+          <div id="quarto-search" class="" title="Search"></div>
+      </div> <!-- /container-fluid -->
+    </nav>
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">One Year Preprocess Region t</li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="index.qmd" class="sidebar-logo-link">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
+    <a href="https://fire.eis.smce.nasa.gov/" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-globe"></i></a>
+    <a href="https://github.com/zebbecker/quarto-example" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
+</div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Home</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data Overview</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/api.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">API</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/firms.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FIRMS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+ <span class="menu-text">Published Datasets</span></a>
+          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
+          <li class="sidebar-item">
+ <span class="menu-text">docs/liu2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/mccabe2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/orland2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/scholten2024.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/andela2022.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/chen2022.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/andela2019.qmd</span>
+  </li>
+          <li class="sidebar-item">
+ <span class="menu-text">docs/amazondashboard.qmd</span>
+  </li>
+      </ul>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Developer Documentation</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/system_architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NRT System Architecture</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">FEDS Algorithm</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">How to Define Custom Regions for DPS Jobs</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/contributing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Contributing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/releasing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Releasing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/playbook_dps_debug.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">DPS Debugging Playbook</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">One Year Preprocess Region t</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Generate all the <code>preprocess_region_t</code> files for a particular region for a particular year. And move all those files to s3.</p>
+<div id="0b7808ca-e858-4392-a878-c98bb7abc1e2" class="cell" data-tags="[]" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you haven't installed the fireatlas code yet, uncomment the following line and run this cell.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install -e .. -q</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># After this runs, restart the notebook kernel.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv</code></pre>
+</div>
+</div>
+<div id="87a90174-7d52-478d-a80a-2f9733f08c67" class="cell" data-tags="[]" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas <span class="im">import</span> preprocess, postprocess, FireIO, FireTime, FireMain, settings</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="st">'AM'</span>]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>ted <span class="op">=</span> [<span class="dv">2024</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="st">'AM'</span>]</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> (<span class="st">'WesternUS'</span>,[<span class="op">-</span><span class="fl">125.698046875</span>,<span class="fl">31.676476158707615</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                       <span class="op">-</span><span class="fl">101.00078125</span>,<span class="fl">49.51429477264348</span>])</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>list_of_ts <span class="op">=</span> FireTime.t_generator(tst, ted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2024-04-03 07:56:46,860 - fireatlas.FireLog - INFO - logger initialized!</code></pre>
+</div>
+</div>
+<div id="0b1e30f5-5505-4786-adcc-501e09a3c053" class="cell" data-tags="[]" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>output_filename <span class="op">=</span> preprocess.preprocess_region(region)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>FireIO.copy_from_local_to_s3(output_filename)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2024-04-03 07:56:47,506 - fireatlas.FireLog - INFO - Preprocessing has already occurred for this region.
+2024-04-03 07:56:47,506 - fireatlas.FireLog - INFO - func:preprocess_region took: 9.05 ms</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>CPU times: user 1.32 ms, sys: 984 µs, total: 2.3 ms
+Wall time: 9.64 ms</code></pre>
+</div>
+</div>
+<div id="f99fbaa3-9407-4ff2-8ff3-6a0334112088" class="cell" data-tags="[]" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>settings.fs.glob(<span class="ss">f"</span><span class="sc">{</span>settings<span class="sc">.</span>get_path()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>settings<span class="sc">.</span>PREPROCESSED_DIR<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>region[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">/*"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>['maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS',
+ 'maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/WesternUS.json']</code></pre>
+</div>
+</div>
+<div id="dc07b848-18c4-4eea-8129-bd449dea11be" class="cell" data-jupyter="{&quot;outputs_hidden&quot;:true}" data-tags="[]">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> list_of_ts:</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    local_filename <span class="op">=</span> preprocess.preprocess_region_t(t, region<span class="op">=</span>region)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    FireIO.copy_from_local_to_s3(local_filename)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>2024-03-26 14:27:21,575 - FireLog - INFO - func:read_region took: 434.71 ms
+2024-03-26 14:27:21,576 - FireLog - INFO - filtering and clustering 2023-1-24 AM, VIIRS, WesternUS
+2024-03-26 14:27:21,702 - FireLog - INFO - func:read_preprocessed_input took: 125.42 ms
+2024-03-26 14:27:21,850 - FireLog - INFO - func:read_preprocessed_input took: 148.04 ms
+2024-03-26 14:27:24,381 - FireLog - INFO - func:do_clustering took: 2.73 ms
+2024-03-26 14:27:24,393 - FireLog - INFO - func:preprocess_region_t took: 3.26 sec
+2024-03-26 14:27:24,398 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230124_AM.txt
+2024-03-26 14:27:24,399 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230124_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230124_AM.txt
+2024-03-26 14:27:24,813 - FireLog - INFO - func:read_region took: 272.95 ms
+2024-03-26 14:27:24,814 - FireLog - INFO - filtering and clustering 2023-1-24 PM, VIIRS, WesternUS
+2024-03-26 14:27:25,041 - FireLog - INFO - func:read_preprocessed_input took: 226.64 ms
+2024-03-26 14:27:25,451 - FireLog - INFO - func:read_preprocessed_input took: 409.22 ms
+2024-03-26 14:27:27,777 - FireLog - INFO - func:do_clustering took: 2.65 ms
+2024-03-26 14:27:27,789 - FireLog - INFO - func:preprocess_region_t took: 3.25 sec
+2024-03-26 14:27:27,795 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230124_PM.txt
+2024-03-26 14:27:27,795 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230124_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230124_PM.txt
+2024-03-26 14:27:28,200 - FireLog - INFO - func:read_region took: 280.00 ms
+2024-03-26 14:27:28,201 - FireLog - INFO - filtering and clustering 2023-1-25 AM, VIIRS, WesternUS
+2024-03-26 14:27:28,307 - FireLog - INFO - func:read_preprocessed_input took: 105.03 ms
+2024-03-26 14:27:28,408 - FireLog - INFO - func:read_preprocessed_input took: 100.33 ms
+2024-03-26 14:27:32,124 - FireLog - INFO - func:do_clustering took: 3.28 ms
+2024-03-26 14:27:32,137 - FireLog - INFO - func:preprocess_region_t took: 4.22 sec
+2024-03-26 14:27:32,144 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230125_AM.txt
+2024-03-26 14:27:32,144 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230125_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230125_AM.txt
+2024-03-26 14:27:32,558 - FireLog - INFO - func:read_region took: 272.18 ms
+2024-03-26 14:27:32,559 - FireLog - INFO - filtering and clustering 2023-1-25 PM, VIIRS, WesternUS
+2024-03-26 14:27:32,835 - FireLog - INFO - func:read_preprocessed_input took: 275.66 ms
+2024-03-26 14:27:33,031 - FireLog - INFO - func:read_preprocessed_input took: 195.38 ms
+2024-03-26 14:27:35,846 - FireLog - INFO - func:do_clustering took: 2.89 ms
+2024-03-26 14:27:35,859 - FireLog - INFO - func:preprocess_region_t took: 3.57 sec
+2024-03-26 14:27:35,865 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230125_PM.txt
+2024-03-26 14:27:35,865 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230125_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230125_PM.txt
+2024-03-26 14:27:36,293 - FireLog - INFO - func:read_region took: 272.72 ms
+2024-03-26 14:27:36,294 - FireLog - INFO - filtering and clustering 2023-1-26 AM, VIIRS, WesternUS
+2024-03-26 14:27:36,404 - FireLog - INFO - func:read_preprocessed_input took: 109.95 ms
+2024-03-26 14:27:36,517 - FireLog - INFO - func:read_preprocessed_input took: 111.93 ms
+2024-03-26 14:27:41,116 - FireLog - INFO - func:do_clustering took: 3.71 ms
+2024-03-26 14:27:41,129 - FireLog - INFO - func:preprocess_region_t took: 5.11 sec
+2024-03-26 14:27:41,134 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230126_AM.txt
+2024-03-26 14:27:41,134 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230126_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230126_AM.txt
+2024-03-26 14:27:41,531 - FireLog - INFO - func:read_region took: 272.71 ms
+2024-03-26 14:27:41,532 - FireLog - INFO - filtering and clustering 2023-1-26 PM, VIIRS, WesternUS
+2024-03-26 14:27:41,944 - FireLog - INFO - func:read_preprocessed_input took: 411.63 ms
+2024-03-26 14:27:42,153 - FireLog - INFO - func:read_preprocessed_input took: 209.16 ms
+2024-03-26 14:27:45,915 - FireLog - INFO - func:do_clustering took: 3.51 ms
+2024-03-26 14:27:45,929 - FireLog - INFO - func:preprocess_region_t took: 4.67 sec
+2024-03-26 14:27:45,934 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230126_PM.txt
+2024-03-26 14:27:45,935 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230126_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230126_PM.txt
+2024-03-26 14:27:46,389 - FireLog - INFO - func:read_region took: 272.51 ms
+2024-03-26 14:27:46,390 - FireLog - INFO - filtering and clustering 2023-1-27 AM, VIIRS, WesternUS
+2024-03-26 14:27:46,479 - FireLog - INFO - func:read_preprocessed_input took: 88.65 ms
+2024-03-26 14:27:46,601 - FireLog - INFO - func:read_preprocessed_input took: 121.18 ms
+2024-03-26 14:27:50,853 - FireLog - INFO - func:do_clustering took: 3.55 ms
+2024-03-26 14:27:50,866 - FireLog - INFO - func:preprocess_region_t took: 4.75 sec
+2024-03-26 14:27:50,871 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230127_AM.txt
+2024-03-26 14:27:50,871 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230127_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230127_AM.txt
+2024-03-26 14:27:51,253 - FireLog - INFO - func:read_region took: 272.02 ms
+2024-03-26 14:27:51,254 - FireLog - INFO - filtering and clustering 2023-1-27 PM, VIIRS, WesternUS
+2024-03-26 14:27:51,580 - FireLog - INFO - func:read_preprocessed_input took: 325.17 ms
+2024-03-26 14:27:51,841 - FireLog - INFO - func:read_preprocessed_input took: 261.11 ms
+2024-03-26 14:27:54,932 - FireLog - INFO - func:do_clustering took: 3.03 ms
+2024-03-26 14:27:54,945 - FireLog - INFO - func:preprocess_region_t took: 3.96 sec
+2024-03-26 14:27:54,951 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230127_PM.txt
+2024-03-26 14:27:54,951 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230127_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230127_PM.txt
+2024-03-26 14:27:55,384 - FireLog - INFO - func:read_region took: 317.11 ms
+2024-03-26 14:27:55,384 - FireLog - INFO - filtering and clustering 2023-1-28 AM, VIIRS, WesternUS
+2024-03-26 14:27:55,504 - FireLog - INFO - func:read_preprocessed_input took: 119.68 ms
+2024-03-26 14:27:55,624 - FireLog - INFO - func:read_preprocessed_input took: 119.36 ms
+2024-03-26 14:27:58,353 - FireLog - INFO - func:do_clustering took: 2.89 ms
+2024-03-26 14:27:58,366 - FireLog - INFO - func:preprocess_region_t took: 3.30 sec
+2024-03-26 14:27:58,371 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230128_AM.txt
+2024-03-26 14:27:58,372 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230128_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230128_AM.txt
+2024-03-26 14:27:58,790 - FireLog - INFO - func:read_region took: 273.45 ms
+2024-03-26 14:27:58,791 - FireLog - INFO - filtering and clustering 2023-1-28 PM, VIIRS, WesternUS
+2024-03-26 14:27:59,133 - FireLog - INFO - func:read_preprocessed_input took: 341.22 ms
+2024-03-26 14:27:59,461 - FireLog - INFO - func:read_preprocessed_input took: 328.16 ms
+2024-03-26 14:28:01,084 - FireLog - INFO - func:do_clustering took: 2.21 ms
+2024-03-26 14:28:01,096 - FireLog - INFO - func:preprocess_region_t took: 2.58 sec
+2024-03-26 14:28:01,102 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230128_PM.txt
+2024-03-26 14:28:01,102 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230128_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230128_PM.txt
+2024-03-26 14:28:01,486 - FireLog - INFO - func:read_region took: 272.44 ms
+2024-03-26 14:28:01,487 - FireLog - INFO - filtering and clustering 2023-1-29 AM, VIIRS, WesternUS
+2024-03-26 14:28:01,592 - FireLog - INFO - func:read_preprocessed_input took: 104.47 ms
+2024-03-26 14:28:01,686 - FireLog - INFO - func:read_preprocessed_input took: 93.40 ms
+2024-03-26 14:28:03,128 - FireLog - INFO - func:do_clustering took: 2.08 ms
+2024-03-26 14:28:03,140 - FireLog - INFO - func:preprocess_region_t took: 1.93 sec
+2024-03-26 14:28:03,149 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230129_AM.txt
+2024-03-26 14:28:03,149 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230129_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230129_AM.txt
+2024-03-26 14:28:03,566 - FireLog - INFO - func:read_region took: 273.54 ms
+2024-03-26 14:28:03,567 - FireLog - INFO - filtering and clustering 2023-1-29 PM, VIIRS, WesternUS
+2024-03-26 14:28:03,860 - FireLog - INFO - func:read_preprocessed_input took: 292.27 ms
+2024-03-26 14:28:04,182 - FireLog - INFO - func:read_preprocessed_input took: 321.38 ms
+2024-03-26 14:28:04,915 - FireLog - INFO - func:do_clustering took: 1.64 ms
+2024-03-26 14:28:04,926 - FireLog - INFO - func:preprocess_region_t took: 1.63 sec
+2024-03-26 14:28:04,932 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230129_PM.txt
+2024-03-26 14:28:04,932 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230129_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230129_PM.txt
+2024-03-26 14:28:05,313 - FireLog - INFO - func:read_region took: 271.39 ms
+2024-03-26 14:28:05,314 - FireLog - INFO - filtering and clustering 2023-1-30 AM, VIIRS, WesternUS
+2024-03-26 14:28:05,409 - FireLog - INFO - func:read_preprocessed_input took: 95.01 ms
+2024-03-26 14:28:05,527 - FireLog - INFO - func:read_preprocessed_input took: 116.93 ms
+2024-03-26 14:28:06,437 - FireLog - INFO - func:do_clustering took: 1.80 ms
+2024-03-26 14:28:06,448 - FireLog - INFO - func:preprocess_region_t took: 1.41 sec
+2024-03-26 14:28:06,453 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230130_AM.txt
+2024-03-26 14:28:06,454 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230130_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230130_AM.txt
+2024-03-26 14:28:06,834 - FireLog - INFO - func:read_region took: 272.75 ms
+2024-03-26 14:28:06,835 - FireLog - INFO - filtering and clustering 2023-1-30 PM, VIIRS, WesternUS
+2024-03-26 14:28:07,146 - FireLog - INFO - func:read_preprocessed_input took: 310.95 ms
+2024-03-26 14:28:07,459 - FireLog - INFO - func:read_preprocessed_input took: 311.48 ms
+2024-03-26 14:28:09,244 - FireLog - INFO - func:do_clustering took: 2.35 ms
+2024-03-26 14:28:09,256 - FireLog - INFO - func:preprocess_region_t took: 2.70 sec
+2024-03-26 14:28:09,262 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230130_PM.txt
+2024-03-26 14:28:09,263 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230130_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230130_PM.txt
+2024-03-26 14:28:09,681 - FireLog - INFO - func:read_region took: 273.13 ms
+2024-03-26 14:28:09,682 - FireLog - INFO - filtering and clustering 2023-1-31 AM, VIIRS, WesternUS
+2024-03-26 14:28:09,784 - FireLog - INFO - func:read_preprocessed_input took: 101.45 ms
+2024-03-26 14:28:09,830 - FireLog - INFO - NOAA20 file not available at t=[2023, 1, 31, 'AM']: 'maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/NOAA20/20230131_AM.txt'
+2024-03-26 14:28:10,484 - FireLog - INFO - func:do_clustering took: 1.64 ms
+2024-03-26 14:28:10,494 - FireLog - INFO - func:preprocess_region_t took: 1.09 sec
+2024-03-26 14:28:10,500 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230131_AM.txt
+2024-03-26 14:28:10,500 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230131_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230131_AM.txt
+2024-03-26 14:28:10,878 - FireLog - INFO - func:read_region took: 275.02 ms
+2024-03-26 14:28:10,879 - FireLog - INFO - filtering and clustering 2023-1-31 PM, VIIRS, WesternUS
+2024-03-26 14:28:11,201 - FireLog - INFO - func:read_preprocessed_input took: 321.52 ms
+2024-03-26 14:28:11,267 - FireLog - INFO - NOAA20 file not available at t=[2023, 1, 31, 'PM']: 'maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/NOAA20/20230131_PM.txt'
+2024-03-26 14:28:12,846 - FireLog - INFO - func:do_clustering took: 2.19 ms
+2024-03-26 14:28:12,856 - FireLog - INFO - func:preprocess_region_t took: 2.25 sec
+2024-03-26 14:28:12,863 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230131_PM.txt
+2024-03-26 14:28:12,863 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230131_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230131_PM.txt
+2024-03-26 14:28:13,254 - FireLog - INFO - func:read_region took: 280.05 ms
+2024-03-26 14:28:13,255 - FireLog - INFO - filtering and clustering 2023-2-1 AM, VIIRS, WesternUS
+2024-03-26 14:28:13,376 - FireLog - INFO - func:read_preprocessed_input took: 119.94 ms
+2024-03-26 14:28:13,493 - FireLog - INFO - func:read_preprocessed_input took: 116.47 ms
+2024-03-26 14:28:15,551 - FireLog - INFO - func:do_clustering took: 2.51 ms
+2024-03-26 14:28:15,563 - FireLog - INFO - func:preprocess_region_t took: 2.59 sec
+2024-03-26 14:28:15,571 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230201_AM.txt
+2024-03-26 14:28:15,571 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230201_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230201_AM.txt
+2024-03-26 14:28:15,963 - FireLog - INFO - func:read_region took: 273.03 ms
+2024-03-26 14:28:15,964 - FireLog - INFO - filtering and clustering 2023-2-1 PM, VIIRS, WesternUS
+2024-03-26 14:28:16,334 - FireLog - INFO - func:read_preprocessed_input took: 369.23 ms
+2024-03-26 14:28:16,655 - FireLog - INFO - func:read_preprocessed_input took: 320.08 ms
+2024-03-26 14:28:20,199 - FireLog - INFO - func:do_clustering took: 3.43 ms
+2024-03-26 14:28:20,215 - FireLog - INFO - func:preprocess_region_t took: 4.53 sec
+2024-03-26 14:28:20,221 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230201_PM.txt
+2024-03-26 14:28:20,221 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230201_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230201_PM.txt
+2024-03-26 14:28:20,624 - FireLog - INFO - func:read_region took: 272.14 ms
+2024-03-26 14:28:20,625 - FireLog - INFO - filtering and clustering 2023-2-2 AM, VIIRS, WesternUS
+2024-03-26 14:28:20,754 - FireLog - INFO - func:read_preprocessed_input took: 128.80 ms
+2024-03-26 14:28:20,868 - FireLog - INFO - func:read_preprocessed_input took: 112.81 ms
+2024-03-26 14:28:24,814 - FireLog - INFO - func:do_clustering took: 3.58 ms
+2024-03-26 14:28:24,828 - FireLog - INFO - func:preprocess_region_t took: 4.48 sec
+2024-03-26 14:28:24,834 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230202_AM.txt
+2024-03-26 14:28:24,835 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230202_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230202_AM.txt
+2024-03-26 14:28:25,237 - FireLog - INFO - func:read_region took: 274.08 ms
+2024-03-26 14:28:25,237 - FireLog - INFO - filtering and clustering 2023-2-2 PM, VIIRS, WesternUS
+2024-03-26 14:28:25,620 - FireLog - INFO - func:read_preprocessed_input took: 382.46 ms
+2024-03-26 14:28:26,038 - FireLog - INFO - func:read_preprocessed_input took: 416.79 ms
+2024-03-26 14:28:28,590 - FireLog - INFO - func:do_clustering took: 2.73 ms
+2024-03-26 14:28:28,603 - FireLog - INFO - func:preprocess_region_t took: 3.64 sec
+2024-03-26 14:28:28,611 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230202_PM.txt
+2024-03-26 14:28:28,611 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230202_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230202_PM.txt
+2024-03-26 14:28:29,076 - FireLog - INFO - func:read_region took: 273.40 ms
+2024-03-26 14:28:29,077 - FireLog - INFO - filtering and clustering 2023-2-3 AM, VIIRS, WesternUS
+2024-03-26 14:28:29,216 - FireLog - INFO - func:read_preprocessed_input took: 138.03 ms
+2024-03-26 14:28:29,370 - FireLog - INFO - func:read_preprocessed_input took: 152.96 ms
+2024-03-26 14:28:32,167 - FireLog - INFO - func:do_clustering took: 2.61 ms
+2024-03-26 14:28:32,179 - FireLog - INFO - func:preprocess_region_t took: 3.38 sec
+2024-03-26 14:28:32,186 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230203_AM.txt
+2024-03-26 14:28:32,187 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230203_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230203_AM.txt
+2024-03-26 14:28:32,585 - FireLog - INFO - func:read_region took: 280.91 ms
+2024-03-26 14:28:32,586 - FireLog - INFO - filtering and clustering 2023-2-3 PM, VIIRS, WesternUS
+2024-03-26 14:28:32,927 - FireLog - INFO - func:read_preprocessed_input took: 340.08 ms
+2024-03-26 14:28:33,291 - FireLog - INFO - func:read_preprocessed_input took: 363.16 ms
+2024-03-26 14:28:34,465 - FireLog - INFO - func:do_clustering took: 1.95 ms
+2024-03-26 14:28:34,476 - FireLog - INFO - func:preprocess_region_t took: 2.17 sec
+2024-03-26 14:28:34,482 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230203_PM.txt
+2024-03-26 14:28:34,483 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230203_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230203_PM.txt
+2024-03-26 14:28:34,878 - FireLog - INFO - func:read_region took: 273.55 ms
+2024-03-26 14:28:34,879 - FireLog - INFO - filtering and clustering 2023-2-4 AM, VIIRS, WesternUS
+2024-03-26 14:28:35,004 - FireLog - INFO - func:read_preprocessed_input took: 124.75 ms
+2024-03-26 14:28:35,133 - FireLog - INFO - func:read_preprocessed_input took: 128.09 ms
+2024-03-26 14:28:38,569 - FireLog - INFO - func:do_clustering took: 3.22 ms
+2024-03-26 14:28:38,585 - FireLog - INFO - func:preprocess_region_t took: 3.98 sec
+2024-03-26 14:28:38,591 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230204_AM.txt
+2024-03-26 14:28:38,592 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230204_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230204_AM.txt
+2024-03-26 14:28:39,051 - FireLog - INFO - func:read_region took: 299.52 ms
+2024-03-26 14:28:39,052 - FireLog - INFO - filtering and clustering 2023-2-4 PM, VIIRS, WesternUS
+2024-03-26 14:28:39,410 - FireLog - INFO - func:read_preprocessed_input took: 357.87 ms
+2024-03-26 14:28:39,819 - FireLog - INFO - func:read_preprocessed_input took: 407.98 ms
+2024-03-26 14:28:41,180 - FireLog - INFO - func:do_clustering took: 2.07 ms
+2024-03-26 14:28:41,192 - FireLog - INFO - func:preprocess_region_t took: 2.44 sec
+2024-03-26 14:28:41,197 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230204_PM.txt
+2024-03-26 14:28:41,198 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230204_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230204_PM.txt
+2024-03-26 14:28:41,574 - FireLog - INFO - func:read_region took: 272.19 ms
+2024-03-26 14:28:41,575 - FireLog - INFO - filtering and clustering 2023-2-5 AM, VIIRS, WesternUS
+2024-03-26 14:28:41,695 - FireLog - INFO - func:read_preprocessed_input took: 119.64 ms
+2024-03-26 14:28:41,826 - FireLog - INFO - func:read_preprocessed_input took: 130.04 ms
+2024-03-26 14:28:46,367 - FireLog - INFO - func:do_clustering took: 3.43 ms
+2024-03-26 14:28:46,379 - FireLog - INFO - func:preprocess_region_t took: 5.08 sec
+2024-03-26 14:28:46,384 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230205_AM.txt
+2024-03-26 14:28:46,385 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230205_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230205_AM.txt
+2024-03-26 14:28:46,786 - FireLog - INFO - func:read_region took: 276.58 ms
+2024-03-26 14:28:46,787 - FireLog - INFO - filtering and clustering 2023-2-5 PM, VIIRS, WesternUS
+2024-03-26 14:28:47,011 - FireLog - INFO - func:read_preprocessed_input took: 224.25 ms
+2024-03-26 14:28:47,337 - FireLog - INFO - func:read_preprocessed_input took: 324.80 ms
+2024-03-26 14:28:48,373 - FireLog - INFO - func:do_clustering took: 1.85 ms
+2024-03-26 14:28:48,384 - FireLog - INFO - func:preprocess_region_t took: 1.88 sec
+2024-03-26 14:28:48,390 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230205_PM.txt
+2024-03-26 14:28:48,391 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230205_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230205_PM.txt
+2024-03-26 14:28:48,795 - FireLog - INFO - func:read_region took: 292.64 ms
+2024-03-26 14:28:48,795 - FireLog - INFO - filtering and clustering 2023-2-6 AM, VIIRS, WesternUS
+2024-03-26 14:28:48,921 - FireLog - INFO - func:read_preprocessed_input took: 124.95 ms
+2024-03-26 14:28:49,056 - FireLog - INFO - func:read_preprocessed_input took: 134.16 ms
+2024-03-26 14:28:55,810 - FireLog - INFO - func:do_clustering took: 5.29 ms
+2024-03-26 14:28:55,826 - FireLog - INFO - func:preprocess_region_t took: 7.32 sec
+2024-03-26 14:28:55,831 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230206_AM.txt
+2024-03-26 14:28:55,831 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230206_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230206_AM.txt
+2024-03-26 14:28:56,257 - FireLog - INFO - func:read_region took: 280.85 ms
+2024-03-26 14:28:56,258 - FireLog - INFO - filtering and clustering 2023-2-6 PM, VIIRS, WesternUS
+2024-03-26 14:28:56,442 - FireLog - INFO - func:read_preprocessed_input took: 183.69 ms
+2024-03-26 14:28:56,886 - FireLog - INFO - func:read_preprocessed_input took: 443.33 ms
+2024-03-26 14:29:02,041 - FireLog - INFO - func:do_clustering took: 4.32 ms
+2024-03-26 14:29:02,058 - FireLog - INFO - func:preprocess_region_t took: 6.08 sec
+2024-03-26 14:29:02,064 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230206_PM.txt
+2024-03-26 14:29:02,065 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230206_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230206_PM.txt
+2024-03-26 14:29:02,505 - FireLog - INFO - func:read_region took: 273.42 ms
+2024-03-26 14:29:02,505 - FireLog - INFO - filtering and clustering 2023-2-7 AM, VIIRS, WesternUS
+2024-03-26 14:29:02,640 - FireLog - INFO - func:read_preprocessed_input took: 133.85 ms
+2024-03-26 14:29:02,747 - FireLog - INFO - func:read_preprocessed_input took: 107.10 ms
+2024-03-26 14:29:06,006 - FireLog - INFO - func:do_clustering took: 2.91 ms
+2024-03-26 14:29:06,019 - FireLog - INFO - func:preprocess_region_t took: 3.79 sec
+2024-03-26 14:29:06,024 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230207_AM.txt
+2024-03-26 14:29:06,025 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230207_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230207_AM.txt
+2024-03-26 14:29:07,085 - FireLog - INFO - func:read_region took: 275.56 ms
+2024-03-26 14:29:07,086 - FireLog - INFO - filtering and clustering 2023-2-7 PM, VIIRS, WesternUS
+2024-03-26 14:29:07,438 - FireLog - INFO - func:read_preprocessed_input took: 351.77 ms
+2024-03-26 14:29:07,860 - FireLog - INFO - func:read_preprocessed_input took: 421.15 ms
+2024-03-26 14:29:10,278 - FireLog - INFO - func:do_clustering took: 2.65 ms
+2024-03-26 14:29:10,291 - FireLog - INFO - func:preprocess_region_t took: 3.48 sec
+2024-03-26 14:29:10,297 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230207_PM.txt
+2024-03-26 14:29:10,297 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230207_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230207_PM.txt
+2024-03-26 14:29:10,692 - FireLog - INFO - func:read_region took: 275.83 ms
+2024-03-26 14:29:10,693 - FireLog - INFO - filtering and clustering 2023-2-8 AM, VIIRS, WesternUS
+2024-03-26 14:29:10,897 - FireLog - INFO - func:read_preprocessed_input took: 203.54 ms
+2024-03-26 14:29:11,012 - FireLog - INFO - func:read_preprocessed_input took: 113.44 ms
+2024-03-26 14:29:14,771 - FireLog - INFO - func:do_clustering took: 3.44 ms
+2024-03-26 14:29:14,786 - FireLog - INFO - func:preprocess_region_t took: 4.37 sec
+2024-03-26 14:29:14,792 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230208_AM.txt
+2024-03-26 14:29:14,792 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230208_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230208_AM.txt
+2024-03-26 14:29:15,171 - FireLog - INFO - func:read_region took: 271.59 ms
+2024-03-26 14:29:15,172 - FireLog - INFO - filtering and clustering 2023-2-8 PM, VIIRS, WesternUS
+2024-03-26 14:29:15,497 - FireLog - INFO - func:read_preprocessed_input took: 324.47 ms
+2024-03-26 14:29:15,895 - FireLog - INFO - func:read_preprocessed_input took: 397.79 ms
+2024-03-26 14:29:21,649 - FireLog - INFO - func:do_clustering took: 4.69 ms
+2024-03-26 14:29:21,664 - FireLog - INFO - func:preprocess_region_t took: 6.77 sec
+2024-03-26 14:29:21,670 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230208_PM.txt
+2024-03-26 14:29:21,670 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230208_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230208_PM.txt
+2024-03-26 14:29:22,138 - FireLog - INFO - func:read_region took: 298.08 ms
+2024-03-26 14:29:22,139 - FireLog - INFO - filtering and clustering 2023-2-9 AM, VIIRS, WesternUS
+2024-03-26 14:29:22,380 - FireLog - INFO - func:read_preprocessed_input took: 240.81 ms
+2024-03-26 14:29:22,493 - FireLog - INFO - func:read_preprocessed_input took: 112.55 ms
+2024-03-26 14:29:28,497 - FireLog - INFO - func:do_clustering took: 4.46 ms
+2024-03-26 14:29:28,511 - FireLog - INFO - func:preprocess_region_t took: 6.67 sec
+2024-03-26 14:29:28,516 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230209_AM.txt
+2024-03-26 14:29:28,517 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230209_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230209_AM.txt
+2024-03-26 14:29:28,948 - FireLog - INFO - func:read_region took: 287.96 ms
+2024-03-26 14:29:28,949 - FireLog - INFO - filtering and clustering 2023-2-9 PM, VIIRS, WesternUS
+2024-03-26 14:29:29,301 - FireLog - INFO - func:read_preprocessed_input took: 351.76 ms
+2024-03-26 14:29:29,654 - FireLog - INFO - func:read_preprocessed_input took: 352.44 ms
+2024-03-26 14:29:34,553 - FireLog - INFO - func:do_clustering took: 4.28 ms
+2024-03-26 14:29:34,567 - FireLog - INFO - func:preprocess_region_t took: 5.91 sec
+2024-03-26 14:29:34,573 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230209_PM.txt
+2024-03-26 14:29:34,573 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230209_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230209_PM.txt
+2024-03-26 14:29:35,031 - FireLog - INFO - func:read_region took: 272.46 ms
+2024-03-26 14:29:35,032 - FireLog - INFO - filtering and clustering 2023-2-10 AM, VIIRS, WesternUS
+2024-03-26 14:29:35,118 - FireLog - INFO - func:read_preprocessed_input took: 85.81 ms
+2024-03-26 14:29:35,214 - FireLog - INFO - func:read_preprocessed_input took: 94.77 ms
+2024-03-26 14:29:39,658 - FireLog - INFO - func:do_clustering took: 3.72 ms
+2024-03-26 14:29:39,672 - FireLog - INFO - func:preprocess_region_t took: 4.91 sec
+2024-03-26 14:29:39,677 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230210_AM.txt
+2024-03-26 14:29:39,678 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230210_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230210_AM.txt
+2024-03-26 14:29:40,119 - FireLog - INFO - func:read_region took: 274.08 ms
+2024-03-26 14:29:40,120 - FireLog - INFO - filtering and clustering 2023-2-10 PM, VIIRS, WesternUS
+2024-03-26 14:29:40,372 - FireLog - INFO - func:read_preprocessed_input took: 251.56 ms
+2024-03-26 14:29:40,687 - FireLog - INFO - func:read_preprocessed_input took: 313.89 ms
+2024-03-26 14:29:44,677 - FireLog - INFO - func:do_clustering took: 3.53 ms
+2024-03-26 14:29:44,690 - FireLog - INFO - func:preprocess_region_t took: 4.85 sec
+2024-03-26 14:29:44,697 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230210_PM.txt
+2024-03-26 14:29:44,697 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230210_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230210_PM.txt
+2024-03-26 14:29:45,121 - FireLog - INFO - func:read_region took: 301.37 ms
+2024-03-26 14:29:45,121 - FireLog - INFO - filtering and clustering 2023-2-11 AM, VIIRS, WesternUS
+2024-03-26 14:29:45,233 - FireLog - INFO - func:read_preprocessed_input took: 111.33 ms
+2024-03-26 14:29:45,343 - FireLog - INFO - func:read_preprocessed_input took: 109.39 ms
+2024-03-26 14:29:48,952 - FireLog - INFO - func:do_clustering took: 3.09 ms
+2024-03-26 14:29:48,965 - FireLog - INFO - func:preprocess_region_t took: 4.15 sec
+2024-03-26 14:29:48,970 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230211_AM.txt
+2024-03-26 14:29:48,971 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230211_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230211_AM.txt
+2024-03-26 14:29:49,368 - FireLog - INFO - func:read_region took: 271.66 ms
+2024-03-26 14:29:49,369 - FireLog - INFO - filtering and clustering 2023-2-11 PM, VIIRS, WesternUS
+2024-03-26 14:29:49,768 - FireLog - INFO - func:read_preprocessed_input took: 398.98 ms
+2024-03-26 14:29:50,167 - FireLog - INFO - func:read_preprocessed_input took: 398.01 ms
+2024-03-26 14:29:52,780 - FireLog - INFO - func:do_clustering took: 2.77 ms
+2024-03-26 14:29:52,792 - FireLog - INFO - func:preprocess_region_t took: 3.70 sec
+2024-03-26 14:29:52,798 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230211_PM.txt
+2024-03-26 14:29:52,799 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230211_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230211_PM.txt
+2024-03-26 14:29:53,200 - FireLog - INFO - func:read_region took: 282.42 ms
+2024-03-26 14:29:53,201 - FireLog - INFO - filtering and clustering 2023-2-12 AM, VIIRS, WesternUS
+2024-03-26 14:29:53,339 - FireLog - INFO - func:read_preprocessed_input took: 137.78 ms
+2024-03-26 14:29:53,463 - FireLog - INFO - func:read_preprocessed_input took: 122.86 ms
+2024-03-26 14:29:56,398 - FireLog - INFO - func:do_clustering took: 2.78 ms
+2024-03-26 14:29:56,410 - FireLog - INFO - func:preprocess_region_t took: 3.49 sec
+2024-03-26 14:29:56,416 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230212_AM.txt
+2024-03-26 14:29:56,417 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230212_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230212_AM.txt
+2024-03-26 14:29:56,796 - FireLog - INFO - func:read_region took: 272.41 ms
+2024-03-26 14:29:56,797 - FireLog - INFO - filtering and clustering 2023-2-12 PM, VIIRS, WesternUS
+2024-03-26 14:29:57,251 - FireLog - INFO - func:read_preprocessed_input took: 454.03 ms
+2024-03-26 14:29:57,485 - FireLog - INFO - func:read_preprocessed_input took: 233.68 ms
+2024-03-26 14:29:59,041 - FireLog - INFO - func:do_clustering took: 2.19 ms
+2024-03-26 14:29:59,052 - FireLog - INFO - func:preprocess_region_t took: 2.53 sec
+2024-03-26 14:29:59,058 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230212_PM.txt
+2024-03-26 14:29:59,058 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230212_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230212_PM.txt
+2024-03-26 14:29:59,491 - FireLog - INFO - func:read_region took: 326.75 ms
+2024-03-26 14:29:59,492 - FireLog - INFO - filtering and clustering 2023-2-13 AM, VIIRS, WesternUS
+2024-03-26 14:29:59,650 - FireLog - INFO - func:read_preprocessed_input took: 157.39 ms
+2024-03-26 14:29:59,753 - FireLog - INFO - func:read_preprocessed_input took: 102.33 ms
+2024-03-26 14:30:01,850 - FireLog - INFO - func:do_clustering took: 2.43 ms
+2024-03-26 14:30:01,863 - FireLog - INFO - func:preprocess_region_t took: 2.70 sec
+2024-03-26 14:30:01,869 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230213_AM.txt
+2024-03-26 14:30:01,869 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230213_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230213_AM.txt
+2024-03-26 14:30:02,266 - FireLog - INFO - func:read_region took: 274.89 ms
+2024-03-26 14:30:02,267 - FireLog - INFO - filtering and clustering 2023-2-13 PM, VIIRS, WesternUS
+2024-03-26 14:30:02,616 - FireLog - INFO - func:read_preprocessed_input took: 348.48 ms
+2024-03-26 14:30:03,057 - FireLog - INFO - func:read_preprocessed_input took: 441.15 ms
+2024-03-26 14:30:09,354 - FireLog - INFO - func:do_clustering took: 5.07 ms
+2024-03-26 14:30:09,369 - FireLog - INFO - func:preprocess_region_t took: 7.38 sec
+2024-03-26 14:30:09,375 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230213_PM.txt
+2024-03-26 14:30:09,376 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230213_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230213_PM.txt
+2024-03-26 14:30:09,796 - FireLog - INFO - func:read_region took: 278.80 ms
+2024-03-26 14:30:09,796 - FireLog - INFO - filtering and clustering 2023-2-14 AM, VIIRS, WesternUS
+2024-03-26 14:30:09,942 - FireLog - INFO - func:read_preprocessed_input took: 144.94 ms
+2024-03-26 14:30:10,078 - FireLog - INFO - func:read_preprocessed_input took: 135.69 ms
+2024-03-26 14:30:12,555 - FireLog - INFO - func:do_clustering took: 2.65 ms
+2024-03-26 14:30:12,566 - FireLog - INFO - func:preprocess_region_t took: 3.05 sec
+2024-03-26 14:30:12,572 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230214_AM.txt
+2024-03-26 14:30:12,572 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230214_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230214_AM.txt
+2024-03-26 14:30:12,944 - FireLog - INFO - func:read_region took: 272.17 ms
+2024-03-26 14:30:12,944 - FireLog - INFO - filtering and clustering 2023-2-14 PM, VIIRS, WesternUS
+2024-03-26 14:30:13,274 - FireLog - INFO - func:read_preprocessed_input took: 328.60 ms
+2024-03-26 14:30:13,534 - FireLog - INFO - func:read_preprocessed_input took: 260.00 ms
+2024-03-26 14:30:18,236 - FireLog - INFO - func:do_clustering took: 4.04 ms
+2024-03-26 14:30:18,250 - FireLog - INFO - func:preprocess_region_t took: 5.58 sec
+2024-03-26 14:30:18,255 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230214_PM.txt
+2024-03-26 14:30:18,255 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230214_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230214_PM.txt
+2024-03-26 14:30:18,725 - FireLog - INFO - func:read_region took: 335.35 ms
+2024-03-26 14:30:18,726 - FireLog - INFO - filtering and clustering 2023-2-15 AM, VIIRS, WesternUS
+2024-03-26 14:30:18,840 - FireLog - INFO - func:read_preprocessed_input took: 112.81 ms
+2024-03-26 14:30:18,970 - FireLog - INFO - func:read_preprocessed_input took: 129.79 ms
+2024-03-26 14:30:21,913 - FireLog - INFO - func:do_clustering took: 2.86 ms
+2024-03-26 14:30:21,924 - FireLog - INFO - func:preprocess_region_t took: 3.54 sec
+2024-03-26 14:30:21,930 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230215_AM.txt
+2024-03-26 14:30:21,930 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230215_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230215_AM.txt
+2024-03-26 14:30:22,335 - FireLog - INFO - func:read_region took: 273.78 ms
+2024-03-26 14:30:22,336 - FireLog - INFO - filtering and clustering 2023-2-15 PM, VIIRS, WesternUS
+2024-03-26 14:30:22,636 - FireLog - INFO - func:read_preprocessed_input took: 299.34 ms
+2024-03-26 14:30:23,154 - FireLog - INFO - func:read_preprocessed_input took: 517.83 ms
+2024-03-26 14:30:29,309 - FireLog - INFO - func:do_clustering took: 4.83 ms
+2024-03-26 14:30:29,327 - FireLog - INFO - func:preprocess_region_t took: 7.27 sec
+2024-03-26 14:30:29,332 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230215_PM.txt
+2024-03-26 14:30:29,333 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230215_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230215_PM.txt
+2024-03-26 14:30:29,739 - FireLog - INFO - func:read_region took: 279.78 ms
+2024-03-26 14:30:29,740 - FireLog - INFO - filtering and clustering 2023-2-16 AM, VIIRS, WesternUS
+2024-03-26 14:30:29,856 - FireLog - INFO - func:read_preprocessed_input took: 116.36 ms
+2024-03-26 14:30:29,964 - FireLog - INFO - func:read_preprocessed_input took: 107.13 ms
+2024-03-26 14:30:33,412 - FireLog - INFO - func:do_clustering took: 3.18 ms
+2024-03-26 14:30:33,425 - FireLog - INFO - func:preprocess_region_t took: 3.97 sec
+2024-03-26 14:30:33,431 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230216_AM.txt
+2024-03-26 14:30:33,432 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230216_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230216_AM.txt
+2024-03-26 14:30:33,863 - FireLog - INFO - func:read_region took: 327.05 ms
+2024-03-26 14:30:33,864 - FireLog - INFO - filtering and clustering 2023-2-16 PM, VIIRS, WesternUS
+2024-03-26 14:30:34,190 - FireLog - INFO - func:read_preprocessed_input took: 325.71 ms
+2024-03-26 14:30:34,581 - FireLog - INFO - func:read_preprocessed_input took: 389.80 ms
+2024-03-26 14:30:37,145 - FireLog - INFO - func:do_clustering took: 2.73 ms
+2024-03-26 14:30:37,157 - FireLog - INFO - func:preprocess_region_t took: 3.62 sec
+2024-03-26 14:30:37,163 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230216_PM.txt
+2024-03-26 14:30:37,164 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230216_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230216_PM.txt
+2024-03-26 14:30:37,552 - FireLog - INFO - func:read_region took: 273.47 ms
+2024-03-26 14:30:37,553 - FireLog - INFO - filtering and clustering 2023-2-17 AM, VIIRS, WesternUS
+2024-03-26 14:30:37,651 - FireLog - INFO - func:read_preprocessed_input took: 98.22 ms
+2024-03-26 14:30:37,766 - FireLog - INFO - func:read_preprocessed_input took: 114.07 ms
+2024-03-26 14:30:39,364 - FireLog - INFO - func:do_clustering took: 2.13 ms
+2024-03-26 14:30:39,375 - FireLog - INFO - func:preprocess_region_t took: 2.10 sec
+2024-03-26 14:30:39,380 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230217_AM.txt
+2024-03-26 14:30:39,381 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230217_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230217_AM.txt
+2024-03-26 14:30:39,863 - FireLog - INFO - func:read_region took: 355.81 ms
+2024-03-26 14:30:39,864 - FireLog - INFO - filtering and clustering 2023-2-17 PM, VIIRS, WesternUS
+2024-03-26 14:30:40,365 - FireLog - INFO - func:read_preprocessed_input took: 500.67 ms
+2024-03-26 14:30:40,713 - FireLog - INFO - func:read_preprocessed_input took: 347.71 ms
+2024-03-26 14:30:46,008 - FireLog - INFO - func:do_clustering took: 4.39 ms
+2024-03-26 14:30:46,023 - FireLog - INFO - func:preprocess_region_t took: 6.52 sec
+2024-03-26 14:30:46,029 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230217_PM.txt
+2024-03-26 14:30:46,030 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230217_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230217_PM.txt
+2024-03-26 14:30:46,428 - FireLog - INFO - func:read_region took: 272.54 ms
+2024-03-26 14:30:46,429 - FireLog - INFO - filtering and clustering 2023-2-18 AM, VIIRS, WesternUS
+2024-03-26 14:30:46,545 - FireLog - INFO - func:read_preprocessed_input took: 115.42 ms
+2024-03-26 14:30:46,658 - FireLog - INFO - func:read_preprocessed_input took: 112.82 ms
+2024-03-26 14:30:48,294 - FireLog - INFO - func:do_clustering took: 2.26 ms
+2024-03-26 14:30:48,305 - FireLog - INFO - func:preprocess_region_t took: 2.15 sec
+2024-03-26 14:30:48,311 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230218_AM.txt
+2024-03-26 14:30:48,311 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230218_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230218_AM.txt
+2024-03-26 14:30:48,722 - FireLog - INFO - func:read_region took: 272.48 ms
+2024-03-26 14:30:48,723 - FireLog - INFO - filtering and clustering 2023-2-18 PM, VIIRS, WesternUS
+2024-03-26 14:30:49,230 - FireLog - INFO - func:read_preprocessed_input took: 507.01 ms
+2024-03-26 14:30:49,667 - FireLog - INFO - func:read_preprocessed_input took: 436.23 ms
+2024-03-26 14:30:51,224 - FireLog - INFO - func:do_clustering took: 2.15 ms
+2024-03-26 14:30:51,235 - FireLog - INFO - func:preprocess_region_t took: 2.79 sec
+2024-03-26 14:30:51,241 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230218_PM.txt
+2024-03-26 14:30:51,241 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230218_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230218_PM.txt
+2024-03-26 14:30:51,629 - FireLog - INFO - func:read_region took: 272.64 ms
+2024-03-26 14:30:51,630 - FireLog - INFO - filtering and clustering 2023-2-19 AM, VIIRS, WesternUS
+2024-03-26 14:30:51,830 - FireLog - INFO - func:read_preprocessed_input took: 198.82 ms
+2024-03-26 14:30:51,953 - FireLog - INFO - func:read_preprocessed_input took: 123.24 ms
+2024-03-26 14:30:54,338 - FireLog - INFO - func:do_clustering took: 2.71 ms
+2024-03-26 14:30:54,351 - FireLog - INFO - func:preprocess_region_t took: 2.99 sec
+2024-03-26 14:30:54,357 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230219_AM.txt
+2024-03-26 14:30:54,358 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230219_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230219_AM.txt
+2024-03-26 14:30:54,750 - FireLog - INFO - func:read_region took: 276.38 ms
+2024-03-26 14:30:54,751 - FireLog - INFO - filtering and clustering 2023-2-19 PM, VIIRS, WesternUS
+2024-03-26 14:30:55,092 - FireLog - INFO - func:read_preprocessed_input took: 341.15 ms
+2024-03-26 14:30:55,525 - FireLog - INFO - func:read_preprocessed_input took: 431.90 ms
+2024-03-26 14:30:57,165 - FireLog - INFO - func:do_clustering took: 2.23 ms
+2024-03-26 14:30:57,176 - FireLog - INFO - func:preprocess_region_t took: 2.70 sec
+2024-03-26 14:30:57,182 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230219_PM.txt
+2024-03-26 14:30:57,183 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230219_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230219_PM.txt
+2024-03-26 14:30:57,597 - FireLog - INFO - func:read_region took: 273.80 ms
+2024-03-26 14:30:57,598 - FireLog - INFO - filtering and clustering 2023-2-20 AM, VIIRS, WesternUS
+2024-03-26 14:30:57,716 - FireLog - INFO - func:read_preprocessed_input took: 117.29 ms
+2024-03-26 14:30:57,852 - FireLog - INFO - func:read_preprocessed_input took: 135.62 ms
+2024-03-26 14:30:59,636 - FireLog - INFO - func:do_clustering took: 2.30 ms
+2024-03-26 14:30:59,648 - FireLog - INFO - func:preprocess_region_t took: 2.33 sec
+2024-03-26 14:30:59,653 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230220_AM.txt
+2024-03-26 14:30:59,654 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230220_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230220_AM.txt
+2024-03-26 14:31:00,176 - FireLog - INFO - func:read_region took: 347.48 ms
+2024-03-26 14:31:00,177 - FireLog - INFO - filtering and clustering 2023-2-20 PM, VIIRS, WesternUS
+2024-03-26 14:31:00,426 - FireLog - INFO - func:read_preprocessed_input took: 248.72 ms
+2024-03-26 14:31:00,758 - FireLog - INFO - func:read_preprocessed_input took: 331.42 ms
+2024-03-26 14:31:04,722 - FireLog - INFO - func:do_clustering took: 3.56 ms
+2024-03-26 14:31:04,737 - FireLog - INFO - func:preprocess_region_t took: 4.91 sec
+2024-03-26 14:31:04,743 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230220_PM.txt
+2024-03-26 14:31:04,744 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230220_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230220_PM.txt
+2024-03-26 14:31:05,191 - FireLog - INFO - func:read_region took: 283.62 ms
+2024-03-26 14:31:05,191 - FireLog - INFO - filtering and clustering 2023-2-21 AM, VIIRS, WesternUS
+2024-03-26 14:31:05,368 - FireLog - INFO - func:read_preprocessed_input took: 175.95 ms
+2024-03-26 14:31:05,493 - FireLog - INFO - func:read_preprocessed_input took: 124.16 ms
+2024-03-26 14:31:07,621 - FireLog - INFO - func:do_clustering took: 2.53 ms
+2024-03-26 14:31:07,633 - FireLog - INFO - func:preprocess_region_t took: 2.73 sec
+2024-03-26 14:31:07,639 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230221_AM.txt
+2024-03-26 14:31:07,639 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230221_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230221_AM.txt
+2024-03-26 14:31:08,135 - FireLog - INFO - func:read_region took: 273.04 ms
+2024-03-26 14:31:08,136 - FireLog - INFO - filtering and clustering 2023-2-21 PM, VIIRS, WesternUS
+2024-03-26 14:31:08,580 - FireLog - INFO - func:read_preprocessed_input took: 443.34 ms
+2024-03-26 14:31:08,936 - FireLog - INFO - func:read_preprocessed_input took: 355.14 ms
+2024-03-26 14:31:09,881 - FireLog - INFO - func:do_clustering took: 1.83 ms
+2024-03-26 14:31:09,893 - FireLog - INFO - func:preprocess_region_t took: 2.03 sec
+2024-03-26 14:31:09,898 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230221_PM.txt
+2024-03-26 14:31:09,899 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230221_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230221_PM.txt
+2024-03-26 14:31:10,319 - FireLog - INFO - func:read_region took: 274.34 ms
+2024-03-26 14:31:10,320 - FireLog - INFO - filtering and clustering 2023-2-22 AM, VIIRS, WesternUS
+2024-03-26 14:31:10,458 - FireLog - INFO - func:read_preprocessed_input took: 137.56 ms
+2024-03-26 14:31:10,573 - FireLog - INFO - func:read_preprocessed_input took: 114.47 ms
+2024-03-26 14:31:12,548 - FireLog - INFO - func:do_clustering took: 2.42 ms
+2024-03-26 14:31:12,560 - FireLog - INFO - func:preprocess_region_t took: 2.52 sec
+2024-03-26 14:31:12,568 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230222_AM.txt
+2024-03-26 14:31:12,569 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230222_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230222_AM.txt
+2024-03-26 14:31:12,989 - FireLog - INFO - func:read_region took: 288.90 ms
+2024-03-26 14:31:12,990 - FireLog - INFO - filtering and clustering 2023-2-22 PM, VIIRS, WesternUS
+2024-03-26 14:31:13,347 - FireLog - INFO - func:read_preprocessed_input took: 356.14 ms
+2024-03-26 14:31:13,711 - FireLog - INFO - func:read_preprocessed_input took: 363.39 ms
+2024-03-26 14:31:16,439 - FireLog - INFO - func:do_clustering took: 2.96 ms
+2024-03-26 14:31:16,452 - FireLog - INFO - func:preprocess_region_t took: 3.75 sec
+2024-03-26 14:31:16,458 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230222_PM.txt
+2024-03-26 14:31:16,459 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230222_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230222_PM.txt
+2024-03-26 14:31:16,887 - FireLog - INFO - func:read_region took: 272.49 ms
+2024-03-26 14:31:16,888 - FireLog - INFO - filtering and clustering 2023-2-23 AM, VIIRS, WesternUS
+2024-03-26 14:31:16,999 - FireLog - INFO - func:read_preprocessed_input took: 110.91 ms
+2024-03-26 14:31:17,125 - FireLog - INFO - func:read_preprocessed_input took: 125.15 ms
+2024-03-26 14:31:20,798 - FireLog - INFO - func:do_clustering took: 3.03 ms
+2024-03-26 14:31:20,811 - FireLog - INFO - func:preprocess_region_t took: 4.20 sec
+2024-03-26 14:31:20,816 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230223_AM.txt
+2024-03-26 14:31:20,816 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230223_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230223_AM.txt
+2024-03-26 14:31:21,254 - FireLog - INFO - func:read_region took: 301.21 ms
+2024-03-26 14:31:21,254 - FireLog - INFO - filtering and clustering 2023-2-23 PM, VIIRS, WesternUS
+2024-03-26 14:31:21,605 - FireLog - INFO - func:read_preprocessed_input took: 349.79 ms
+2024-03-26 14:31:21,908 - FireLog - INFO - func:read_preprocessed_input took: 302.13 ms
+2024-03-26 14:31:22,877 - FireLog - INFO - func:do_clustering took: 1.84 ms
+2024-03-26 14:31:22,890 - FireLog - INFO - func:preprocess_region_t took: 1.94 sec
+2024-03-26 14:31:23,006 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230223_PM.txt
+2024-03-26 14:31:23,006 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230223_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230223_PM.txt
+2024-03-26 14:31:23,384 - FireLog - INFO - func:read_region took: 273.76 ms
+2024-03-26 14:31:23,385 - FireLog - INFO - filtering and clustering 2023-2-24 AM, VIIRS, WesternUS
+2024-03-26 14:31:23,498 - FireLog - INFO - func:read_preprocessed_input took: 112.32 ms
+2024-03-26 14:31:23,702 - FireLog - INFO - func:read_preprocessed_input took: 203.52 ms
+2024-03-26 14:31:24,881 - FireLog - INFO - func:do_clustering took: 1.89 ms
+2024-03-26 14:31:24,891 - FireLog - INFO - func:preprocess_region_t took: 1.78 sec
+2024-03-26 14:31:24,897 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230224_AM.txt
+2024-03-26 14:31:24,897 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230224_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230224_AM.txt
+2024-03-26 14:31:25,296 - FireLog - INFO - func:read_region took: 291.11 ms
+2024-03-26 14:31:25,297 - FireLog - INFO - filtering and clustering 2023-2-24 PM, VIIRS, WesternUS
+2024-03-26 14:31:25,593 - FireLog - INFO - func:read_preprocessed_input took: 295.55 ms
+2024-03-26 14:31:25,911 - FireLog - INFO - func:read_preprocessed_input took: 317.44 ms
+2024-03-26 14:31:27,296 - FireLog - INFO - func:do_clustering took: 2.02 ms
+2024-03-26 14:31:27,307 - FireLog - INFO - func:preprocess_region_t took: 2.30 sec
+2024-03-26 14:31:27,313 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230224_PM.txt
+2024-03-26 14:31:27,313 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230224_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230224_PM.txt
+2024-03-26 14:31:27,710 - FireLog - INFO - func:read_region took: 272.52 ms
+2024-03-26 14:31:27,710 - FireLog - INFO - filtering and clustering 2023-2-25 AM, VIIRS, WesternUS
+2024-03-26 14:31:27,835 - FireLog - INFO - func:read_preprocessed_input took: 124.11 ms
+2024-03-26 14:31:27,938 - FireLog - INFO - func:read_preprocessed_input took: 102.66 ms
+2024-03-26 14:31:27,958 - FireLog - INFO - func:preprocess_region_t took: 521.72 ms
+2024-03-26 14:31:27,964 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230225_AM.txt
+2024-03-26 14:31:27,964 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230225_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230225_AM.txt
+2024-03-26 14:31:28,339 - FireLog - INFO - func:read_region took: 271.48 ms
+2024-03-26 14:31:28,339 - FireLog - INFO - filtering and clustering 2023-2-25 PM, VIIRS, WesternUS
+2024-03-26 14:31:28,454 - FireLog - INFO - func:read_preprocessed_input took: 113.93 ms
+2024-03-26 14:31:28,571 - FireLog - INFO - func:read_preprocessed_input took: 116.32 ms
+2024-03-26 14:31:29,951 - FireLog - INFO - func:do_clustering took: 2.03 ms
+2024-03-26 14:31:29,963 - FireLog - INFO - func:preprocess_region_t took: 1.90 sec
+2024-03-26 14:31:29,968 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230225_PM.txt
+2024-03-26 14:31:29,968 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230225_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230225_PM.txt
+2024-03-26 14:31:30,366 - FireLog - INFO - func:read_region took: 275.12 ms
+2024-03-26 14:31:30,366 - FireLog - INFO - filtering and clustering 2023-2-26 AM, VIIRS, WesternUS
+2024-03-26 14:31:30,502 - FireLog - INFO - func:read_preprocessed_input took: 135.32 ms
+2024-03-26 14:31:30,626 - FireLog - INFO - func:read_preprocessed_input took: 123.36 ms
+2024-03-26 14:31:31,493 - FireLog - INFO - func:do_clustering took: 1.79 ms
+2024-03-26 14:31:31,506 - FireLog - INFO - func:preprocess_region_t took: 1.42 sec
+2024-03-26 14:31:31,512 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230226_AM.txt
+2024-03-26 14:31:31,512 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230226_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230226_AM.txt
+2024-03-26 14:31:31,914 - FireLog - INFO - func:read_region took: 273.14 ms
+2024-03-26 14:31:31,914 - FireLog - INFO - filtering and clustering 2023-2-26 PM, VIIRS, WesternUS
+2024-03-26 14:31:32,456 - FireLog - INFO - func:read_preprocessed_input took: 541.28 ms
+2024-03-26 14:31:32,865 - FireLog - INFO - func:read_preprocessed_input took: 407.69 ms
+2024-03-26 14:31:33,426 - FireLog - INFO - func:do_clustering took: 1.58 ms
+2024-03-26 14:31:33,437 - FireLog - INFO - func:preprocess_region_t took: 1.80 sec
+2024-03-26 14:31:33,443 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230226_PM.txt
+2024-03-26 14:31:33,444 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230226_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230226_PM.txt
+2024-03-26 14:31:33,867 - FireLog - INFO - func:read_region took: 283.39 ms
+2024-03-26 14:31:33,868 - FireLog - INFO - filtering and clustering 2023-2-27 AM, VIIRS, WesternUS
+2024-03-26 14:31:33,978 - FireLog - INFO - func:read_preprocessed_input took: 110.03 ms
+2024-03-26 14:31:34,086 - FireLog - INFO - func:read_preprocessed_input took: 107.37 ms
+2024-03-26 14:31:36,883 - FireLog - INFO - func:do_clustering took: 2.64 ms
+2024-03-26 14:31:36,897 - FireLog - INFO - func:preprocess_region_t took: 3.31 sec
+2024-03-26 14:31:36,902 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230227_AM.txt
+2024-03-26 14:31:36,903 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230227_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230227_AM.txt
+2024-03-26 14:31:37,276 - FireLog - INFO - func:read_region took: 272.73 ms
+2024-03-26 14:31:37,277 - FireLog - INFO - filtering and clustering 2023-2-27 PM, VIIRS, WesternUS
+2024-03-26 14:31:37,544 - FireLog - INFO - func:read_preprocessed_input took: 266.24 ms
+2024-03-26 14:31:37,858 - FireLog - INFO - func:read_preprocessed_input took: 313.85 ms
+2024-03-26 14:31:38,832 - FireLog - INFO - func:do_clustering took: 1.85 ms
+2024-03-26 14:31:38,843 - FireLog - INFO - func:preprocess_region_t took: 1.84 sec
+2024-03-26 14:31:38,848 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230227_PM.txt
+2024-03-26 14:31:38,849 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230227_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230227_PM.txt
+2024-03-26 14:31:39,239 - FireLog - INFO - func:read_region took: 272.81 ms
+2024-03-26 14:31:39,240 - FireLog - INFO - filtering and clustering 2023-2-28 AM, VIIRS, WesternUS
+2024-03-26 14:31:39,355 - FireLog - INFO - func:read_preprocessed_input took: 114.09 ms
+2024-03-26 14:31:39,575 - FireLog - INFO - func:read_preprocessed_input took: 219.28 ms
+2024-03-26 14:31:41,735 - FireLog - INFO - func:do_clustering took: 2.43 ms
+2024-03-26 14:31:41,747 - FireLog - INFO - func:preprocess_region_t took: 2.78 sec
+2024-03-26 14:31:41,753 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230228_AM.txt
+2024-03-26 14:31:41,753 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230228_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230228_AM.txt
+2024-03-26 14:31:42,289 - FireLog - INFO - func:read_region took: 302.31 ms
+2024-03-26 14:31:42,290 - FireLog - INFO - filtering and clustering 2023-2-28 PM, VIIRS, WesternUS
+2024-03-26 14:31:42,619 - FireLog - INFO - func:read_preprocessed_input took: 327.90 ms
+2024-03-26 14:31:43,014 - FireLog - INFO - func:read_preprocessed_input took: 394.43 ms
+2024-03-26 14:31:43,212 - FireLog - INFO - func:do_clustering took: 1.32 ms
+2024-03-26 14:31:43,223 - FireLog - INFO - func:preprocess_region_t took: 1.24 sec
+2024-03-26 14:31:43,229 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230228_PM.txt
+2024-03-26 14:31:43,229 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230228_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230228_PM.txt
+2024-03-26 14:31:43,639 - FireLog - INFO - func:read_region took: 302.24 ms
+2024-03-26 14:31:43,640 - FireLog - INFO - filtering and clustering 2023-3-1 AM, VIIRS, WesternUS
+2024-03-26 14:31:43,813 - FireLog - INFO - func:read_preprocessed_input took: 172.78 ms
+2024-03-26 14:31:43,937 - FireLog - INFO - func:read_preprocessed_input took: 122.66 ms
+2024-03-26 14:31:45,748 - FireLog - INFO - func:do_clustering took: 2.29 ms
+2024-03-26 14:31:45,761 - FireLog - INFO - func:preprocess_region_t took: 2.42 sec
+2024-03-26 14:31:45,766 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230301_AM.txt
+2024-03-26 14:31:45,767 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230301_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230301_AM.txt
+2024-03-26 14:31:46,178 - FireLog - INFO - func:read_region took: 276.94 ms
+2024-03-26 14:31:46,178 - FireLog - INFO - filtering and clustering 2023-3-1 PM, VIIRS, WesternUS
+2024-03-26 14:31:46,520 - FireLog - INFO - func:read_preprocessed_input took: 341.32 ms
+2024-03-26 14:31:47,343 - FireLog - INFO - func:read_preprocessed_input took: 822.27 ms
+2024-03-26 14:31:48,274 - FireLog - INFO - func:do_clustering took: 2.30 ms
+2024-03-26 14:31:48,287 - FireLog - INFO - func:preprocess_region_t took: 2.39 sec
+2024-03-26 14:31:48,293 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230301_PM.txt
+2024-03-26 14:31:48,293 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230301_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230301_PM.txt
+2024-03-26 14:31:48,735 - FireLog - INFO - func:read_region took: 285.27 ms
+2024-03-26 14:31:48,736 - FireLog - INFO - filtering and clustering 2023-3-2 AM, VIIRS, WesternUS
+2024-03-26 14:31:48,850 - FireLog - INFO - func:read_preprocessed_input took: 113.75 ms
+2024-03-26 14:31:48,965 - FireLog - INFO - func:read_preprocessed_input took: 114.51 ms
+2024-03-26 14:31:51,423 - FireLog - INFO - func:do_clustering took: 2.52 ms
+2024-03-26 14:31:51,435 - FireLog - INFO - func:preprocess_region_t took: 2.99 sec
+2024-03-26 14:31:51,441 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230302_AM.txt
+2024-03-26 14:31:51,441 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230302_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230302_AM.txt
+2024-03-26 14:31:51,868 - FireLog - INFO - func:read_region took: 274.02 ms
+2024-03-26 14:31:51,869 - FireLog - INFO - filtering and clustering 2023-3-2 PM, VIIRS, WesternUS
+2024-03-26 14:31:52,210 - FireLog - INFO - func:read_preprocessed_input took: 339.94 ms
+2024-03-26 14:31:52,472 - FireLog - INFO - func:read_preprocessed_input took: 262.07 ms
+2024-03-26 14:31:53,808 - FireLog - INFO - func:do_clustering took: 2.09 ms
+2024-03-26 14:31:53,820 - FireLog - INFO - func:preprocess_region_t took: 2.23 sec
+2024-03-26 14:31:53,826 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230302_PM.txt
+2024-03-26 14:31:53,826 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230302_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230302_PM.txt
+2024-03-26 14:31:54,221 - FireLog - INFO - func:read_region took: 272.22 ms
+2024-03-26 14:31:54,222 - FireLog - INFO - filtering and clustering 2023-3-3 AM, VIIRS, WesternUS
+2024-03-26 14:31:54,367 - FireLog - INFO - func:read_preprocessed_input took: 144.60 ms
+2024-03-26 14:31:54,503 - FireLog - INFO - func:read_preprocessed_input took: 135.77 ms
+2024-03-26 14:31:58,394 - FireLog - INFO - func:do_clustering took: 3.21 ms
+2024-03-26 14:31:58,408 - FireLog - INFO - func:preprocess_region_t took: 4.46 sec
+2024-03-26 14:31:58,415 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230303_AM.txt
+2024-03-26 14:31:58,415 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230303_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230303_AM.txt
+2024-03-26 14:31:58,827 - FireLog - INFO - func:read_region took: 291.91 ms
+2024-03-26 14:31:58,828 - FireLog - INFO - filtering and clustering 2023-3-3 PM, VIIRS, WesternUS
+2024-03-26 14:31:59,101 - FireLog - INFO - func:read_preprocessed_input took: 272.60 ms
+2024-03-26 14:31:59,358 - FireLog - INFO - func:read_preprocessed_input took: 256.30 ms
+2024-03-26 14:32:01,612 - FireLog - INFO - func:do_clustering took: 2.60 ms
+2024-03-26 14:32:01,624 - FireLog - INFO - func:preprocess_region_t took: 3.09 sec
+2024-03-26 14:32:01,629 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230303_PM.txt
+2024-03-26 14:32:01,630 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230303_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230303_PM.txt
+2024-03-26 14:32:02,148 - FireLog - INFO - func:read_region took: 401.62 ms
+2024-03-26 14:32:02,148 - FireLog - INFO - filtering and clustering 2023-3-4 AM, VIIRS, WesternUS
+2024-03-26 14:32:02,299 - FireLog - INFO - func:read_preprocessed_input took: 150.14 ms
+2024-03-26 14:32:02,414 - FireLog - INFO - func:read_preprocessed_input took: 114.74 ms
+2024-03-26 14:32:05,297 - FireLog - INFO - func:do_clustering took: 3.00 ms
+2024-03-26 14:32:05,309 - FireLog - INFO - func:preprocess_region_t took: 3.56 sec
+2024-03-26 14:32:05,315 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230304_AM.txt
+2024-03-26 14:32:05,316 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230304_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230304_AM.txt
+2024-03-26 14:32:05,756 - FireLog - INFO - func:read_region took: 273.56 ms
+2024-03-26 14:32:05,757 - FireLog - INFO - filtering and clustering 2023-3-4 PM, VIIRS, WesternUS
+2024-03-26 14:32:06,107 - FireLog - INFO - func:read_preprocessed_input took: 349.72 ms
+2024-03-26 14:32:06,490 - FireLog - INFO - func:read_preprocessed_input took: 382.48 ms
+2024-03-26 14:32:07,329 - FireLog - INFO - func:do_clustering took: 1.74 ms
+2024-03-26 14:32:07,340 - FireLog - INFO - func:preprocess_region_t took: 1.86 sec
+2024-03-26 14:32:07,346 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230304_PM.txt
+2024-03-26 14:32:07,347 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230304_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230304_PM.txt
+2024-03-26 14:32:07,738 - FireLog - INFO - func:read_region took: 272.54 ms
+2024-03-26 14:32:07,739 - FireLog - INFO - filtering and clustering 2023-3-5 AM, VIIRS, WesternUS
+2024-03-26 14:32:07,842 - FireLog - INFO - func:read_preprocessed_input took: 102.19 ms
+2024-03-26 14:32:07,970 - FireLog - INFO - func:read_preprocessed_input took: 127.88 ms
+2024-03-26 14:32:10,739 - FireLog - INFO - func:do_clustering took: 2.65 ms
+2024-03-26 14:32:10,751 - FireLog - INFO - func:preprocess_region_t took: 3.29 sec
+2024-03-26 14:32:10,757 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230305_AM.txt
+2024-03-26 14:32:10,757 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230305_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230305_AM.txt
+2024-03-26 14:32:11,137 - FireLog - INFO - func:read_region took: 272.22 ms
+2024-03-26 14:32:11,138 - FireLog - INFO - filtering and clustering 2023-3-5 PM, VIIRS, WesternUS
+2024-03-26 14:32:11,490 - FireLog - INFO - func:read_preprocessed_input took: 352.11 ms
+2024-03-26 14:32:11,807 - FireLog - INFO - func:read_preprocessed_input took: 316.12 ms
+2024-03-26 14:32:12,567 - FireLog - INFO - func:do_clustering took: 1.64 ms
+2024-03-26 14:32:12,578 - FireLog - INFO - func:preprocess_region_t took: 1.71 sec
+2024-03-26 14:32:12,583 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230305_PM.txt
+2024-03-26 14:32:12,584 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230305_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230305_PM.txt
+2024-03-26 14:32:13,006 - FireLog - INFO - func:read_region took: 271.99 ms
+2024-03-26 14:32:13,007 - FireLog - INFO - filtering and clustering 2023-3-6 AM, VIIRS, WesternUS
+2024-03-26 14:32:13,149 - FireLog - INFO - func:read_preprocessed_input took: 141.55 ms
+2024-03-26 14:32:13,286 - FireLog - INFO - func:read_preprocessed_input took: 136.63 ms
+2024-03-26 14:32:14,652 - FireLog - INFO - func:do_clustering took: 2.03 ms
+2024-03-26 14:32:14,666 - FireLog - INFO - func:preprocess_region_t took: 1.93 sec
+2024-03-26 14:32:14,672 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230306_AM.txt
+2024-03-26 14:32:14,672 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230306_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230306_AM.txt
+2024-03-26 14:32:15,090 - FireLog - INFO - func:read_region took: 290.89 ms
+2024-03-26 14:32:15,091 - FireLog - INFO - filtering and clustering 2023-3-6 PM, VIIRS, WesternUS
+2024-03-26 14:32:15,463 - FireLog - INFO - func:read_preprocessed_input took: 371.98 ms
+2024-03-26 14:32:15,819 - FireLog - INFO - func:read_preprocessed_input took: 354.69 ms
+2024-03-26 14:32:16,961 - FireLog - INFO - func:do_clustering took: 1.96 ms
+2024-03-26 14:32:16,972 - FireLog - INFO - func:preprocess_region_t took: 2.17 sec
+2024-03-26 14:32:16,978 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230306_PM.txt
+2024-03-26 14:32:16,978 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230306_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230306_PM.txt
+2024-03-26 14:32:17,397 - FireLog - INFO - func:read_region took: 301.06 ms
+2024-03-26 14:32:17,398 - FireLog - INFO - filtering and clustering 2023-3-7 AM, VIIRS, WesternUS
+2024-03-26 14:32:17,544 - FireLog - INFO - func:read_preprocessed_input took: 145.62 ms
+2024-03-26 14:32:17,651 - FireLog - INFO - func:read_preprocessed_input took: 106.33 ms
+2024-03-26 14:32:19,568 - FireLog - INFO - func:do_clustering took: 2.23 ms
+2024-03-26 14:32:19,580 - FireLog - INFO - func:preprocess_region_t took: 2.49 sec
+2024-03-26 14:32:19,585 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230307_AM.txt
+2024-03-26 14:32:19,586 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230307_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230307_AM.txt
+2024-03-26 14:32:19,958 - FireLog - INFO - func:read_region took: 271.29 ms
+2024-03-26 14:32:19,959 - FireLog - INFO - filtering and clustering 2023-3-7 PM, VIIRS, WesternUS
+2024-03-26 14:32:20,274 - FireLog - INFO - func:read_preprocessed_input took: 313.96 ms
+2024-03-26 14:32:20,561 - FireLog - INFO - func:read_preprocessed_input took: 286.57 ms
+2024-03-26 14:32:22,556 - FireLog - INFO - func:do_clustering took: 2.45 ms
+2024-03-26 14:32:22,568 - FireLog - INFO - func:preprocess_region_t took: 2.88 sec
+2024-03-26 14:32:22,575 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230307_PM.txt
+2024-03-26 14:32:22,575 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230307_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230307_PM.txt
+2024-03-26 14:32:23,009 - FireLog - INFO - func:read_region took: 308.33 ms
+2024-03-26 14:32:23,010 - FireLog - INFO - filtering and clustering 2023-3-8 AM, VIIRS, WesternUS
+2024-03-26 14:32:23,162 - FireLog - INFO - func:read_preprocessed_input took: 151.84 ms
+2024-03-26 14:32:23,293 - FireLog - INFO - func:read_preprocessed_input took: 130.47 ms
+2024-03-26 14:32:26,918 - FireLog - INFO - func:do_clustering took: 3.20 ms
+2024-03-26 14:32:26,931 - FireLog - INFO - func:preprocess_region_t took: 4.23 sec
+2024-03-26 14:32:26,937 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230308_AM.txt
+2024-03-26 14:32:26,937 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230308_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230308_AM.txt
+2024-03-26 14:32:27,357 - FireLog - INFO - func:read_region took: 273.28 ms
+2024-03-26 14:32:27,358 - FireLog - INFO - filtering and clustering 2023-3-8 PM, VIIRS, WesternUS
+2024-03-26 14:32:27,562 - FireLog - INFO - func:read_preprocessed_input took: 203.79 ms
+2024-03-26 14:32:28,028 - FireLog - INFO - func:read_preprocessed_input took: 465.69 ms
+2024-03-26 14:32:29,807 - FireLog - INFO - func:do_clustering took: 2.32 ms
+2024-03-26 14:32:29,819 - FireLog - INFO - func:preprocess_region_t took: 2.74 sec
+2024-03-26 14:32:29,824 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230308_PM.txt
+2024-03-26 14:32:29,825 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230308_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230308_PM.txt
+2024-03-26 14:32:30,248 - FireLog - INFO - func:read_region took: 272.55 ms
+2024-03-26 14:32:30,249 - FireLog - INFO - filtering and clustering 2023-3-9 AM, VIIRS, WesternUS
+2024-03-26 14:32:30,433 - FireLog - INFO - func:read_preprocessed_input took: 183.93 ms
+2024-03-26 14:32:30,556 - FireLog - INFO - func:read_preprocessed_input took: 121.83 ms
+2024-03-26 14:32:31,159 - FireLog - INFO - func:do_clustering took: 1.61 ms
+2024-03-26 14:32:31,172 - FireLog - INFO - func:preprocess_region_t took: 1.20 sec
+2024-03-26 14:32:31,178 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230309_AM.txt
+2024-03-26 14:32:31,179 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230309_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230309_AM.txt
+2024-03-26 14:32:31,571 - FireLog - INFO - func:read_region took: 276.30 ms
+2024-03-26 14:32:31,572 - FireLog - INFO - filtering and clustering 2023-3-9 PM, VIIRS, WesternUS
+2024-03-26 14:32:31,893 - FireLog - INFO - func:read_preprocessed_input took: 320.55 ms
+2024-03-26 14:32:32,201 - FireLog - INFO - func:read_preprocessed_input took: 306.80 ms
+2024-03-26 14:32:33,829 - FireLog - INFO - func:do_clustering took: 2.99 ms
+2024-03-26 14:32:33,842 - FireLog - INFO - func:preprocess_region_t took: 2.55 sec
+2024-03-26 14:32:33,850 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230309_PM.txt
+2024-03-26 14:32:33,850 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230309_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230309_PM.txt
+2024-03-26 14:32:34,257 - FireLog - INFO - func:read_region took: 280.12 ms
+2024-03-26 14:32:34,259 - FireLog - INFO - filtering and clustering 2023-3-10 AM, VIIRS, WesternUS
+2024-03-26 14:32:34,373 - FireLog - INFO - func:read_preprocessed_input took: 114.00 ms
+2024-03-26 14:32:34,591 - FireLog - INFO - func:read_preprocessed_input took: 216.86 ms
+2024-03-26 14:32:35,693 - FireLog - INFO - func:do_clustering took: 1.81 ms
+2024-03-26 14:32:35,704 - FireLog - INFO - func:preprocess_region_t took: 1.73 sec
+2024-03-26 14:32:35,709 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230310_AM.txt
+2024-03-26 14:32:35,710 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230310_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230310_AM.txt
+2024-03-26 14:32:36,103 - FireLog - INFO - func:read_region took: 282.30 ms
+2024-03-26 14:32:36,104 - FireLog - INFO - filtering and clustering 2023-3-10 PM, VIIRS, WesternUS
+2024-03-26 14:32:36,476 - FireLog - INFO - func:read_preprocessed_input took: 371.23 ms
+2024-03-26 14:32:36,794 - FireLog - INFO - func:read_preprocessed_input took: 317.47 ms
+2024-03-26 14:32:37,325 - FireLog - INFO - func:do_clustering took: 1.55 ms
+2024-03-26 14:32:37,336 - FireLog - INFO - func:preprocess_region_t took: 1.52 sec
+2024-03-26 14:32:37,343 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230310_PM.txt
+2024-03-26 14:32:37,343 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230310_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230310_PM.txt
+2024-03-26 14:32:37,731 - FireLog - INFO - func:read_region took: 272.18 ms
+2024-03-26 14:32:37,732 - FireLog - INFO - filtering and clustering 2023-3-11 AM, VIIRS, WesternUS
+2024-03-26 14:32:37,886 - FireLog - INFO - func:read_preprocessed_input took: 153.94 ms
+2024-03-26 14:32:38,004 - FireLog - INFO - func:read_preprocessed_input took: 117.35 ms
+2024-03-26 14:32:38,994 - FireLog - INFO - func:do_clustering took: 1.80 ms
+2024-03-26 14:32:39,005 - FireLog - INFO - func:preprocess_region_t took: 1.55 sec
+2024-03-26 14:32:39,011 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230311_AM.txt
+2024-03-26 14:32:39,011 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230311_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230311_AM.txt
+2024-03-26 14:32:39,416 - FireLog - INFO - func:read_region took: 285.86 ms
+2024-03-26 14:32:39,416 - FireLog - INFO - filtering and clustering 2023-3-11 PM, VIIRS, WesternUS
+2024-03-26 14:32:39,801 - FireLog - INFO - func:read_preprocessed_input took: 383.93 ms
+2024-03-26 14:32:40,175 - FireLog - INFO - func:read_preprocessed_input took: 373.50 ms
+2024-03-26 14:32:40,798 - FireLog - INFO - func:do_clustering took: 1.63 ms
+2024-03-26 14:32:40,809 - FireLog - INFO - func:preprocess_region_t took: 1.68 sec
+2024-03-26 14:32:40,814 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230311_PM.txt
+2024-03-26 14:32:40,815 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230311_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230311_PM.txt
+2024-03-26 14:32:41,205 - FireLog - INFO - func:read_region took: 273.30 ms
+2024-03-26 14:32:41,206 - FireLog - INFO - filtering and clustering 2023-3-12 AM, VIIRS, WesternUS
+2024-03-26 14:32:41,322 - FireLog - INFO - func:read_preprocessed_input took: 115.51 ms
+2024-03-26 14:32:41,442 - FireLog - INFO - func:read_preprocessed_input took: 119.53 ms
+2024-03-26 14:32:43,615 - FireLog - INFO - func:do_clustering took: 2.45 ms
+2024-03-26 14:32:43,627 - FireLog - INFO - func:preprocess_region_t took: 2.70 sec
+2024-03-26 14:32:43,633 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230312_AM.txt
+2024-03-26 14:32:43,634 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230312_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230312_AM.txt
+2024-03-26 14:32:44,044 - FireLog - INFO - func:read_region took: 273.51 ms
+2024-03-26 14:32:44,045 - FireLog - INFO - filtering and clustering 2023-3-12 PM, VIIRS, WesternUS
+2024-03-26 14:32:44,309 - FireLog - INFO - func:read_preprocessed_input took: 263.73 ms
+2024-03-26 14:32:44,661 - FireLog - INFO - func:read_preprocessed_input took: 350.51 ms
+2024-03-26 14:32:45,141 - FireLog - INFO - func:do_clustering took: 1.50 ms
+2024-03-26 14:32:45,152 - FireLog - INFO - func:preprocess_region_t took: 1.38 sec
+2024-03-26 14:32:45,158 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230312_PM.txt
+2024-03-26 14:32:45,158 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230312_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230312_PM.txt
+2024-03-26 14:32:45,557 - FireLog - INFO - func:read_region took: 274.31 ms
+2024-03-26 14:32:45,558 - FireLog - INFO - filtering and clustering 2023-3-13 AM, VIIRS, WesternUS
+2024-03-26 14:32:45,678 - FireLog - INFO - func:read_preprocessed_input took: 119.32 ms
+2024-03-26 14:32:45,806 - FireLog - INFO - func:read_preprocessed_input took: 127.58 ms
+2024-03-26 14:32:48,655 - FireLog - INFO - func:do_clustering took: 2.60 ms
+2024-03-26 14:32:48,668 - FireLog - INFO - func:preprocess_region_t took: 3.39 sec
+2024-03-26 14:32:48,673 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230313_AM.txt
+2024-03-26 14:32:48,674 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230313_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230313_AM.txt
+2024-03-26 14:32:49,063 - FireLog - INFO - func:read_region took: 272.13 ms
+2024-03-26 14:32:49,064 - FireLog - INFO - filtering and clustering 2023-3-13 PM, VIIRS, WesternUS
+2024-03-26 14:32:49,321 - FireLog - INFO - func:read_preprocessed_input took: 256.43 ms
+2024-03-26 14:32:49,594 - FireLog - INFO - func:read_preprocessed_input took: 272.54 ms
+2024-03-26 14:32:51,745 - FireLog - INFO - func:do_clustering took: 2.53 ms
+2024-03-26 14:32:51,757 - FireLog - INFO - func:preprocess_region_t took: 2.97 sec
+2024-03-26 14:32:51,764 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230313_PM.txt
+2024-03-26 14:32:51,764 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230313_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230313_PM.txt
+2024-03-26 14:32:52,218 - FireLog - INFO - func:read_region took: 299.96 ms
+2024-03-26 14:32:52,219 - FireLog - INFO - filtering and clustering 2023-3-14 AM, VIIRS, WesternUS
+2024-03-26 14:32:52,341 - FireLog - INFO - func:read_preprocessed_input took: 121.33 ms
+2024-03-26 14:32:52,486 - FireLog - INFO - func:read_preprocessed_input took: 144.71 ms
+2024-03-26 14:32:53,966 - FireLog - INFO - func:do_clustering took: 2.03 ms
+2024-03-26 14:32:53,978 - FireLog - INFO - func:preprocess_region_t took: 2.06 sec
+2024-03-26 14:32:53,983 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230314_AM.txt
+2024-03-26 14:32:53,984 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230314_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230314_AM.txt
+2024-03-26 14:32:54,362 - FireLog - INFO - func:read_region took: 271.61 ms
+2024-03-26 14:32:54,363 - FireLog - INFO - filtering and clustering 2023-3-14 PM, VIIRS, WesternUS
+2024-03-26 14:32:54,673 - FireLog - INFO - func:read_preprocessed_input took: 308.95 ms
+2024-03-26 14:32:54,987 - FireLog - INFO - func:read_preprocessed_input took: 313.28 ms
+2024-03-26 14:32:55,853 - FireLog - INFO - func:do_clustering took: 1.78 ms
+2024-03-26 14:32:55,867 - FireLog - INFO - func:preprocess_region_t took: 1.78 sec
+2024-03-26 14:32:55,873 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230314_PM.txt
+2024-03-26 14:32:55,873 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230314_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230314_PM.txt
+2024-03-26 14:32:56,319 - FireLog - INFO - func:read_region took: 320.00 ms
+2024-03-26 14:32:56,320 - FireLog - INFO - filtering and clustering 2023-3-15 AM, VIIRS, WesternUS
+2024-03-26 14:32:56,441 - FireLog - INFO - func:read_preprocessed_input took: 120.48 ms
+2024-03-26 14:32:56,550 - FireLog - INFO - func:read_preprocessed_input took: 108.76 ms
+2024-03-26 14:32:58,031 - FireLog - INFO - func:do_clustering took: 2.04 ms
+2024-03-26 14:32:58,042 - FireLog - INFO - func:preprocess_region_t took: 2.04 sec
+2024-03-26 14:32:58,049 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230315_AM.txt
+2024-03-26 14:32:58,049 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230315_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230315_AM.txt
+2024-03-26 14:32:58,587 - FireLog - INFO - func:read_region took: 327.33 ms
+2024-03-26 14:32:58,588 - FireLog - INFO - filtering and clustering 2023-3-15 PM, VIIRS, WesternUS
+2024-03-26 14:32:59,125 - FireLog - INFO - func:read_preprocessed_input took: 536.00 ms
+2024-03-26 14:32:59,476 - FireLog - INFO - func:read_preprocessed_input took: 350.71 ms
+2024-03-26 14:33:00,677 - FireLog - INFO - func:do_clustering took: 2.00 ms
+2024-03-26 14:33:00,688 - FireLog - INFO - func:preprocess_region_t took: 2.43 sec
+2024-03-26 14:33:00,694 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230315_PM.txt
+2024-03-26 14:33:00,695 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230315_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230315_PM.txt
+2024-03-26 14:33:01,092 - FireLog - INFO - func:read_region took: 287.43 ms
+2024-03-26 14:33:01,093 - FireLog - INFO - filtering and clustering 2023-3-16 AM, VIIRS, WesternUS
+2024-03-26 14:33:01,198 - FireLog - INFO - func:read_preprocessed_input took: 104.54 ms
+2024-03-26 14:33:01,308 - FireLog - INFO - func:read_preprocessed_input took: 109.44 ms
+2024-03-26 14:33:02,884 - FireLog - INFO - func:do_clustering took: 2.22 ms
+2024-03-26 14:33:02,896 - FireLog - INFO - func:preprocess_region_t took: 2.09 sec
+2024-03-26 14:33:02,901 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230316_AM.txt
+2024-03-26 14:33:02,902 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230316_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230316_AM.txt
+2024-03-26 14:33:03,326 - FireLog - INFO - func:read_region took: 308.95 ms
+2024-03-26 14:33:03,327 - FireLog - INFO - filtering and clustering 2023-3-16 PM, VIIRS, WesternUS
+2024-03-26 14:33:03,669 - FireLog - INFO - func:read_preprocessed_input took: 341.65 ms
+2024-03-26 14:33:03,874 - FireLog - INFO - func:read_preprocessed_input took: 203.77 ms
+2024-03-26 14:33:06,769 - FireLog - INFO - func:do_clustering took: 2.93 ms
+2024-03-26 14:33:06,784 - FireLog - INFO - func:preprocess_region_t took: 3.77 sec
+2024-03-26 14:33:06,791 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230316_PM.txt
+2024-03-26 14:33:06,791 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230316_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230316_PM.txt
+2024-03-26 14:33:07,262 - FireLog - INFO - func:read_region took: 280.85 ms
+2024-03-26 14:33:07,262 - FireLog - INFO - filtering and clustering 2023-3-17 AM, VIIRS, WesternUS
+2024-03-26 14:33:07,399 - FireLog - INFO - func:read_preprocessed_input took: 136.45 ms
+2024-03-26 14:33:07,504 - FireLog - INFO - func:read_preprocessed_input took: 103.84 ms
+2024-03-26 14:33:10,133 - FireLog - INFO - func:do_clustering took: 2.80 ms
+2024-03-26 14:33:10,145 - FireLog - INFO - func:preprocess_region_t took: 3.17 sec
+2024-03-26 14:33:10,151 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230317_AM.txt
+2024-03-26 14:33:10,151 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230317_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230317_AM.txt
+2024-03-26 14:33:10,541 - FireLog - INFO - func:read_region took: 272.51 ms
+2024-03-26 14:33:10,542 - FireLog - INFO - filtering and clustering 2023-3-17 PM, VIIRS, WesternUS
+2024-03-26 14:33:10,808 - FireLog - INFO - func:read_preprocessed_input took: 265.60 ms
+2024-03-26 14:33:11,268 - FireLog - INFO - func:read_preprocessed_input took: 459.18 ms
+2024-03-26 14:33:14,496 - FireLog - INFO - func:do_clustering took: 3.19 ms
+2024-03-26 14:33:14,509 - FireLog - INFO - func:preprocess_region_t took: 4.24 sec
+2024-03-26 14:33:14,515 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230317_PM.txt
+2024-03-26 14:33:14,515 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230317_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230317_PM.txt
+2024-03-26 14:33:14,940 - FireLog - INFO - func:read_region took: 273.96 ms
+2024-03-26 14:33:14,941 - FireLog - INFO - filtering and clustering 2023-3-18 AM, VIIRS, WesternUS
+2024-03-26 14:33:15,070 - FireLog - INFO - func:read_preprocessed_input took: 128.41 ms
+2024-03-26 14:33:15,177 - FireLog - INFO - func:read_preprocessed_input took: 107.02 ms
+2024-03-26 14:33:17,676 - FireLog - INFO - func:do_clustering took: 2.79 ms
+2024-03-26 14:33:17,688 - FireLog - INFO - func:preprocess_region_t took: 3.02 sec
+2024-03-26 14:33:17,695 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230318_AM.txt
+2024-03-26 14:33:17,695 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230318_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230318_AM.txt
+2024-03-26 14:33:18,145 - FireLog - INFO - func:read_region took: 295.51 ms
+2024-03-26 14:33:18,146 - FireLog - INFO - filtering and clustering 2023-3-18 PM, VIIRS, WesternUS
+2024-03-26 14:33:18,532 - FireLog - INFO - func:read_preprocessed_input took: 385.18 ms
+2024-03-26 14:33:18,915 - FireLog - INFO - func:read_preprocessed_input took: 382.98 ms
+2024-03-26 14:33:23,408 - FireLog - INFO - func:do_clustering took: 3.94 ms
+2024-03-26 14:33:23,422 - FireLog - INFO - func:preprocess_region_t took: 5.57 sec
+2024-03-26 14:33:23,428 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230318_PM.txt
+2024-03-26 14:33:23,428 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230318_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230318_PM.txt
+2024-03-26 14:33:23,847 - FireLog - INFO - func:read_region took: 273.52 ms
+2024-03-26 14:33:23,848 - FireLog - INFO - filtering and clustering 2023-3-19 AM, VIIRS, WesternUS
+2024-03-26 14:33:23,990 - FireLog - INFO - func:read_preprocessed_input took: 141.58 ms
+2024-03-26 14:33:24,089 - FireLog - INFO - func:read_preprocessed_input took: 97.77 ms
+2024-03-26 14:33:24,726 - FireLog - INFO - func:do_clustering took: 1.59 ms
+2024-03-26 14:33:24,736 - FireLog - INFO - func:preprocess_region_t took: 1.16 sec
+2024-03-26 14:33:24,742 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230319_AM.txt
+2024-03-26 14:33:24,742 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230319_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230319_AM.txt
+2024-03-26 14:33:25,132 - FireLog - INFO - func:read_region took: 276.20 ms
+2024-03-26 14:33:25,133 - FireLog - INFO - filtering and clustering 2023-3-19 PM, VIIRS, WesternUS
+2024-03-26 14:33:25,464 - FireLog - INFO - func:read_preprocessed_input took: 330.80 ms
+2024-03-26 14:33:25,755 - FireLog - INFO - func:read_preprocessed_input took: 290.01 ms
+2024-03-26 14:33:26,682 - FireLog - INFO - func:do_clustering took: 1.80 ms
+2024-03-26 14:33:26,692 - FireLog - INFO - func:preprocess_region_t took: 1.84 sec
+2024-03-26 14:33:26,699 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230319_PM.txt
+2024-03-26 14:33:26,699 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230319_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230319_PM.txt
+2024-03-26 14:33:27,090 - FireLog - INFO - func:read_region took: 273.21 ms
+2024-03-26 14:33:27,090 - FireLog - INFO - filtering and clustering 2023-3-20 AM, VIIRS, WesternUS
+2024-03-26 14:33:27,217 - FireLog - INFO - func:read_preprocessed_input took: 126.15 ms
+2024-03-26 14:33:27,429 - FireLog - INFO - func:read_preprocessed_input took: 210.85 ms
+2024-03-26 14:33:28,400 - FireLog - INFO - func:do_clustering took: 1.74 ms
+2024-03-26 14:33:28,411 - FireLog - INFO - func:preprocess_region_t took: 1.60 sec
+2024-03-26 14:33:28,417 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230320_AM.txt
+2024-03-26 14:33:28,417 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230320_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230320_AM.txt
+2024-03-26 14:33:28,840 - FireLog - INFO - func:read_region took: 288.14 ms
+2024-03-26 14:33:28,840 - FireLog - INFO - filtering and clustering 2023-3-20 PM, VIIRS, WesternUS
+2024-03-26 14:33:29,336 - FireLog - INFO - func:read_preprocessed_input took: 495.03 ms
+2024-03-26 14:33:29,880 - FireLog - INFO - func:read_preprocessed_input took: 543.01 ms
+2024-03-26 14:33:30,562 - FireLog - INFO - func:do_clustering took: 1.69 ms
+2024-03-26 14:33:30,574 - FireLog - INFO - func:preprocess_region_t took: 2.02 sec
+2024-03-26 14:33:30,579 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230320_PM.txt
+2024-03-26 14:33:30,580 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230320_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230320_PM.txt
+2024-03-26 14:33:31,007 - FireLog - INFO - func:read_region took: 273.27 ms
+2024-03-26 14:33:31,008 - FireLog - INFO - filtering and clustering 2023-3-21 AM, VIIRS, WesternUS
+2024-03-26 14:33:31,117 - FireLog - INFO - func:read_preprocessed_input took: 108.12 ms
+2024-03-26 14:33:31,283 - FireLog - INFO - func:read_preprocessed_input took: 165.43 ms
+2024-03-26 14:33:32,066 - FireLog - INFO - func:do_clustering took: 1.67 ms
+2024-03-26 14:33:32,076 - FireLog - INFO - func:preprocess_region_t took: 1.34 sec
+2024-03-26 14:33:32,082 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230321_AM.txt
+2024-03-26 14:33:32,083 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230321_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230321_AM.txt
+2024-03-26 14:33:32,476 - FireLog - INFO - func:read_region took: 281.74 ms
+2024-03-26 14:33:32,476 - FireLog - INFO - filtering and clustering 2023-3-21 PM, VIIRS, WesternUS
+2024-03-26 14:33:32,829 - FireLog - INFO - func:read_preprocessed_input took: 351.88 ms
+2024-03-26 14:33:33,106 - FireLog - INFO - func:read_preprocessed_input took: 276.60 ms
+2024-03-26 14:33:33,353 - FireLog - INFO - func:do_clustering took: 1.38 ms
+2024-03-26 14:33:33,363 - FireLog - INFO - func:preprocess_region_t took: 1.17 sec
+2024-03-26 14:33:33,368 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230321_PM.txt
+2024-03-26 14:33:33,369 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230321_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230321_PM.txt
+2024-03-26 14:33:33,739 - FireLog - INFO - func:read_region took: 272.97 ms
+2024-03-26 14:33:33,740 - FireLog - INFO - filtering and clustering 2023-3-22 AM, VIIRS, WesternUS
+2024-03-26 14:33:33,869 - FireLog - INFO - func:read_preprocessed_input took: 127.89 ms
+2024-03-26 14:33:33,992 - FireLog - INFO - func:read_preprocessed_input took: 122.84 ms
+2024-03-26 14:33:35,157 - FireLog - INFO - func:do_clustering took: 1.94 ms
+2024-03-26 14:33:35,168 - FireLog - INFO - func:preprocess_region_t took: 1.70 sec
+2024-03-26 14:33:35,174 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230322_AM.txt
+2024-03-26 14:33:35,174 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230322_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230322_AM.txt
+2024-03-26 14:33:35,563 - FireLog - INFO - func:read_region took: 272.92 ms
+2024-03-26 14:33:35,564 - FireLog - INFO - filtering and clustering 2023-3-22 PM, VIIRS, WesternUS
+2024-03-26 14:33:35,748 - FireLog - INFO - func:read_preprocessed_input took: 184.06 ms
+2024-03-26 14:33:36,106 - FireLog - INFO - func:read_preprocessed_input took: 356.64 ms
+2024-03-26 14:33:43,566 - FireLog - INFO - func:do_clustering took: 6.09 ms
+2024-03-26 14:33:43,582 - FireLog - INFO - func:preprocess_region_t took: 8.29 sec
+2024-03-26 14:33:43,588 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230322_PM.txt
+2024-03-26 14:33:43,588 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230322_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230322_PM.txt
+2024-03-26 14:33:44,001 - FireLog - INFO - func:read_region took: 278.70 ms
+2024-03-26 14:33:44,002 - FireLog - INFO - filtering and clustering 2023-3-23 AM, VIIRS, WesternUS
+2024-03-26 14:33:44,126 - FireLog - INFO - func:read_preprocessed_input took: 123.51 ms
+2024-03-26 14:33:44,251 - FireLog - INFO - func:read_preprocessed_input took: 124.36 ms
+2024-03-26 14:33:47,291 - FireLog - INFO - func:do_clustering took: 2.76 ms
+2024-03-26 14:33:47,303 - FireLog - INFO - func:preprocess_region_t took: 3.58 sec
+2024-03-26 14:33:47,309 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230323_AM.txt
+2024-03-26 14:33:47,309 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230323_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230323_AM.txt
+2024-03-26 14:33:47,737 - FireLog - INFO - func:read_region took: 281.90 ms
+2024-03-26 14:33:47,737 - FireLog - INFO - filtering and clustering 2023-3-23 PM, VIIRS, WesternUS
+2024-03-26 14:33:48,107 - FireLog - INFO - func:read_preprocessed_input took: 369.36 ms
+2024-03-26 14:33:48,404 - FireLog - INFO - func:read_preprocessed_input took: 295.80 ms
+2024-03-26 14:33:49,162 - FireLog - INFO - func:do_clustering took: 1.73 ms
+2024-03-26 14:33:49,173 - FireLog - INFO - func:preprocess_region_t took: 1.72 sec
+2024-03-26 14:33:49,178 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230323_PM.txt
+2024-03-26 14:33:49,178 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230323_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230323_PM.txt
+2024-03-26 14:33:49,591 - FireLog - INFO - func:read_region took: 302.00 ms
+2024-03-26 14:33:49,591 - FireLog - INFO - filtering and clustering 2023-3-24 AM, VIIRS, WesternUS
+2024-03-26 14:33:49,756 - FireLog - INFO - func:read_preprocessed_input took: 163.83 ms
+2024-03-26 14:33:49,916 - FireLog - INFO - func:read_preprocessed_input took: 159.37 ms
+2024-03-26 14:33:53,099 - FireLog - INFO - func:do_clustering took: 2.97 ms
+2024-03-26 14:33:53,112 - FireLog - INFO - func:preprocess_region_t took: 3.83 sec
+2024-03-26 14:33:53,117 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230324_AM.txt
+2024-03-26 14:33:53,118 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230324_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230324_AM.txt
+2024-03-26 14:33:53,548 - FireLog - INFO - func:read_region took: 308.95 ms
+2024-03-26 14:33:53,549 - FireLog - INFO - filtering and clustering 2023-3-24 PM, VIIRS, WesternUS
+2024-03-26 14:33:53,859 - FireLog - INFO - func:read_preprocessed_input took: 309.49 ms
+2024-03-26 14:33:54,189 - FireLog - INFO - func:read_preprocessed_input took: 329.99 ms
+2024-03-26 14:33:56,356 - FireLog - INFO - func:do_clustering took: 2.51 ms
+2024-03-26 14:33:56,369 - FireLog - INFO - func:preprocess_region_t took: 3.13 sec
+2024-03-26 14:33:56,374 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230324_PM.txt
+2024-03-26 14:33:56,375 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230324_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230324_PM.txt
+2024-03-26 14:33:56,770 - FireLog - INFO - func:read_region took: 274.02 ms
+2024-03-26 14:33:56,771 - FireLog - INFO - filtering and clustering 2023-3-25 AM, VIIRS, WesternUS
+2024-03-26 14:33:56,901 - FireLog - INFO - func:read_preprocessed_input took: 129.34 ms
+2024-03-26 14:33:57,063 - FireLog - INFO - func:read_preprocessed_input took: 161.00 ms
+2024-03-26 14:33:59,506 - FireLog - INFO - func:do_clustering took: 2.70 ms
+2024-03-26 14:33:59,519 - FireLog - INFO - func:preprocess_region_t took: 3.02 sec
+2024-03-26 14:33:59,524 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230325_AM.txt
+2024-03-26 14:33:59,525 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230325_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230325_AM.txt
+2024-03-26 14:33:59,942 - FireLog - INFO - func:read_region took: 272.78 ms
+2024-03-26 14:33:59,943 - FireLog - INFO - filtering and clustering 2023-3-25 PM, VIIRS, WesternUS
+2024-03-26 14:34:00,269 - FireLog - INFO - func:read_preprocessed_input took: 325.18 ms
+2024-03-26 14:34:00,720 - FireLog - INFO - func:read_preprocessed_input took: 450.34 ms
+2024-03-26 14:34:02,620 - FireLog - INFO - func:do_clustering took: 2.38 ms
+2024-03-26 14:34:02,633 - FireLog - INFO - func:preprocess_region_t took: 2.96 sec
+2024-03-26 14:34:02,638 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230325_PM.txt
+2024-03-26 14:34:02,639 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230325_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230325_PM.txt
+2024-03-26 14:34:03,049 - FireLog - INFO - func:read_region took: 284.31 ms
+2024-03-26 14:34:03,050 - FireLog - INFO - filtering and clustering 2023-3-26 AM, VIIRS, WesternUS
+2024-03-26 14:34:03,203 - FireLog - INFO - func:read_preprocessed_input took: 152.91 ms
+2024-03-26 14:34:03,313 - FireLog - INFO - func:read_preprocessed_input took: 109.72 ms
+2024-03-26 14:34:07,102 - FireLog - INFO - func:do_clustering took: 3.35 ms
+2024-03-26 14:34:07,116 - FireLog - INFO - func:preprocess_region_t took: 4.35 sec
+2024-03-26 14:34:07,121 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230326_AM.txt
+2024-03-26 14:34:07,122 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230326_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230326_AM.txt
+2024-03-26 14:34:07,509 - FireLog - INFO - func:read_region took: 273.38 ms
+2024-03-26 14:34:07,510 - FireLog - INFO - filtering and clustering 2023-3-26 PM, VIIRS, WesternUS
+2024-03-26 14:34:07,958 - FireLog - INFO - func:read_preprocessed_input took: 447.20 ms
+2024-03-26 14:34:08,285 - FireLog - INFO - func:read_preprocessed_input took: 326.13 ms
+2024-03-26 14:34:10,210 - FireLog - INFO - func:do_clustering took: 2.44 ms
+2024-03-26 14:34:10,223 - FireLog - INFO - func:preprocess_region_t took: 2.99 sec
+2024-03-26 14:34:10,228 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230326_PM.txt
+2024-03-26 14:34:10,228 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230326_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230326_PM.txt
+2024-03-26 14:34:10,652 - FireLog - INFO - func:read_region took: 279.94 ms
+2024-03-26 14:34:10,653 - FireLog - INFO - filtering and clustering 2023-3-27 AM, VIIRS, WesternUS
+2024-03-26 14:34:10,834 - FireLog - INFO - func:read_preprocessed_input took: 181.01 ms
+2024-03-26 14:34:10,975 - FireLog - INFO - func:read_preprocessed_input took: 139.72 ms
+2024-03-26 14:34:14,703 - FireLog - INFO - func:do_clustering took: 3.38 ms
+2024-03-26 14:34:14,717 - FireLog - INFO - func:preprocess_region_t took: 4.35 sec
+2024-03-26 14:34:14,722 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230327_AM.txt
+2024-03-26 14:34:14,723 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230327_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230327_AM.txt
+2024-03-26 14:34:15,114 - FireLog - INFO - func:read_region took: 273.82 ms
+2024-03-26 14:34:15,115 - FireLog - INFO - filtering and clustering 2023-3-27 PM, VIIRS, WesternUS
+2024-03-26 14:34:15,396 - FireLog - INFO - func:read_preprocessed_input took: 280.11 ms
+2024-03-26 14:34:15,716 - FireLog - INFO - func:read_preprocessed_input took: 319.37 ms
+2024-03-26 14:34:20,886 - FireLog - INFO - func:do_clustering took: 4.24 ms
+2024-03-26 14:34:20,900 - FireLog - INFO - func:preprocess_region_t took: 6.06 sec
+2024-03-26 14:34:20,905 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230327_PM.txt
+2024-03-26 14:34:20,905 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230327_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230327_PM.txt
+2024-03-26 14:34:21,353 - FireLog - INFO - func:read_region took: 323.73 ms
+2024-03-26 14:34:21,354 - FireLog - INFO - filtering and clustering 2023-3-28 AM, VIIRS, WesternUS
+2024-03-26 14:34:21,481 - FireLog - INFO - func:read_preprocessed_input took: 126.48 ms
+2024-03-26 14:34:21,620 - FireLog - INFO - func:read_preprocessed_input took: 138.26 ms
+2024-03-26 14:34:23,271 - FireLog - INFO - func:do_clustering took: 2.12 ms
+2024-03-26 14:34:23,283 - FireLog - INFO - func:preprocess_region_t took: 2.25 sec
+2024-03-26 14:34:23,289 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230328_AM.txt
+2024-03-26 14:34:23,290 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230328_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230328_AM.txt
+2024-03-26 14:34:23,678 - FireLog - INFO - func:read_region took: 273.23 ms
+2024-03-26 14:34:23,679 - FireLog - INFO - filtering and clustering 2023-3-28 PM, VIIRS, WesternUS
+2024-03-26 14:34:24,041 - FireLog - INFO - func:read_preprocessed_input took: 361.12 ms
+2024-03-26 14:34:24,324 - FireLog - INFO - func:read_preprocessed_input took: 282.58 ms
+2024-03-26 14:34:27,117 - FireLog - INFO - func:do_clustering took: 2.88 ms
+2024-03-26 14:34:27,130 - FireLog - INFO - func:preprocess_region_t took: 3.73 sec
+2024-03-26 14:34:27,135 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230328_PM.txt
+2024-03-26 14:34:27,136 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230328_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230328_PM.txt
+2024-03-26 14:34:27,546 - FireLog - INFO - func:read_region took: 273.43 ms
+2024-03-26 14:34:27,547 - FireLog - INFO - filtering and clustering 2023-3-29 AM, VIIRS, WesternUS
+2024-03-26 14:34:27,670 - FireLog - INFO - func:read_preprocessed_input took: 122.81 ms
+2024-03-26 14:34:27,809 - FireLog - INFO - func:read_preprocessed_input took: 138.59 ms
+2024-03-26 14:34:29,772 - FireLog - INFO - func:do_clustering took: 2.27 ms
+2024-03-26 14:34:29,784 - FireLog - INFO - func:preprocess_region_t took: 2.51 sec
+2024-03-26 14:34:29,790 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230329_AM.txt
+2024-03-26 14:34:29,790 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230329_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230329_AM.txt
+2024-03-26 14:34:30,228 - FireLog - INFO - func:read_region took: 271.69 ms
+2024-03-26 14:34:30,228 - FireLog - INFO - filtering and clustering 2023-3-29 PM, VIIRS, WesternUS
+2024-03-26 14:34:30,583 - FireLog - INFO - func:read_preprocessed_input took: 353.88 ms
+2024-03-26 14:34:30,936 - FireLog - INFO - func:read_preprocessed_input took: 353.04 ms
+2024-03-26 14:34:34,381 - FireLog - INFO - func:do_clustering took: 3.15 ms
+2024-03-26 14:34:34,395 - FireLog - INFO - func:preprocess_region_t took: 4.44 sec
+2024-03-26 14:34:34,401 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230329_PM.txt
+2024-03-26 14:34:34,402 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230329_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230329_PM.txt
+2024-03-26 14:34:34,883 - FireLog - INFO - func:read_region took: 271.63 ms
+2024-03-26 14:34:34,884 - FireLog - INFO - filtering and clustering 2023-3-30 AM, VIIRS, WesternUS
+2024-03-26 14:34:34,989 - FireLog - INFO - func:read_preprocessed_input took: 104.85 ms
+2024-03-26 14:34:35,173 - FireLog - INFO - func:read_preprocessed_input took: 183.81 ms
+2024-03-26 14:34:36,757 - FireLog - INFO - func:do_clustering took: 2.04 ms
+2024-03-26 14:34:36,768 - FireLog - INFO - func:preprocess_region_t took: 2.16 sec
+2024-03-26 14:34:36,774 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230330_AM.txt
+2024-03-26 14:34:36,775 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230330_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230330_AM.txt
+2024-03-26 14:34:37,160 - FireLog - INFO - func:read_region took: 273.65 ms
+2024-03-26 14:34:37,161 - FireLog - INFO - filtering and clustering 2023-3-30 PM, VIIRS, WesternUS
+2024-03-26 14:34:37,564 - FireLog - INFO - func:read_preprocessed_input took: 402.38 ms
+2024-03-26 14:34:38,044 - FireLog - INFO - func:read_preprocessed_input took: 478.67 ms
+2024-03-26 14:34:39,240 - FireLog - INFO - func:do_clustering took: 2.00 ms
+2024-03-26 14:34:39,250 - FireLog - INFO - func:preprocess_region_t took: 2.36 sec
+2024-03-26 14:34:39,256 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230330_PM.txt
+2024-03-26 14:34:39,256 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230330_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230330_PM.txt
+2024-03-26 14:34:39,666 - FireLog - INFO - func:read_region took: 296.23 ms
+2024-03-26 14:34:39,667 - FireLog - INFO - filtering and clustering 2023-3-31 AM, VIIRS, WesternUS
+2024-03-26 14:34:39,807 - FireLog - INFO - func:read_preprocessed_input took: 139.82 ms
+2024-03-26 14:34:39,967 - FireLog - INFO - func:read_preprocessed_input took: 159.74 ms
+2024-03-26 14:34:43,836 - FireLog - INFO - func:do_clustering took: 3.25 ms
+2024-03-26 14:34:43,848 - FireLog - INFO - func:preprocess_region_t took: 4.48 sec
+2024-03-26 14:34:43,855 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230331_AM.txt
+2024-03-26 14:34:43,855 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230331_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230331_AM.txt
+2024-03-26 14:34:44,311 - FireLog - INFO - func:read_region took: 305.66 ms
+2024-03-26 14:34:44,312 - FireLog - INFO - filtering and clustering 2023-3-31 PM, VIIRS, WesternUS
+2024-03-26 14:34:44,866 - FireLog - INFO - func:read_preprocessed_input took: 554.19 ms
+2024-03-26 14:34:45,486 - FireLog - INFO - func:read_preprocessed_input took: 618.91 ms
+2024-03-26 14:34:47,947 - FireLog - INFO - func:do_clustering took: 2.67 ms
+2024-03-26 14:34:47,960 - FireLog - INFO - func:preprocess_region_t took: 3.96 sec
+2024-03-26 14:34:47,965 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230331_PM.txt
+2024-03-26 14:34:47,966 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230331_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230331_PM.txt
+2024-03-26 14:34:48,419 - FireLog - INFO - func:read_region took: 274.50 ms
+2024-03-26 14:34:48,420 - FireLog - INFO - filtering and clustering 2023-4-1 AM, VIIRS, WesternUS
+2024-03-26 14:34:48,530 - FireLog - INFO - func:read_preprocessed_input took: 109.50 ms
+2024-03-26 14:34:48,686 - FireLog - INFO - func:read_preprocessed_input took: 155.42 ms
+2024-03-26 14:34:53,020 - FireLog - INFO - func:do_clustering took: 3.46 ms
+2024-03-26 14:34:53,033 - FireLog - INFO - func:preprocess_region_t took: 4.89 sec
+2024-03-26 14:34:53,039 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230401_AM.txt
+2024-03-26 14:34:53,039 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230401_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230401_AM.txt
+2024-03-26 14:34:53,578 - FireLog - INFO - func:read_region took: 285.85 ms
+2024-03-26 14:34:53,579 - FireLog - INFO - filtering and clustering 2023-4-1 PM, VIIRS, WesternUS
+2024-03-26 14:34:53,876 - FireLog - INFO - func:read_preprocessed_input took: 296.00 ms
+2024-03-26 14:34:54,259 - FireLog - INFO - func:read_preprocessed_input took: 382.62 ms
+2024-03-26 14:34:57,079 - FireLog - INFO - func:do_clustering took: 2.80 ms
+2024-03-26 14:34:57,092 - FireLog - INFO - func:preprocess_region_t took: 3.80 sec
+2024-03-26 14:34:57,099 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230401_PM.txt
+2024-03-26 14:34:57,099 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230401_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230401_PM.txt
+2024-03-26 14:34:57,500 - FireLog - INFO - func:read_region took: 280.86 ms
+2024-03-26 14:34:57,500 - FireLog - INFO - filtering and clustering 2023-4-2 AM, VIIRS, WesternUS
+2024-03-26 14:34:57,593 - FireLog - INFO - func:read_preprocessed_input took: 92.17 ms
+2024-03-26 14:34:57,730 - FireLog - INFO - func:read_preprocessed_input took: 136.16 ms
+2024-03-26 14:35:01,240 - FireLog - INFO - func:do_clustering took: 3.12 ms
+2024-03-26 14:35:01,253 - FireLog - INFO - func:preprocess_region_t took: 4.04 sec
+2024-03-26 14:35:01,258 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230402_AM.txt
+2024-03-26 14:35:01,259 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230402_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230402_AM.txt
+2024-03-26 14:35:01,692 - FireLog - INFO - func:read_region took: 292.10 ms
+2024-03-26 14:35:01,692 - FireLog - INFO - filtering and clustering 2023-4-2 PM, VIIRS, WesternUS
+2024-03-26 14:35:02,045 - FireLog - INFO - func:read_preprocessed_input took: 352.51 ms
+2024-03-26 14:35:02,270 - FireLog - INFO - func:read_preprocessed_input took: 224.30 ms
+2024-03-26 14:35:03,545 - FireLog - INFO - func:do_clustering took: 1.94 ms
+2024-03-26 14:35:03,556 - FireLog - INFO - func:preprocess_region_t took: 2.16 sec
+2024-03-26 14:35:03,562 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230402_PM.txt
+2024-03-26 14:35:03,562 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230402_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230402_PM.txt
+2024-03-26 14:35:03,985 - FireLog - INFO - func:read_region took: 286.12 ms
+2024-03-26 14:35:03,986 - FireLog - INFO - filtering and clustering 2023-4-3 AM, VIIRS, WesternUS
+2024-03-26 14:35:04,088 - FireLog - INFO - func:read_preprocessed_input took: 101.67 ms
+2024-03-26 14:35:04,226 - FireLog - INFO - func:read_preprocessed_input took: 137.43 ms
+2024-03-26 14:35:08,662 - FireLog - INFO - func:do_clustering took: 3.32 ms
+2024-03-26 14:35:08,677 - FireLog - INFO - func:preprocess_region_t took: 4.98 sec
+2024-03-26 14:35:08,684 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230403_AM.txt
+2024-03-26 14:35:08,684 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230403_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230403_AM.txt
+2024-03-26 14:35:09,092 - FireLog - INFO - func:read_region took: 274.02 ms
+2024-03-26 14:35:09,092 - FireLog - INFO - filtering and clustering 2023-4-3 PM, VIIRS, WesternUS
+2024-03-26 14:35:09,481 - FireLog - INFO - func:read_preprocessed_input took: 388.57 ms
+2024-03-26 14:35:09,832 - FireLog - INFO - func:read_preprocessed_input took: 350.32 ms
+2024-03-26 14:35:12,846 - FireLog - INFO - func:do_clustering took: 2.97 ms
+2024-03-26 14:35:12,859 - FireLog - INFO - func:preprocess_region_t took: 4.04 sec
+2024-03-26 14:35:12,865 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230403_PM.txt
+2024-03-26 14:35:12,865 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230403_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230403_PM.txt
+2024-03-26 14:35:13,276 - FireLog - INFO - func:read_region took: 272.41 ms
+2024-03-26 14:35:13,277 - FireLog - INFO - filtering and clustering 2023-4-4 AM, VIIRS, WesternUS
+2024-03-26 14:35:13,376 - FireLog - INFO - func:read_preprocessed_input took: 98.92 ms
+2024-03-26 14:35:13,522 - FireLog - INFO - func:read_preprocessed_input took: 144.87 ms
+2024-03-26 14:35:16,346 - FireLog - INFO - func:do_clustering took: 2.90 ms
+2024-03-26 14:35:16,360 - FireLog - INFO - func:preprocess_region_t took: 3.36 sec
+2024-03-26 14:35:16,365 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230404_AM.txt
+2024-03-26 14:35:16,366 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230404_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230404_AM.txt
+2024-03-26 14:35:16,795 - FireLog - INFO - func:read_region took: 305.27 ms
+2024-03-26 14:35:16,796 - FireLog - INFO - filtering and clustering 2023-4-4 PM, VIIRS, WesternUS
+2024-03-26 14:35:17,050 - FireLog - INFO - func:read_preprocessed_input took: 253.58 ms
+2024-03-26 14:35:17,484 - FireLog - INFO - func:read_preprocessed_input took: 434.02 ms
+2024-03-26 14:35:20,846 - FireLog - INFO - func:do_clustering took: 3.17 ms
+2024-03-26 14:35:20,860 - FireLog - INFO - func:preprocess_region_t took: 4.37 sec
+2024-03-26 14:35:20,867 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230404_PM.txt
+2024-03-26 14:35:20,867 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230404_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230404_PM.txt
+2024-03-26 14:35:21,280 - FireLog - INFO - func:read_region took: 271.89 ms
+2024-03-26 14:35:21,281 - FireLog - INFO - filtering and clustering 2023-4-5 AM, VIIRS, WesternUS
+2024-03-26 14:35:21,397 - FireLog - INFO - func:read_preprocessed_input took: 116.09 ms
+2024-03-26 14:35:21,566 - FireLog - INFO - func:read_preprocessed_input took: 167.79 ms
+2024-03-26 14:35:27,959 - FireLog - INFO - func:do_clustering took: 4.70 ms
+2024-03-26 14:35:27,976 - FireLog - INFO - func:preprocess_region_t took: 6.97 sec
+2024-03-26 14:35:27,982 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230405_AM.txt
+2024-03-26 14:35:27,983 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230405_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230405_AM.txt
+2024-03-26 14:35:28,398 - FireLog - INFO - func:read_region took: 276.81 ms
+2024-03-26 14:35:28,399 - FireLog - INFO - filtering and clustering 2023-4-5 PM, VIIRS, WesternUS
+2024-03-26 14:35:28,706 - FireLog - INFO - func:read_preprocessed_input took: 306.61 ms
+2024-03-26 14:35:29,025 - FireLog - INFO - func:read_preprocessed_input took: 318.51 ms
+2024-03-26 14:35:35,652 - FireLog - INFO - func:do_clustering took: 5.13 ms
+2024-03-26 14:35:35,671 - FireLog - INFO - func:preprocess_region_t took: 7.55 sec
+2024-03-26 14:35:35,677 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230405_PM.txt
+2024-03-26 14:35:35,677 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230405_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230405_PM.txt
+2024-03-26 14:35:36,176 - FireLog - INFO - func:read_region took: 298.47 ms
+2024-03-26 14:35:36,177 - FireLog - INFO - filtering and clustering 2023-4-6 AM, VIIRS, WesternUS
+2024-03-26 14:35:36,291 - FireLog - INFO - func:read_preprocessed_input took: 112.85 ms
+2024-03-26 14:35:36,465 - FireLog - INFO - func:read_preprocessed_input took: 173.54 ms
+2024-03-26 14:35:39,454 - FireLog - INFO - func:do_clustering took: 2.94 ms
+2024-03-26 14:35:39,468 - FireLog - INFO - func:preprocess_region_t took: 3.59 sec
+2024-03-26 14:35:39,473 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230406_AM.txt
+2024-03-26 14:35:39,474 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230406_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230406_AM.txt
+2024-03-26 14:35:39,865 - FireLog - INFO - func:read_region took: 273.50 ms
+2024-03-26 14:35:39,866 - FireLog - INFO - filtering and clustering 2023-4-6 PM, VIIRS, WesternUS
+2024-03-26 14:35:40,168 - FireLog - INFO - func:read_preprocessed_input took: 301.87 ms
+2024-03-26 14:35:40,411 - FireLog - INFO - func:read_preprocessed_input took: 242.35 ms
+2024-03-26 14:35:49,367 - FireLog - INFO - func:do_clustering took: 6.64 ms
+2024-03-26 14:35:49,385 - FireLog - INFO - func:preprocess_region_t took: 9.79 sec
+2024-03-26 14:35:49,390 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230406_PM.txt
+2024-03-26 14:35:49,391 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230406_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230406_PM.txt
+2024-03-26 14:35:49,816 - FireLog - INFO - func:read_region took: 278.01 ms
+2024-03-26 14:35:49,817 - FireLog - INFO - filtering and clustering 2023-4-7 AM, VIIRS, WesternUS
+2024-03-26 14:35:49,937 - FireLog - INFO - func:read_preprocessed_input took: 119.01 ms
+2024-03-26 14:35:50,085 - FireLog - INFO - func:read_preprocessed_input took: 147.45 ms
+2024-03-26 14:35:52,674 - FireLog - INFO - func:do_clustering took: 2.65 ms
+2024-03-26 14:35:52,687 - FireLog - INFO - func:preprocess_region_t took: 3.15 sec
+2024-03-26 14:35:52,694 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230407_AM.txt
+2024-03-26 14:35:52,694 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230407_AM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230407_AM.txt
+2024-03-26 14:35:53,230 - FireLog - INFO - func:read_region took: 395.32 ms
+2024-03-26 14:35:53,231 - FireLog - INFO - filtering and clustering 2023-4-7 PM, VIIRS, WesternUS
+2024-03-26 14:35:53,598 - FireLog - INFO - func:read_preprocessed_input took: 366.84 ms
+2024-03-26 14:35:53,841 - FireLog - INFO - func:read_preprocessed_input took: 241.61 ms
+2024-03-26 14:35:54,602 - FireLog - INFO - func:do_clustering took: 1.75 ms
+2024-03-26 14:35:54,613 - FireLog - INFO - func:preprocess_region_t took: 1.78 sec
+2024-03-26 14:35:54,619 - FireLog - INFO - running replace on filepath=data/FEDSpreprocessed/WesternUS/VIIRS/20230407_PM.txt
+2024-03-26 14:35:54,619 - FireLog - INFO - uploading file data/FEDSpreprocessed/WesternUS/VIIRS/20230407_PM.txt to maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS/20230407_PM.txt
+2024-03-26 14:35:55,020 - FireLog - INFO - func:read_region took: 271.62 ms
+2024-03-26 14:35:55,021 - FireLog - INFO - filtering and clustering 2023-4-8 AM, VIIRS, WesternUS
+2024-03-26 14:35:55,134 - FireLog - INFO - func:read_preprocessed_input took: 112.99 ms
+2024-03-26 14:35:55,370 - FireLog - INFO - func:read_preprocessed_input took: 235.08 ms</code></pre>
+</div>
+</div>
+<p>Once that process completes we can take a look at how long it took to generate each file. Keep in mind that all this happened purely in serial.</p>
+<div id="a0761c42-8190-4d2d-8b4b-506d1fb07d7e" class="cell" data-tags="[]" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>s3_files <span class="op">=</span> settings.fs.glob(<span class="ss">f"</span><span class="sc">{</span>settings<span class="sc">.</span>get_path()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>settings<span class="sc">.</span>PREPROCESSED_DIR<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>region[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">/VIIRS/2023*"</span>, detail<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>s3_files_df <span class="op">=</span> pd.json_normalize(s3_files.values())</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="co"># note that the first 24 days of the year were processed separately</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>s3_files_df[<span class="st">"took"</span>] <span class="op">=</span> s3_files_df.iloc[<span class="dv">24</span><span class="op">*</span><span class="dv">2</span>:][<span class="st">"LastModified"</span>].diff().dt.seconds</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>s3_files_df[<span class="st">"datetime"</span>] <span class="op">=</span> pd.to_datetime(s3_files_df.name.<span class="bu">apply</span>(<span class="kw">lambda</span> path: path.split(<span class="st">'/'</span>)[<span class="op">-</span><span class="dv">1</span>].split(<span class="st">'_'</span>)[<span class="dv">0</span>]))</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>s3_files_df.plot(x<span class="op">=</span><span class="st">"datetime"</span>, y<span class="op">=</span><span class="st">"took"</span>, ylabel<span class="op">=</span><span class="st">"seconds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="12_One_Year_Region_t_files/figure-html/cell-7-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+
+
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    // For code content inside modals, clipBoardJS needs to be initialized with a container option
+    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp("https:\/\/Earth-Information-System\.github\.io\/fireatlas\/");
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>LICENSE</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    <div class="toc-actions"><ul><li><a href="https://github.dev/zebbecker/quarto-example/blob/main/notebooks/12_One_Year_Region_t.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/zebbecker/quarto-example/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="nav-footer-right">
+<p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

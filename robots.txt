@@ -1,0 +1,1 @@
+Sitemap: https://Earth-Information-System.github.io/fireatlas/sitemap.xml
