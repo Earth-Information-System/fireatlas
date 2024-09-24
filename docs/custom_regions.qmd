@@ -1,0 +1,146 @@
+# How to Define Custom Regions for DPS Jobs
+This doc explains how to define a new region, how to customize which settings it uses, how to run a region using the `manual v3` workflow, and how to create a new scheduled job for your region.
+
+
+## How DPS Jobs Pick Up Custom Settings
+
+There are several settings, such as EPSG code, that need to be changed depending on the region for which we are running FEDS. The default settings are those stored in `FireConsts.py:Settings`. 
+Most custom regions will require some changes to these default settings.
+
+The settings used to run a given region `regnm` on DPS are defined in a `.env` file stored in the `Settings.PREPROCESSED_DIR/${regnm}` folder. If there is no such file here, the default settings are used. 
+
+::: callout-note
+`Settings.PREPROCESSED_DIR` points to `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed` in our current production setup. You can see existing regions there. 
+:::
+
+A couple points will describe how this all works: 
+
+1. We use the package [pydantic-settings](https://github.com/pydantic/pydantic-settings) in the fireatlas code to manage 
+our settings. If you look at the class declaration in `FireConsts.py` you'll see this piece of config below. This tells us
+a few different things:
+
+    ```bash
+   class Settings(BaseSettings):
+    # read in all env vars prefixed with `FEDS_` they can be in a .env file
+    model_config = {
+        "env_file": ".env",
+        "extra": "ignore",
+        "env_prefix": "FEDS_",
+    }
+    ```
+
+    * if there is a `.env` file available read it and use the key/values there to override any defaults listed in this class
+    * if there are variables in the `.env` file that are not declared in this class do not use them
+    * everything in the `.env` that will act as an override is prefixed with `FEDS_` 
+    (so to override `LOCAL_PATH` in the `.env` you would declare `FEDS_LOCAL_PATH=<value>`)
+
+2. All DPS jobs are kicked off via the `/maap_runtime/run_dps_cli.sh` script. In that file there's a single function and line
+that attempts (and gracefully exists) to bring over the `.env` file for a DPS run:
+
+    ```bash
+    # TODO: this will have to be changed to be passed dynamically once we want to use other s3 buckets
+    copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
+    ```
+   
+Any imports of the `fireatlas` package should now have these overrides included in calls to `python FireRunDaskCoordinator.py`. 
+
+## Defining a New Region 
+
+ The example below will use the newly created "RussiaEast" region to explain how to define a new region and process it on DPS. 
+
+1. Pick a unique, descriptive region name **that does not already exist** in `FEDSpreprocessed` (e.g. "Russia East")
+
+2. Create a .env file defining the settings you want to use for your region. For example: 
+
+    ```bash
+    FEDS_FTYP_OPT="global"
+    FEDS_CONT_OPT="global"
+    FEDS_EPSG_CODE=6933
+    ```
+::: callout-tip
+Working with hidden files (prefixed by a `.`) is difficult in the MAAP ADE, because the GUI file explorer has no way to show them. Use the terminal instead. Another thing you can do is create a file called `env`, edit it with the GUI as needed, then rename it to `.env` when you are done. 
+::: 
+    ```bash
+    # one way to create a .env file directly from the terminal
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# touch .env
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# echo -e "FEDS_FTYP_OPT="global"\nFEDS_CONT_OPT="global"\nFEDS_EPSG_CODE=6933" >> .env
+
+    # once we have created a .env file locally, inspect it
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# cat .env 
+    FEDS_FTYP_OPT="global"
+    FEDS_CONT_OPT="global"
+    FEDS_EPSG_CODE=6933
+    ```
+3. Copy the `.env` file to `Settings.PREPROCESSED_DIR/${regnm}`: 
+
+    ```bash
+    # check that region does not already exist
+    # (just showing how to list bucket key contents)
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/
+                           PRE BorealManualV2/
+                           PRE BorealNA/
+                           PRE CONUS/
+
+    # copy the .env to a new FEDSpreprocessed folder
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env
+    upload: ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env
+  
+    # check that it exists 
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/
+    2024-07-12 05:55:19         66 .env
+
+    ```
+::: callout-note
+When working with S3, we do not need to explicitly create a folder for the new region. Instead, when we copy the `.env` file to `Settings.PREPROCESSED_DIR/${rgnm}/.env`, S3 infers from the pathname that it should needs to create that new folder automatically. 
+:::
+
+
+## Running Manually 
+Now that we have defined a new region, we can manually trigger a run on DPS for a certain time period for that region with the GitHub Action "manual v3" workflow. 
+
+From the main GitHub repo, navigate to the [workflow page](https://github.com/Earth-Information-System/fireatlas/actions/workflows/manual-v3.yaml) for the manual v3 workflow. In the upper right hand corner, select "Run Workflow."
+
+![](images/manual-dispatch.png)
+
+Fill out the input parameters according to the descriptions in the prompt. The most important thing to note is that you should NOT pass the JSON encoded parameter input enclosed in single or double quotes, but rather naked. It should look something like this: 
+
+```
+{"regnm": "RussiaEast", "bbox": "[97.16172779881556,46.1226744036175,168.70469654881543,77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[2024,6,1,\"PM\"]", "operation": "--coordinate-all"}
+```
+
+The action will submit your job to DPS. When the action completes, this does not mean that your job is done; rather, it means that it was successfully submitted for processing. You can use the MAAP ADE's [Jobs UI](https://docs.maap-project.org/en/develop/system_reference_guide/jobsui.html) to monitor the progress of your job once it has been submitted. Outputs will be copied from the DPS worker to `Settings.OUTPUT_DIR/${regnm}` once the job is complete. 
+
+:::::: {.callout-tip}
+The MAAP DPS currently has a 24 hour time limit on jobs. When running on very large regions, you may need to split your job up into smaller time periods in order to avoid this. For example, if you are running over all of CONUS, you should do it in 3 month increments, as these can typically be completed within 24 hours, but an entire year cannot. 
+
+The preceding job must be completed before the next job in the sequence is started so that the computation can pick up where it left off in the last job. 
+:::
+
+## Scheduling NRT Runs For Your New Region 
+
+Once you have tested your job manually, you can schedule it to run at constant intervals in order to update the outputs as new data is collected in NRT. 
+
+1. Find an existing v3 scheduled worklow in the `.github/workflows/*.yaml` such as `.github/workflows/schedule-conus-nrt-v3.yaml` and copy it
+
+   ```bash
+   cp .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-russian-east-nrt-v3.yaml
+   ```
+
+2. Edit the new workflow and make sure to change some of the following sections and values. Note that leaving `tst` or `ted` as `[]` means it will run from current year 01/01 to now:
+
+   ```bash
+   name: <your region name> nrt v3
+   ...
+       - name: kick off the DPS job
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with:
+        algo_name: eis-feds-dask-coordinator-v3
+        github_ref: 1.2.3
+        username: gcorradini
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+   ```
+
+3. Make sure to add the username you use to register the new scheduled job to the `maap_runtime/alert-on-failed-dps-jobs.py` [script](https://github.com/Earth-Information-System/fireatlas/blob/5007e66ee592940cb7f07483addbe5adee261a46/maap_runtime/alert-on-failed-dps-jobs.py#L30) if you want the alerting system to warn us when your scheduled job fails after being submitted to DPS. 

@@ -5,6 +5,6 @@
 * [Notebook Exploration](notebooks.md)
 * [Algorithm](algorithm_explanation.md)
 * [Async Task Runner](../maap_runtime/MAAP-DPS.md)
-* [Adding Custom Regions to Scheduler](schedule_custom_regions.md)
+* [Adding Custom Regions](custom_regions.qmd)
 * [Release Workflow for DPS Jobs](releasing.md)
 * [Debugging DPS Jobs Playbook](playbook_dps_debug.md)
