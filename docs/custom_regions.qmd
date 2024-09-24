@@ -10,7 +10,7 @@ Most custom regions will require some changes to these default settings.
 The settings used to run a given region `regnm` on DPS are defined in a `.env` file stored in the `Settings.PREPROCESSED_DIR/${regnm}` folder. If there is no such file here, the default settings are used. 
 
 ::: callout-note
-`Settings.PREPROCESSED_DIR` renders out to be `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed` in our current production setup.
+`Settings.PREPROCESSED_DIR` points to `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed` in our current production setup. You can see existing regions there. 
 :::
 
 A couple points will describe how this all works: 
@@ -46,9 +46,9 @@ Any imports of the `fireatlas` package should now have these overrides included 
 
 ## Defining a New Region 
 
-In the future, this should be a more rigid and exclusively additive workflow. For now, there is only the requirement to pick a unique, descriptive region name **that does not already exist** in `FEDSpreprocessed`. The example below will use the newly created "RussiaEast" region to explain how this is done. 
+ The example below will use the newly created "RussiaEast" region to explain how to define a new region and process it on DPS. 
 
-1. Pick a unique, descriptive region name (e.g. "Russia East")
+1. Pick a unique, descriptive region name **that does not already exist** in `FEDSpreprocessed` (e.g. "Russia East")
 
 2. Create a .env file defining the settings you want to use for your region. For example: 
 
@@ -61,7 +61,11 @@ In the future, this should be a more rigid and exclusively additive workflow. Fo
 Working with hidden files (prefixed by a `.`) is difficult in the MAAP ADE, because the GUI file explorer has no way to show them. Use the terminal instead. Another thing you can do is create a file called `env`, edit it with the GUI as needed, then rename it to `.env` when you are done. 
 ::: 
     ```bash
-    # assume we created a .env file locally
+    # one way to create a .env file directly from the terminal
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# touch .env
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# echo -e "FEDS_FTYP_OPT="global"\nFEDS_CONT_OPT="global"\nFEDS_EPSG_CODE=6933" >> .env
+
+    # once we have created a .env file locally, inspect it
     (pangeo) root@workspaceqhqrmmz1pim87fsz:~# cat .env 
     FEDS_FTYP_OPT="global"
     FEDS_CONT_OPT="global"
