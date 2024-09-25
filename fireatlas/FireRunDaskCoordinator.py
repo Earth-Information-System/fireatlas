@@ -84,7 +84,7 @@ def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeSte
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     try:
-        allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, timeout_param = timeout_param, restart=False)
+        allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, timeout_param=timeout_param, restart=False)
         copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
         copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
         allfires_gdf = allfires.gdf
@@ -202,7 +202,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     return futures
 
 @timed
-def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
+def Run(region: Region, tst: TimeStep, ted: TimeStep, timeout_param: Timeout_param, copy_to_veda: bool):
 
     ctime = datetime.now(tz=timezone.utc)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
@@ -251,7 +251,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
     logger.info("------------- Done with preprocessing region + t -------------")
     
     # run fire forward algorithm (which cannot be run in parallel)
-    job_fire_forward(region=region, tst=tst, ted=ted, timeout_param = timeout_param, client=client)
+    job_fire_forward(region=region, tst=tst, ted=ted, timeout_param=timeout_param, client=client)
 
     # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
