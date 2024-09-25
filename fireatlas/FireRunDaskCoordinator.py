@@ -292,4 +292,4 @@ if __name__ == "__main__":
     parser.add_argument('--no-veda-copy', dest='copy_to_veda', action='store_false', default=True,
                         help="defaults to True but if passed will stop a copy to VEDA s3 bucket")
     args = parser.parse_args()
-    Run([args.regnm, args.bbox], args.tst, args.ted, args.copy_to_veda)
+    Run([args.regnm, args.bbox], args.tst, args.ted, args.timeout_param, args.copy_to_veda)
