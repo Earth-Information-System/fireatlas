@@ -145,13 +145,16 @@ class Settings(BaseSettings):
     )
 
     # ------------------------------------------------------------------------------
-    # other options
-    # ------------------------------------------------------------------------------
     # fire tracking options
+    # ------------------------------------------------------------------------------
+    
     expand_only: bool = Field(
         False,
         description="if set to true, only expand existing fires (no new fire objects created)",
     )
+    # ------------------------------------------------------------------------------
+    # Run options
+    # ------------------------------------------------------------------------------
     number_of_multi_proc_workers: int = Field(
         3, description="number of dask process workers to use"
     )
@@ -159,6 +162,8 @@ class Settings(BaseSettings):
         False, description="whether to export data from MAAP to VEDA s3"
     )
     N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
+
+    TIMEOUT_PARAM: int = Field(0, description = "Number of seconds fire_forward is allowed to run before writing out.")
 
     # ------------------------------------------------------------------------------
     # fire type related parameters
