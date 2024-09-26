@@ -4,7 +4,7 @@ project:
 website:
 
   title: "Wildfire Tracking Lab"
-  repo-url: "https://github.com/zebbecker/quarto-example"
+  repo-url: "https://github.com/Earth-Information-System/fireatlas"
   repo-actions: [edit, issue]
   bread-crumbs: true
 
@@ -22,7 +22,7 @@ website:
       - icon: globe
         href: https://fire.eis.smce.nasa.gov/
       - icon: github
-        href: https://github.com/zebbecker/quarto-example
+        href: https://github.com/Earth-Information-System/fireatlas
     style: "docked"
     search: true
     contents: 
