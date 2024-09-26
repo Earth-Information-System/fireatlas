@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     
 
     EPSG_CODE: int = Field(
-        9311, description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
+        3571, description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
     
     @field_validator('EPSG_CODE')
