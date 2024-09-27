@@ -614,7 +614,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
     save_allpixels(allpixels, tst, ted, region)
     save_allfires_gdf(allfires.gdf, tst, ted, region)
 
-    return allfires, allpixels, t_saved
+    return allfires, allpixels, t_saved, ted
 
 
 if __name__ == "__main__":
