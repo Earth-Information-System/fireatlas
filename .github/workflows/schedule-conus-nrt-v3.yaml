@@ -44,4 +44,13 @@ jobs:
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
         json_params: '{"regnm": "CONUS", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2024,3,25,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
 
-
+    - name: send alert on Slack if failure
+      if: always() 
+      uses: ravsamhq/notify-slack-action@2.5.0
+      with: 
+        status: ${{ job.status }}
+        notify_when: 'failure'
+        notification_title: "GH Action Failed - <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|View Failed Run>"
+        footer: "<${{github.server_url}}/${{github.repository}}/issues/|Open GitHub Issues>"
+      env: 
+        SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK_WEBHOOK_URL }}
