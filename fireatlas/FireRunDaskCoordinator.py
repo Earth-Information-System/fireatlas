@@ -84,7 +84,7 @@ def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeSte
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     try:
-        allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
+        allfires, allpixels, t_saved, ted = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
         copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
         copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
         allfires_gdf = allfires.gdf
