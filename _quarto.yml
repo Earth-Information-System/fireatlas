@@ -32,8 +32,7 @@ website:
         href: docs/data_overview.qmd
         contents:
           - docs/data_overview.qmd
-          - docs/api.qmd
-          - docs/firms.qmd
+          - docs/nrt.qmd
           - section: Published Datasets
             contents:
               - docs/liu2024.qmd
