@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Experiments – Wildfire Tracking Lab</title>
+<title>Near Real Time Data – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +19,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -111,7 +77,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="index.qmd">
+    <a class="navbar-brand" href="../docs/index.html">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
   </div>
@@ -125,7 +91,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Experiments</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/nrt.html">Near Real Time Data</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -139,7 +105,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-      <a href="index.qmd" class="sidebar-logo-link">
+      <a href="../docs/index.html" class="sidebar-logo-link">
       <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
@@ -177,7 +143,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/nrt.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/nrt.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Near Real Time Data</span></a>
   </div>
 </li>
@@ -275,17 +241,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#merge-experiments" id="toc-merge-experiments" class="nav-link active" data-scroll-target="#merge-experiments">Merge Experiments</a></li>
-  <li><a href="#groupby-experiments" id="toc-groupby-experiments" class="nav-link" data-scroll-target="#groupby-experiments">Groupby experiments</a></li>
+  <li><a href="#accessing-nrt-data" id="toc-accessing-nrt-data" class="nav-link active" data-scroll-target="#accessing-nrt-data">Accessing NRT Data</a></li>
+  <li><a href="#viirs-modeled-fire-perimeters---data-description" id="toc-viirs-modeled-fire-perimeters---data-description" class="nav-link" data-scroll-target="#viirs-modeled-fire-perimeters---data-description">VIIRS Modeled Fire Perimeters - Data Description</a>
+  <ul class="collapse">
+  <li><a href="#faqs-viirs-modeled-fire-perimeter-product" id="toc-faqs-viirs-modeled-fire-perimeter-product" class="nav-link" data-scroll-target="#faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</a></li>
+  </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/05_Experiments.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/nrt.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/nrt.html">Near Real Time Data</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Experiments</h1>
+<h1 class="title">Near Real Time Data</h1>
 </div>
 
 
@@ -302,140 +271,135 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This notebook constains some more experimental code.</p>
-<section id="merge-experiments" class="level2">
-<h2 class="anchored" data-anchor-id="merge-experiments">Merge Experiments</h2>
-<p>When creating the large fire outputs there are scenarios where clusters that were previously treated as separate fires at a certain timestep merge into one fire. When that happens the target fireID in is stored in the <code>mergeID</code> column. So we need to treat the rows after the fact and merge the rows that have the same fireID/mergeID and t.</p>
-<div id="b5080aeb-a848-44c4-aed9-05f335c70024" class="cell">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> geopandas <span class="im">as</span> gpd</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas <span class="im">import</span> FireMain, FireTime, FireObj, postprocess, preprocess</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas.utils <span class="im">import</span> timed</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">8</span>, <span class="dv">28</span>, <span class="st">'AM'</span>]</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>ted <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">9</span>, <span class="dv">6</span>, <span class="st">'AM'</span>]</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> (<span class="st">'WesternUS'</span>,[<span class="op">-</span><span class="fl">125.698046875</span>,<span class="fl">31.676476158707615</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                       <span class="op">-</span><span class="fl">101.00078125</span>,<span class="fl">49.51429477264348</span>])</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>list_of_ts <span class="op">=</span> <span class="bu">list</span>(FireTime.t_generator(tst, ted))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="d1bfd52c-0804-4533-a2f4-29696dda393a" class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>allpixels <span class="op">=</span> postprocess.read_allpixels(tst, ted, region, location<span class="op">=</span><span class="st">"local"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>allfires_gdf <span class="op">=</span> postprocess.read_allfires_gdf(tst, ted, region, location<span class="op">=</span><span class="st">"local"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="ff63fc8e-968d-404d-909a-f1c4555db743" class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>large_fires <span class="op">=</span> postprocess.find_largefires(allfires_gdf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>We’ll start by looking for the places where we need to perform this merge.</p>
-<div id="5df5833e-4d29-473c-8bf3-9c41b25b7e92" class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> allfires_gdf.reset_index()</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>merge_needed <span class="op">=</span> (gdf.mergeid <span class="op">!=</span> gdf.fireID) <span class="op">&amp;</span> (gdf.invalid <span class="op">==</span> <span class="va">False</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>merge_needed<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">}</span><span class="ss"> rows that potentially need a merge"</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># we'll set the "fireID" to "mergeid" in those spots</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>gdf.loc[merge_needed, <span class="st">"fireID"</span>] <span class="op">=</span> gdf.loc[merge_needed, <span class="st">"mergeid"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<p>Here are two different ideas of how to merge rows:</p>
-<ol type="1">
-<li>The first version of the <code>merge_rows</code> function uses a unary union to join the hull and then recalculates the fline and the ftype. This is inspired by Lisa’s single-fire workflow.</li>
-<li>The second version of the <code>merge_rows</code> function uses code that is more similar to the existing merge function. It constructs a MultiGeometry out of the various geometry objects.</li>
-</ol>
-<div id="93c592f9-91b6-446c-8b0b-730b30d53473" class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data_per_fid <span class="op">=</span> {}</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid, data <span class="kw">in</span> gdf[gdf[<span class="st">"fireID"</span>].isin(large_fires)].groupby(<span class="st">"fireID"</span>):</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># merge any rows that have the same t</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> data.t.duplicated().<span class="bu">any</span>():</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        data_per_fid[fid] <span class="op">=</span> merge_rows(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="1ef99dde-add8-4a15-b227-22f799e047d9" class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> merge_rows(data):</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> cumunion(x):</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="im">from</span> shapely.ops <span class="im">import</span> unary_union</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="bu">len</span>(x)):</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            x[i] <span class="op">=</span> unary_union([x[i<span class="op">-</span><span class="dv">1</span>], x[i]])</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># summarize file by t. make sure you dissolve the hull</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    merged_t <span class="op">=</span> data.set_geometry(<span class="st">"hull"</span>).dissolve(by<span class="op">=</span><span class="st">'t'</span>, aggfunc<span class="op">=</span>{</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">'meanFRP'</span>: <span class="kw">lambda</span> x: (data.loc[x.index, <span class="st">'meanFRP'</span>] <span class="op">*</span> data.loc[x.index, <span class="st">'n_newpixels'</span>]).<span class="bu">sum</span>() <span class="op">/</span> data.loc[x.index, <span class="st">'n_newpixels'</span>].<span class="bu">sum</span>(),</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">'n_newpixels'</span>: <span class="st">'sum'</span>,</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">'duration'</span>: <span class="st">'max'</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    }).reset_index()</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate cumulative sum of n_newpixels</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'n_pixels'</span>] <span class="op">=</span> merged_t[<span class="st">'n_newpixels'</span>].cumsum()</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combine the geometries from previous days</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'hull'</span>] <span class="op">=</span> cumunion(merged_t[<span class="st">'hull'</span>].tolist())</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">"fline"</span>] <span class="op">=</span> cumunion(data.set_geometry(<span class="st">"fline"</span>).dissolve(by<span class="op">=</span><span class="st">'t'</span>)[<span class="st">"fline"</span>].tolist())</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># do the rest of the calculations</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'farea'</span>] <span class="op">=</span> merged_t[<span class="st">'hull'</span>].area <span class="op">/</span> <span class="dv">10</span><span class="op">**</span><span class="dv">6</span>  <span class="co"># convert to km^2</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'pixden'</span>] <span class="op">=</span> merged_t[<span class="st">'n_pixels'</span>] <span class="op">/</span> merged_t[<span class="st">'farea'</span>]</span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># reorder columns</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    col_order <span class="op">=</span> [<span class="st">'t'</span>, <span class="st">'duration'</span>, <span class="st">'n_pixels'</span>, <span class="st">'n_newpixels'</span>, <span class="st">'meanFRP'</span>, <span class="st">'pixden'</span>, <span class="st">'farea'</span>, <span class="st">'hull'</span>, <span class="st">'fline'</span>]</span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    merged_t <span class="op">=</span> merged_t[col_order]</span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> merged_t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="78cf3f83-6297-4e39-a888-0e7a1ad13c1a" class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> merge_rows(data):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""For a subset of allfires data containing only one fire, merge any</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">    rows that have the same `t`</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> data.drop_duplicates(subset<span class="op">=</span>[<span class="st">"t"</span>]).set_index(<span class="st">"t"</span>).copy()</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># clean up any merges that are needed</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> dt, rows <span class="kw">in</span> data[data.t.duplicated(<span class="va">False</span>)].groupby(<span class="st">"t"</span>):</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># first get the weighted sums for pixden and meanFRP</span></span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        pixweight <span class="op">=</span> (rows[<span class="st">"pixden"</span>] <span class="op">*</span> rows[<span class="st">"farea"</span>]).<span class="bu">sum</span>()</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        FRPweight <span class="op">=</span> (rows[<span class="st">"meanFRP"</span>] <span class="op">*</span> rows[<span class="st">"n_pixels"</span>]).<span class="bu">sum</span>()</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> col <span class="kw">in</span> [<span class="st">"n_pixels"</span>, <span class="st">"n_newpixels"</span>, <span class="st">"farea"</span>, <span class="st">"fperim"</span>, <span class="st">"flinelen"</span>]:</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            output.loc[dt, col] <span class="op">=</span> rows[col].<span class="bu">sum</span>()</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        output.loc[dt, <span class="st">"t_st"</span>] <span class="op">=</span> rows[<span class="st">"t_st"</span>].<span class="bu">min</span>()</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        output.loc[dt, <span class="st">"pixden"</span>] <span class="op">=</span> pixweight <span class="op">/</span> output.loc[dt, <span class="st">"farea"</span>]</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        output.loc[dt, <span class="st">"meanFRP"</span>] <span class="op">=</span> FRPweight <span class="op">/</span> output.loc[dt, <span class="st">"n_pixels"</span>]</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        dissolved <span class="op">=</span> rows.dissolve()</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> col <span class="kw">in</span> [<span class="st">"hull"</span>, <span class="st">"fline"</span>, <span class="st">"nfp"</span>]:</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            output.loc[dt, col] <span class="op">=</span> dissolved[col].item()</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        </span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> output.reset_index()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<p><strong><em>Disclaimer:</em></strong> <em>The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.</em></p>
+<section id="accessing-nrt-data" class="level2">
+<h2 class="anchored" data-anchor-id="accessing-nrt-data">Accessing NRT Data</h2>
+<p>Near real time (NRT) data can be accessed in two ways. First, VIIRS Modeled Fire Perimeters for the continental US are viewable on the Experimental tab within <a href="https://firms.modaps.eosdis.nasa.gov/usfs/map/">NASA FIRMS US/Canada</a>.</p>
+<p>Second, NRT data are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>. An <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.</p>
 </section>
-<section id="groupby-experiments" class="level2">
-<h2 class="anchored" data-anchor-id="groupby-experiments">Groupby experiments</h2>
-<p>Does it make a big difference if you filter first rather than after?</p>
-<div id="d3508587-0318-4e5f-926a-8bb89bfba655" class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid, data <span class="kw">in</span> gdf[gdf[<span class="st">"fireID"</span>].isin(large_fires)].groupby(<span class="st">"fireID"</span>):</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="viirs-modeled-fire-perimeters---data-description" class="level2">
+<h2 class="anchored" data-anchor-id="viirs-modeled-fire-perimeters---data-description">VIIRS Modeled Fire Perimeters - Data Description</h2>
+<p>The VIIRS Modeled Fire Perimeters product uses the Fire Event Data Suite (FEDS) algorithm (<a href="https://doi.org/10.1038/s41597-022-01343-0">Chen et al., 2022</a>), an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (hereafter “modeled fire perimeters”).</p>
+<p>The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites (see Disclaimer, above) and models the fire perimeter every 12 hours to generate a vector output. The VIIRS Modeled Fire Perimeter data are produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</p>
+<p>For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.</p>
+<p>The VIIRS Modeled fire Perimeter data are provided by the NASA Earth Information System (EIS) Project. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., 2022</a>).</p>
+<section id="faqs-viirs-modeled-fire-perimeter-product" class="level3">
+<h3 class="anchored" data-anchor-id="faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</h3>
+<p><strong>1. What is the VIIRS Modeled Fire Perimeter Product?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter Product uses the Fire Event Database Suite (FEDS) algorithm (Chen et al., 2022) to cluster VIIRS 375 m active fire detection data into individual fire events and track fire spread and behavior every 12 hours (Figure 1). The FEDS algorithm uses an alpha shape approach to model the fire perimeter, estimate the active portion of the fire perimeter, and quantify metrics of fire behavior for each 12-hour time step. The FEDS algorithm currently uses the 375 m active fire detections from the VIIRS sensors onboard the Suomi-NPP and NOAA-20 satellites to model the fire perimeter.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/feds.png" class="img-fluid figure-img"></p>
+<figcaption><strong>Figure 1. A schematic diagram of the FEDS fire tracking algorithm (Chen et al., 2022).</strong> (a) Two idealized fire objects (Fire 1, Fire 2) at the time step t. Colored and grey dots represent newly detected and previously detected VIIRS 375 m active fire pixels, respectively. The brown segments along the fire perimeter are the modeled estimate of the active portions of the fire perimeter. (b) At the next time step t+1, new fire pixels (in red) are clustered (C1, C2, C3), and are used for forming a new fire object (C1 for Fire 3), or for the growth of an existing fire object (C2 for Fire 1). Expanded fire objects (Fire 2) are merged with an existing active fire object (Fire 1) if they grow close enough (due to the addition of C3). Vector shapes of the modeled fire perimeter and active fire line segments for each fire object are updated at each 12-hour time step.</figcaption>
+</figure>
 </div>
-<div id="787d37e5-0168-4dec-8182-06454dea7508" class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid, data <span class="kw">in</span> gdf.groupby(<span class="st">"fireID"</span>):</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> fid <span class="kw">in</span> large_fires:</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="178b5a35-b74f-4f5a-bf9d-8860404ebf2f" class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid <span class="kw">in</span> large_fires:</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> gdf[gdf[<span class="st">"fireID"</span>] <span class="op">==</span> fid]</span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="5eb093a2-8bcd-4b90-bebe-92d9adac3b1c" class="cell">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid <span class="kw">in</span> large_fires:</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> allfires_gdf.loc[fid]</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<p>The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm includes three different types of information about each ongoing fire event in the Continental United States (CONUS) and Canada, updated approximately four hours after each VIIRS overpass: 1) the modeled perimeter of each large fire event, 2) the active portion of the modeled fire perimeter (i.e., the active fire line or “hot edge” of the modeled fire perimeter), and 3) the instantaneous fire radiative power (FRP) from all active fire detections associated with a given fire event during each overpass time, including fire detections at the hot edge and residual flaming or smoldering activity within the modeled fire perimeter (see Figure 1a). By clustering and tracking fire detections into individual fire events, the FEDS algorithm provides a consistent assessment of the change in fire behavior and intensity with each successive VIIRS overpass (nominally at 01:30 and 13:30 local time).</p>
+<p><strong>2. What is the source of the VIIRS Modeled Fire Perimeter Data?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are provided by the NASA Earth Information System (EIS) Project, which harnesses the full power of NASA’s satellite observations, models, and scientific expertise to deliver information for societal benefit that is open, accessible, and actionable. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., 2022</a>).</p>
+<p><strong>3. What is the temporal frequency of the VIIRS Modeled FIre Perimeter Data?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are updated twice per day using the VIIRS 375 m active fire information from the morning (01:30) and afternoon (13:30) Suomi-NPP and NOAA-20 satellite overpasses over each fire event. The vector output from the FEDS algorithm is produced within approximately 4 hours following the availability of VIIRS 375 m active fire data in FIRMS.</p>
+<p><strong>4. What is the spatial resolution of the VIIRS Modeled Fire Perimeter data?</strong></p>
+<p><strong>A:</strong> Although the vector data in the VIIRS Modeled Fire Perimeter product has no defined spatial resolution, the product is derived from the VIIRS 375 m active fire detections, and therefore reflects the spatial resolution and geolocation accuracy of those products from the Suomi-NPP and NOAA-20 satellites. The FEDS algorithm uses an alpha hull approach to cluster new active fire detections and model the updated fire perimeter every 12 hours. The alpha hull approach groups individual fire detection points from the VIIRS sensors on two satellite platforms to model their combined spatial extent and distribution at each 12-hour time step. Compared to a convex hull, the alpha hull approach is better able to capture irregular shapes of active fire events and changes in shape over time. See <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a> for additional details.</p>
+<p><strong>5. Why are the VIIRS Modeled Fire Perimeter Data based on the FEDS algorithm only available for the Continental United States (CONUS) and Canada?</strong></p>
+<p><strong>A:</strong> The FEDS algorithm was originally developed and tested for large fires in California (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a>). The EIS Fire team has scaled the production of the fire event tracking approach to cover CONUS and Canada, with data available via OGC API. Data for additional regions, including Alaska and Hawaii, will be released through FIRMS when available.</p>
+<p><strong>6. What is the temporal extent of VIIRS Modeled Fire Perimeter data in FIRMS?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are currently available through FIRMS beginning January 1, 2024. Archive data for prior years is available via <a href="https://firenrt.delta-backend.com/">OGC API</a>. This <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> demonstrates how to subset, analyze, and visualize these data outside of FIRMS.</p>
+<p><strong>7. What validation of the VIIRS Modeled Fire Perimeter data has been performed?</strong></p>
+<p><strong>A:</strong> <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a> provide a rigorous validation of the FEDS algorithm for large fire events in California between 2012-2020. The study compared the final FEDS perimeter data to official year-end fire perimeter data from the Fire and Resource Assessment Program (FRAP), established by the California Department of Forestry and Fire Protection. <a href="https://www.nature.com/articles/s41597-022-01343-0/tables/7">Table 6</a> in Chen et al.&nbsp;(2022) summarizes the comparison between FEDS and FRAP data for large fires in California in 2018 using standard comparison metrics (e.g., Accuracy, Precision, Recall, and Intersection Over Union). Overall, the FEDS data compare favorably to the FRAP year-end data. Validation for other regions and other fire types is an area of ongoing research by the EIS Fire Project team, and updates from these ongoing studies will be added, as available.</p>
+<p><strong>8. How does the VIIRS Modeled Fire Perimeter Data product differ from the USA Fire Perimeter layers in FIRMS?</strong></p>
+<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter Data product provides situational awareness for large fire events in CONUS and Canada every 12 hours, based on the FEDS algorithm and available 375 m VIIRS active fire detection data from Suomi-NPP and NOAA-20. The modeled perimeter is an estimate of the fire-affected area, active portion of the fire perimeter, and metrics of fire behavior. The VIIRS Modeled Fire Perimeter data also provides a history of modeled large fire growth every 12 hours for all fire events detected by VIIRS in CONUS and Canada. By contrast, the USA Fire Perimeter layer is the most recent official incident perimeter data. Official incident data provide a more precise estimate of the perimeter of large fire events in the US than the VIIRS Modeled Fire Perimeter data. The USA Fire Perimeter layer is updated periodically with new official incident perimeter data.</p>
+<p><strong>9. What are the attributes of the VIIRS Modeled Fire Perimeter data based on the FEDS algorithm?</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Column</th>
+<th>Description</th>
+<th>Type/Unit</th>
+<th>Displayed on FIRMS</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>fireid</td>
+<td>Fire ID. Unique for each fire. Matches fireid.</td>
+<td>Numeric ID</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>pixden</td>
+<td>Pixel density, the number of pixels divided by area of the estimated perimeter.</td>
+<td>pixels/km<sup>2</sup></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>duration</td>
+<td>Number of days since first observation of fire. Fires with a single observation have a duration of zero.</td>
+<td>Days</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>flinelen</td>
+<td>Length of active fire line, based on new pixels. If no new pixels are detected, flinelen is set to zero.</td>
+<td>km</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>fperim</td>
+<td>Length of estimated fire perimeter.</td>
+<td>km</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>farea</td>
+<td>Area within estimated fire perimeter.</td>
+<td>km<sup>2</sup></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>n_newpixels</td>
+<td>Number of pixels newly detected since last overpass.</td>
+<td>pixels</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>n_pixels</td>
+<td>Number of pixel detections in history of fire.</td>
+<td>pixels</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>isactive</td>
+<td>Have new fire pixels been detected in the last 5 days?</td>
+<td>Boolean</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>ogc_fid</td>
+<td>The ID used by the OGC API to sort perimeters.</td>
+<td>Numeric ID</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>geometry</td>
+<td>The shape of the estimated perimeter.</td>
+<td>Geometry</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>10. What is the rationale for the 5-day threshold on new fire pixels?</strong></p>
+<p><strong>A:</strong> The FEDS algorithm uses spatial and temporal search criteria to cluster VIIRS 375 m active fire detections into existing or new fire objects. The use of the 5-day threshold to associate new fire detections with an existing fire object reflects the nature of large fire behavior and periodic gaps in active fire detection data. Large fire events often exhibit episodic growth in response to changes in fire weather, suppression activity, and fuels. Periods with less intense fire activity may not generate active fire detections from VIIRS, leading to temporal gaps (12-hour, 24-hour, etc.) in fire detection information. The 5-day threshold allows the FEDS algorithm to connect future fire detections to the same fire object, or event, rather than splitting a large fire into multiple objects. In addition to periods of lower fire intensity, gaps in fire detection can occur due to satellite outages or observing conditions such as clouds that impact the VIIRS fire detection algorithm. The 5-day threshold reduces the influence of these data gaps on the fragmentation of large fire events in the FEDS algorithm output.</p>
+<p><strong>11. How can I find more information about the FEDS algorithm, VIIRS Modeled Fire Perimeter data product versions, and related analyses?</strong></p>
+<p><strong>A:</strong> Additional information about the FEDS algorithm can be found in <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a>. The source code used to generate the VIIRS Modeled Fire Perimeter data product is available on <a href="https://github.com/Earth-Information-System/fireatlas">GitHub</a>, and an <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the FEDS output outside of FIRMS is available on NASA’s VEDA platform. Finally, the data products from the FEDS algorithm are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>.</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -867,7 +831,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/05_Experiments.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/nrt.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

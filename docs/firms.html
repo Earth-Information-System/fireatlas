@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>FIRMS – Wildfire Tracking Lab</title>
+<title>firms – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -91,7 +91,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/firms.html">FIRMS</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -143,13 +143,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/api.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">API</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/firms.html" class="sidebar-item-text sidebar-link active">
+  <a href="../docs/nrt.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">FIRMS</span></a>
   </div>
 </li>
@@ -242,166 +236,17 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#viirs-modeled-fire-perimeters" id="toc-viirs-modeled-fire-perimeters" class="nav-link active" data-scroll-target="#viirs-modeled-fire-perimeters">VIIRS Modeled Fire Perimeters</a>
-  <ul class="collapse">
-  <li><a href="#faqs-viirs-modeled-fire-perimeter-product" id="toc-faqs-viirs-modeled-fire-perimeter-product" class="nav-link" data-scroll-target="#faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</a></li>
-  </ul></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/firms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/firms.html">FIRMS</a></li></ol></nav>
-<div class="quarto-title">
-<h1 class="title">FIRMS</h1>
-</div>
 
 
 
-<div class="quarto-title-meta">
-
-    
-  
-    
-  </div>
-  
 
 
-</header>
-
-
-<p><strong><em>Disclaimer:</em></strong> <em>The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.</em></p>
-<section id="viirs-modeled-fire-perimeters" class="level2">
-<h2 class="anchored" data-anchor-id="viirs-modeled-fire-perimeters">VIIRS Modeled Fire Perimeters</h2>
-<p>The VIIRS Modeled Fire Perimeters product uses the Fire Event Data Suite (FEDS) algorithm (<a href="https://doi.org/10.1038/s41597-022-01343-0">Chen et al., 2022</a>), an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (hereafter “modeled fire perimeters”).</p>
-<p>The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites (see Disclaimer, above) and models the fire perimeter every 12 hours to generate a vector output. The VIIRS Modeled Fire Perimeter data are produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</p>
-<p>For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.</p>
-<p>The source code used to generate the VIIRS Modeled Fire Perimeter data using the FEDS algorithm is available on <a href="https://github.com/Earth-Information-System/fireatlas">GitHub</a>, and an <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform. Finally, the VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>.</p>
-<p>The VIIRS Modeled fire Perimeter data are provided by the NASA Earth Information System (EIS) Project. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., 2022</a>).</p>
-<section id="faqs-viirs-modeled-fire-perimeter-product" class="level3">
-<h3 class="anchored" data-anchor-id="faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</h3>
-<p><strong>1. What is the VIIRS Modeled Fire Perimeter Product?</strong></p>
-<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter Product uses the Fire Event Database Suite (FEDS) algorithm (Chen et al., 2022) to cluster VIIRS 375 m active fire detection data into individual fire events and track fire spread and behavior every 12 hours (Figure 1). The FEDS algorithm uses an alpha shape approach to model the fire perimeter, estimate the active portion of the fire perimeter, and quantify metrics of fire behavior for each 12-hour time step. The FEDS algorithm currently uses the 375 m active fire detections from the VIIRS sensors onboard the Suomi-NPP and NOAA-20 satellites to model the fire perimeter.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/feds.png" class="img-fluid figure-img"></p>
-<figcaption><strong>Figure 1. A schematic diagram of the FEDS fire tracking algorithm (Chen et al., 2022).</strong> (a) Two idealized fire objects (Fire 1, Fire 2) at the time step t. Colored and grey dots represent newly detected and previously detected VIIRS 375 m active fire pixels, respectively. The brown segments along the fire perimeter are the modeled estimate of the active portions of the fire perimeter. (b) At the next time step t+1, new fire pixels (in red) are clustered (C1, C2, C3), and are used for forming a new fire object (C1 for Fire 3), or for the growth of an existing fire object (C2 for Fire 1). Expanded fire objects (Fire 2) are merged with an existing active fire object (Fire 1) if they grow close enough (due to the addition of C3). Vector shapes of the modeled fire perimeter and active fire line segments for each fire object are updated at each 12-hour time step.</figcaption>
-</figure>
-</div>
-<p>The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm includes three different types of information about each ongoing fire event in the Continental United States (CONUS) and Canada, updated approximately four hours after each VIIRS overpass: 1) the modeled perimeter of each large fire event, 2) the active portion of the modeled fire perimeter (i.e., the active fire line or “hot edge” of the modeled fire perimeter), and 3) the instantaneous fire radiative power (FRP) from all active fire detections associated with a given fire event during each overpass time, including fire detections at the hot edge and residual flaming or smoldering activity within the modeled fire perimeter (see Figure 1a). By clustering and tracking fire detections into individual fire events, the FEDS algorithm provides a consistent assessment of the change in fire behavior and intensity with each successive VIIRS overpass (nominally at 01:30 and 13:30 local time).</p>
-<p><strong>2. What is the source of the VIIRS Modeled Fire Perimeter Data?</strong></p>
-<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are provided by the NASA Earth Information System (EIS) Project, which harnesses the full power of NASA’s satellite observations, models, and scientific expertise to deliver information for societal benefit that is open, accessible, and actionable. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., 2022</a>).</p>
-<p><strong>3. What is the temporal frequency of the VIIRS Modeled FIre Perimeter Data?</strong></p>
-<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are updated twice per day using the VIIRS 375 m active fire information from the morning (01:30) and afternoon (13:30) Suomi-NPP and NOAA-20 satellite overpasses over each fire event. The vector output from the FEDS algorithm is produced within approximately 4 hours following the availability of VIIRS 375 m active fire data in FIRMS.</p>
-<p><strong>4. What is the spatial resolution of the VIIRS Modeled Fire Perimeter data?</strong></p>
-<p><strong>A:</strong> Although the vector data in the VIIRS Modeled Fire Perimeter product has no defined spatial resolution, the product is derived from the VIIRS 375 m active fire detections, and therefore reflects the spatial resolution and geolocation accuracy of those products from the Suomi-NPP and NOAA-20 satellites. The FEDS algorithm uses an alpha hull approach to cluster new active fire detections and model the updated fire perimeter every 12 hours. The alpha hull approach groups individual fire detection points from the VIIRS sensors on two satellite platforms to model their combined spatial extent and distribution at each 12-hour time step. Compared to a convex hull, the alpha hull approach is better able to capture irregular shapes of active fire events and changes in shape over time. See <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a> for additional details.</p>
-<p><strong>5. Why are the VIIRS Modeled Fire Perimeter Data based on the FEDS algorithm only available for the Continental United States (CONUS) and Canada?</strong></p>
-<p><strong>A:</strong> The FEDS algorithm was originally developed and tested for large fires in California (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a>). The EIS Fire team has scaled the production of the fire event tracking approach to cover CONUS and Canada, with data available via OGC API. Data for additional regions, including Alaska and Hawaii, will be released through FIRMS when available.</p>
-<p><strong>6. What is the temporal extent of VIIRS Modeled Fire Perimeter data in FIRMS?</strong></p>
-<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are currently available through FIRMS beginning January 1, 2024. Archive data for prior years is available via <a href="https://firenrt.delta-backend.com/">OGC API</a>. This <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> demonstrates how to subset, analyze, and visualize these data outside of FIRMS.</p>
-<p><strong>7. What validation of the VIIRS Modeled Fire Perimeter data has been performed?</strong></p>
-<p><strong>A:</strong> <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a> provide a rigorous validation of the FEDS algorithm for large fire events in California between 2012-2020. The study compared the final FEDS perimeter data to official year-end fire perimeter data from the Fire and Resource Assessment Program (FRAP), established by the California Department of Forestry and Fire Protection. <a href="https://www.nature.com/articles/s41597-022-01343-0/tables/7">Table 6</a> in Chen et al.&nbsp;(2022) summarizes the comparison between FEDS and FRAP data for large fires in California in 2018 using standard comparison metrics (e.g., Accuracy, Precision, Recall, and Intersection Over Union). Overall, the FEDS data compare favorably to the FRAP year-end data. Validation for other regions and other fire types is an area of ongoing research by the EIS Fire Project team, and updates from these ongoing studies will be added, as available.</p>
-<p><strong>8. How does the VIIRS Modeled Fire Perimeter Data product differ from the USA Fire Perimeter layers in FIRMS?</strong></p>
-<p><strong>A:</strong> The VIIRS Modeled Fire Perimeter Data product provides situational awareness for large fire events in CONUS and Canada every 12 hours, based on the FEDS algorithm and available 375 m VIIRS active fire detection data from Suomi-NPP and NOAA-20. The modeled perimeter is an estimate of the fire-affected area, active portion of the fire perimeter, and metrics of fire behavior. The VIIRS Modeled Fire Perimeter data also provides a history of modeled large fire growth every 12 hours for all fire events detected by VIIRS in CONUS and Canada. By contrast, the USA Fire Perimeter layer is the most recent official incident perimeter data. Official incident data provide a more precise estimate of the perimeter of large fire events in the US than the VIIRS Modeled Fire Perimeter data. The USA Fire Perimeter layer is updated periodically with new official incident perimeter data.</p>
-<p><strong>9. What are the attributes of the VIIRS Modeled Fire Perimeter data based on the FEDS algorithm?</strong></p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-<col style="width: 25%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Column</th>
-<th>Description</th>
-<th>Type/Unit</th>
-<th>Displayed on FIRMS</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>fireid</td>
-<td>Fire ID. Unique for each fire. Matches fireid.</td>
-<td>Numeric ID</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>pixden</td>
-<td>Pixel density, the number of pixels divided by area of the estimated perimeter.</td>
-<td>pixels/km<sup>2</sup></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>duration</td>
-<td>Number of days since first observation of fire. Fires with a single observation have a duration of zero.</td>
-<td>Days</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>flinelen</td>
-<td>Length of active fire line, based on new pixels. If no new pixels are detected, flinelen is set to zero.</td>
-<td>km</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>fperim</td>
-<td>Length of estimated fire perimeter.</td>
-<td>km</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>farea</td>
-<td>Area within estimated fire perimeter.</td>
-<td>km<sup>2</sup></td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>n_newpixels</td>
-<td>Number of pixels newly detected since last overpass.</td>
-<td>pixels</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>n_pixels</td>
-<td>Number of pixel detections in history of fire.</td>
-<td>pixels</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>isactive</td>
-<td>Have new fire pixels been detected in the last 5 days?</td>
-<td>Boolean</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>ogc_fid</td>
-<td>The ID used by the OGC API to sort perimeters.</td>
-<td>Numeric ID</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>geometry</td>
-<td>The shape of the estimated perimeter.</td>
-<td>Geometry</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-<p><strong>10. What is the rationale for the 5-day threshold on new fire pixels?</strong></p>
-<p><strong>A:</strong> The FEDS algorithm uses spatial and temporal search criteria to cluster VIIRS 375 m active fire detections into existing or new fire objects. The use of the 5-day threshold to associate new fire detections with an existing fire object reflects the nature of large fire behavior and periodic gaps in active fire detection data. Large fire events often exhibit episodic growth in response to changes in fire weather, suppression activity, and fuels. Periods with less intense fire activity may not generate active fire detections from VIIRS, leading to temporal gaps (12-hour, 24-hour, etc.) in fire detection information. The 5-day threshold allows the FEDS algorithm to connect future fire detections to the same fire object, or event, rather than splitting a large fire into multiple objects. In addition to periods of lower fire intensity, gaps in fire detection can occur due to satellite outages or observing conditions such as clouds that impact the VIIRS fire detection algorithm. The 5-day threshold reduces the influence of these data gaps on the fragmentation of large fire events in the FEDS algorithm output.</p>
-<p><strong>11. How can I find more information about the FEDS algorithm, VIIRS Modeled Fire Perimeter data product versions, and related analyses?</strong></p>
-<p><strong>A:</strong> Additional information about the FEDS algorithm can be found in <a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., (2022)</a>. The source code used to generate the VIIRS Modeled Fire Perimeter data product is available on <a href="https://github.com/Earth-Information-System/fireatlas">GitHub</a>, and an <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the FEDS output outside of FIRMS is available on NASA’s VEDA platform. Finally, the data products from the FEDS algorithm are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>.</p>
-
-
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -496,7 +341,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/Earth-Information-System\.github\.io\/fireatlas\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -832,7 +677,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/firms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/firms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
