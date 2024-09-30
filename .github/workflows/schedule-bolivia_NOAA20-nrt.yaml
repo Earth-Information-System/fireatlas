@@ -40,7 +40,7 @@ jobs:
           queue: maap-dps-eis-worker-128gb
           maap_image_env: ubuntu
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-          json_params: '{"regnm": "Bolivia_NOAA20", "bbox": "[-54,-21.5,-64.5,-12.2]", "tst": "[2024,1,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+          json_params: '{"regnm": "Bolivia_NOAA20", "bbox": "[-54,-21.5,-64.5,-12.2]", "tst": "[2024,9,27,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
 
       - name: send alert on Slack if failure
         if: always()
