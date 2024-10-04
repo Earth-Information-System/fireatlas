@@ -1,10 +1,16 @@
 ---
-title: FIRMS
+title: Near Real Time Data
 ---
 
 ***Disclaimer:*** *The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.*
 
-## VIIRS Modeled Fire Perimeters
+## Accessing NRT Data
+
+Near real time (NRT) data can be accessed in two ways. First, VIIRS Modeled Fire Perimeters for the continental US are viewable on the Experimental tab within [NASA FIRMS US/Canada](https://firms.modaps.eosdis.nasa.gov/usfs/map/). 
+
+Second, NRT data are also available via [OGC API](https://firenrt.delta-backend.com/). An [example notebook](https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.
+
+## VIIRS Modeled Fire Perimeters - Data Description
 
 The VIIRS Modeled Fire Perimeters product uses the Fire Event Data Suite (FEDS) algorithm ([Chen et al., 2022](https://doi.org/10.1038/s41597-022-01343-0)), an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (hereafter "modeled fire perimeters").
 
@@ -12,9 +18,8 @@ The FEDS algorithm clusters active fire detections into individual events, estim
 
 For all fire events, regardless of fire size or duration, the FEDS algorithm provides a "snapshot" of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.
 
-The source code used to generate the VIIRS Modeled Fire Perimeter data using the FEDS algorithm is available on [GitHub](https://github.com/Earth-Information-System/fireatlas), and an [example notebook](https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform. Finally, the VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are also available via [OGC API](https://firenrt.delta-backend.com/).
-
 The VIIRS Modeled fire Perimeter data are provided by the NASA Earth Information System (EIS) Project. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 ([Chen et al., 2022](https://www.nature.com/articles/s41597-022-01343-0)).
+
 
 ### FAQS: VIIRS Modeled Fire Perimeter Product
 

@@ -2,4 +2,33 @@
 title: Data Overview
 ---
 
-The following sections describe the near real-time (NRT) data available via our public API or through NASA FIRMS, as well as previously published static datasets over specific geographic regions.  Navigate to a section using the left menu bar for more detailed dataset descriptions and data access. 
+The Fire Event Data Suite (FEDS) algorithm (Chen et al., 2022) uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.
+
+The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a "snapshot" of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.
+
+The estimated perimeter data are routinely produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.
+
+## Available datasets
+
+The following sections describe the NRT data, as well as previously published FEDS datasets over specific geographic regions. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.
+
+### NRT FEDS
+
+-   Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada
+-   Data available for most recent two weeks
+-   Detailed documentation is available [here](nrt.qmd).
+
+### Published datasets
+
+Published datasets contain static, unchanging FEDS outputs for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.
+
+|  |  |  |
+|-----------------------------|--------------|-----------------------------|
+| [McCabe et al., 2024](mccabe2024.qmd) | (Manuscript in progress) | 2023; Quebec, Canada |
+| [Orland et al., 2024](orland2024.qmd) (under review) | *Progressive Tracking of Wildfire Spread via Satellite Observation Reveals Link between Fire Behavior and Burn Severity* | 2013-2021; Western US |
+| [Scholten et al., 2024](scholten2024.qmd) | *Spatial variability in Arctic-boreal pyroregions shaped by climate and human influence* | 2012-2023; Arctic-Boreal biomes |
+| [Liu et al., 2024](liu2024.qmd) | *Systematically tracking the hourly progression of large wildfires using GOES satellite observations* | 2019-2021; California large fires |
+| [Andela et al., 2022](andela2022.qmd) | *Tracking and classifying Amazon fire events in near real time* | 2019-2020; Southern Hemisphere South America |
+| [Chen et al., 2022](chen2022.qmd) | *California wildfire spread derived using VIIRS satellite observations and an object-based tracking system* | 2012-2020; California, US |
+| [Andela et al., 2019](andela2019.qmd) | *The global fire atlas of individual fire size, duration, speed, and direction* | 2002-2016; global. (Updated with data through 2020 in Li et al., 2024.) |
+| [Amazon Fire Dashboard](amazon.qmd) |  | NRT (2025), Tropical South America (10N - 25S) |
