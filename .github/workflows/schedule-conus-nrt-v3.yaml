@@ -38,7 +38,7 @@ jobs:
       with:
         algo_name: eis-feds-dask-coordinator-v3
         github_ref: 1.2.3
-        username: gcorradini
+        username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
