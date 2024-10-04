@@ -115,7 +115,7 @@ echo "conda: $(which conda)"
 echo "Python: $(which python)"
 
 python --version
-source activate /opt/conda/envs/vanilla
+source activate /opt/conda/envs/python
 conda list | grep s3fs
 
 handle_exit() {
