@@ -9,9 +9,11 @@ python --version
 # the vanilla image uses conda version 23.10
 # where mamba should be default resolver
 pushd "$basedir"
-source activate /opt/conda/envs/python
+
+conda create -n "fire_env"
+source activate fire_env
 
 echo "Doing fireatlas install next..."
-/opt/conda/envs/python/bin/pip install -e ..
-/opt/conda/envs/python/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"
+pip install -e ..
+pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"
 

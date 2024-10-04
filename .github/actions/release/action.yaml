@@ -15,4 +15,4 @@ runs:
           --env MAAP_CONF=/maap-py \
           --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
           --rm mas.maap-project.org/root/maap-workspaces/custom_images/maap_base:v4.1.0 \
-          /opt/conda/envs/python/bin/python maap_runtime/release-dps-image.py
+          python maap_runtime/release-dps-image.py
