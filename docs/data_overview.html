@@ -143,14 +143,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/api.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">API</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/firms.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">FIRMS</span></a>
+  <a href="../docs/nrt.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Near Real Time Data</span></a>
   </div>
 </li>
           <li class="sidebar-item sidebar-item-section">
@@ -242,8 +236,18 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#available-datasets" id="toc-available-datasets" class="nav-link active" data-scroll-target="#available-datasets">Available datasets</a>
+  <ul class="collapse">
+  <li><a href="#nrt-feds" id="toc-nrt-feds" class="nav-link" data-scroll-target="#nrt-feds">NRT FEDS</a></li>
+  <li><a href="#published-datasets" id="toc-published-datasets" class="nav-link" data-scroll-target="#published-datasets">Published datasets</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data_overview.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
@@ -267,9 +271,71 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The following sections describe the near real-time (NRT) data available via our public API or through NASA FIRMS, as well as previously published static datasets over specific geographic regions. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.</p>
+<p>The Fire Event Data Suite (FEDS) algorithm (Chen et al., 2022) uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.</p>
+<p>The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.</p>
+<p>The estimated perimeter data are routinely produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</p>
+<section id="available-datasets" class="level2">
+<h2 class="anchored" data-anchor-id="available-datasets">Available datasets</h2>
+<p>The following sections describe the NRT data, as well as previously published FEDS datasets over specific geographic regions. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.</p>
+<section id="nrt-feds" class="level3">
+<h3 class="anchored" data-anchor-id="nrt-feds">NRT FEDS</h3>
+<ul>
+<li>Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada</li>
+<li>Data available for most recent two weeks</li>
+<li>Detailed documentation is available <a href="../docs/nrt.html">here</a>.</li>
+</ul>
+</section>
+<section id="published-datasets" class="level3">
+<h3 class="anchored" data-anchor-id="published-datasets">Published datasets</h3>
+<p>Published datasets contain static, unchanging FEDS outputs for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.</p>
+<table class="caption-top table">
+<tbody>
+<tr class="odd">
+<td><a href="mccabe2024.qmd">McCabe et al., 2024</a></td>
+<td>(Manuscript in progress)</td>
+<td>2023; Quebec, Canada</td>
+</tr>
+<tr class="even">
+<td><a href="orland2024.qmd">Orland et al., 2024</a> (under review)</td>
+<td><em>Progressive Tracking of Wildfire Spread via Satellite Observation Reveals Link between Fire Behavior and Burn Severity</em></td>
+<td>2013-2021; Western US</td>
+</tr>
+<tr class="odd">
+<td><a href="scholten2024.qmd">Scholten et al., 2024</a></td>
+<td><em>Spatial variability in Arctic-boreal pyroregions shaped by climate and human influence</em></td>
+<td>2012-2023; Arctic-Boreal biomes</td>
+</tr>
+<tr class="even">
+<td><a href="liu2024.qmd">Liu et al., 2024</a></td>
+<td><em>Systematically tracking the hourly progression of large wildfires using GOES satellite observations</em></td>
+<td>2019-2021; California large fires</td>
+</tr>
+<tr class="odd">
+<td><a href="andela2022.qmd">Andela et al., 2022</a></td>
+<td><em>Tracking and classifying Amazon fire events in near real time</em></td>
+<td>2019-2020; Southern Hemisphere South America</td>
+</tr>
+<tr class="even">
+<td><a href="chen2022.qmd">Chen et al., 2022</a></td>
+<td><em>California wildfire spread derived using VIIRS satellite observations and an object-based tracking system</em></td>
+<td>2012-2020; California, US</td>
+</tr>
+<tr class="odd">
+<td><a href="andela2019.qmd">Andela et al., 2019</a></td>
+<td><em>The global fire atlas of individual fire size, duration, speed, and direction</em></td>
+<td>2002-2016; global. (Updated with data through 2020 in Li et al., 2024.)</td>
+</tr>
+<tr class="even">
+<td><a href="amazon.qmd">Amazon Fire Dashboard</a></td>
+<td></td>
+<td>NRT (2025), Tropical South America (10N - 25S)</td>
+</tr>
+</tbody>
+</table>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -700,7 +766,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data_overview.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data_overview.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

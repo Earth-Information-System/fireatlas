@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>FIRMS – Wildfire Tracking Lab</title>
+<title>Near Real Time Data – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -91,7 +91,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/firms.html">FIRMS</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/nrt.html">Near Real Time Data</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -143,14 +143,8 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/api.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">API</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/firms.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">FIRMS</span></a>
+  <a href="../docs/nrt.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Near Real Time Data</span></a>
   </div>
 </li>
           <li class="sidebar-item sidebar-item-section">
@@ -247,19 +241,20 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#viirs-modeled-fire-perimeters" id="toc-viirs-modeled-fire-perimeters" class="nav-link active" data-scroll-target="#viirs-modeled-fire-perimeters">VIIRS Modeled Fire Perimeters</a>
+  <li><a href="#accessing-nrt-data" id="toc-accessing-nrt-data" class="nav-link active" data-scroll-target="#accessing-nrt-data">Accessing NRT Data</a></li>
+  <li><a href="#viirs-modeled-fire-perimeters---data-description" id="toc-viirs-modeled-fire-perimeters---data-description" class="nav-link" data-scroll-target="#viirs-modeled-fire-perimeters---data-description">VIIRS Modeled Fire Perimeters - Data Description</a>
   <ul class="collapse">
   <li><a href="#faqs-viirs-modeled-fire-perimeter-product" id="toc-faqs-viirs-modeled-fire-perimeter-product" class="nav-link" data-scroll-target="#faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/firms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/nrt.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/firms.html">FIRMS</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/nrt.html">Near Real Time Data</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">FIRMS</h1>
+<h1 class="title">Near Real Time Data</h1>
 </div>
 
 
@@ -277,12 +272,16 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p><strong><em>Disclaimer:</em></strong> <em>The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.</em></p>
-<section id="viirs-modeled-fire-perimeters" class="level2">
-<h2 class="anchored" data-anchor-id="viirs-modeled-fire-perimeters">VIIRS Modeled Fire Perimeters</h2>
+<section id="accessing-nrt-data" class="level2">
+<h2 class="anchored" data-anchor-id="accessing-nrt-data">Accessing NRT Data</h2>
+<p>Near real time (NRT) data can be accessed in two ways. First, VIIRS Modeled Fire Perimeters for the continental US are viewable on the Experimental tab within <a href="https://firms.modaps.eosdis.nasa.gov/usfs/map/">NASA FIRMS US/Canada</a>.</p>
+<p>Second, NRT data are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>. An <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.</p>
+</section>
+<section id="viirs-modeled-fire-perimeters---data-description" class="level2">
+<h2 class="anchored" data-anchor-id="viirs-modeled-fire-perimeters---data-description">VIIRS Modeled Fire Perimeters - Data Description</h2>
 <p>The VIIRS Modeled Fire Perimeters product uses the Fire Event Data Suite (FEDS) algorithm (<a href="https://doi.org/10.1038/s41597-022-01343-0">Chen et al., 2022</a>), an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (hereafter “modeled fire perimeters”).</p>
 <p>The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites (see Disclaimer, above) and models the fire perimeter every 12 hours to generate a vector output. The VIIRS Modeled Fire Perimeter data are produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</p>
 <p>For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.</p>
-<p>The source code used to generate the VIIRS Modeled Fire Perimeter data using the FEDS algorithm is available on <a href="https://github.com/Earth-Information-System/fireatlas">GitHub</a>, and an <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform. Finally, the VIIRS Modeled Fire Perimeter data based on the FEDS algorithm are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>.</p>
 <p>The VIIRS Modeled fire Perimeter data are provided by the NASA Earth Information System (EIS) Project. The FEDS algorithm was developed by Yang Chen and colleagues at the University of California-Irvine, NASA’s Goddard Space Flight Center (GSFC), Cardiff University (UK), and Universidad del Rosario (Colombia), as described in a scientific paper published in 2022 (<a href="https://www.nature.com/articles/s41597-022-01343-0">Chen et al., 2022</a>).</p>
 <section id="faqs-viirs-modeled-fire-perimeter-product" class="level3">
 <h3 class="anchored" data-anchor-id="faqs-viirs-modeled-fire-perimeter-product">FAQS: VIIRS Modeled Fire Perimeter Product</h3>
@@ -832,7 +831,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/firms.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/nrt.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
