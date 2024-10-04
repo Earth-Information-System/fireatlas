@@ -18,5 +18,5 @@ runs:
           --env MAAP_CONF=/maap-py \
           --env EMAIL_PW=${{ inputs.email_pw_secret }} \
           --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
-          --rm mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4 \
+          --rm mas.maap-project.org/root/maap-workspaces/custom_images/maap_base:v4.1.0 \
           /opt/conda/envs/vanilla/bin/python maap_runtime/alert-on-failed-dps-jobs.py

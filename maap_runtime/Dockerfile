@@ -1,4 +1,4 @@
-FROM mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4
+FROM mas.maap-project.org/root/maap-workspaces/custom_images/maap_base:v4.1.0
 ARG BUILD_MAPP_PGT_ARG
 ENV MAAP_PGT=$BUILD_MAPP_PGT_ARG
 RUN pip install git+https://github.com/MAAP-Project/maap-py.git@develop

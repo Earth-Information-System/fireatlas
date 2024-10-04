@@ -32,7 +32,7 @@ runs:
           --env MAAP_PGT=${{ inputs.maap_pgt_secret }} \
           --env MAAP_CONF=/maap-py \
           --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
-          --rm mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4 \
+          --rm mas.maap-project.org/root/maap-workspaces/custom_images/maap_base:v4.1.0 \
           /opt/conda/envs/vanilla/bin/python maap_runtime/submit-dps-job.py \
             ${{ inputs.algo_name }} \
             ${{ inputs.github_ref }} \
