@@ -10,11 +10,7 @@ python --version
 # where mamba should be default resolver
 pushd "$basedir"
 source activate /opt/conda/envs/python
-# vanilla:3.1.5 makes all our code just hang for reasons know one knows about
-# so we explicitly upgrade just s3fs here out-of-band of pyproject.toml and env.yml
-conda update -c conda-forge s3fs -y > update_log.txt 2>&1
-cat update_log.txt
-conda list | grep s3fs
+
 echo "Doing fireatlas install next..."
 /opt/conda/envs/python/bin/pip install -e ..
 /opt/conda/envs/python/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"
