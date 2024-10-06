@@ -14,6 +14,6 @@ conda create -n "fire_env"
 source activate fire_env
 
 echo "Doing fireatlas install next..."
-pip install -e ..
-pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"
+/opt/conda/envs/fire_env/bin/pip install -e ..
+/opt/conda/envs/fire_env/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"
 
