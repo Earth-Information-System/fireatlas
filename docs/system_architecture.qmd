@@ -81,7 +81,7 @@ Used to kick off a one-time run on the production system. Useful for archival da
 Uses `pytest` to automatically run test suite on any PR or pull to the main `conus-dps` branch. These include several integration tests that only run with the `--runslow` flag. These tests are slower and can take \~15 minutes to run.
 
 ::: callout-note
-Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket (TODO address), as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.
+Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket `s3://eis-fire-public`, as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.
 :::
 
 ### schedule-{region}-nrt-v3
