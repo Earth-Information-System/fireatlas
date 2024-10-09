@@ -3,7 +3,7 @@ name: hawaii nrt v3
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '40 15,23 * * *'
+    - cron: "40 15,23 * * *"
 
 jobs:
   run_dps_job_v3:
@@ -11,35 +11,44 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-    - name: checkout repository
-      uses: actions/checkout@v2
+      - name: checkout repository
+        uses: actions/checkout@v2
 
-    - name: pip install fireatlas
-      run: |
-        pip install .
+      - name: pip install fireatlas
+        run: |
+          pip install .
 
-    - name: get docker GID and set DOCKER_GID environment variable
-      run: |
-        echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> $GITHUB_ENV
+      - name: get docker GID and set DOCKER_GID environment variable
+        run: |
+          echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> $GITHUB_ENV
 
-    - name: get current user UID and set UID environment variable
-      run: |
-        echo "UID=$(id -u)" >> $GITHUB_ENV
+      - name: get current user UID and set UID environment variable
+        run: |
+          echo "UID=$(id -u)" >> $GITHUB_ENV
 
-    - name: print DOCKER_GID and UID
-      run: |
-        echo "Docker GID: $DOCKER_GID"
-        echo "User UID: $UID"
+      - name: print DOCKER_GID and UID
+        run: |
+          echo "Docker GID: $DOCKER_GID"
+          echo "User UID: $UID"
 
-    - name: kick off the DPS job
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
-      with:
-        algo_name: eis-feds-dask-coordinator-v3
-        github_ref: 1.2.3
-        username: gcorradini
-        queue: maap-dps-eis-worker-128gb
-        maap_image_env: ubuntu
-        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"regnm": "Hawaii", "bbox": "[-160.62150215971252, 18.55881382325731, -154.20548653471252, 22.508528755761755]", "tst": "[2024,3,25,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
+      - name: kick off the DPS job
+        uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+        with:
+          algo_name: eis-feds-dask-coordinator-v3
+          github_ref: 1.2.3
+          username: zbecker
+          queue: maap-dps-eis-worker-128gb
+          maap_image_env: ubuntu
+          maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+          json_params: '{"regnm": "Hawaii", "bbox": "[-160.62150215971252, 18.55881382325731, -154.20548653471252, 22.508528755761755]", "tst": "[2024,3,25,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
 
-
+      - name: send alert on Slack if failure
+        if: always()
+        uses: ravsamhq/notify-slack-action@2.5.0
+        with:
+          status: ${{ job.status }}
+          notify_when: "failure"
+          notification_title: "GH Action Failed - <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|View Failed Run>"
+          footer: "<${{github.server_url}}/${{github.repository}}/issues/|Open GitHub Issues>"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK_WEBHOOK_URL }}
