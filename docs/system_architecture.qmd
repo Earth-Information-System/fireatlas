@@ -34,7 +34,7 @@ We use GitHub Actions to drive the process of scheduling and submitting all comp
 
 ### run-dps-job-v3
 
-In a container based on the vanilla MAAP image (so that the `maap` Python package is available), run [`submit-dps-jobs.py`](). This calls the MAAP API and submits a job with the passed parameters.
+In a container based on the vanilla MAAP image (so that the `maap` Python package is available), run [`submit-dps-jobs.py`](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/maap_runtime/submit-dps-job.py). This calls the MAAP API and submits a job with the passed parameters.
 
 ::: callout-note
 Note that when we submit a job to DPS, we include an algorithm version tag (`github_ref`) in addition to the `algo_name` parameter. This tells DPS which specific prebuilt image to use for that job. The version of the fireatlas code that is used in a particular image will always be the version it was originally built with, even if more commits have been made to the repo in the meantime.
