@@ -4,7 +4,7 @@ author: "Zeb Becker"
 toc: true
 ---
 
-In addition to the core FEDS algorithm, the team maintains a production system to track current fires in near-real time (NRT). This data is made available on our [API](mapping-fires.ipynb). It ingests fire detection data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites, runs the FEDS fire even tracking algorithm forward to account for these new observations, and outputs the updated data to the API.
+In addition to the core FEDS algorithm, the team maintains a production system to track current fires in near-real time (NRT). This data is made available on our [API](nrt.qmd#accessing-nrt-data). It ingests fire detection data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites, runs the FEDS fire even tracking algorithm forward to account for these new observations, and outputs the updated data to the API.
 
 This documentation describes the technical architecture of the production system, primarily for the benefit of our development team and partners.
 
@@ -26,7 +26,7 @@ Twice a day, at 15:25 and 23:25 UTC, each [scheduled region](regions.qmd) is run
 
 ### Manual Jobs
 
-See [How To Run A New Region](new_region.qmd#manual) for information about how you can manually create data for a new region or time period.
+See [How To Run A New Region](custom_regions.qmd#running-manually) for information about how you can manually create data for a new region or time period.
 
 ## Actions
 
@@ -74,7 +74,7 @@ Runs the [`alert-on-failed-dps-jobs`](https://github.com/Earth-Information-Syste
 
 ### manual-v3
 
-Used to kick off a one-time run on the production system. Useful for archival data generation and testing new features or datasets. See [How To Run A New Region](new_region.qmd#manual).
+Used to kick off a one-time run on the production system. Useful for archival data generation and testing new features or datasets. See [How To Run A New Region](custom_regions.qmd#running-manually).
 
 ### pytest
 

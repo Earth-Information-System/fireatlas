@@ -1,5 +1,0 @@
----
-title: "API"
----
-
-Info about the OGC API. Can be adapted from existing VEDA notebook from Tess and Julia.
