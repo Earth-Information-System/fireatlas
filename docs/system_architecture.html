@@ -150,7 +150,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+            <a href="../docs/data_overview.html#published-datasets" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Published Datasets</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -158,29 +158,53 @@ ul.task-list li input[type="checkbox"] {
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
- <span class="menu-text">docs/liu2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/mccabe2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">McCabe et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/mccabe2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/orland2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Orland et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/orland2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/scholten2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Scholten et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/scholten2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/liu2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Liu et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/andela2022.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/andela2022.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andela et al., 2022</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/chen2022.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/chen2022.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Chen et al., 2022</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/andela2019.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/andela2019.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andela et al., 2019</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/amazondashboard.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/amazon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Amazon Fire Dashboard</span></a>
+  </div>
+</li>
       </ul>
   </li>
       </ul>
@@ -292,7 +316,7 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>In addition to the core FEDS algorithm, the team maintains a production system to track current fires in near-real time (NRT). This data is made available on our <a href="mapping-fires.ipynb">API</a>. It ingests fire detection data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites, runs the FEDS fire even tracking algorithm forward to account for these new observations, and outputs the updated data to the API.</p>
+<p>In addition to the core FEDS algorithm, the team maintains a production system to track current fires in near-real time (NRT). This data is made available on our <a href="../docs/nrt.html#accessing-nrt-data">API</a>. It ingests fire detection data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites, runs the FEDS fire even tracking algorithm forward to account for these new observations, and outputs the updated data to the API.</p>
 <p>This documentation describes the technical architecture of the production system, primarily for the benefit of our development team and partners.</p>
 <section id="overview" class="level2">
 <h2 class="anchored" data-anchor-id="overview">Overview</h2>
@@ -312,7 +336,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="manual-jobs" class="level3">
 <h3 class="anchored" data-anchor-id="manual-jobs">Manual Jobs</h3>
-<p>See <a href="../docs/new_region.html#manual">How To Run A New Region</a> for information about how you can manually create data for a new region or time period.</p>
+<p>See <a href="../docs/custom_regions.html#running-manually">How To Run A New Region</a> for information about how you can manually create data for a new region or time period.</p>
 </section>
 </section>
 <section id="actions" class="level2">
@@ -320,7 +344,7 @@ ul.task-list li input[type="checkbox"] {
 <p>We use GitHub Actions to drive the process of scheduling and submitting all computations in our production system, as well as for testing, releasing, and deploying our code. Below, we give explanations for each Action, which are in turn called by Workflows. Together, these Workflows coordinate the production system.</p>
 <section id="run-dps-job-v3" class="level3">
 <h3 class="anchored" data-anchor-id="run-dps-job-v3">run-dps-job-v3</h3>
-<p>In a container based on the vanilla MAAP image (so that the <code>maap</code> Python package is available), run <a href=""><code>submit-dps-jobs.py</code></a>. This calls the MAAP API and submits a job with the passed parameters.</p>
+<p>In a container based on the vanilla MAAP image (so that the <code>maap</code> Python package is available), run <a href="https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/maap_runtime/submit-dps-job.py"><code>submit-dps-jobs.py</code></a>. This calls the MAAP API and submits a job with the passed parameters.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -363,7 +387,7 @@ Note
 </section>
 <section id="manual-v3" class="level3">
 <h3 class="anchored" data-anchor-id="manual-v3">manual-v3</h3>
-<p>Used to kick off a one-time run on the production system. Useful for archival data generation and testing new features or datasets. See <a href="../docs/new_region.html#manual">How To Run A New Region</a>.</p>
+<p>Used to kick off a one-time run on the production system. Useful for archival data generation and testing new features or datasets. See <a href="../docs/custom_regions.html#running-manually">How To Run A New Region</a>.</p>
 </section>
 <section id="pytest" class="level3">
 <h3 class="anchored" data-anchor-id="pytest">pytest</h3>
@@ -378,7 +402,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket (TODO address), as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.</p>
+<p>Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket <code>s3://eis-fire-public</code>, as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.</p>
 </div>
 </div>
 </section>

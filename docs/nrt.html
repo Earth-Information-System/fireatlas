@@ -149,7 +149,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false">
+            <a href="../docs/data_overview.html#published-datasets" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Published Datasets</span></a>
           <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -157,29 +157,53 @@ ul.task-list li input[type="checkbox"] {
       </div>
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
           <li class="sidebar-item">
- <span class="menu-text">docs/liu2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/mccabe2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">McCabe et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/mccabe2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/orland2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Orland et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/orland2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/scholten2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Scholten et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/scholten2024.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/liu2024.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Liu et al., 2024</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/andela2022.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/andela2022.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andela et al., 2022</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/chen2022.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/chen2022.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Chen et al., 2022</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/andela2019.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/andela2019.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Andela et al., 2019</span></a>
+  </div>
+</li>
           <li class="sidebar-item">
- <span class="menu-text">docs/amazondashboard.qmd</span>
-  </li>
+  <div class="sidebar-item-container"> 
+  <a href="../docs/papers/amazon.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Amazon Fire Dashboard</span></a>
+  </div>
+</li>
       </ul>
   </li>
       </ul>
@@ -274,8 +298,9 @@ ul.task-list li input[type="checkbox"] {
 <p><strong><em>Disclaimer:</em></strong> <em>The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.</em></p>
 <section id="accessing-nrt-data" class="level2">
 <h2 class="anchored" data-anchor-id="accessing-nrt-data">Accessing NRT Data</h2>
-<p>Near real time (NRT) data can be accessed in two ways. First, VIIRS Modeled Fire Perimeters for the continental US are viewable on the Experimental tab within <a href="https://firms.modaps.eosdis.nasa.gov/usfs/map/">NASA FIRMS US/Canada</a>.</p>
+<p>Near real time (NRT) data can be accessed in two ways. First, VIIRS Modeled Fire Perimeters for the continental US are viewable on the Experimental tab within <a href="https://firms.modaps.eosdis.nasa.gov/usfs/map/#m:experimental;d:24hrs,24hrs;l:fires_viirs_noaa20,fires_viirs_noaa21,fires_viirs_snpp,eis_fire_lf_perimeter_nrt,countries,earth;@-102.8,37.6,5.1z">NASA FIRMS US/Canada</a>.</p>
 <p>Second, NRT data are also available via <a href="https://firenrt.delta-backend.com/">OGC API</a>. An <a href="https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html">example notebook</a> that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.</p>
+<p>The <a href="https://mybinder.org/v2/gh/zebbecker/fire-utils/HEAD?labpath=api_status.ipynb">API status Binder notebook</a> also provides a quick way to visualize recent NRT outputs from the OGC API in your browser, without the need for any environment setup or downloads.</p>
 </section>
 <section id="viirs-modeled-fire-perimeters---data-description" class="level2">
 <h2 class="anchored" data-anchor-id="viirs-modeled-fire-perimeters---data-description">VIIRS Modeled Fire Perimeters - Data Description</h2>
