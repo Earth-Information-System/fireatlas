@@ -1,0 +1,11 @@
+---
+title: Andela et al., 2019
+---
+
+### "The global fire atlas of individual fire size, duration, speed, and direction"
+
+DOI: [10.5194/essd-11-529-2019](https://doi.org/10.5194/essd-11-529-2019)
+
+### Spatial and temporal extent
+
+2002-2016; global. (Updated with data through 2020 in Li et al., 2024.)
