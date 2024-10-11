@@ -10,6 +10,8 @@ Near real time (NRT) data can be accessed in two ways. First, VIIRS Modeled Fire
 
 Second, NRT data are also available via [OGC API](https://firenrt.delta-backend.com/). An [example notebook](https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.
 
+The [API status Binder notebook](https://mybinder.org/v2/gh/zebbecker/fire-utils/HEAD?labpath=api_status.ipynb) also provides a quick way to visualize recent NRT outputs from the OGC API in your browser, without the need for any environment setup or downloads.
+
 ## VIIRS Modeled Fire Perimeters - Data Description
 
 The VIIRS Modeled Fire Perimeters product uses the Fire Event Data Suite (FEDS) algorithm ([Chen et al., 2022](https://doi.org/10.1038/s41597-022-01343-0)), an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (hereafter "modeled fire perimeters").
