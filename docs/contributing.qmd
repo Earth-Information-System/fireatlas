@@ -1,4 +1,7 @@
-# Contributing
+---
+title: Contributing 
+author: Zeb Becker
+---
 
 We follow a standard feature branch workflow, as described [here.](https://docs.github.com/en/get-started/using-github/github-flow)
 

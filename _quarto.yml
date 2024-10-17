@@ -46,9 +46,9 @@ website:
               - docs/papers/amazon.qmd
       - section: "Developer Documentation"
         contents: 
-          - docs/system_architecture.qmd
           - docs/fireatlas_core.qmd
           - docs/custom_regions.qmd
+          - docs/system_architecture.qmd
           - docs/contributing.qmd
           - docs/releasing.qmd
           - docs/playbook_dps_debug.md
