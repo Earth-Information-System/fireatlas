@@ -1,15 +1,25 @@
 ---
 title: "Releasing"
-author: GC
+author: 
+  - GC
+  - Zeb Becker
 ---
 
+# Background 
+To improve reproducibility and reliability, we use tagged releases in our GitHub repo to determine which version of the FEDS code our [NRT production system](nrt.qmd) uses. The NRT system does ***not*** automatically incorporate changes pushed to the main branch of the GitHub repository. For your changes to be reflected in the production system, you need to release a new version as described in this document. This will trigger DPS to build a new image with the tagged version of the code downloaded from the repository and installed. DPS will use this new image for all subsequent scheduled jobs, until another version is released.  
+
+:::::: {.callout-note}
+Releasing a new tagged version is not the only way to create a new DPS image! If you want to test changes on the DPS or run large jobs with an experimental branch, you can manually create and use your own custom DPS image as detailed in our [DPS documentation](custom_regions.qmd#running-different-feds-versions-on-dps). 
+:::
+
 # How to Release
-In this context "releasing" means the folloing things:
+In this context "releasing" means the following things:
 
 * tagging the algorithm with a certain [semantic version](https://semver.org/) (semver for short) 
 
 
-* build and publishing `fireatlas` on PyPI
+* build and publishing `fireatlas` on PyPI 
+  - NOTE: this step is currently paused; we are not publishing the package to PyPI at the moment
 
 
 * building an image off that tag that will be used in some async task runner (currently only DPS) to run the regional algorithm jobs asynchronously.
@@ -81,6 +91,8 @@ The manual step in the last section will kick off an async GH actions workflow t
 
 
 * publishes the package to PyPI with that version number
+  - NOTE: this step is currently paused; we are not publishing the package to PyPI at the moment
+
 
 
 * kicks off a DPS job that builds a new image
@@ -92,8 +104,46 @@ the algorithm will not be running the newest code. In the GH release action job 
 where the DPS image job is building and check the status:
 
 ```json
-# EXAMPLE LOG
-{"code": 200, "message": {"id": "ec3202d4adeb02f7d887d88d2af9784184e60344", "short_id": "ec3202d4", "created_at": "2024-07-30T20:34:28.000+00:00", "parent_ids": ["91dfb3a4edff20c7049825101f015b67c8a05d3a"], "title": "Registering algorithm: eis-feds-dask-coordinator-v3", "message": "Registering algorithm: eis-feds-dask-coordinator-v3", "author_name": "root", "author_email": "root@845666954fdb", "authored_date": "2024-07-30T20:34:28.000+00:00", "committer_name": "root", "committer_email": "root@845666954fdb", "committed_date": "2024-07-30T20:34:28.000+00:00", "trailers": {}, "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/commit/ec3202d4adeb02f7d887d88d2af9784184e60344", "stats": {"additions": 7, "deletions": 7, "total": 14}, "status": "created", "project_id": 3, "last_pipeline": {"id": 14293, "iid": 1332, "project_id": 3, "sha": "ec3202d4adeb02f7d887d88d2af9784184e60344", "ref": "main", "status": "created", "source": "push", "created_at": "2024-07-30T20:34:29.737Z", "updated_at": "2024-07-30T20:34:29.737Z", "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/pipelines/14293"}, "job_web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578", "job_log_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578/raw"}}
+{
+  "code": 200,
+  "message": {
+    "id": "ec3202d4adeb02f7d887d88d2af9784184e60344",
+    "short_id": "ec3202d4",
+    "created_at": "2024-07-30T20:34:28.000+00:00",
+    "parent_ids": ["91dfb3a4edff20c7049825101f015b67c8a05d3a"],
+    "title": "Registering algorithm: eis-feds-dask-coordinator-v3", 
+    "message": "Registering algorithm: eis-feds-dask-coordinator-v3",
+    "author_name": "root",
+    "author_email": "root@845666954fdb",
+    "authored_date": "2024-07-30T20:34:28.000+00:00",
+    "committer_name": "root",
+    "committer_email": "root@845666954fdb", 
+    "committed_date": "2024-07-30T20:34:28.000+00:00",
+    "trailers": {},
+    "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/commit/ec3202d4adeb02f7d887d88d2af9784184e60344", 
+    "stats": {
+      "additions": 7,
+      "deletions": 7, 
+      "total": 14
+    },
+    "status": "created",
+    "project_id": 3,
+    "last_pipeline": {
+      "id": 14293,
+      "iid": 1332,
+      "project_id": 3,
+      "sha": "ec3202d4adeb02f7d887d88d2af9784184e60344",
+      "ref": "main",
+      "status": "created",
+      "source": "push",
+      "created_at": "2024-07-30T20:34:29.737Z",
+      "updated_at": "2024-07-30T20:34:29.737Z", 
+      "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/pipelines/14293"
+    },
+    "job_web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578",
+    "job_log_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578/raw"
+  }
+}
 ```
 
 Please verify that the job succeeds or you'll have to manually trigger an image build again via `./maap_runtime/register-all.ipynb`. To verify that the job succeeded, you can view the DPS job's progress in GitLab at the `job_web_url` provided in the response from DPS as shown above. 

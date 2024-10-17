@@ -12,11 +12,11 @@ website:
     background: "#0032A0"
     title: "Wildfire Tracking Lab"
     logo-href: index.qmd
+    pinned: false
 
   sidebar:
     logo: docs/images/nasa.png
     logo-href: index.qmd
-    pinned: true
     align: center
     tools:
       - icon: globe
@@ -34,20 +34,21 @@ website:
           - docs/data_overview.qmd
           - docs/nrt.qmd
           - section: Published Datasets
+            href: docs/data_overview.qmd#published-datasets
             contents:
-              - docs/liu2024.qmd
-              - docs/mccabe2024.qmd
-              - docs/orland2024.qmd
-              - docs/scholten2024.qmd
-              - docs/andela2022.qmd
-              - docs/chen2022.qmd
-              - docs/andela2019.qmd
-              - docs/amazondashboard.qmd
+              - docs/papers/mccabe2024.qmd
+              - docs/papers/orland2024.qmd
+              - docs/papers/scholten2024.qmd
+              - docs/papers/liu2024.qmd
+              - docs/papers/andela2022.qmd
+              - docs/papers/chen2022.qmd
+              - docs/papers/andela2019.qmd
+              - docs/papers/amazon.qmd
       - section: "Developer Documentation"
         contents: 
-          - docs/system_architecture.qmd
           - docs/fireatlas_core.qmd
           - docs/custom_regions.qmd
+          - docs/system_architecture.qmd
           - docs/contributing.qmd
           - docs/releasing.qmd
           - docs/playbook_dps_debug.md

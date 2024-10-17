@@ -17,7 +17,7 @@ Our team and collaborators develop and maintain the Fire Event Data Suite, or FE
 
 With FEDS, we continously generate subdaily estimated fire perimeters using data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites. We currently make data available for several regions of interest, including the continental United States, on our public [API](nrt.qmd) and on [NASA FIRMS US/Canada](nrt.qmd).
 
-Researchers interested in exploring our data can read more about our [data products](data_overview.qmd) and recent publications, and are welcome to contact us for further discussion. 
+Researchers interested in exploring our data can read more about our [data products](data_overview.qmd) and [recent publications](data_overview.qmd#published-datasets), and are welcome to contact us for further discussion. 
 
 Developers should consult our [technical documentation](system_architecture.qmd) and engage with our community on GitHub.  
 

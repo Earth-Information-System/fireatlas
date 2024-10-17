@@ -1,48 +1,15 @@
-# How to Define Custom Regions for DPS Jobs
-This doc explains how to define a new region, how to customize which settings it uses, how to run a region using the `manual v3` workflow, and how to create a new scheduled job for your region.
+---
+title: "How To Run FEDS on DPS"
+author: 
+    - GC 
+    - Zeb Becker
+---
 
+We use the MAAP Data Processing System (DPS) as a batch computing resource for processing large archival runs in addition to using it as part of the [NRT system](nrt.qmd).
 
-## How DPS Jobs Pick Up Custom Settings
+A given FEDS run generates outputs for a user-defined bounding box (region) and date range, generated with certain settings and a particular version of the FEDS codebase. When FEDS is run on DPS, it reads input data from our shared S3 bucket and copies outputs back to that bucket. 
 
-There are several settings, such as EPSG code, that need to be changed depending on the region for which we are running FEDS. The default settings are those stored in `FireConsts.py:Settings`. 
-Most custom regions will require some changes to these default settings.
-
-The settings used to run a given region `regnm` on DPS are defined in a `.env` file stored in the `Settings.PREPROCESSED_DIR/${regnm}` folder. If there is no such file here, the default settings are used. 
-
-::: callout-note
-`Settings.PREPROCESSED_DIR` points to `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed` in our current production setup. You can see existing regions there. 
-:::
-
-A couple points will describe how this all works: 
-
-1. We use the package [pydantic-settings](https://github.com/pydantic/pydantic-settings) in the fireatlas code to manage 
-our settings. If you look at the class declaration in `FireConsts.py` you'll see this piece of config below. This tells us
-a few different things:
-
-    ```bash
-   class Settings(BaseSettings):
-    # read in all env vars prefixed with `FEDS_` they can be in a .env file
-    model_config = {
-        "env_file": ".env",
-        "extra": "ignore",
-        "env_prefix": "FEDS_",
-    }
-    ```
-
-    * if there is a `.env` file available read it and use the key/values there to override any defaults listed in this class
-    * if there are variables in the `.env` file that are not declared in this class do not use them
-    * everything in the `.env` that will act as an override is prefixed with `FEDS_` 
-    (so to override `LOCAL_PATH` in the `.env` you would declare `FEDS_LOCAL_PATH=<value>`)
-
-2. All DPS jobs are kicked off via the `/maap_runtime/run_dps_cli.sh` script. In that file there's a single function and line
-that attempts (and gracefully exists) to bring over the `.env` file for a DPS run:
-
-    ```bash
-    # TODO: this will have to be changed to be passed dynamically once we want to use other s3 buckets
-    copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
-    ```
-   
-Any imports of the `fireatlas` package should now have these overrides included in calls to `python FireRunDaskCoordinator.py`. 
+This doc explains how to define a new region (e.g. CONUS, RussiaEast, etc.) to run FEDS on, how to customize which settings it uses, how to run a region manually using the `manual v3` workflow, and how to create a new scheduled job to continue updating your new region in NRT if neccessary.
 
 ## Defining a New Region 
 
@@ -50,12 +17,15 @@ Any imports of the `fireatlas` package should now have these overrides included 
 
 1. Pick a unique, descriptive region name **that does not already exist** in `FEDSpreprocessed` (e.g. "Russia East")
 
-2. Create a .env file defining the settings you want to use for your region. For example: 
+2. Create a .env file defining the settings you want to use for your region. The meanings of and options for each setting are defined in `FireConsts.py:Settings`. Here is an example .env file: 
 
     ```bash
     FEDS_FTYP_OPT="global"
     FEDS_CONT_OPT="global"
     FEDS_EPSG_CODE=6933
+    FEDS_FIRE_NRT="False"
+    FEDS_FIRE_SOURCE="VIIRS"
+    FEDS_remove_static_sources="True"   
     ```
 ::: callout-tip
 Working with hidden files (prefixed by a `.`) is difficult in the MAAP ADE, because the GUI file explorer has no way to show them. Use the terminal instead. Another thing you can do is create a file called `env`, edit it with the GUI as needed, then rename it to `.env` when you are done. 
@@ -63,13 +33,16 @@ Working with hidden files (prefixed by a `.`) is difficult in the MAAP ADE, beca
     ```bash
     # one way to create a .env file directly from the terminal
     (pangeo) root@workspaceqhqrmmz1pim87fsz:~# touch .env
-    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# echo -e "FEDS_FTYP_OPT="global"\nFEDS_CONT_OPT="global"\nFEDS_EPSG_CODE=6933" >> .env
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# echo -e "FEDS_FTYP_OPT="global"\nFEDS_CONT_OPT="global"\nFEDS_EPSG_CODE=6933\nFEDS_FIRE_NRT="False"\nFEDS_FIRE_SOURCE="VIIRS"\nFEDS_remove_static_sources="True"" >> .env
 
     # once we have created a .env file locally, inspect it
     (pangeo) root@workspaceqhqrmmz1pim87fsz:~# cat .env 
     FEDS_FTYP_OPT="global"
     FEDS_CONT_OPT="global"
     FEDS_EPSG_CODE=6933
+    FEDS_FIRE_NRT="False"
+    FEDS_FIRE_SOURCE="VIIRS"
+    FEDS_remove_static_sources="True"  
     ```
 3. Copy the `.env` file to `Settings.PREPROCESSED_DIR/${regnm}`: 
 
@@ -91,7 +64,7 @@ Working with hidden files (prefixed by a `.`) is difficult in the MAAP ADE, beca
 
     ```
 ::: callout-note
-When working with S3, we do not need to explicitly create a folder for the new region. Instead, when we copy the `.env` file to `Settings.PREPROCESSED_DIR/${rgnm}/.env`, S3 infers from the pathname that it should needs to create that new folder automatically. 
+When working with S3, we do not need to explicitly create a folder for the new region. Instead, when we copy the `.env` file to `Settings.PREPROCESSED_DIR/${rgnm}/.env`, S3 infers from the pathname that it should create the new folder automatically. 
 :::
 
 
@@ -144,3 +117,71 @@ Once you have tested your job manually, you can schedule it to run at constant i
    ```
 
 3. Make sure to add the username you use to register the new scheduled job to the `maap_runtime/alert-on-failed-dps-jobs.py` [script](https://github.com/Earth-Information-System/fireatlas/blob/5007e66ee592940cb7f07483addbe5adee261a46/maap_runtime/alert-on-failed-dps-jobs.py#L30) if you want the alerting system to warn us when your scheduled job fails after being submitted to DPS. 
+
+## Running Different FEDS Versions on DPS
+
+By default, the production NRT system runs the latest tagged FEDS version, as detailed in the docs on [releasing](releasing.qmd). However, you aren't limited to using only that particular version of the codebase. You can build a DPS image that uses any version of the codebase you like, and run it as show above. In this section, we will work through an example scenario in which we need to test experimental code on DPS without immediately releasing it into production. 
+
+1. Create a new branch.
+
+:::::: {.callout-note}
+Note that in this specific case, unlike in the rest of the project, the branch name cannot contain the `/` character, as this interferes with the MAAP image build later on. So, instead of naming it `zb/feature-branch`, we will just name it `feature-branch`.  
+:::
+2. In that branch, make whatever changes are needed. 
+3. Push changes to your branch on GitHub. 
+4. With your branch checked out, edit `maap_runtime/coordinator/algorithm_config.yaml`:
+    - Give it a new algorithm name that is different from the production name. For example, `TEST-FEATURE-eis-feds-dask-coordinator-v3`.
+    - For `algorithm_version`, where it might currently say something like `1.2.3`, put the name of your branch instead: `feature-branch` in this case.
+5. Run through the `maap_runtime/register_all.ipynb` notebook to register the new algorithm you just created. This will cause DPS to:
+    - Checkout your branch from remote 
+    - Build a new DPS image that has the code from your branch installed on it 
+    - Return a log response including a `job_web_url`, which you can use to watch the image build in GitLab CI/CD and troubleshoot any problems
+6. Once the image has built successfully, it will be available on DPS. You can then use it via the `manual v3` action on GitHub Actions as described [above](custom_regions.qmd#running-manually). However, a few changes are needed:
+    - Use the workflow from your feature branch, not the main branch. 
+    - Make sure to input the changed algorithm name you created in `algorithm_config.yaml`. 
+    - Input your branch name instead of the latest version number in the "Branch name or version tag" field. 
+
+## How DPS Jobs Pick Up Custom Settings For Your Region
+
+There are several settings, such as EPSG code, that need to be changed depending on the region for which we are running FEDS. The default settings are those stored in `FireConsts.py:Settings`. 
+Most custom regions will require some changes to these default settings.
+
+The settings used to run a given region `regnm` on DPS are defined in a `.env` file stored in the `Settings.PREPROCESSED_DIR/${regnm}` folder. If there is no such file here, the default settings are used. 
+
+::: callout-note
+`Settings.PREPROCESSED_DIR` points to `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed` in our current production setup. You can see existing regions there. 
+:::
+
+A couple points will describe how this all works: 
+
+1. We use the package [pydantic-settings](https://github.com/pydantic/pydantic-settings) in the fireatlas code to manage 
+our settings. If you look at the class declaration in `FireConsts.py` you'll see this piece of config below. This tells us
+a few different things:
+
+    ```bash
+   class Settings(BaseSettings):
+    # read in all env vars prefixed with `FEDS_` they can be in a .env file
+    model_config = {
+        "env_file": ".env",
+        "extra": "ignore",
+        "env_prefix": "FEDS_",
+    }
+    ```
+
+    * if there is a `.env` file available read it and use the key/values there to override any defaults listed in this class
+    * if there are variables in the `.env` file that are not declared in this class do not use them
+    * everything in the `.env` that will act as an override is prefixed with `FEDS_` 
+    (so to override `LOCAL_PATH` in the `.env` you would declare `FEDS_LOCAL_PATH=<value>`)
+
+2. All DPS jobs are kicked off via the `/maap_runtime/run_dps_cli.sh` script. In that file there's a single function and line
+that attempts (and gracefully exists) to bring over the `.env` file for a DPS run:
+
+    ```bash
+    # TODO: this will have to be changed to be passed dynamically once we want to use other s3 buckets
+    copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
+    ```
+   
+Any imports of the `fireatlas` package should now have these overrides included in calls to `python FireRunDaskCoordinator.py`. 
+
+
+

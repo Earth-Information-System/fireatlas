@@ -1,0 +1,10 @@
+---
+title: Andela et al., 2022
+---
+
+### "Tracking and classifiying Amazon fire events in near real time"
+
+DOI: [10.1126/sciadv.abd2713](https://doi.org/10.1126/sciadv.abd2713)
+
+### Spatial and temporal extent
+2019-2020; Southern Hemisphere South America

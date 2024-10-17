@@ -4,7 +4,7 @@ author: "Zeb Becker"
 toc: true
 ---
 
-In addition to the core FEDS algorithm, the team maintains a production system to track current fires in near-real time (NRT). This data is made available on our [API](mapping-fires.ipynb). It ingests fire detection data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites, runs the FEDS fire even tracking algorithm forward to account for these new observations, and outputs the updated data to the API.
+In addition to the core FEDS algorithm, the team maintains a production system to track current fires in near-real time (NRT). This data is made available on our [API](nrt.qmd#accessing-nrt-data). It ingests fire detection data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites, runs the FEDS fire even tracking algorithm forward to account for these new observations, and outputs the updated data to the API.
 
 This documentation describes the technical architecture of the production system, primarily for the benefit of our development team and partners.
 
@@ -26,7 +26,7 @@ Twice a day, at 15:25 and 23:25 UTC, each [scheduled region](regions.qmd) is run
 
 ### Manual Jobs
 
-See [How To Run A New Region](new_region.qmd#manual) for information about how you can manually create data for a new region or time period.
+See [How To Run A New Region](custom_regions.qmd#running-manually) for information about how you can manually create data for a new region or time period.
 
 ## Actions
 
@@ -34,7 +34,7 @@ We use GitHub Actions to drive the process of scheduling and submitting all comp
 
 ### run-dps-job-v3
 
-In a container based on the vanilla MAAP image (so that the `maap` Python package is available), run [`submit-dps-jobs.py`](). This calls the MAAP API and submits a job with the passed parameters.
+In a container based on the vanilla MAAP image (so that the `maap` Python package is available), run [`submit-dps-jobs.py`](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/maap_runtime/submit-dps-job.py). This calls the MAAP API and submits a job with the passed parameters.
 
 ::: callout-note
 Note that when we submit a job to DPS, we include an algorithm version tag (`github_ref`) in addition to the `algo_name` parameter. This tells DPS which specific prebuilt image to use for that job. The version of the fireatlas code that is used in a particular image will always be the version it was originally built with, even if more commits have been made to the repo in the meantime.
@@ -74,14 +74,14 @@ Runs the [`alert-on-failed-dps-jobs`](https://github.com/Earth-Information-Syste
 
 ### manual-v3
 
-Used to kick off a one-time run on the production system. Useful for archival data generation and testing new features or datasets. See [How To Run A New Region](new_region.qmd#manual).
+Used to kick off a one-time run on the production system. Useful for archival data generation and testing new features or datasets. See [How To Run A New Region](custom_regions.qmd#running-manually).
 
 ### pytest
 
 Uses `pytest` to automatically run test suite on any PR or pull to the main `conus-dps` branch. These include several integration tests that only run with the `--runslow` flag. These tests are slower and can take \~15 minutes to run.
 
 ::: callout-note
-Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket (TODO address), as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.
+Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket `s3://eis-fire-public`, as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.
 :::
 
 ### schedule-{region}-nrt-v3
