@@ -32,7 +32,7 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ git switch -c zb/add-noaa21 
 
     # make changes 
-    $ git add {changed files}
+    $ git add fireatlas/my_changed_file.py
     $ git commit -m "Add NOAA21 inputs"
     ```
 
@@ -45,7 +45,7 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
 4.  OPTIONAL: run long-running (\~15mins) integration tests
 
     ::: callout-note
-    Requires configured read access to \`s3://eis-fire-public\` to run locally. These tests can also be run with the [pytest workflow](https://github.com/Earth-Information-System/fireatlas/actions/workflows/pytest.yml) on GitHub Actions, and will be run automatically on any PR or push to the main branch of the repository.
+    Requires configured read access to `s3://eis-fire-public` to run locally. These tests can also be run manually with the [pytest workflow](https://github.com/Earth-Information-System/fireatlas/actions/workflows/pytest.yml) on GitHub Actions, and will be run automatically on any PR or push to the main branch of the repository.
     :::
 
     ```         
