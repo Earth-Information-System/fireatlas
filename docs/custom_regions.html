@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="GC">
+<meta name="author" content="Zeb Becker">
 
-<title>custom_regions – Wildfire Tracking Lab</title>
+<title>How To Run FEDS on DPS – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -125,7 +127,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/system_architecture.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/custom_regions.html">How to Define Custom Regions for DPS Jobs</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/system_architecture.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/custom_regions.html">How To Run FEDS on DPS</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -266,7 +268,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">How to Define Custom Regions for DPS Jobs</span></a>
+ <span class="menu-text">How To Run FEDS on DPS</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -299,72 +301,58 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#how-to-define-custom-regions-for-dps-jobs" id="toc-how-to-define-custom-regions-for-dps-jobs" class="nav-link active" data-scroll-target="#how-to-define-custom-regions-for-dps-jobs">How to Define Custom Regions for DPS Jobs</a>
-  <ul class="collapse">
-  <li><a href="#how-dps-jobs-pick-up-custom-settings" id="toc-how-dps-jobs-pick-up-custom-settings" class="nav-link" data-scroll-target="#how-dps-jobs-pick-up-custom-settings">How DPS Jobs Pick Up Custom Settings</a></li>
-  <li><a href="#defining-a-new-region" id="toc-defining-a-new-region" class="nav-link" data-scroll-target="#defining-a-new-region">Defining a New Region</a></li>
+  <li><a href="#defining-a-new-region" id="toc-defining-a-new-region" class="nav-link active" data-scroll-target="#defining-a-new-region">Defining a New Region</a></li>
   <li><a href="#running-manually" id="toc-running-manually" class="nav-link" data-scroll-target="#running-manually">Running Manually</a></li>
   <li><a href="#scheduling-nrt-runs-for-your-new-region" id="toc-scheduling-nrt-runs-for-your-new-region" class="nav-link" data-scroll-target="#scheduling-nrt-runs-for-your-new-region">Scheduling NRT Runs For Your New Region</a></li>
-  </ul></li>
+  <li><a href="#running-different-feds-versions-on-dps" id="toc-running-different-feds-versions-on-dps" class="nav-link" data-scroll-target="#running-different-feds-versions-on-dps">Running Different FEDS Versions on DPS</a></li>
+  <li><a href="#how-dps-jobs-pick-up-custom-settings-for-your-region" id="toc-how-dps-jobs-pick-up-custom-settings-for-your-region" class="nav-link" data-scroll-target="#how-dps-jobs-pick-up-custom-settings-for-your-region">How DPS Jobs Pick Up Custom Settings For Your Region</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/custom_regions.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/system_architecture.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/custom_regions.html">How To Run FEDS on DPS</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">How To Run FEDS on DPS</h1>
+</div>
 
 
 
-<section id="how-to-define-custom-regions-for-dps-jobs" class="level1">
-<h1>How to Define Custom Regions for DPS Jobs</h1>
-<p>This doc explains how to define a new region, how to customize which settings it uses, how to run a region using the <code>manual v3</code> workflow, and how to create a new scheduled job for your region.</p>
-<section id="how-dps-jobs-pick-up-custom-settings" class="level2">
-<h2 class="anchored" data-anchor-id="how-dps-jobs-pick-up-custom-settings">How DPS Jobs Pick Up Custom Settings</h2>
-<p>There are several settings, such as EPSG code, that need to be changed depending on the region for which we are running FEDS. The default settings are those stored in <code>FireConsts.py:Settings</code>. Most custom regions will require some changes to these default settings.</p>
-<p>The settings used to run a given region <code>regnm</code> on DPS are defined in a <code>.env</code> file stored in the <code>Settings.PREPROCESSED_DIR/${regnm}</code> folder. If there is no such file here, the default settings are used.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><code>Settings.PREPROCESSED_DIR</code> points to <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed</code> in our current production setup. You can see existing regions there.</p>
-</div>
-</div>
-<p>A couple points will describe how this all works:</p>
-<ol type="1">
-<li><p>We use the package <a href="https://github.com/pydantic/pydantic-settings">pydantic-settings</a> in the fireatlas code to manage our settings. If you look at the class declaration in <code>FireConsts.py</code> you’ll see this piece of config below. This tells us a few different things:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">class</span> Settings<span class="er">(</span><span class="ex">BaseSettings</span><span class="kw">)</span><span class="bu">:</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># read in all env vars prefixed with `FEDS_` they can be in a .env file</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">model_config</span> = {</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"env_file"</span><span class="ex">:</span> <span class="st">".env"</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"extra"</span><span class="ex">:</span> <span class="st">"ignore"</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"env_prefix"</span><span class="ex">:</span> <span class="st">"FEDS_"</span>,</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<ul>
-<li>if there is a <code>.env</code> file available read it and use the key/values there to override any defaults listed in this class</li>
-<li>if there are variables in the <code>.env</code> file that are not declared in this class do not use them</li>
-<li>everything in the <code>.env</code> that will act as an override is prefixed with <code>FEDS_</code> (so to override <code>LOCAL_PATH</code> in the <code>.env</code> you would declare <code>FEDS_LOCAL_PATH=&lt;value&gt;</code>)</li>
-</ul></li>
-<li><p>All DPS jobs are kicked off via the <code>/maap_runtime/run_dps_cli.sh</code> script. In that file there’s a single function and line that attempts (and gracefully exists) to bring over the <code>.env</code> file for a DPS run:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: this will have to be changed to be passed dynamically once we want to use other s3 buckets</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">copy_s3_object</span> <span class="st">"s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/</span><span class="va">${regnm}</span><span class="st">/.env"</span> ../fireatlas/.env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
-</ol>
-<p>Any imports of the <code>fireatlas</code> package should now have these overrides included in calls to <code>python FireRunDaskCoordinator.py</code>.</p>
-</section>
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>GC </p>
+             <p>Zeb Becker </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>We use the MAAP Data Processing System (DPS) as a batch computing resource for processing large archival runs in addition to using it as part of the <a href="../docs/nrt.html">NRT system</a>.</p>
+<p>A given FEDS run generates outputs for a user-defined bounding box (region) and date range, generated with certain settings and a particular version of the FEDS codebase. When FEDS is run on DPS, it reads input data from our shared S3 bucket and copies outputs back to that bucket.</p>
+<p>This doc explains how to define a new region (e.g.&nbsp;CONUS, RussiaEast, etc.) to run FEDS on, how to customize which settings it uses, how to run a region manually using the <code>manual v3</code> workflow, and how to create a new scheduled job to continue updating your new region in NRT if neccessary.</p>
 <section id="defining-a-new-region" class="level2">
 <h2 class="anchored" data-anchor-id="defining-a-new-region">Defining a New Region</h2>
 <p>The example below will use the newly created “RussiaEast” region to explain how to define a new region and process it on DPS.</p>
 <ol type="1">
 <li><p>Pick a unique, descriptive region name <strong>that does not already exist</strong> in <code>FEDSpreprocessed</code> (e.g.&nbsp;“Russia East”)</p></li>
-<li><p>Create a .env file defining the settings you want to use for your region. For example:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FTYP_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_CONT_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_EPSG_CODE</span><span class="op">=</span>6933</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<li><p>Create a .env file defining the settings you want to use for your region. The meanings of and options for each setting are defined in <code>FireConsts.py:Settings</code>. Here is an example .env file:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FTYP_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_CONT_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_EPSG_CODE</span><span class="op">=</span>6933</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FIRE_NRT</span><span class="op">=</span><span class="st">"False"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FIRE_SOURCE</span><span class="op">=</span><span class="st">"VIIRS"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_remove_static_sources</span><span class="op">=</span><span class="st">"True"</span>   </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -378,30 +366,33 @@ Tip
 <p>Working with hidden files (prefixed by a <code>.</code>) is difficult in the MAAP ADE, because the GUI file explorer has no way to show them. Use the terminal instead. Another thing you can do is create a file called <code>env</code>, edit it with the GUI as needed, then rename it to <code>.env</code> when you are done.</p>
 </div>
 </div>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># one way to create a .env file directly from the terminal</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> touch .env</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> echo <span class="at">-e</span> <span class="st">"FEDS_FTYP_OPT="</span>global<span class="st">"\nFEDS_CONT_OPT="</span>global<span class="st">"\nFEDS_EPSG_CODE=6933"</span> <span class="op">&gt;&gt;</span> .env</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># once we have created a .env file locally, inspect it</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> cat .env </span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FTYP_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_CONT_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_EPSG_CODE</span><span class="op">=</span>6933</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># one way to create a .env file directly from the terminal</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> touch .env</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> echo <span class="at">-e</span> <span class="st">"FEDS_FTYP_OPT="</span>global<span class="st">"\nFEDS_CONT_OPT="</span>global<span class="st">"\nFEDS_EPSG_CODE=6933\nFEDS_FIRE_NRT="</span>False<span class="st">"\nFEDS_FIRE_SOURCE="</span>VIIRS<span class="st">"\nFEDS_remove_static_sources="</span>True<span class="st">""</span> <span class="op">&gt;&gt;</span> .env</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># once we have created a .env file locally, inspect it</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> cat .env </span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FTYP_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_CONT_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_EPSG_CODE</span><span class="op">=</span>6933</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FIRE_NRT</span><span class="op">=</span><span class="st">"False"</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FIRE_SOURCE</span><span class="op">=</span><span class="st">"VIIRS"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_remove_static_sources</span><span class="op">=</span><span class="st">"True"</span>  </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 <li><p>Copy the <code>.env</code> file to <code>Settings.PREPROCESSED_DIR/${regnm}</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check that region does not already exist</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (just showing how to list bucket key contents)</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">PRE</span> BorealManualV2/</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">PRE</span> BorealNA/</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">PRE</span> CONUS/</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># copy the .env to a new FEDSpreprocessed folder</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="ex">upload:</span> ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="co"># check that it exists </span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="ex">2024-07-12</span> 05:55:19         66 .env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check that region does not already exist</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># (just showing how to list bucket key contents)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">PRE</span> BorealManualV2/</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">PRE</span> BorealNA/</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">PRE</span> CONUS/</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># copy the .env to a new FEDSpreprocessed folder</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">upload:</span> ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># check that it exists </span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="ex">2024-07-12</span> 05:55:19         66 .env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -412,7 +403,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>When working with S3, we do not need to explicitly create a folder for the new region. Instead, when we copy the <code>.env</code> file to <code>Settings.PREPROCESSED_DIR/${rgnm}/.env</code>, S3 infers from the pathname that it should needs to create that new folder automatically.</p>
+<p>When working with S3, we do not need to explicitly create a folder for the new region. Instead, when we copy the <code>.env</code> file to <code>Settings.PREPROCESSED_DIR/${rgnm}/.env</code>, S3 infers from the pathname that it should create the new folder automatically.</p>
 </div>
 </div></li>
 </ol>
@@ -445,25 +436,103 @@ Tip
 <p>Once you have tested your job manually, you can schedule it to run at constant intervals in order to update the outputs as new data is collected in NRT.</p>
 <ol type="1">
 <li><p>Find an existing v3 scheduled worklow in the <code>.github/workflows/*.yaml</code> such as <code>.github/workflows/schedule-conus-nrt-v3.yaml</code> and copy it</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-russian-east-nrt-v3.yaml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-russian-east-nrt-v3.yaml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 <li><p>Edit the new workflow and make sure to change some of the following sections and values. Note that leaving <code>tst</code> or <code>ted</code> as <code>[]</code> means it will run from current year 01/01 to now:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">name:</span> <span class="op">&lt;</span>your region name<span class="op">&gt;</span> nrt v3</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">-</span> name: kick off the DPS job</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>   <span class="ex">uses:</span> Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>   <span class="ex">with:</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>     <span class="ex">algo_name:</span> eis-feds-dask-coordinator-v3</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>     <span class="ex">github_ref:</span> 1.2.3</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>     <span class="ex">username:</span> gcorradini</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>     <span class="ex">queue:</span> maap-dps-eis-worker-128gb</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>     <span class="ex">maap_image_env:</span> ubuntu</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>     <span class="ex">maap_pgt_secret:</span> <span class="va">${</span><span class="er">{ secrets.MAAP_PGT </span><span class="va">}</span>}</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>     <span class="ex">json_params:</span> <span class="st">'{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">name:</span> <span class="op">&lt;</span>your region name<span class="op">&gt;</span> nrt v3</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">-</span> name: kick off the DPS job</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>   <span class="ex">uses:</span> Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>   <span class="ex">with:</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>     <span class="ex">algo_name:</span> eis-feds-dask-coordinator-v3</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>     <span class="ex">github_ref:</span> 1.2.3</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>     <span class="ex">username:</span> gcorradini</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>     <span class="ex">queue:</span> maap-dps-eis-worker-128gb</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>     <span class="ex">maap_image_env:</span> ubuntu</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>     <span class="ex">maap_pgt_secret:</span> <span class="va">${</span><span class="er">{ secrets.MAAP_PGT </span><span class="va">}</span>}</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>     <span class="ex">json_params:</span> <span class="st">'{"regnm": "RussiaEast", "bbox": "[97.16172779881556, 46.1226744036175, 168.70469654881543, 77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 <li><p>Make sure to add the username you use to register the new scheduled job to the <code>maap_runtime/alert-on-failed-dps-jobs.py</code> <a href="https://github.com/Earth-Information-System/fireatlas/blob/5007e66ee592940cb7f07483addbe5adee261a46/maap_runtime/alert-on-failed-dps-jobs.py#L30">script</a> if you want the alerting system to warn us when your scheduled job fails after being submitted to DPS.</p></li>
 </ol>
-
-
 </section>
+<section id="running-different-feds-versions-on-dps" class="level2">
+<h2 class="anchored" data-anchor-id="running-different-feds-versions-on-dps">Running Different FEDS Versions on DPS</h2>
+<p>By default, the production NRT system runs the latest tagged FEDS version, as detailed in the docs on <a href="../docs/releasing.html">releasing</a>. However, you aren’t limited to using only that particular version of the codebase. You can build a DPS image that uses any version of the codebase you like, and run it as show above. In this section, we will work through an example scenario in which we need to test experimental code on DPS without immediately releasing it into production.</p>
+<ol type="1">
+<li>Create a new branch.</li>
+</ol>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Note that in this specific case, unlike in the rest of the project, the branch name cannot contain the <code>/</code> character, as this interferes with the MAAP image build later on. So, instead of naming it <code>zb/feature-branch</code>, we will just name it <code>feature-branch</code>.</p>
+</div>
+</div>
+<ol start="2" type="1">
+<li>In that branch, make whatever changes are needed.</li>
+<li>Push changes to your branch on GitHub.</li>
+<li>With your branch checked out, edit <code>maap_runtime/coordinator/algorithm_config.yaml</code>:
+<ul>
+<li>Give it a new algorithm name that is different from the production name. For example, <code>TEST-FEATURE-eis-feds-dask-coordinator-v3</code>.</li>
+<li>For <code>algorithm_version</code>, where it might currently say something like <code>1.2.3</code>, put the name of your branch instead: <code>feature-branch</code> in this case.</li>
+</ul></li>
+<li>Run through the <code>maap_runtime/register_all.ipynb</code> notebook to register the new algorithm you just created. This will cause DPS to:
+<ul>
+<li>Checkout your branch from remote</li>
+<li>Build a new DPS image that has the code from your branch installed on it</li>
+<li>Return a log response including a <code>job_web_url</code>, which you can use to watch the image build in GitLab CI/CD and troubleshoot any problems</li>
+</ul></li>
+<li>Once the image has built successfully, it will be available on DPS. You can then use it via the <code>manual v3</code> action on GitHub Actions as described <a href="../docs/custom_regions.html#running-manually">above</a>. However, a few changes are needed:
+<ul>
+<li>Use the workflow from your feature branch, not the main branch.</li>
+<li>Make sure to input the changed algorithm name you created in <code>algorithm_config.yaml</code>.</li>
+<li>Input your branch name instead of the latest version number in the “Branch name or version tag” field.</li>
+</ul></li>
+</ol>
+</section>
+<section id="how-dps-jobs-pick-up-custom-settings-for-your-region" class="level2">
+<h2 class="anchored" data-anchor-id="how-dps-jobs-pick-up-custom-settings-for-your-region">How DPS Jobs Pick Up Custom Settings For Your Region</h2>
+<p>There are several settings, such as EPSG code, that need to be changed depending on the region for which we are running FEDS. The default settings are those stored in <code>FireConsts.py:Settings</code>. Most custom regions will require some changes to these default settings.</p>
+<p>The settings used to run a given region <code>regnm</code> on DPS are defined in a <code>.env</code> file stored in the <code>Settings.PREPROCESSED_DIR/${regnm}</code> folder. If there is no such file here, the default settings are used.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>Settings.PREPROCESSED_DIR</code> points to <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed</code> in our current production setup. You can see existing regions there.</p>
+</div>
+</div>
+<p>A couple points will describe how this all works:</p>
+<ol type="1">
+<li><p>We use the package <a href="https://github.com/pydantic/pydantic-settings">pydantic-settings</a> in the fireatlas code to manage our settings. If you look at the class declaration in <code>FireConsts.py</code> you’ll see this piece of config below. This tells us a few different things:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="ex">class</span> Settings<span class="er">(</span><span class="ex">BaseSettings</span><span class="kw">)</span><span class="bu">:</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># read in all env vars prefixed with `FEDS_` they can be in a .env file</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="ex">model_config</span> = {</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"env_file"</span><span class="ex">:</span> <span class="st">".env"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"extra"</span><span class="ex">:</span> <span class="st">"ignore"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"env_prefix"</span><span class="ex">:</span> <span class="st">"FEDS_"</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>if there is a <code>.env</code> file available read it and use the key/values there to override any defaults listed in this class</li>
+<li>if there are variables in the <code>.env</code> file that are not declared in this class do not use them</li>
+<li>everything in the <code>.env</code> that will act as an override is prefixed with <code>FEDS_</code> (so to override <code>LOCAL_PATH</code> in the <code>.env</code> you would declare <code>FEDS_LOCAL_PATH=&lt;value&gt;</code>)</li>
+</ul></li>
+<li><p>All DPS jobs are kicked off via the <code>/maap_runtime/run_dps_cli.sh</code> script. In that file there’s a single function and line that attempts (and gracefully exists) to bring over the <code>.env</code> file for a DPS run:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># </span><span class="al">TODO</span><span class="co">: this will have to be changed to be passed dynamically once we want to use other s3 buckets</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">copy_s3_object</span> <span class="st">"s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/</span><span class="va">${regnm}</span><span class="st">/.env"</span> ../fireatlas/.env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+</ol>
+<p>Any imports of the <code>fireatlas</code> package should now have these overrides included in calls to <code>python FireRunDaskCoordinator.py</code>.</p>
+
+
 </section>
 
 </main> <!-- /main -->

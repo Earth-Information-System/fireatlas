@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
 </style>
 
 
@@ -266,7 +232,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">How to Define Custom Regions for DPS Jobs</span></a>
+ <span class="menu-text">How To Run FEDS on DPS</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -301,8 +267,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#contributing" id="toc-contributing" class="nav-link active" data-scroll-target="#contributing">Contributing</a>
   <ul class="collapse">
+  <li><a href="#example-workflow" id="toc-example-workflow" class="nav-link" data-scroll-target="#example-workflow">Example workflow</a></li>
   <li><a href="#editing-docs" id="toc-editing-docs" class="nav-link" data-scroll-target="#editing-docs">Editing Docs</a></li>
-  <li><a href="#running-tests" id="toc-running-tests" class="nav-link" data-scroll-target="#running-tests">Running Tests</a></li>
   </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/contributing.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -315,16 +281,72 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="contributing" class="level1">
 <h1>Contributing</h1>
+<p>We follow a standard feature branch workflow, as described <a href="https://docs.github.com/en/get-started/using-github/github-flow">here.</a></p>
+<section id="example-workflow" class="level3">
+<h3 class="anchored" data-anchor-id="example-workflow">Example workflow</h3>
+<ol type="1">
+<li><p>Setup:</p>
+<pre><code># clone repository 
+$ git clone https://github.com/Earth-Information-System/fireatlas.git
+$ cd fireatlas
+
+# create virtual environment named `feds_env` with venv 
+$ python -m venv feds_env
+$ source feds_env/bin/activate
+
+# OR create a virtual environment with conda
+$ conda create --name feds_env python=3.11
+$ conda activate feds_env
+
+# install required dependencies 
+$ pip install -e . 
+
+# install optional test dependencies if needed
+$ pip install -e '.[test]'  </code></pre></li>
+<li><p>Create a new branch and make your changes as needed. Name the branch {your initials}/{descriptive feature name}:</p>
+<pre><code>$ git switch -c zb/add-noaa21 
+
+# make changes 
+$ git add fireatlas/my_changed_file.py
+$ git commit -m "Add NOAA21 inputs"</code></pre></li>
+<li><p>Run tests (from fireatlas root dir)</p>
+<pre><code>$ pytest -v tests/ </code></pre></li>
+<li><p>OPTIONAL: run long-running (~15mins) integration tests</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Requires configured read access to <code>s3://eis-fire-public</code> to run locally. These tests can also be run manually with the <a href="https://github.com/Earth-Information-System/fireatlas/actions/workflows/pytest.yml">pytest workflow</a> on GitHub Actions, and will be run automatically on any PR or push to the main branch of the repository.</p>
+</div>
+</div>
+<pre><code>$ pytest -v --runslow tests/ </code></pre></li>
+<li><p>Push to your branch on GitHub.</p>
+<pre><code># The first time you push your new branch, set upstream: 
+$ git push -u origin zb/add-noaa21
+
+# Subsequently, you can just do:
+$ git push </code></pre></li>
+<li><p>When you are ready, <a href="https://docs.github.com/en/get-started/using-github/github-flow#create-a-pull-request">create a pull request</a> to merge your branch into the main branch, <code>conus-dps</code>. Most substantive changes should be reviewed by another team member, and all changes must wait to be merged until the automated tests have passed.</p></li>
+</ol>
+</section>
 <section id="editing-docs" class="level2">
 <h2 class="anchored" data-anchor-id="editing-docs">Editing Docs</h2>
-<p>Edit locally with VSCode Quarto extension:</p>
+<p>We use Quarto to build this website. Most of the source files are plaintext <code>.qmd</code> files written in <a href="https://quarto.org/docs/authoring/markdown-basics.html">Quarto markdown</a>. You can edit them in any text editor, including with the MAAP ADE or even directly on GitHub. However, if you are making more extensive changes or using formatting, you should preview what the rendered website will look like.</p>
+<p>Website formatting and page structure are defined in <code>_quarto.yml</code>.</p>
+<p>You can use VSCode, Jupyter, RStudio, NeoVim, or any text editor + CLI to run Quarto. Info on getting started can be found in the Quarto docs <a href="https://quarto.org/docs/get-started/">here</a>.</p>
+<p>Below is a quick demo of how you can use VSCode on your local machine to preview the website and edit with a visual (WYSIWYG) editor.</p>
 <ol type="1">
 <li><p><a href="https://quarto.org/docs/download/">Download Quarto</a></p></li>
 <li><p>Install jupyter if needed (<code>pip install jupyter</code>)</p></li>
 <li><p>Install <a href="https://marketplace.visualstudio.com/items?itemName=quarto.quarto">Quarto extension</a> in VSCode</p></li>
 <li><p>Clone this repo and open it in VSCode.</p></li>
-<li><p>Make edits to <code>.qmd</code>, <code>.md</code> or <code>.ipynb</code> files.</p></li>
-</ol>
+<li><p>Make edits to <code>.qmd</code>, <code>.md</code> or <code>.ipynb</code> files, or <code>_quarto.yml</code>.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -337,28 +359,23 @@ Tip
 <div class="callout-body-container callout-body">
 <p>Open the Command Palette (cmd-shift-p on Mac) and select <code>Quarto: Edit in Visual Mode</code> for What You See Is What You Get editing. Select <code>Quarto: Edit in Source Mode</code> to go back.</p>
 </div>
-</div>
-<ol start="6" type="1">
+</div></li>
 <li><p>Preview website. Select the Preview icon in upper right, use the keyboard shortcut cmd-shift-k, or use the <code>Quarto: Preview</code> command from the Command Palette.</p></li>
 <li><p>Once everything looks good, commit your changes and push to GitHub. If you pushed directly to main, GitHub will automatically build and deploy the new website reflecting your changes. If you are working on a branch, GitHub will build and deploy your changes when you create a pull request and merge your branch into main.</p></li>
 </ol>
-<p>Edit in your browser</p>
-<ol type="1">
-<li>For simple edits, you can edit markdown (<code>.qmd</code> and <code>.md</code>) files directly on GitHub. Again, as soon as you push to main, the website will rebuild to reflect your changes.</li>
-</ol>
-<p>Edit in the MAAP ADE</p>
-<ol type="1">
-<li><p>You could also clone the repo in the ADE and use that interface to edit markdown and Jupyter Notebooks, then commit to GitHub the same way.</p></li>
-<li><p>Preview coming soon???</p></li>
-</ol>
-</section>
-<section id="running-tests" class="level2">
-<h2 class="anchored" data-anchor-id="running-tests">Running Tests</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> git clone <span class="op">&lt;</span>this-repo<span class="op">&gt;</span> fireatlas</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> cd fireatlas/</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pip install <span class="at">-e</span> <span class="st">'.[test]'</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pytest <span class="at">-v</span> tests/</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pytest <span class="at">-v</span> <span class="at">--runslow</span> tests/ <span class="co"># include long-running tests</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Most users should never need to do this. However: to rebuild the active GitHub Pages website from a branch other than the main branch, checkout that branch and run <code>quarto publish gh-pages</code> from within that directory. This will trigger a site rebuild based on the checked out branch. Note that it will be superseded as soon as another push is made to the main branch.</p>
+</div>
+</div>
 
 
 </section>
