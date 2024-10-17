@@ -12,11 +12,11 @@ website:
     background: "#0032A0"
     title: "Wildfire Tracking Lab"
     logo-href: index.qmd
+    pinned: false
 
   sidebar:
     logo: docs/images/nasa.png
     logo-href: index.qmd
-    pinned: true
     align: center
     tools:
       - icon: globe
