@@ -6,8 +6,9 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="GC">
 
-<title>playbook_dps_debug – Wildfire Tracking Lab</title>
+<title>DPS Debugging Playbook – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -125,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/system_architecture.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/playbook_dps_debug.html">DPS Debugging Playbook</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/playbook_dps_debug.html">DPS Debugging Playbook</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -253,12 +254,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/system_architecture.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">NRT System Architecture</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">FEDS Algorithm</span></a>
   </div>
@@ -267,6 +262,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">How To Run FEDS on DPS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/system_architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NRT System Architecture</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -299,25 +300,42 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#dps-debugging-playbook" id="toc-dps-debugging-playbook" class="nav-link active" data-scroll-target="#dps-debugging-playbook">DPS Debugging Playbook</a>
-  <ul class="collapse">
-  <li><a href="#dps-job-uiux" id="toc-dps-job-uiux" class="nav-link" data-scroll-target="#dps-job-uiux">DPS Job UI/UX:</a></li>
+  <li><a href="#dps-job-uiux" id="toc-dps-job-uiux" class="nav-link active" data-scroll-target="#dps-job-uiux">DPS Job UI/UX:</a></li>
   <li><a href="#i-think-a-job-is-failing" id="toc-i-think-a-job-is-failing" class="nav-link" data-scroll-target="#i-think-a-job-is-failing">I Think a Job is Failing:</a></li>
   <li><a href="#gh-action-that-kicked-off-a-job" id="toc-gh-action-that-kicked-off-a-job" class="nav-link" data-scroll-target="#gh-action-that-kicked-off-a-job">GH Action That Kicked Off A Job</a></li>
   <li><a href="#gh-action-alert-failed-dps-jobs" id="toc-gh-action-alert-failed-dps-jobs" class="nav-link" data-scroll-target="#gh-action-alert-failed-dps-jobs">GH Action Alert Failed DPS Jobs</a></li>
   <li><a href="#go-to-dps-uiux-and-filter-for-job" id="toc-go-to-dps-uiux-and-filter-for-job" class="nav-link" data-scroll-target="#go-to-dps-uiux-and-filter-for-job">Go to DPS UI/UX And Filter For Job</a></li>
-  </ul></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/playbook_dps_debug.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/playbook_dps_debug.html">DPS Debugging Playbook</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">DPS Debugging Playbook</h1>
+</div>
 
 
 
-<section id="dps-debugging-playbook" class="level1">
-<h1>DPS Debugging Playbook</h1>
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>GC </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
 <p>Here are a series of steps that can help find out where something is failing regardless of whether the job is <code>"completed"</code> or <code>"failed"</code> state from the DPS perspective.</p>
 <section id="dps-job-uiux" class="level3">
 <h3 class="anchored" data-anchor-id="dps-job-uiux">DPS Job UI/UX:</h3>
@@ -381,7 +399,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>If a DPS job is in the <code>"failed"</code> state it should have a clear traceback listed in the job card. If it is in the <code>"completed"</code> state then you should be able to click through in the job card under <code>"View Job"</code> and look at the <code>_stderr.txt</code> and <code>running.log</code> in outputs for more information</p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->

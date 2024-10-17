@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Zeb Becker">
 
 <title>FEDS Algorithm – Wildfire Tracking Lab</title>
 <style>
@@ -91,7 +92,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/system_architecture.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">FEDS Algorithm</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">FEDS Algorithm</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -219,12 +220,6 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/system_architecture.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">NRT System Architecture</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">FEDS Algorithm</span></a>
   </div>
@@ -233,6 +228,12 @@ ul.task-list li input[type="checkbox"] {
   <div class="sidebar-item-container"> 
   <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">How To Run FEDS on DPS</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/system_architecture.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">NRT System Architecture</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -260,13 +261,20 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#feds-implementation" id="toc-feds-implementation" class="nav-link active" data-scroll-target="#feds-implementation">FEDS Implementation</a></li>
+  <li><a href="#running-feds-on-the-maap-ade" id="toc-running-feds-on-the-maap-ade" class="nav-link" data-scroll-target="#running-feds-on-the-maap-ade">Running FEDS on the MAAP ADE</a></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/fireatlas_core.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/system_architecture.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">FEDS Algorithm</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">FEDS Algorithm</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">FEDS Algorithm</h1>
 </div>
@@ -275,6 +283,12 @@ ul.task-list li input[type="checkbox"] {
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Zeb Becker </p>
+          </div>
+  </div>
     
   
     
@@ -285,9 +299,37 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>TODO: explanation of core functions from <code>fireatlas</code> package (FireForward, etc,).</p>
+<section id="feds-implementation" class="level3">
+<h3 class="anchored" data-anchor-id="feds-implementation">FEDS Implementation</h3>
+<p>A technical overview of the core FEDS algorithm can be found in <a href="https://doi.org/10.1038/s41597-022-01343-0">Chen et al., 2022.</a> The FEDS logic is implemented in the <a href="https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/fireatlas">fireatlas module</a>. In particular, <code>FireMain.py</code> would be a good place to start building understanding.</p>
+</section>
+<section id="running-feds-on-the-maap-ade" class="level3">
+<h3 class="anchored" data-anchor-id="running-feds-on-the-maap-ade">Running FEDS on the MAAP ADE</h3>
+<p>The codebase is currently set up to read from and write to from shared AWS S3 buckets accessed through NASA’s MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented <a href="../docs/custom_regions.html">here</a>.) There are two ways to do this.</p>
+<p>First, you can run through <a href="https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/notebooks">notebooks</a> 01-04 on the ADE to walk through each step of the process. Set up your environment according to the instructions in <a href="../docs/contributing.html">Contributing</a>, then simply start working through the notebooks.</p>
+<p>Second, to coordinate every step from the command line with one command, you can use <code>FireRunDaskCoordinator.py</code>. This uses Dask to parallelize as many steps of the process as possible (e.g.&nbsp;preproccessing input files, generating output files). This script fetches any missing input data you might need for your region and date range, automatically preprocesses it, copies the preprocessed data to S3, runs FEDS, saves the files locally in a <code>data/</code> folder inside the root <code>fireatlas</code> directory, and copies outputs to S3 (in this case, <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutputs-v3/{region name}</code>).</p>
+<pre><code># example run for CONUS June-Sept 2023
+python3 FireRunDaskCoordinator.py --regnm="CONUS" --bbox="[-126,24,-61,49]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]" --no-veda-copy</code></pre>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Warning
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Please be sure to include the <code>--no-veda-copy</code> flag unless you are actively trying to add data to the public API collections!</p>
+</div>
+</div>
+<section id="custom-settings" class="level4">
+<h4 class="anchored" data-anchor-id="custom-settings">Custom settings</h4>
+<p>There are several important runtime settings in <code>FireConsts.py</code> that will change your outputs- for example, which satellite(s) to use as input, or the CRS you want to generate ouputs in. You could change these directly in <code>FireConsts.py</code>, making sure to reinstall the fireatlas package as needed, or you could <a href="../docs/custom_regions.html#how-dps-jobs-pick-up-custom-settings-for-your-region">use a .env file</a> to explicitly define your settings for better replicability.</p>
 
 
+</section>
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -718,7 +760,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/fireatlas_core.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/fireatlas_core.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
