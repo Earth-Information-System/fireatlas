@@ -10,7 +10,7 @@ python --version
 # where mamba should be default resolver
 pushd "$basedir"
 
-conda create -n "fire_env"
+conda create -n "fire_env" python=3.11
 source activate fire_env
 conda install pip 
 which -a pip
