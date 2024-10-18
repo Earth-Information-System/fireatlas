@@ -8,7 +8,7 @@ on:
         required: true
         default: 'eis-feds-dask-coordinator-v3'
       github_ref:
-        description: 'Branch name or version tag, e.g: 1.2.4'
+        description: 'Branch name or version tag, e.g: 1.2.5'
         required: true
       username:
         description: 'Your MAAP username'
