@@ -12,8 +12,6 @@ pushd "$basedir"
 
 conda create -n "fire_env" python=3.11
 source activate fire_env
-conda install pip 
-which -a pip
 
 echo "Doing fireatlas install next..."
 /opt/conda/envs/fire_env/bin/pip install -e ..
