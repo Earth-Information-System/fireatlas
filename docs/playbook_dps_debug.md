@@ -1,4 +1,7 @@
-# DPS Debugging Playbook
+---
+title: DPS Debugging Playbook
+author: GC
+--- 
 
 Here are a series of steps that can help find out where something is failing regardless of whether the job is `"completed"`
 or `"failed"` state from the DPS perspective.

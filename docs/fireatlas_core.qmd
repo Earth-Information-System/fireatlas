@@ -1,5 +1,26 @@
 ---
 title: FEDS Algorithm 
+author: Zeb Becker
 ---
 
-TODO: explanation of core functions from `fireatlas` package (FireForward, etc,).
+### FEDS Implementation 
+A technical overview of the core FEDS algorithm can be found in [Chen et al., 2022.](https://doi.org/10.1038/s41597-022-01343-0) The FEDS logic is implemented in the [fireatlas module](https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/fireatlas). In particular, `FireMain.py` would be a good place to start building understanding. 
+
+### Running FEDS on the MAAP ADE 
+The codebase is currently set up to read from and write to from shared AWS S3 buckets accessed through NASA's MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented [here](custom_regions.qmd).) There are two ways to do this. 
+
+First, you can run through [notebooks](https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/notebooks) 01-04 on the ADE to walk through each step of the process. Set up your environment according to the instructions in [Contributing](contributing.qmd), then simply start working through the notebooks. 
+
+Second, to coordinate every step from the command line with one command, you can use `FireRunDaskCoordinator.py`. This uses Dask to parallelize as many steps of the process as possible (e.g. preproccessing input files, generating output files). This script fetches any missing input data you might need for your region and date range, automatically preprocesses it, copies the preprocessed data to S3, runs FEDS, saves the files locally in a `data/` folder inside the root `fireatlas` directory, and copies outputs to S3 (in this case, `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutputs-v3/{region name}`). 
+
+
+```
+# example run for CONUS June-Sept 2023
+python3 FireRunDaskCoordinator.py --regnm="CONUS" --bbox="[-126,24,-61,49]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]" --no-veda-copy
+```
+:::::: {.callout-warning}
+Please be sure to include the `--no-veda-copy` flag unless you are actively trying to add data to the public API collections! 
+:::
+
+#### Custom settings
+There are several important runtime settings in `FireConsts.py` that will change your outputs- for example, which satellite(s) to use as input, or the CRS you want to generate ouputs in. You could change these directly in `FireConsts.py`, making sure to reinstall the fireatlas package as needed, or you could [use a .env file](custom_regions.qmd#how-dps-jobs-pick-up-custom-settings-for-your-region) to explicitly define your settings for better replicability. 

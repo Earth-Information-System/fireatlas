@@ -1,0 +1,8 @@
+---
+title: Amazon Fire Dashboard
+---
+
+Link: [Amazon Fire Dashboard](https://amzfire.servirglobal.net/)
+
+### Spatial and temporal extent
+NRT (2025), Tropical South America (10N - 25S)

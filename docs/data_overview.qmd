@@ -22,13 +22,13 @@ The following sections describe the NRT data, as well as previously published FE
 
 Published datasets contain static, unchanging FEDS outputs for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.
 
-|  |  |  |
-|-----------------------------|--------------|-----------------------------|
-| [McCabe et al., 2024](mccabe2024.qmd) | (Manuscript in progress) | 2023; Quebec, Canada |
-| [Orland et al., 2024](orland2024.qmd) (under review) | *Progressive Tracking of Wildfire Spread via Satellite Observation Reveals Link between Fire Behavior and Burn Severity* | 2013-2021; Western US |
-| [Scholten et al., 2024](scholten2024.qmd) | *Spatial variability in Arctic-boreal pyroregions shaped by climate and human influence* | 2012-2023; Arctic-Boreal biomes |
-| [Liu et al., 2024](liu2024.qmd) | *Systematically tracking the hourly progression of large wildfires using GOES satellite observations* | 2019-2021; California large fires |
-| [Andela et al., 2022](andela2022.qmd) | *Tracking and classifying Amazon fire events in near real time* | 2019-2020; Southern Hemisphere South America |
-| [Chen et al., 2022](chen2022.qmd) | *California wildfire spread derived using VIIRS satellite observations and an object-based tracking system* | 2012-2020; California, US |
-| [Andela et al., 2019](andela2019.qmd) | *The global fire atlas of individual fire size, duration, speed, and direction* | 2002-2016; global. (Updated with data through 2020 in Li et al., 2024.) |
-| [Amazon Fire Dashboard](amazon.qmd) |  | NRT (2025), Tropical South America (10N - 25S) |
+| Paper | Title | Temporal & Spatial Extent |
+|---------------------------|------------------|---------------------------|
+| [McCabe et al., 2024](papers/mccabe2024.qmd) | (Manuscript in progress) | 2023; Quebec, Canada |
+| [Orland et al., 2024](papers/orland2024.qmd) (under review) | *Progressive tracking of wildfire spread via satellite observation reveals link between fire behavior and burn severity* | 2013-2021; Western US |
+| [Scholten et al., 2024](papers/scholten2024.qmd) | *Spatial variability in Arctic-boreal pyroregions shaped by climate and human influence* | 2012-2023; Arctic-Boreal biomes |
+| [Liu et al., 2024](papers/liu2024.qmd) | *Systematically tracking the hourly progression of large wildfires using GOES satellite observations* | 2019-2021; California large fires |
+| [Andela et al., 2022](papers/andela2022.qmd) | *Tracking and classifying Amazon fire events in near real time* | 2019-2020; Southern Hemisphere South America |
+| [Chen et al., 2022](papers/chen2022.qmd) | *California wildfire spread derived using VIIRS satellite observations and an object-based tracking system* | 2012-2020; California, US |
+| [Andela et al., 2019](papers/andela2019.qmd) | *The global fire atlas of individual fire size, duration, speed, and direction* | 2002-2016; global. (Updated with data through 2020 in Li et al., 2024.) |
+| [Amazon Fire Dashboard](papers/amazon.qmd) |  | NRT (2025), Tropical South America (10N - 25S) |

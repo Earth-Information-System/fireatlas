@@ -1,0 +1,11 @@
+---
+title: Chen et al., 2022
+---
+
+### "California wildfire spread derived using VIIRS satellite observations and an object-based tracking system"
+
+DOI: [10.1038/s41597-022-01343-0](https://doi.org/10.1038/s41597-022-01343-0)
+
+### Spatial and temporal extent
+
+2012-2020; California, US
