@@ -22,6 +22,7 @@ import os
 import geopandas as gpd
 import pandas as pd
 import collections
+import shapely
 
 from fireatlas.FireTypes import Region, TimeStep
 from fireatlas.utils import timed
@@ -275,7 +276,11 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
             # extend pixels with newpixels
             f.pixels = pd.concat([f.pixels, newpixels])
 
-            f.updatefhull()
+            try:
+                f.updatefhull()
+            except shapely.errors.GEOSException as e:
+                logger.warn(f"Exception raised for fire {fmid} at time {f.t}. {len(newpixels)} pixels skipped. Exception: {e}")
+            
             f.updatefline()
 
             # update the fire type
