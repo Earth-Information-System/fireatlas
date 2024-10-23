@@ -435,9 +435,12 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             f_target.extpixels = f_source.extpixels
             f_target.pixels = pd.concat([f_target.pixels, f_source.pixels])
 
-            # - update the hull using previous hull and new pixels
-            f_target.updatefhull(f_source.hull)
-            f_target.updatefline()
+            try:
+                # - update the hull using previous hull and new pixels
+                f_target.updatefhull(f_source.hull)
+                f_target.updatefline()
+            except shapely.errors.GEOSException as e:
+                logger.warn(f"Exception raised for fire {fmid} at time {f.t}. {len(newpixels)} pixels skipped. Exception: {e}")
 
             # invalidate and deactivate source object
             f_source.invalid = True
