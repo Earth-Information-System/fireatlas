@@ -440,7 +440,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
                 f_target.updatefhull(f_source.hull)
                 f_target.updatefline()
             except shapely.errors.GEOSException as e:
-                logger.warn(f"Exception raised for fire {fmid} at time {f.t}. {len(newpixels)} pixels skipped. Exception: {e}")
+                logger.warn(f"Exception raised while merging fire {fid1} and {fid2} at time {f_target.t}. {len(f_source.pixels)} pixels skipped. Exception: {e}")
 
             # invalidate and deactivate source object
             f_source.invalid = True
