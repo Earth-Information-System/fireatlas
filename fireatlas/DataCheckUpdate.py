@@ -27,7 +27,7 @@ def wget(url, **kwargs):
     if "header" in kwargs:
         header = kwargs.pop("header")
         assert header == "NASA", f"Non-standard header is not implemented: {header}"
-        headers["Authorization"] = "Bearer eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InpiZWNrZXIiLCJleHAiOjE3MzY3NzgwNzUsImlhdCI6MTczMTU5NDA3NSwiaXNzIjoiaHR0cHM6Ly91cnMuZWFydGhkYXRhLm5hc2EuZ292In0.KwhlZwfVYr0vBV5Q_1Qnswmp1HGdKLauzEqP-1YHT53I6uaUBggUEDvve2W4mA_e7Q5Tb-xxfmRl8gDdf5oUbt5KCsP9pU_ZT02kl5fqy0YDCpD9a04EDiMz2Ww8VbodY8Sp7dXdcr_jERKU4h2bZQliarCTSVB0hzhBEzxbFuVV0dsZXInKitXEn50uWwVerJeeSlSZgaxDCscyG1qRaxr92qT5VaW0QpxTPOFNijCGqJs5CyplJmoldQNoz2gcalNwTasHbAb5Vm1Xu7aV_V90P4h9IBRjkfRrV45uxaXs8JYKPrPWi6s3ZUjvP40Jkbw9Lvv6fNvrKfJMJq9MUg"
+        headers["Authorization"] = "Bearer eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InRtY2NhYmUiLCJleHAiOjE3MzY4MDM0MDksImlhdCI6MTczMTYxOTQwOSwiaXNzIjoiaHR0cHM6Ly91cnMuZWFydGhkYXRhLm5hc2EuZ292IiwiaWRlbnRpdHlfcHJvdmlkZXIiOiJlZGxfb3BzIiwiYXNzdXJhbmNlX2xldmVsIjoyfQ.kokTagX0vJvwqrOuOZj4QuGBjD3zireA75u3iLVElQCiM-3vLm6i0mEOKzYu57r5v-tD8a_CerZti0wGuNULgRdBYC6rhlNs9WsPIQqCdjnthMIb5bndGmz_EJMVjTjnvfVwSgqHtXc4a0k8slrUV4o90-E7WxCZVnZQJ_8kf-pmHzwOMHqwpAPziycHx1thkh83OmsqWo9fFTCQw1FMWGiFrWDSKeVh-K16Hi_-4Evu8_Ay5MezOHH-D5r7LJhZhJH2Yib7k2OvsWunqzo6Uu9pC9OZyDUGSq5QQl3qCbGJJRZ6BjlUmAASijPIOA_n5VTaCQy6jOQLiuCz-qfQiw"
 
     if len(kwargs) > 0:
         logger.debug(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
