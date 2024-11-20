@@ -14,4 +14,4 @@ data/
 fireatlas.egg-info/
 running.log
 .idea/
-.env/
+.env
