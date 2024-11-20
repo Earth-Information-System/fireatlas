@@ -605,7 +605,8 @@ def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat = 'SNPP', d
     tst, ted = FireTime.update_tst_ted(perimeter, tst, ted)
 
     # define region based on the perimeter
-    region_name = f"{perimeter['FIRE_NAME']}_{perimeter['FIRE_ID']}"
+    firenm = perimeter['FIRE_NAME'].strip().replace(' ', '-').replace('/', '-')
+    region_name = f"{firenm}_{perimeter['FIRE_ID']}"
     region = (region_name, perimeter.geometry)
 
     logger.info(f"=============== Running: {region_name} ===============")
