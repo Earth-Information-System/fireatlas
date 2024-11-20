@@ -60,7 +60,8 @@ class Allfires:
         self.init_gdf()
 
         # cumulative recordings
-        self.heritages = []  # a list of fire heritage relationships (source, target)
+        # a list of fire heritage relationships (source, target)
+        self.heritages = []
         self.id_dict = (
             []
         )  # this list relates the list position of the fire in the allfires object to the fire id
@@ -85,9 +86,11 @@ class Allfires:
     @classmethod
     @timed
     def rehydrate(cls, tst, ted, region, allpixels=None, include_dead=False, read_location=None):
-        allfires_gdf = read_allfires_gdf(tst, ted, region, location=read_location)
+        allfires_gdf = read_allfires_gdf(
+            tst, ted, region, location=read_location)
         if allpixels is None:
-            allpixels = read_allpixels(tst, ted, region, location=read_location)
+            allpixels = read_allpixels(
+                tst, ted, region, location=read_location)
 
         dt = t2dt(ted)
 
@@ -113,13 +116,13 @@ class Allfires:
             for k, v in gdf_fid_t.items():
                 if not isinstance(getattr(Fire, k, None), property):
                     setattr(f, k, v)
-            
+
             f.t_st = dt2t(dt_st)
             f.t_ed = dt2t(dt_ed)
 
             if f.mergeid != fid:
                 allfires.heritages.append((fid, f.mergeid))
-            
+
             if f.t_ed == ted:
                 if f.isignition:
                     allfires.fids_new.append(fid)
@@ -139,7 +142,8 @@ class Allfires:
 
         for fid, f in self.burningfires.items():
             if (fid, dt) in self.gdf.index:
-                raise ValueError(f"Error writing gdf: {fid} already at {self.t}")
+                raise ValueError(
+                    f"Error writing gdf: {fid} already at {self.t}")
 
             for k, tp in dd.items():
                 if tp == "datetime64[ns]":
@@ -319,7 +323,8 @@ class Allfires:
         fids_keep = self.fids_active + self.fids_sleeper
         for i, fid in enumerate(fids_keep):
             newfires[i] = self.fires[fid]  # record new fireID and fire object
-            newfires[i].fireID = i  # also update fireID attribute of fire object
+            # also update fireID attribute of fire object
+            newfires[i].fireID = i
             fidmapping.append((fid, i))
         self.fires = newfires
 
@@ -493,6 +498,10 @@ class Fire:
     @property
     def fireID(self):
         return self._fid
+
+    @fireID.setter
+    def fireID(self, newid):
+        self._fid = newid
 
     @property
     def pixels(self):
@@ -716,16 +725,19 @@ class Fire:
 
         # calculate the fire line
         if fhull is None:  # if no hull, return None
-            raise ValueError(f"hull is not set on this fire {self.fireID} at {self.t}")
+            raise ValueError(
+                f"hull is not set on this fire {self.fireID} at {self.t}")
         if fhull.geom_type == "MultiPolygon":
             # extract exterior of fire perimeter
             mls = MultiLineString([plg.exterior for plg in fhull.geoms])
             # set fline to the part which intersects with  bufferred flinelocsMP
-            self.fline = mls.intersection(flinelocsMP.buffer(settings.flbuffer))
+            self.fline = mls.intersection(
+                flinelocsMP.buffer(settings.flbuffer))
 
         elif fhull.geom_type == "Polygon":
             mls = fhull.exterior
-            self.fline = mls.intersection(flinelocsMP.buffer(settings.flbuffer))
+            self.fline = mls.intersection(
+                flinelocsMP.buffer(settings.flbuffer))
         else:  # if fhull type is not 'MultiPolygon' or 'Polygon', return flinelocsMP
             self.fline = flinelocsMP
 
