@@ -22,6 +22,7 @@ import os
 import geopandas as gpd
 import pandas as pd
 import collections
+import shapely
 import contextlib
 
 from fireatlas.FireTypes import Region, TimeStep
@@ -278,7 +279,11 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea, landcover):
             # extend pixels with newpixels
             f.pixels = pd.concat([f.pixels, newpixels])
 
-            f.updatefhull()
+            try:
+                f.updatefhull()
+            except shapely.errors.GEOSException as e:
+                logger.warn(f"Exception raised for fire {fmid} at time {f.t}. {len(newpixels)} pixels skipped. Exception: {e}")
+            
             f.updatefline()
 
             # update the fire type
@@ -435,9 +440,12 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep, landcover):
             f_target.extpixels = f_source.extpixels
             f_target.pixels = pd.concat([f_target.pixels, f_source.pixels])
 
-            # - update the hull using previous hull and new pixels
-            f_target.updatefhull(f_source.hull)
-            f_target.updatefline()
+            try:
+                # - update the hull using previous hull and new pixels
+                f_target.updatefhull(f_source.hull)
+                f_target.updatefline()
+            except shapely.errors.GEOSException as e:
+                logger.warn(f"Exception raised while merging fire {fid1} and {fid2} at time {f_target.t}. {len(f_source.pixels)} pixels skipped. Exception: {e}")
 
             # invalidate and deactivate source object
             f_source.invalid = True
