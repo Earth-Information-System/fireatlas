@@ -149,76 +149,23 @@ ul.task-list li input[type="checkbox"] {
  <span class="menu-text">Near Real Time Data</span></a>
   </div>
 </li>
-          <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../docs/data_overview.html#published-datasets" class="sidebar-item-text sidebar-link">
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="https://www.ess.uci.edu/~uci-nasa-firetracking/" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Published Datasets</span></a>
-          <a class="sidebar-item-toggle text-start collapsed" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="false" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth2 ">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/mccabe2024.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">McCabe et al., 2024</span></a>
   </div>
 </li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/orland2024.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Orland et al., 2024</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/scholten2024.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Scholten et al., 2024</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/liu2024.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Liu et al., 2024</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/andela2022.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Andela et al., 2022</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/chen2022.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Chen et al., 2022</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/andela2019.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Andela et al., 2019</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/papers/amazon.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Amazon Fire Dashboard</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
       </ul>
   </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
  <span class="menu-text">Developer Documentation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link active">
@@ -306,7 +253,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="running-feds-on-the-maap-ade" class="level3">
 <h3 class="anchored" data-anchor-id="running-feds-on-the-maap-ade">Running FEDS on the MAAP ADE</h3>
-<p>The codebase is currently set up to read from and write to from shared AWS S3 buckets accessed through NASA’s MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented <a href="../docs/custom_regions.html">here</a>.) There are two ways to do this.</p>
+<p>The codebase is currently set up to read from and write to shared AWS S3 buckets accessed through NASA’s MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented <a href="../docs/custom_regions.html">here</a>.) There are two ways to do this.</p>
 <p>First, you can run through <a href="https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/notebooks">notebooks</a> 01-04 on the ADE to walk through each step of the process. Set up your environment according to the instructions in <a href="../docs/contributing.html">Contributing</a>, then simply start working through the notebooks.</p>
 <p>Second, to coordinate every step from the command line with one command, you can use <code>FireRunDaskCoordinator.py</code>. This uses Dask to parallelize as many steps of the process as possible (e.g.&nbsp;preproccessing input files, generating output files). This script fetches any missing input data you might need for your region and date range, automatically preprocesses it, copies the preprocessed data to S3, runs FEDS, saves the files locally in a <code>data/</code> folder inside the root <code>fireatlas</code> directory, and copies outputs to S3 (in this case, <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutputs-v3/{region name}</code>).</p>
 <pre><code># example run for CONUS June-Sept 2023
