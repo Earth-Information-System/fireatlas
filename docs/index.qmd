@@ -23,7 +23,3 @@ Developers should consult our [technical documentation](system_architecture.qmd)
 
 
 
-## Team
-Team and affiliations (Irvine, NASA, etc.)
-
-
