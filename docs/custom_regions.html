@@ -74,7 +74,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-67b02bfd1d2a5f218c7428fb332a176c.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-fcf51a4756224a3986ce84ad5a74bd6b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -293,7 +293,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="defining-a-new-region">Defining a New Region</h2>
 <p>The example below will use the newly created “RussiaEast” region to explain how to define a new region and process it on DPS.</p>
 <ol type="1">
-<li><p>Pick a unique, descriptive region name <strong>that does not already exist</strong> in <code>FEDSpreprocessed</code> (e.g.&nbsp;“Russia East”)</p></li>
+<li><p>Pick a unique, descriptive region name <strong>that does not already exist</strong> in <code>FEDSpreprocessed</code> (e.g.&nbsp;“Place Example”)</p></li>
 <li><p>Create a .env file defining the settings you want to use for your region. The meanings of and options for each setting are defined in <code>FireConsts.py:Settings</code>. Here is an example .env file:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_FTYP_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="va">FEDS_CONT_OPT</span><span class="op">=</span><span class="st">"global"</span></span>
@@ -335,11 +335,11 @@ Tip
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>                       <span class="ex">PRE</span> CONUS/</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># copy the .env to a new FEDSpreprocessed folder</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">upload:</span> ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/PlaceExample/.env</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="ex">upload:</span> ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/PlaceExample/.env</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># check that it exists </span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="kw">(</span><span class="ex">pangeo</span><span class="kw">)</span> <span class="ex">root@workspaceqhqrmmz1pim87fsz:~#</span> aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/PlaceExample/</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="ex">2024-07-12</span> 05:55:19         66 .env</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -362,7 +362,7 @@ Note
 <p>From the main GitHub repo, navigate to the <a href="https://github.com/Earth-Information-System/fireatlas/actions/workflows/manual-v3.yaml">workflow page</a> for the manual v3 workflow. In the upper right hand corner, select “Run Workflow.”</p>
 <p><img src="images/manual-dispatch.png" class="img-fluid"></p>
 <p>Fill out the input parameters according to the descriptions in the prompt. The most important thing to note is that you should NOT pass the JSON encoded parameter input enclosed in single or double quotes, but rather naked. It should look something like this:</p>
-<pre><code>{"regnm": "RussiaEast", "bbox": "[97.16172779881556,46.1226744036175,168.70469654881543,77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[2024,6,1,\"PM\"]", "operation": "--coordinate-all"}</code></pre>
+<pre><code>{"regnm": "PlaceExample", "bbox": "[97.16172779881556,46.1226744036175,168.70469654881543,77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[2024,6,1,\"PM\"]", "operation": "--coordinate-all"}</code></pre>
 <p>The action will submit your job to DPS. When the action completes, this does not mean that your job is done; rather, it means that it was successfully submitted for processing. You can use the MAAP ADE’s <a href="https://docs.maap-project.org/en/develop/system_reference_guide/jobsui.html">Jobs UI</a> to monitor the progress of your job once it has been submitted. Outputs will be copied from the DPS worker to <code>Settings.OUTPUT_DIR/${regnm}</code> once the job is complete.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -384,7 +384,7 @@ Tip
 <p>Once you have tested your job manually, you can schedule it to run at constant intervals in order to update the outputs as new data is collected in NRT.</p>
 <ol type="1">
 <li><p>Find an existing v3 scheduled worklow in the <code>.github/workflows/*.yaml</code> such as <code>.github/workflows/schedule-conus-nrt-v3.yaml</code> and copy it</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-russian-east-nrt-v3.yaml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-place-example-nrt-v3.yaml</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></li>
 <li><p>Edit the new workflow and make sure to change some of the following sections and values. Note that leaving <code>tst</code> or <code>ted</code> as <code>[]</code> means it will run from current year 01/01 to now:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">name:</span> <span class="op">&lt;</span>your region name<span class="op">&gt;</span> nrt v3</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">...</span></span>
