@@ -96,7 +96,7 @@ Once you have tested your job manually, you can schedule it to run at constant i
 1. Find an existing v3 scheduled worklow in the `.github/workflows/*.yaml` such as `.github/workflows/schedule-conus-nrt-v3.yaml` and copy it
 
    ```bash
-   cp .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-place-examlpe-nrt-v3.yaml
+   cp .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-place-example-nrt-v3.yaml
    ```
 
 2. Edit the new workflow and make sure to change some of the following sections and values. Note that leaving `tst` or `ted` as `[]` means it will run from current year 01/01 to now:
