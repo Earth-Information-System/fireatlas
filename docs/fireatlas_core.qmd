@@ -7,7 +7,7 @@ author: Zeb Becker
 A technical overview of the core FEDS algorithm can be found in [Chen et al., 2022.](https://doi.org/10.1038/s41597-022-01343-0) The FEDS logic is implemented in the [fireatlas module](https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/fireatlas). In particular, `FireMain.py` would be a good place to start building understanding. 
 
 ### Running FEDS on the MAAP ADE 
-The codebase is currently set up to read from and write to from shared AWS S3 buckets accessed through NASA's MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented [here](custom_regions.qmd).) There are two ways to do this. 
+The codebase is currently set up to read from and write to shared AWS S3 buckets accessed through NASA's MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented [here](custom_regions.qmd).) There are two ways to do this. 
 
 First, you can run through [notebooks](https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/notebooks) 01-04 on the ADE to walk through each step of the process. Set up your environment according to the instructions in [Contributing](contributing.qmd), then simply start working through the notebooks. 
 

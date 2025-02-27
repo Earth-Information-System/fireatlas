@@ -33,17 +33,8 @@ website:
         contents:
           - docs/data_overview.qmd
           - docs/nrt.qmd
-          - section: Published Datasets
-            href: docs/data_overview.qmd#published-datasets
-            contents:
-              - docs/papers/mccabe2024.qmd
-              - docs/papers/orland2024.qmd
-              - docs/papers/scholten2024.qmd
-              - docs/papers/liu2024.qmd
-              - docs/papers/andela2022.qmd
-              - docs/papers/chen2022.qmd
-              - docs/papers/andela2019.qmd
-              - docs/papers/amazon.qmd
+          - text: Published Datasets
+            href: https://www.ess.uci.edu/~uci-nasa-firetracking/
       - section: "Developer Documentation"
         contents: 
           - docs/fireatlas_core.qmd

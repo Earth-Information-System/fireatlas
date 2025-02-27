@@ -14,15 +14,13 @@ This documentation describes the technical architecture of the production system
 
 Data flows through the system from left to right. The LANCE NRT3 server provides low-latency access to incoming satellite data.
 
-TODO: details on what collections we take from.
-
 All of the computational tasks are completed as jobs on the NASA-ESA [Multi-Mission Algorithm and Analysis Platform's](https://docs.maap-project.org/en/2.0.0/intro.html) Data Processing System: the DPS, for short. We use GitHub Actions to schedule and submit jobs to the DPS, as detailed in the next section.
 
 ### Scheduled Jobs
 
 At a high level, regularly scheduled jobs check for new NRT data from the LANCE server, then save it to the `FEDSinput/` folder on our `gsfc_landslides` MAAP S3 shared bucket. This data is preprocessed, then stored in `FEDSpreprocessed/NOAA20` or `FEDSpreprocessed/SNPP`, depending on its source.
 
-Twice a day, at 15:25 and 23:25 UTC, each [scheduled region](regions.qmd) is run through the main FireForward algorithm to incorporate any new observations. The outputs from these runs are saved to `FEDSoutputs-v3/` and copied to the VEDA S3 bucket (TODO- link to docs for feature API). This triggers a workflow that makes the outputs available on the VEDA API. (TODO link).
+Twice a day, at 15:25 and 23:25 UTC, each scheduled region is run through the main FireForward algorithm to incorporate any new observations. The outputs from these runs are saved to `FEDSoutputs-v3/` and copied to the VEDA S3 bucket. This triggers a workflow that makes the outputs available on the [VEDA Features API](https://github.com/NASA-IMPACT/veda-features-api-cdk).
 
 ### Manual Jobs
 
