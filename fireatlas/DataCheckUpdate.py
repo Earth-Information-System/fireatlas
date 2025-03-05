@@ -6,12 +6,15 @@ import fsspec
 import xarray as xr
 import tempfile
 import requests
+import pandas as pd
 
-from datetime import date, date
+from datetime import date
 
 from fireatlas import settings
 from fireatlas.FireLog import logger
 from fireatlas.preprocess import preprocess_input_file
+
+MAP_KEY = "ee00876fdc0b5d2c424a83dbbf818b9d"
 
 # ------------------------------------------------------------------------------
 # update external dataset
@@ -71,6 +74,28 @@ def update_VJ114IMGTDL(d: date):
         logger.warning(f"Could not download VJ114IMGTDL data for {d}")
         logger.warning(f"Error message: {str(e)}")
 
+def update_fire_nrt_SVC2(d: date): 
+    data_dir = os.path.join(settings.dirextdata, "VIIRS", "fire_nrt_SV-C2/")
+
+    try:
+        firms_api = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/" 
+        query = "/VIIRS_SNPP_NRT/world/1/" + d.strftime("%Y-%m-%d")
+        url = firms_api + MAP_KEY + query
+    
+        df = pd.read_csv(url)
+    
+        daterange = pd.to_datetime(df['acq_date'])
+        tst, ted = daterange.min(), daterange.max() 
+    
+        filename_out = f"fire_nrt_SV-C2_{tst.strftime('%Y%m%d')}_{ted.strftime('%Y%m%d')}.csv" 
+        downloaded_filepath = os.path.join(data_dir, filename_out)  
+        df.to_csv(downloaded_filepath)
+        
+        preprocess_input_file(downloaded_filepath)
+    except Exception as e: 
+        logger.warning(f"Could not download NRT SNPP data for {d}")
+        logger.warning(f"Error message: {str(e)}")
+        
 
 def update_GridMET_fm1000():
     ''' Get updated GridMET data (including fm1000)
