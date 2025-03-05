@@ -246,6 +246,14 @@ def preprocess_input_file(filepath: str):
         sat = "NOAA20"
         df = FireIO.read_VJ114IMGML(filepath)
         df = df.loc[df["mask"] >= 7]
+    elif "fire_nrt_SV-C2" in filepath: 
+        sat = "SNPP" 
+        df = FireIO.read_fire_nrt_SVC2(filepath) 
+    elif "fire_archive_SV-C2" in filepath: 
+        sat = "SNPP"
+        df = FireIO.read_fire_archive_SVC2(filepath) 
+        df = df.loc[df["Type"] == 0] 
+        # filter: inferred hot spot type == presumed vegetation fire
     else:
         raise ValueError("please set SNPP or NOAA20 for sat")
 
