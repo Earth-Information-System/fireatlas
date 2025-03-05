@@ -595,6 +595,8 @@ def read_fire_nrt_SVC2(filepath: str):
         dtype={"acq_date": "string", "acq_time": "string"}
     )
 
+    df["acq_time"] = df["acq_time"].str.zfill(4) 
+    # convert 700 to 0700 or 110 to 0110
     df["datetime"] = pd.to_datetime(
         df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
     )
