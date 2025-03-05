@@ -507,6 +507,112 @@ def read_VJ114IMGTDL(filepath: str):
     )
     return df
 
+def read_fire_archive_SVC2(filepath: str):
+    """Read SNPP VIIRS standard product fire location data. 
+    Collection 2 from the FIRMS archive download site. 
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3. 
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires 
+    
+    """
+
+    usecols = [
+        "latitude", 
+        "longitude", 
+        "scan", 
+        "track", 
+        "acq_date", 
+        "acq_time", 
+        "confidence",
+        "frp", 
+        "daynight",
+        "type"
+    ]
+
+    df = pd.read_csv(
+        filepath, 
+        usecols=usecols, 
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS", 
+            "track": "DT",
+            "frp": "FRP", 
+            "daynight": "DNFlag", 
+            "type": "Type", 
+            "confidence": "Confidence"
+        }
+    )
+    
+    return df
+
+def read_fire_nrt_SVC2(filepath: str):
+    """Read SNPP VIIRS NRT product fire location data. 
+    Collection 2 from the FIRMS archive download site. 
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3. 
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires 
+    
+    """
+
+    usecols = [
+        "latitude", 
+        "longitude", 
+        "scan", 
+        "track", 
+        "acq_date", 
+        "acq_time", 
+        "confidence",
+        "frp", 
+        "daynight"
+    ]
+
+    df = pd.read_csv(
+        filepath, 
+        usecols=usecols, 
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS", 
+            "track": "DT",
+            "frp": "FRP", 
+            "daynight": "DNFlag", 
+            "confidence": "Confidence"
+        }
+    )
+    
+    return df 
+
 
 def AFP_regfilter(df, shp_Reg):
     """filter fire pixels using a given shp_Reg
