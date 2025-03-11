@@ -15,7 +15,7 @@ This doc explains how to define a new region (e.g. CONUS, RussiaEast, etc.) to r
 
  The example below will use the newly created "RussiaEast" region to explain how to define a new region and process it on DPS. 
 
-1. Pick a unique, descriptive region name **that does not already exist** in `FEDSpreprocessed` (e.g. "Russia East")
+1. Pick a unique, descriptive region name **that does not already exist** in `FEDSpreprocessed` (e.g. "Place Example")
 
 2. Create a .env file defining the settings you want to use for your region. The meanings of and options for each setting are defined in `FireConsts.py:Settings`. Here is an example .env file: 
 
@@ -55,11 +55,11 @@ Working with hidden files (prefixed by a `.`) is difficult in the MAAP ADE, beca
                            PRE CONUS/
 
     # copy the .env to a new FEDSpreprocessed folder
-    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env
-    upload: ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/.env
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 cp /projects/.env s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/PlaceExample/.env
+    upload: ./.env to s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/PlaceExample/.env
   
     # check that it exists 
-    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/RussiaEast/
+    (pangeo) root@workspaceqhqrmmz1pim87fsz:~# aws s3 ls s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/PlaceExample/
     2024-07-12 05:55:19         66 .env
 
     ```
@@ -78,7 +78,7 @@ From the main GitHub repo, navigate to the [workflow page](https://github.com/Ea
 Fill out the input parameters according to the descriptions in the prompt. The most important thing to note is that you should NOT pass the JSON encoded parameter input enclosed in single or double quotes, but rather naked. It should look something like this: 
 
 ```
-{"regnm": "RussiaEast", "bbox": "[97.16172779881556,46.1226744036175,168.70469654881543,77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[2024,6,1,\"PM\"]", "operation": "--coordinate-all"}
+{"regnm": "PlaceExample", "bbox": "[97.16172779881556,46.1226744036175,168.70469654881543,77.81982396998427]", "tst": "[2024,5,1,\"AM\"]", "ted": "[2024,6,1,\"PM\"]", "operation": "--coordinate-all"}
 ```
 
 The action will submit your job to DPS. When the action completes, this does not mean that your job is done; rather, it means that it was successfully submitted for processing. You can use the MAAP ADE's [Jobs UI](https://docs.maap-project.org/en/develop/system_reference_guide/jobsui.html) to monitor the progress of your job once it has been submitted. Outputs will be copied from the DPS worker to `Settings.OUTPUT_DIR/${regnm}` once the job is complete. 
@@ -96,7 +96,7 @@ Once you have tested your job manually, you can schedule it to run at constant i
 1. Find an existing v3 scheduled worklow in the `.github/workflows/*.yaml` such as `.github/workflows/schedule-conus-nrt-v3.yaml` and copy it
 
    ```bash
-   cp .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-russian-east-nrt-v3.yaml
+   cp .github/workflows/schedule-conus-nrt-v3.yaml .github/workflows/schedule-place-example-nrt-v3.yaml
    ```
 
 2. Edit the new workflow and make sure to change some of the following sections and values. Note that leaving `tst` or `ted` as `[]` means it will run from current year 01/01 to now:
