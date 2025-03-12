@@ -23,6 +23,7 @@ import geopandas as gpd
 import pandas as pd
 import collections
 import shapely
+
 import contextlib
 
 from fireatlas.FireTypes import Region, TimeStep

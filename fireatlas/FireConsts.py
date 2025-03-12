@@ -1,4 +1,4 @@
-""" FireConsts
+"""FireConsts
 This is the module containing all constants used in this project as well as the
 running controls
 """
@@ -10,6 +10,7 @@ import warnings
 import fsspec
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, validator, field_validator
+import cartopy.crs as ccrs
 
 
 from fireatlas.FireTypes import Location
@@ -65,20 +66,22 @@ class Settings(BaseSettings):
         4, description="fire area threshold for determining large fires"
     )
 
-    EPSG_CODE: int = Field(
-        9311,
-        description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
-    )
+    EPSG_CODE: ccrs.Projection = ccrs.AlbersEqualArea()
 
-    @field_validator("EPSG_CODE")
-    @classmethod
-    def check_epsg(cls, epsg: int):
-        allowed = (3571, 32610, 9311, 6933)
-        if epsg not in allowed:
-            warnings.warn(
-                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)"
-            )
-        return epsg
+    # EPSG_CODE: int = Field(
+    #     9311,
+    #     description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
+    # )
+
+    # @field_validator("EPSG_CODE")
+    # @classmethod
+    # def check_epsg(cls, epsg: int):
+    #     allowed = (3571, 32610, 9311, 6933)
+    #     if epsg not in allowed:
+    #         warnings.warn(
+    #             f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)"
+    #         )
+    #     return epsg
 
     # temporal parameters for fire object definition
     maxoffdays: int = Field(
