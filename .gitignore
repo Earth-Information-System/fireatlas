@@ -13,3 +13,8 @@ _version.py
 fireatlas.egg-info/
 running.log
 .idea/
+.quarto/
+_site/
+
+/env/
+/.quarto/

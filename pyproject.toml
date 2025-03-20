@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fireatlas"
 dynamic = ["version"]
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 description = "EIS Fire NRT DPS"
 readme = "README.md"
 authors = []
@@ -28,7 +28,7 @@ dependencies = [
   "pandas",
   "dask",
   "distributed",
-  "geopandas==0.14.2",
+  "geopandas==0.14.4",
   "fiona",
   "shapely",
   "fsspec",
@@ -42,7 +42,8 @@ dependencies = [
   "tqdm",
   "scalene",
   "awscli", 
-  "numpy<2.0.0"
+  "numpy<2.0.0", 
+  "pyogrio"
 ]
 
 # [project.urls]

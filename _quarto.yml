@@ -1,0 +1,61 @@
+project:
+  type: website
+
+website:
+
+  title: "Wildfire Tracking Lab"
+  repo-url: "https://github.com/Earth-Information-System/fireatlas"
+  repo-actions: [edit, issue]
+  bread-crumbs: true
+
+  navbar:
+    background: "#0032A0"
+    title: "Wildfire Tracking Lab"
+    logo-href: index.qmd
+    pinned: false
+
+  sidebar:
+    logo: docs/images/nasa.png
+    logo-href: index.qmd
+    align: center
+    tools:
+      - icon: globe
+        href: https://fire.eis.smce.nasa.gov/
+      - icon: github
+        href: https://github.com/Earth-Information-System/fireatlas
+    style: "docked"
+    search: true
+    contents: 
+      - text: "Home"
+        href: docs/index.qmd
+      - section: "Data"
+        href: docs/data_overview.qmd
+        contents:
+          - docs/data_overview.qmd
+          - docs/nrt.qmd
+          - text: Published Datasets
+            href: https://www.ess.uci.edu/~uci-nasa-firetracking/
+      - section: "Developer Documentation"
+        contents: 
+          - docs/fireatlas_core.qmd
+          - docs/custom_regions.qmd
+          - docs/system_architecture.qmd
+          - docs/contributing.qmd
+          - docs/releasing.qmd
+          - docs/playbook_dps_debug.md
+
+
+  page-footer:
+    right: "This page is built with ❤️ and [Quarto](https://quarto.org/)."
+    left: "LICENSE"
+
+
+
+format:
+  html:
+    theme: cosmo
+    css: docs/styles.css
+    toc: true
+
+execute:
+  freeze: auto
