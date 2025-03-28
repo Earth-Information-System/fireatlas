@@ -3,6 +3,7 @@ This module include functions used to check and update needed data files
 """
 import os
 import fsspec
+import time
 import xarray as xr
 import tempfile
 import requests
@@ -74,15 +75,36 @@ def update_VJ114IMGTDL(d: date):
         logger.warning(f"Could not download VJ114IMGTDL data for {d}")
         logger.warning(f"Error message: {str(e)}")
 
-def update_fire_nrt_SVC2(d: date): 
+def update_fire_nrt_SVC2(d: date):
+
     data_dir = os.path.join(settings.dirextdata, "VIIRS", "fire_nrt_SV-C2/")
+    status_url = 'https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY=' + MAP_KEY
 
     try:
+
+        resp = pd.read_json(status_url,  typ='series')
+        count = resp['current_transactions']
+        limit = resp['transaction_limit']
+
+        if (limit - count < limit * .9): 
+            # wait 60 seconds if approaching API transaction limit 
+            logger.warning(
+                f"Current FIRMS API transactions ({count}) approaching account limit ({limit}).\
+                Sleeping  60 seconds."
+            )
+            time.sleep(60)
+
         firms_api = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/" 
         query = "/VIIRS_SNPP_NRT/world/1/" + d.strftime("%Y-%m-%d")
         url = firms_api + MAP_KEY + query
     
         df = pd.read_csv(url)
+
+        if len(df) < 1: 
+            logger.warning(
+                f"NRT SNPP data is empty for {d}. This date may be outside range of data availability."
+            )
+            return 
     
         daterange = pd.to_datetime(df['acq_date'])
         tst, ted = daterange.min(), daterange.max() 
