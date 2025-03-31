@@ -263,7 +263,7 @@ def preprocess_input_file(filepath: str):
         df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
         df = df.loc[df["Type"] == 0] 
         # filter: inferred hot spot type == presumed vegetation fire
-    elif "FIMRS_VIIRS_NOAA21_NRT" in filepath:
+    elif "FIRMS_VIIRS_NOAA21_NRT" in filepath:
         sat = "NOAA21"
         df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
     else:

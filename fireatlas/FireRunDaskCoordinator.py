@@ -33,7 +33,7 @@ from fireatlas.preprocess import (
     preprocessed_region_filename,
 )
 
-from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
+from fireatlas.DataCheckUpdate import update_FIRMS
 from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath, VJ114IMGTDL_filepath, VNP14IMGTDL_filepath
 from fireatlas.FireTime import t_generator, t_nb, t2dt, dt2t, d2t
 from fireatlas.FireLog import logger
@@ -129,22 +129,23 @@ def job_preprocess_region(region: Region):
 
 def job_nrt_current_day_updates(client: Client):
     """hourly update the NRT files and prep
+    Updates files for today and the two previous days. 
     """
     futures, source, now = [], settings.FIRE_SOURCE, datetime.now()
 
     if source == "VIIRS":
-        sats = ["SNPP", "NOAA20"]
-    else:
-        sats = [source]
+        sats = ["SNPP", "NOAA20", "NOAA21"]
+    else: 
+        sats=[source]
 
     for sat in sats:
-        if sat == "SNPP":
-            NRT_update_func = update_VNP14IMGTDL
-        if sat == "NOAA20":
-            NRT_update_func = update_VJ114IMGTDL
-        futures.extend(client.map(NRT_update_func, [now, now-timedelta(days=1)]))
-    return futures
+        futures.extend(client.map(update_FIRMS, *[
+            (now.date(), (now-timedelta(days=1)).date(), (now-timedelta(days=2)).date()), 
+            (sat, sat, sat),
+            ("NRT", "NRT", "NRT")
+        ]))
 
+    return futures
 
 def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     source = settings.FIRE_SOURCE
