@@ -507,45 +507,180 @@ def read_VJ114IMGTDL(filepath: str):
     )
     return df
 
-def fire_archive_SVC2_filepath(t: TimeStep):
-    """Filepath for SNPP VIIRS standard product data
-    from FIRMS API. Looks for source files with a full year of data.  
+
+def FIRMS_VIIRS_SNPP_NRT_filepath(t: TimeStep):
+    """Filepath for SNPP NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
 
     Parameters
     ----------
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the initialization
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
 
     Returns
     -------
     filepath : str
-        Path to input data or None if file does not exist
+        path to input data or None if file does not exist
+    
     """
-
-    year = t[0]
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
 
     file_dir = os.path.join(
         settings.dirextdata, 
         "VIIRS", 
-        "fire_archive_SV-C2"
+        "FIRMS_VIIRS_SNPP_NRT"
     )
 
     filepath = os.path.join(
         file_dir, 
-        f"fire_archive_SV-C2_{str(year)}0101_{str(year)}1231.csv"
+        f"FIRMS_VIIRS_SNPP_NRT_{datestring}.csv"
     )
 
     if not settings.fs.exists(filepath):
         print("No data available for file ", filepath)
-        return 
+        return None
+
+    return filepath
+
+def FIRMS_VIIRS_SNPP_SP_filepath(t: TimeStep): 
+    """Filepath for SNPP SP data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data or None if file does not exist
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_SNPP_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_SNPP_SP_{datestring}.csv"
+    )
+
+    if not settings.fs.exists(filepath):
+        print("No data available for file ", filepath)
+        return None
+
+    return filepath
+
+def FIRMS_VIIRS_NOAA20_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA20 NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data or None if file does not exist
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_NOAA20_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_NOAA20_NRT_{datestring}.csv"
+    )
+
+    if not settings.fs.exists(filepath):
+        print("No data available for file ", filepath)
+        return None
 
     return filepath 
-    
 
+def FIRMS_VIIRS_NOAA20_SP_filepath(t: TimeStep):
+    """Filepath for NOAA20 SP data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data or None if file does not exist
     
-def read_fire_archive_SVC2(filepath: str):
-    """Read SNPP VIIRS standard product fire location data. 
-    Collection 2 from the FIRMS archive download site. 
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_NOAA20_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_NOAA20_SP_{datestring}.csv"
+    )
+
+    if not settings.fs.exists(filepath):
+        print("No data available for file ", filepath)
+        return None
+
+    return filepath
+
+def FIRMS_VIIRS_NOAA21_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA21 NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data or None if file does not exist
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_NOAA21_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_NOAA21_NRT_{datestring}.csv"
+    )
+
+    if not settings.fs.exists(filepath):
+        print("No data available for file ", filepath)
+        return None
+
+    return filepath
+
+def read_FIRMS_VIIRS_SP(filepath: str):
+    """Read VIIRS standard product fire location data. 
+    Input data from the FIRMS API is formatted in the same way for all satellites. 
 
     Parameters
     ----------
@@ -577,6 +712,9 @@ def read_fire_archive_SVC2(filepath: str):
         usecols=usecols, 
         dtype={"acq_date": "string", "acq_time": "string"}
     )
+    
+    df["acq_time"] = df["acq_time"].str.zfill(4) 
+    # convert 700 to 0700 or 110 to 0110
 
     df["datetime"] = pd.to_datetime(
         df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
@@ -597,43 +735,10 @@ def read_fire_archive_SVC2(filepath: str):
     
     return df
 
-def fire_nrt_SVC2_filepath(t: TimeStep):
-    """Filepath for SNPP VIIRS NRT product data
-    from FIRMS API. Assumes that NRT source files are split by day. 
-
-    Parameters
-    ----------
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the initialization
-
-    Returns
-    -------
-    filepath : str
-        Path to input data or None if file does not exist
-    """
-    
-    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
-
-    file_dir = os.path.join(
-        settings.dirextdata, 
-        "VIIRS", 
-        "fire_nrt_SV-C2"
-    )
-
-    filepath = os.path.join(
-        file_dir, 
-        f"fire_nrt_SV-C2_{datestring}_{datestring}.csv"
-    )
-
-    if not settings.fs.exists(filepath):
-        print("No data available for file ", filepath)
-        return 
-
-    return filepath 
-
-def read_fire_nrt_SVC2(filepath: str):
-    """Read SNPP VIIRS NRT product fire location data. 
-    Collection 2 from the FIRMS archive download site. 
+def read_FIRMS_VIIRS_NRT(filepath: str):
+    """Read VIIRS NRT product fire location data. 
+     
+    Input data from the FIRMS API is formatted in the same way for all satellites. 
 
     Parameters
     ----------

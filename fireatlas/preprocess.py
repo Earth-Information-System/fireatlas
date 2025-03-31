@@ -170,7 +170,7 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def check_preprocessed_file(
     tst: TimeStep,
     ted: TimeStep,
-    sat: Literal["SNPP", "NOAA20"],
+    sat: Literal["SNPP", "NOAA20", "NOAA21"],
     freq: Literal["monthly", "NRT"] = "monthly",
     location: Location = None,
 ):
@@ -183,7 +183,7 @@ def check_preprocessed_file(
         the year, month, day and 'AM'|'PM' to start checking for files
     ted : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' to end checking for files
-    sat: Literal["SNPP", "NOAA20"]
+    sat: Literal["SNPP", "NOAA20", "NOAA21"]
         which satellite to use
     freq: Literal["monthly", "NRT"]
         which files to use - monthly or daily (NRT)
@@ -246,16 +246,28 @@ def preprocess_input_file(filepath: str):
         sat = "NOAA20"
         df = FireIO.read_VJ114IMGML(filepath)
         df = df.loc[df["mask"] >= 7]
-    elif "fire_nrt_SV-C2" in filepath: 
+
+    elif "FIRMS_VIIRS_SNPP_NRT" in filepath: 
         sat = "SNPP" 
-        df = FireIO.read_fire_nrt_SVC2(filepath) 
-    elif "fire_archive_SV-C2" in filepath: 
+        df = FireIO.read_FIRMS_VIIRS_NRT(filepath) 
+    elif "FIRMS_VIIRS_SNPP_SP" in filepath: 
         sat = "SNPP"
-        df = FireIO.read_fire_archive_SVC2(filepath) 
+        df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
         df = df.loc[df["Type"] == 0] 
         # filter: inferred hot spot type == presumed vegetation fire
+    elif "FIRMS_VIIRS_NOAA20_NRT" in filepath:
+        sat = "NOAA20"
+        df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
+    elif "FIRMS_VIIRS_NOAA20_SP" in filepath:
+        sat = "NOAA20"
+        df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
+        df = df.loc[df["Type"] == 0] 
+        # filter: inferred hot spot type == presumed vegetation fire
+    elif "FIMRS_VIIRS_NOAA21_NRT" in filepath:
+        sat = "NOAA21"
+        df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
     else:
-        raise ValueError("please set SNPP or NOAA20 for sat")
+        raise ValueError("please set SNPP, NOAA20, or NOAA21 for sat")
 
     # set ampm
     df = FireIO.AFP_setampm(df)

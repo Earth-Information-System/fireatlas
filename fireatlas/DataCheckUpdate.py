@@ -10,6 +10,7 @@ import requests
 import pandas as pd
 
 from datetime import date
+from typing import Literal
 
 from fireatlas import settings
 from fireatlas.FireLog import logger
@@ -75,9 +76,30 @@ def update_VJ114IMGTDL(d: date):
         logger.warning(f"Could not download VJ114IMGTDL data for {d}")
         logger.warning(f"Error message: {str(e)}")
 
-def update_fire_nrt_SVC2(d: date):
+def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Literal["SP", "NRT"]):
+    """
+    Get 1 day of global active fire detections from the FIRMS API.
+    If a file already exists for that day, it will be overwritten
+    by the new data. 
 
-    data_dir = os.path.join(settings.dirextdata, "VIIRS", "fire_nrt_SV-C2/")
+    sat: 
+        satellite name e.g. "SNPP", "NOAA20", "NOAA21" 
+    product: 
+        "NRT": near real time 
+        "SP": standard product 
+
+    If approaching API download rate limits, will back off automatically. 
+    """
+
+    if sat not in ("SNPP", "NOAA20", "NOAA21"):
+        raise ValueError(f"{sat} is not one of: SNPP, NOAA20, NOAA21")
+    if product not in ("NRT", "SP"):
+        raise ValueError(f"{product} is not one of: NRT, SP")
+    if (sat == "NOAA21") and (product == "SP"):
+        raise ValueError("NOAA21 standard product is not available. Use NOAA21 NRT.")
+    
+
+    data_dir = os.path.join(settings.dirextdata, "VIIRS", f"FIRMS_VIIRS_{sat}_{product}/")
     status_url = 'https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY=' + MAP_KEY
 
     try:
@@ -86,7 +108,7 @@ def update_fire_nrt_SVC2(d: date):
         count = resp['current_transactions']
         limit = resp['transaction_limit']
 
-        if (limit - count < limit * .9): 
+        if (limit - count > limit * .9): 
             # wait 60 seconds if approaching API transaction limit 
             logger.warning(
                 f"Current FIRMS API transactions ({count}) approaching account limit ({limit}).\
@@ -95,29 +117,34 @@ def update_fire_nrt_SVC2(d: date):
             time.sleep(60)
 
         firms_api = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/" 
-        query = "/VIIRS_SNPP_NRT/world/1/" + d.strftime("%Y-%m-%d")
+        query = f"/VIIRS_{sat}_{product}/world/1/" + d.strftime("%Y-%m-%d")
         url = firms_api + MAP_KEY + query
+
+        logger.info(f"Downloading {sat} {product} for {d} from {url}")
     
         df = pd.read_csv(url)
 
         if len(df) < 1: 
             logger.warning(
-                f"NRT SNPP data is empty for {d}. This date may be outside range of data availability."
+                f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
             )
             return 
     
         daterange = pd.to_datetime(df['acq_date'])
         tst, ted = daterange.min(), daterange.max() 
+
+        if tst.date() != ted.date():
+            raise ValueError(f"Unexpected date range for single day file: {tst} to {ted}")
     
-        filename_out = f"fire_nrt_SV-C2_{tst.strftime('%Y%m%d')}_{ted.strftime('%Y%m%d')}.csv" 
+        filename_out = f"FIRMS_VIIRS_{sat}_{product}_{tst.strftime('%Y%m%d')}.csv" 
         downloaded_filepath = os.path.join(data_dir, filename_out)  
+        os.makedirs(os.path.dirname(downloaded_filepath), exist_ok=True)
         df.to_csv(downloaded_filepath)
         
         preprocess_input_file(downloaded_filepath)
     except Exception as e: 
-        logger.warning(f"Could not download NRT SNPP data for {d}")
+        logger.warning(f"Could not download {product} {sat} data for {d}")
         logger.warning(f"Error message: {str(e)}")
-        
 
 def update_GridMET_fm1000():
     ''' Get updated GridMET data (including fm1000)
