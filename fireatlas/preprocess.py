@@ -102,7 +102,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
 
 def preprocessed_filename(
     t: TimeStep,
-    sat: Optional[Literal["NOAA20", "SNPP"]] = None,
+    sat: Optional[Literal["NOAA20", "NOAA21", "SNPP"]] = None,
     region: Optional[Region] = None,
     suffix="",
     location: Location = None
@@ -320,7 +320,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 @timed
 def read_preprocessed_input(
     t: TimeStep,
-    sat: Literal["NOAA20", "SNPP"],
+    sat: Literal["NOAA20", "NOAA21", "SNPP"],
     location: Location = None,
 ):
     filename = preprocessed_filename(t, sat=sat, location=location)
@@ -367,13 +367,13 @@ def preprocess_region_t(
     )
     if source == "VIIRS":
         dfs = []
-        for sat in ["SNPP", "NOAA20"]:
+        for sat in ["SNPP", "NOAA20", "NOAA21"]:
             try:
                 dfs.append(read_preprocessed_input(t, sat=sat, location=read_location))
             except FileNotFoundError as e:
                 logger.info(f"{sat} file not available at {t=}: '{str(e)}'")
         if len(dfs) == 0:
-            raise ValueError(f"Both NOAA20 and SNPP files are not available for {t=}")
+            raise ValueError(f"NOAA20, NOAA21, and SNPP files are not available for {t=}")
         else:
             df = pd.concat(dfs, ignore_index=True)
     else:
