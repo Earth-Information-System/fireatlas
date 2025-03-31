@@ -91,13 +91,8 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
     If approaching API download rate limits, will back off automatically. 
     """
 
-    if sat not in ("SNPP", "NOAA20", "NOAA21"):
-        raise ValueError(f"{sat} is not one of: SNPP, NOAA20, NOAA21")
-    if product not in ("NRT", "SP"):
-        raise ValueError(f"{product} is not one of: NRT, SP")
     if (sat == "NOAA21") and (product == "SP"):
         raise ValueError("NOAA21 standard product is not available. Use NOAA21 NRT.")
-    
 
     data_dir = os.path.join(settings.dirextdata, "VIIRS", f"FIRMS_VIIRS_{sat}_{product}/")
     status_url = 'https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY=' + MAP_KEY
@@ -108,7 +103,7 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         count = resp['current_transactions']
         limit = resp['transaction_limit']
 
-        if (limit - count > limit * .9): 
+        if (limit - count < limit * .1): 
             # wait 60 seconds if approaching API transaction limit 
             logger.warning(
                 f"Current FIRMS API transactions ({count}) approaching account limit ({limit}).\
