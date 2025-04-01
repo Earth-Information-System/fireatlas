@@ -120,8 +120,10 @@ class Settings(BaseSettings):
     MCD64buf: float = Field(231.7, description="MODIS fire perimeter buffer, m")
 
     # fire source data
+
     FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
         "VIIRS", description="fire source data"
+
     )
     FIRE_NRT: bool = Field(True, description="whether to use NRT data")
     FIRE_SENSOR: Literal["viirs", "mcd64"] = Field("viirs", description="fire sensor")

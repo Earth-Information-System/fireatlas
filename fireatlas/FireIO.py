@@ -508,6 +508,284 @@ def read_VJ114IMGTDL(filepath: str):
     return df
 
 
+def FIRMS_VIIRS_SNPP_NRT_filepath(t: TimeStep):
+    """Filepath for SNPP NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_SNPP_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_SNPP_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+def FIRMS_VIIRS_SNPP_SP_filepath(t: TimeStep): 
+    """Filepath for SNPP SP data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist.  
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_SNPP_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_SNPP_SP_{datestring}.csv"
+    )
+
+    return filepath
+
+def FIRMS_VIIRS_NOAA20_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA20 NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data 
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_NOAA20_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_NOAA20_NRT_{datestring}.csv"
+    )
+
+    return filepath 
+
+def FIRMS_VIIRS_NOAA20_SP_filepath(t: TimeStep):
+    """Filepath for NOAA20 SP data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_NOAA20_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_NOAA20_SP_{datestring}.csv"
+    )
+
+    return filepath
+
+def FIRMS_VIIRS_NOAA21_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA21 NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data 
+    
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        "FIRMS_VIIRS_NOAA21_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir, 
+        f"FIRMS_VIIRS_NOAA21_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+def read_FIRMS_VIIRS_SP(filepath: str):
+    """Read VIIRS standard product fire location data. 
+    Input data from the FIRMS API is formatted in the same way for all satellites. 
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3. 
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires 
+    
+    """
+
+    usecols = [
+        "latitude", 
+        "longitude", 
+        "scan", 
+        "track", 
+        "acq_date", 
+        "acq_time", 
+        "confidence",
+        "frp", 
+        "daynight",
+        "type"
+    ]
+
+    df = pd.read_csv(
+        filepath, 
+        usecols=usecols, 
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+    
+    df["acq_time"] = df["acq_time"].str.zfill(4) 
+    # convert 700 to 0700 or 110 to 0110
+
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS", 
+            "track": "DT",
+            "frp": "FRP", 
+            "daynight": "DNFlag", 
+            "type": "Type", 
+            "confidence": "Confidence"
+        }
+    )
+    
+    return df
+
+def read_FIRMS_VIIRS_NRT(filepath: str):
+    """Read VIIRS NRT product fire location data. 
+     
+    Input data from the FIRMS API is formatted in the same way for all satellites. 
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3. 
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires 
+    
+    """
+
+    usecols = [
+        "latitude", 
+        "longitude", 
+        "scan", 
+        "track", 
+        "acq_date", 
+        "acq_time", 
+        "confidence",
+        "frp", 
+        "daynight"
+    ]
+
+    df = pd.read_csv(
+        filepath, 
+        usecols=usecols, 
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+
+    df["acq_time"] = df["acq_time"].str.zfill(4) 
+    # convert 700 to 0700 or 110 to 0110
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS", 
+            "track": "DT",
+            "frp": "FRP", 
+            "daynight": "DNFlag", 
+            "confidence": "Confidence"
+        }
+    )
+    
+    return df 
+
+
 def AFP_regfilter(df, shp_Reg):
     """filter fire pixels using a given shp_Reg
 

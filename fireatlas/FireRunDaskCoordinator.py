@@ -2,6 +2,8 @@ import json
 import argparse
 import os
 import glob
+import fsspec
+import datetime as dt
 from functools import partial
 
 import s3fs
@@ -33,8 +35,20 @@ from fireatlas.preprocess import (
     preprocessed_region_filename,
 )
 
-from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath, VJ114IMGTDL_filepath, VNP14IMGTDL_filepath
+from fireatlas.DataCheckUpdate import update_FIRMS, update_VJ114IMGTDL, update_VNP14IMGTDL, get_FIRMS_data_availability
+from fireatlas.FireIO import (
+    copy_from_local_to_s3, 
+    copy_from_local_to_veda_s3, 
+    VNP14IMGML_filepath, 
+    VJ114IMGML_filepath, 
+    VJ114IMGTDL_filepath, 
+    VNP14IMGTDL_filepath, 
+    FIRMS_VIIRS_SNPP_SP_filepath, 
+    FIRMS_VIIRS_SNPP_NRT_filepath, 
+    FIRMS_VIIRS_NOAA20_SP_filepath, 
+    FIRMS_VIIRS_NOAA20_NRT_filepath, 
+    FIRMS_VIIRS_NOAA21_NRT_filepath
+)
 from fireatlas.FireTime import t_generator, t_nb, t2dt, dt2t, d2t
 from fireatlas.FireLog import logger
 from fireatlas import settings
@@ -129,75 +143,86 @@ def job_preprocess_region(region: Region):
 
 def job_nrt_current_day_updates(client: Client):
     """hourly update the NRT files and prep
+    Updates files for today and the two previous days. 
     """
     futures, source, now = [], settings.FIRE_SOURCE, datetime.now()
 
     if source == "VIIRS":
-        sats = ["SNPP", "NOAA20"]
-    else:
-        sats = [source]
+        sats = ["SNPP", "NOAA20", "NOAA21"]
+    else: 
+        sats=[source]
 
     for sat in sats:
-        if sat == "SNPP":
-            NRT_update_func = update_VNP14IMGTDL
-        if sat == "NOAA20":
-            NRT_update_func = update_VJ114IMGTDL
-        futures.extend(client.map(NRT_update_func, [now, now-timedelta(days=1)]))
+        futures.extend(client.map(update_FIRMS, *[
+            (now.date(), (now-timedelta(days=1)).date(), (now-timedelta(days=2)).date()), 
+            (sat, sat, sat),
+            ("NRT", "NRT", "NRT")
+        ]))
+
     return futures
 
-
 def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
+    """
+    Checks to see if any input data within the time range needs to be downloaded or preprocessed. 
+
+    Prefers SP (standard product) data over NRT data. If SP is available, it will be used
+    instead of the NRT data for the same day. 
+
+    Returns: 
+    --------
+    futures : list[dask.distributed.client.Future]
+        List of download and preprocessing jobs to execute
+
+    """
     source = settings.FIRE_SOURCE
+    location = settings.READ_LOCATION
+
+    fs = fsspec.filesystem(location, use_listings_cache=False)
 
     futures = []
-    if source == "VIIRS":
-        sats = ["SNPP", "NOAA20"]
-    else:
+    if source == "VIIRS": 
+        sats = ["SNPP", "NOAA20", "NOAA21"]
+    else: 
         sats = [source]
-    
-    for sat in sats:
+
+    for sat in sats: 
+
+        sp_start, sp_end, nrt_start, nrt_end = get_FIRMS_data_availability(sat)
+
         if sat == "SNPP":
-            monthly_filepath_func = VNP14IMGML_filepath
-            NRT_filepath_func = VNP14IMGTDL_filepath
-            NRT_update_func = update_VNP14IMGTDL
-        if sat == "NOAA20":
-            monthly_filepath_func = VJ114IMGML_filepath
-            NRT_filepath_func = VJ114IMGTDL_filepath
-            NRT_update_func = update_VJ114IMGTDL
+            sp_filepath_func = FIRMS_VIIRS_SNPP_SP_filepath
+            nrt_filepath_func = FIRMS_VIIRS_SNPP_NRT_filepath
+        elif sat == "NOAA20":
+            sp_filepath_func = FIRMS_VIIRS_NOAA20_SP_filepath
+            nrt_filepath_func = FIRMS_VIIRS_NOAA20_NRT_filepath
+        elif sat == "NOAA21":
+            sp_filepath_func = None 
+            nrt_filepath_func = FIRMS_VIIRS_NOAA21_NRT_filepath
 
-        # first check if there are any monthly files that need preprocessing
-        timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
-        monthly_timesteps = list(set([(t[0], t[1]) for t in timesteps]))
-        monthly_filepaths = [monthly_filepath_func(t) for t in monthly_timesteps]
-        
-        # narrow down to the monthly filepaths and timesteps that actually exist
-        indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
-        monthly_filepaths = [monthly_filepaths[i] for i in indices]
-        monthly_timesteps = [monthly_timesteps[i] for i in indices]
+        for t in t_generator(tst, ted):
+            d = dt.datetime(t[0], t[1], t[2])
 
-        # set up monthly jobs
-        futures.extend(client.map(preprocess_input_file, monthly_filepaths))
-
-        # calculate any remaining missing timesteps
-        missing_timesteps = [t for t in timesteps if (t[0], t[1]) not in monthly_timesteps]
-        NRT_filepaths = [NRT_filepath_func(t) for t in missing_timesteps]
-        
-        # narrow down to the NRT filepaths and timesteps that actually exist
-        indices = [i for i, f in enumerate(NRT_filepaths) if f is not None]
-        NRT_filepaths = [NRT_filepaths[i] for i in indices]
-        NRT_timesteps = [missing_timesteps[i] for i in indices]
-        
-        # set up NRT jobs
-        futures.extend(client.map(preprocess_input_file, NRT_filepaths))
-
-        # if there are any dates that are still missing, try to wget the files
-        missing_dates = [date(*t) for t in missing_timesteps if t not in NRT_timesteps]
-
-        # don't actually worry about dates that are more than 30 days ago
-        dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=30))]
-
-        # set up NRT jobs
-        futures.extend(client.map(NRT_update_func, dates))
+            if sp_start and (sp_start <= d <= sp_end):  
+                # SP is now available for this day; do we already have it? 
+                # If not, download and overwrite old preprocessed file.
+                fp = sp_filepath_func(t)
+                if fs.exists(fp):
+                    pfp = preprocessed_filename(t, sat, location=location)
+                    if not fs.exists(pfp):
+                        futures.append(client.submit(preprocess_input_file, fp))
+                else:
+                    futures.append(client.submit(update_FIRMS, d, sat, "SP"))
+            elif nrt_start <= d <= nrt_end:
+                fp = nrt_filepath_func(t)
+                if fs.exists(fp):
+                    pfp = preprocessed_filename(t, sat, location=location)
+                    if not fs.exists(pfp):
+                        futures.append(client.submit(preprocess_input_file, fp)) 
+                else: 
+                    futures.append(client.submit(update_FIRMS, d, sat, "NRT"))
+            else:
+                # Neither NRT nor SP available
+                logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
 
     return futures
 

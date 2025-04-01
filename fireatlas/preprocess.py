@@ -102,7 +102,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
 
 def preprocessed_filename(
     t: TimeStep,
-    sat: Optional[Literal["NOAA20", "SNPP"]] = None,
+    sat: Optional[Literal["NOAA20", "NOAA21", "SNPP"]] = None,
     region: Optional[Region] = None,
     suffix="",
     location: Location = None
@@ -170,7 +170,7 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 def check_preprocessed_file(
     tst: TimeStep,
     ted: TimeStep,
-    sat: Literal["SNPP", "NOAA20"],
+    sat: Literal["SNPP", "NOAA20", "NOAA21"],
     freq: Literal["monthly", "NRT"] = "monthly",
     location: Location = None,
 ):
@@ -183,7 +183,7 @@ def check_preprocessed_file(
         the year, month, day and 'AM'|'PM' to start checking for files
     ted : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' to end checking for files
-    sat: Literal["SNPP", "NOAA20"]
+    sat: Literal["SNPP", "NOAA20", "NOAA21"]
         which satellite to use
     freq: Literal["monthly", "NRT"]
         which files to use - monthly or daily (NRT)
@@ -246,8 +246,28 @@ def preprocess_input_file(filepath: str):
         sat = "NOAA20"
         df = FireIO.read_VJ114IMGML(filepath)
         df = df.loc[df["mask"] >= 7]
+
+    elif "FIRMS_VIIRS_SNPP_NRT" in filepath: 
+        sat = "SNPP" 
+        df = FireIO.read_FIRMS_VIIRS_NRT(filepath) 
+    elif "FIRMS_VIIRS_SNPP_SP" in filepath: 
+        sat = "SNPP"
+        df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
+        df = df.loc[df["Type"] == 0] 
+        # filter: inferred hot spot type == presumed vegetation fire
+    elif "FIRMS_VIIRS_NOAA20_NRT" in filepath:
+        sat = "NOAA20"
+        df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
+    elif "FIRMS_VIIRS_NOAA20_SP" in filepath:
+        sat = "NOAA20"
+        df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
+        df = df.loc[df["Type"] == 0] 
+        # filter: inferred hot spot type == presumed vegetation fire
+    elif "FIRMS_VIIRS_NOAA21_NRT" in filepath:
+        sat = "NOAA21"
+        df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
     else:
-        raise ValueError("please set SNPP or NOAA20 for sat")
+        raise ValueError("please set SNPP, NOAA20, or NOAA21 for sat")
 
     # set ampm
     df = FireIO.AFP_setampm(df)
@@ -300,7 +320,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 @timed
 def read_preprocessed_input(
     t: TimeStep,
-    sat: Literal["NOAA20", "SNPP"],
+    sat: Literal["NOAA20", "NOAA21", "SNPP"],
     location: Location = None,
 ):
     filename = preprocessed_filename(t, sat=sat, location=location)
@@ -347,13 +367,13 @@ def preprocess_region_t(
     )
     if source == "VIIRS":
         dfs = []
-        for sat in ["SNPP", "NOAA20"]:
+        for sat in ["SNPP", "NOAA20", "NOAA21"]:
             try:
                 dfs.append(read_preprocessed_input(t, sat=sat, location=read_location))
             except FileNotFoundError as e:
                 logger.info(f"{sat} file not available at {t=}: '{str(e)}'")
         if len(dfs) == 0:
-            raise ValueError(f"Both NOAA20 and SNPP files are not available for {t=}")
+            raise ValueError(f"NOAA20, NOAA21, and SNPP files are not available for {t=}")
         else:
             df = pd.concat(dfs, ignore_index=True)
     else:
