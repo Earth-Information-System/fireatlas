@@ -512,6 +512,9 @@ def FIRMS_VIIRS_SNPP_NRT_filepath(t: TimeStep):
     """Filepath for SNPP NRT data downloaded from FIRMS API. 
     Looks for source files for individual days (UTC). 
 
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
     Parameters
     ----------
     t : tuple, (int, int, int, str)
@@ -520,7 +523,7 @@ def FIRMS_VIIRS_SNPP_NRT_filepath(t: TimeStep):
     Returns
     -------
     filepath : str
-        path to input data or None if file does not exist
+        path to input data
     
     """
     datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
@@ -536,15 +539,14 @@ def FIRMS_VIIRS_SNPP_NRT_filepath(t: TimeStep):
         f"FIRMS_VIIRS_SNPP_NRT_{datestring}.csv"
     )
 
-    if not settings.fs.exists(filepath):
-        print("No data available for file ", filepath)
-        return None
-
     return filepath
 
 def FIRMS_VIIRS_SNPP_SP_filepath(t: TimeStep): 
     """Filepath for SNPP SP data downloaded from FIRMS API. 
-    Looks for source files for individual days (UTC). 
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist.  
 
     Parameters
     ----------
@@ -554,7 +556,7 @@ def FIRMS_VIIRS_SNPP_SP_filepath(t: TimeStep):
     Returns
     -------
     filepath : str
-        path to input data or None if file does not exist
+        path to input data
     
     """
     datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
@@ -570,15 +572,14 @@ def FIRMS_VIIRS_SNPP_SP_filepath(t: TimeStep):
         f"FIRMS_VIIRS_SNPP_SP_{datestring}.csv"
     )
 
-    if not settings.fs.exists(filepath):
-        print("No data available for file ", filepath)
-        return None
-
     return filepath
 
 def FIRMS_VIIRS_NOAA20_NRT_filepath(t: TimeStep):
     """Filepath for NOAA20 NRT data downloaded from FIRMS API. 
     Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
 
     Parameters
     ----------
@@ -588,7 +589,7 @@ def FIRMS_VIIRS_NOAA20_NRT_filepath(t: TimeStep):
     Returns
     -------
     filepath : str
-        path to input data or None if file does not exist
+        path to input data 
     
     """
     datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
@@ -604,15 +605,14 @@ def FIRMS_VIIRS_NOAA20_NRT_filepath(t: TimeStep):
         f"FIRMS_VIIRS_NOAA20_NRT_{datestring}.csv"
     )
 
-    if not settings.fs.exists(filepath):
-        print("No data available for file ", filepath)
-        return None
-
     return filepath 
 
 def FIRMS_VIIRS_NOAA20_SP_filepath(t: TimeStep):
     """Filepath for NOAA20 SP data downloaded from FIRMS API. 
     Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
 
     Parameters
     ----------
@@ -622,7 +622,7 @@ def FIRMS_VIIRS_NOAA20_SP_filepath(t: TimeStep):
     Returns
     -------
     filepath : str
-        path to input data or None if file does not exist
+        path to input data
     
     """
     datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
@@ -638,15 +638,14 @@ def FIRMS_VIIRS_NOAA20_SP_filepath(t: TimeStep):
         f"FIRMS_VIIRS_NOAA20_SP_{datestring}.csv"
     )
 
-    if not settings.fs.exists(filepath):
-        print("No data available for file ", filepath)
-        return None
-
     return filepath
 
 def FIRMS_VIIRS_NOAA21_NRT_filepath(t: TimeStep):
     """Filepath for NOAA21 NRT data downloaded from FIRMS API. 
     Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
 
     Parameters
     ----------
@@ -656,7 +655,7 @@ def FIRMS_VIIRS_NOAA21_NRT_filepath(t: TimeStep):
     Returns
     -------
     filepath : str
-        path to input data or None if file does not exist
+        path to input data 
     
     """
     datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
@@ -671,10 +670,6 @@ def FIRMS_VIIRS_NOAA21_NRT_filepath(t: TimeStep):
         file_dir, 
         f"FIRMS_VIIRS_NOAA21_NRT_{datestring}.csv"
     )
-
-    if not settings.fs.exists(filepath):
-        print("No data available for file ", filepath)
-        return None
 
     return filepath
 
