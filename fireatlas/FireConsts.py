@@ -34,7 +34,7 @@ class Settings(BaseSettings):
         description="absolute path to where local data are stored",
     )
     S3_PATH: str = Field(
-        "s3://maap-ops-workspace/shared/gsfc_landslides",
+        "s3://maap-ops-workspace/shared/zbecker/FEDSstaging",
         description="s3 path where remote data are stored",
     )
 
@@ -120,8 +120,10 @@ class Settings(BaseSettings):
     MCD64buf: float = Field(231.7, description="MODIS fire perimeter buffer, m")
 
     # fire source data
-    FIRE_SOURCE: Literal["SNPP", "NOAA20", "NOAA21", "VIIRS", "BAMOD"] = Field(
-        "NOAA20", description="fire source data"
+
+    FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
+        "VIIRS", description="fire source data"
+
     )
     FIRE_NRT: bool = Field(True, description="whether to use NRT data")
     FIRE_SENSOR: Literal["viirs", "mcd64"] = Field("viirs", description="fire sensor")
