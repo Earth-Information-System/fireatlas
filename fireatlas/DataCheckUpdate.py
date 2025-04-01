@@ -164,3 +164,46 @@ def update_GridMET_fm1000():
             print(f"Converting {target_file} to {zarrfile}.")
             dat = xr.open_dataset(file_name)
             dat.to_zarr(os.path.join(data_dir, zarrfile), mode="w")
+
+
+def get_FIRMS_data_availability(sat: Literal["SNPP", "NOAA20", "NOAA21"]):
+    """Get current date range of data available via FIRMS API for each VIIRS sensor. 
+
+    Parameters
+    ----------
+    sat : Literal["SNPP", "NOAA20", "NOAA21"]
+
+    Returns
+    -------
+    sp_start : pd Timestamp or None 
+        First date for which standard product (SP) data is available
+        or None if SP data is not available for this satellite
+    sp_end : pd Timestamp or None 
+        Last date for which standard product (SP) data is available
+        or None if SP data is not available for this satellite
+    nrt_start : pd Timestamp 
+        First date for which near real time (NRT) data is available 
+    nrt_end : pd Timestamp 
+        Last date for which near real time (NRT) data is available
+    
+    """
+    da_url = 'https://firms.modaps.eosdis.nasa.gov/api/data_availability/csv/' + MAP_KEY + '/all'
+    df = pd.read_csv(da_url, index_col='data_id')
+
+    if sat == "SNPP":
+        sp_start = pd.to_datetime(df.loc["VIIRS_SNPP_SP"].min_date)
+        sp_end = pd.to_datetime(df.loc["VIIRS_SNPP_SP"].max_date)
+        nrt_start = pd.to_datetime(df.loc["VIIRS_SNPP_NRT"].min_date)
+        nrt_end = pd.to_datetime(df.loc["VIIRS_SNPP_NRT"].max_date)
+    elif sat == "NOAA20": 
+        sp_start = pd.to_datetime(df.loc["VIIRS_NOAA20_SP"].min_date)
+        sp_end = pd.to_datetime(df.loc["VIIRS_NOAA20_SP"].max_date)
+        nrt_start = pd.to_datetime(df.loc["VIIRS_NOAA20_NRT"].min_date)
+        nrt_end = pd.to_datetime(df.loc["VIIRS_NOAA20_NRT"].max_date)
+    elif sat == "NOAA21":
+        sp_start = None 
+        sp_end = None 
+        nrt_start = pd.to_datetime(df.loc["VIIRS_NOAA21_NRT"].min_date)
+        nrt_end = pd.to_datetime(df.loc["VIIRS_NOAA21_NRT"].max_date)
+
+    return sp_start, sp_end, nrt_start, nrt_end
