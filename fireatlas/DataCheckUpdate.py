@@ -16,7 +16,7 @@ from fireatlas import settings
 from fireatlas.FireLog import logger
 from fireatlas.preprocess import preprocess_input_file
 
-MAP_KEY = "ee00876fdc0b5d2c424a83dbbf818b9d"
+MAP_KEY = "0e50658bd8e8ea368db7379b0be28630"
 N_MAX_RETRIES = 30
 
 # ------------------------------------------------------------------------------
