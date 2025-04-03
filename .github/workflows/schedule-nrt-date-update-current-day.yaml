@@ -36,8 +36,8 @@ jobs:
       - name: kick off the DPS job
         uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
         with:
-          algo_name: eis-feds-dask-coordinator-v3
-          github_ref: 1.2.6
+          algo_name: staging-eis-feds-dask-coordinator-v3
+          github_ref: staging
           username: zbecker
           queue: maap-dps-eis-worker-32gb
           maap_image_env: ubuntu
