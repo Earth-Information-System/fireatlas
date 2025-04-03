@@ -17,6 +17,7 @@ from fireatlas.FireLog import logger
 from fireatlas.preprocess import preprocess_input_file
 
 MAP_KEY = "ee00876fdc0b5d2c424a83dbbf818b9d"
+N_MAX_RETRIES = 30
 
 # ------------------------------------------------------------------------------
 # update external dataset
@@ -96,50 +97,56 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
 
     data_dir = os.path.join(settings.dirextdata, "VIIRS", f"FIRMS_VIIRS_{sat}_{product}/")
     status_url = 'https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY=' + MAP_KEY
+    firms_api = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/" 
+    query = f"/VIIRS_{sat}_{product}/world/1/" + d.strftime("%Y-%m-%d")
+    url = firms_api + MAP_KEY + query
 
-    try:
+    retries = 0 
+    while retries < N_MAX_RETRIES:
 
-        resp = pd.read_json(status_url,  typ='series')
+        retries += 1
+        if retries >= N_MAX_RETRIES:
+            logger.warning(f"Could not download {product} {sat} data for {d}")
+            logger.warning(f"Error message: Max retries exceeded.")
+            return
+        
+        resp = pd.read_json(status_url, typ='series')
         count = resp['current_transactions']
-        limit = resp['transaction_limit']
+        limit = resp['transaction_limit'] 
 
-        if (limit - count < limit * .1): 
-            # wait 60 seconds if approaching API transaction limit 
+        if (limit - count > limit * .1):
+            try:
+                logger.info(f"Downloading {sat} {product} for {d}")
+                df = pd.read_csv(url) 
+                break
+            except Exception as e:
+                logger.warning(f"Error while downloading {sat} {product} for {d}: {e}. Retrying download.")
+             
+        else: 
             logger.warning(
-                f"Current FIRMS API transactions ({count}) approaching account limit ({limit}).\
-                Sleeping  60 seconds."
+                f"Current FIRMS API transactions ({count}) approaching account limit ({limit}). Sleeping 60 seconds. Retry #{retries}"
             )
             time.sleep(60)
-
-        firms_api = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/" 
-        query = f"/VIIRS_{sat}_{product}/world/1/" + d.strftime("%Y-%m-%d")
-        url = firms_api + MAP_KEY + query
-
-        logger.info(f"Downloading {sat} {product} for {d} from {url}")
-    
-        df = pd.read_csv(url)
-
-        if len(df) < 1: 
-            logger.warning(
-                f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
-            )
-            return 
-    
-        daterange = pd.to_datetime(df['acq_date'])
-        tst, ted = daterange.min(), daterange.max() 
-
-        if tst.date() != ted.date():
-            raise ValueError(f"Unexpected date range for single day file: {tst} to {ted}")
-    
-        filename_out = f"FIRMS_VIIRS_{sat}_{product}_{tst.strftime('%Y%m%d')}.csv" 
-        downloaded_filepath = os.path.join(data_dir, filename_out)  
-        os.makedirs(os.path.dirname(downloaded_filepath), exist_ok=True)
-        df.to_csv(downloaded_filepath)
         
-        preprocess_input_file(downloaded_filepath)
-    except Exception as e: 
-        logger.warning(f"Could not download {product} {sat} data for {d}")
-        logger.warning(f"Error message: {str(e)}")
+    if len(df) < 1: 
+        logger.warning(
+            f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
+        )
+        return 
+
+    daterange = pd.to_datetime(df['acq_date'])
+    tst, ted = daterange.min(), daterange.max() 
+
+    if tst.date() != ted.date():
+        raise ValueError(f"Unexpected date range for single day file: {tst} to {ted}")
+
+    filename_out = f"FIRMS_VIIRS_{sat}_{product}_{tst.strftime('%Y%m%d')}.csv" 
+    downloaded_filepath = os.path.join(data_dir, filename_out)  
+    os.makedirs(os.path.dirname(downloaded_filepath), exist_ok=True)
+    df.to_csv(downloaded_filepath)
+    
+    preprocess_input_file(downloaded_filepath)
+    return
 
 def update_GridMET_fm1000():
     ''' Get updated GridMET data (including fm1000)
