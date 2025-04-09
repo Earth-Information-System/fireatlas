@@ -57,6 +57,43 @@ def t_nb(t, nb="next"):
             t_out = [d_out.year, d_out.month, d_out.day, "PM"]
     return t_out
 
+def t_nm(t: tuple, nb: str) -> datetime.date:
+  """
+  Returns the date of the first day next month or the laast day of the previous month given a datetime object.
+
+  Args:
+    t: A datetime.datetime object.
+    nb: 'next' or 'previous' to specify the desired month.
+
+  Returns:
+    A datetime.date object representing the first day of the adjacent month.
+  Raises:
+    ValueError: if nb is not 'next' or 'previous'
+  """
+  t = t2dt(t)
+  if nb == 'next':
+    if t.month == 12:
+      next_month = 1
+      next_year = t.year + 1
+    else:
+      next_month = t.month + 1
+      next_year = t.year
+    return (next_year, next_month, 1, "AM")
+
+  elif nb == 'previous':
+    if t.month == 1:
+      previous_month = 12
+      previous_year = t.year - 1
+    else:
+      previous_month = t.month - 1
+      previous_year = t.year
+    last_day_previous_month = (datetime.date(t.year, t.month, 1) + datetime.timedelta(days=-1))
+
+    return (last_day_previous_month.year, last_day_previous_month.month, last_day_previous_month.day, "PM")
+
+  else:
+    raise ValueError("nb must be 'next' or 'previous'")
+
 
 def t_generator(t_st, t_ed):
     t = t_st

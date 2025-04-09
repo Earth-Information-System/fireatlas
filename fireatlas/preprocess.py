@@ -211,7 +211,7 @@ def check_preprocessed_file(
 
 
 @timed
-def preprocess_input_file(filepath: str):
+def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str):
     """
     Preprocess monthly or daily NRT file of fire location data.
 
@@ -242,11 +242,18 @@ def preprocess_input_file(filepath: str):
         sat = "SNPP"
         df = FireIO.read_VNP14IMGML(filepath)
         df = df.loc[df["Type"] == 0]  # type filtering
+        df_prev = FireIO.read_VNP14IMGML(filepath_prev)
+        df_prev = df_prev.loc[df_prev["Type"] == 0]
+        df_next = FireIO.read_VNP14IMGML(filepath_next)
+        df_next = df_next.loc[df_next["Type"] == 0]
     elif "VJ114IMGML" in filepath:
         sat = "NOAA20"
         df = FireIO.read_VJ114IMGML(filepath)
         df = df.loc[df["mask"] >= 7]
-
+        df_prev = FireIO.read_VJ114IMGML(filepath_prev)
+        df_prev = df_prev.loc[df_prev["mask"] >= 7]
+        df_next = FireIO.read_VJ114IMGML(filepath_next)
+        df_next = df_next.loc[df_next["mask"] >= 7]
     elif "FIRMS_VIIRS_SNPP_NRT" in filepath: 
         sat = "SNPP" 
         df = FireIO.read_FIRMS_VIIRS_NRT(filepath) 
@@ -268,13 +275,26 @@ def preprocess_input_file(filepath: str):
         df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
     else:
         raise ValueError("please set SNPP, NOAA20, or NOAA21 for sat")
-
+        
+    yr, mth = df['datetime'].dt.year, df['datetime'].dt.month # assuming that UTC month and year matched local month and year
+    df = pd.concat([df_prev, df, df_next])
+    df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
+    if ("VJ114IMGML" in filepath) or ("VNP14IMGML" in filepath):
+        df = df[(df.local_datetime.dt.year == yr) & (df.local_datetime.dt.month == mth)]
+    
+        
     # set ampm
     df = FireIO.AFP_setampm(df)
 
     # add the satellite information
     df["Sat"] = sat
     df["input_filename"] = filepath.split("/")[-1]
+
+    df_prev["Sat"] = sat
+    df_prev["input_filename"] = filepath_prev.split("/")[-1]
+
+    df_next["Sat"] = sat
+    df_next["input_filename"] = filepath_next.split("/")[-1]
 
     # return selected columns
     df = df[
@@ -284,7 +304,9 @@ def preprocess_input_file(filepath: str):
     output_paths = []
 
     # groupby days and if there are more than 1 days, include a progress bar
-    gb = df.groupby(df["datetime"].dt.date)
+    
+    gb = df.groupby(df["local_datetime"].dt.date)
+    
     if gb.ngroups > 1:
         gb = tqdm(gb, "Processing days", file=sys.stdout)
 
@@ -308,8 +330,10 @@ def preprocess_input_file(filepath: str):
 
 
 def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
+    filepath_prev = monthly_filepath(t_nm(t, "previous"), sat= sat)
     filepath = monthly_filepath(t, sat=sat)
-    return preprocess_input_file(filepath)
+    filepath_next = monthly_filepath(t_nm(t, "next"), sat= sat)
+    return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
 
 def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
