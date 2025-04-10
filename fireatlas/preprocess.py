@@ -15,7 +15,7 @@ from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
 from fireatlas.FireClustering import do_clustering
 from fireatlas.FireTime import t_generator, t2dt
-from fireatlas import FireIO, FireMain, settings
+from fireatlas import FireIO, FireMain, settings, FireTime
 
 
 def preprocessed_region_filename(region: Region, location: Location = None):
@@ -330,9 +330,9 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
 
 
 def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
-    filepath_prev = monthly_filepath(t_nm(t, "previous"), sat= sat)
+    filepath_prev = monthly_filepath(FireTime.t_nm(t, "previous"), sat= sat)
     filepath = monthly_filepath(t, sat=sat)
-    filepath_next = monthly_filepath(t_nm(t, "next"), sat= sat)
+    filepath_next = monthly_filepath(FireTime.t_nm(t, "next"), sat= sat)
     return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
 

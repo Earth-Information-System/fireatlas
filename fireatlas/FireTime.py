@@ -87,7 +87,7 @@ def t_nm(t: tuple, nb: str) -> datetime.date:
     else:
       previous_month = t.month - 1
       previous_year = t.year
-    last_day_previous_month = (datetime.date(t.year, t.month, 1) + datetime.timedelta(days=-1))
+    last_day_previous_month = (date(t.year, t.month, 1) + timedelta(days=-1))
 
     return (last_day_previous_month.year, last_day_previous_month.month, last_day_previous_month.day, "PM")
 
