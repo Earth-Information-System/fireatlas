@@ -130,7 +130,7 @@ def make_gdf_snapshot(allfires, regnm, layer="perimeter"):
 
     if gdf is None:  # when no previous time step data, initialize the GeoDataFrame
         gdf = gpd.GeoDataFrame(
-                columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(settings.EPSG_CODE), geometry=[]
+                columns=(list(dd.keys()) + ["fireID"]), crs=str(settings.EPSG_CODE), geometry=[]
             )
 
         gdf = gdf.set_index("fireID") # set fid column as the index column
@@ -306,7 +306,7 @@ def save_gdf_uptonow(t, regnm):
         "t_ed": "datetime64",
     }
     gdf = gpd.GeoDataFrame(
-        columns=(list(dd.keys()) + ["fireID"]), crs="epsg:" + str(settings.EPSG_CODE), geometry=[]
+        columns=(list(dd.keys()) + ["fireID"]), crs=str(settings.EPSG_CODE), geometry=[]
     )
     gdf = gdf.set_index("fireID")
 
