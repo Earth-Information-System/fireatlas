@@ -876,7 +876,7 @@ def AFP_toprj(gdf):
     for CA may use WGS 84 / UTM zone 10N (epsg: 32610)
     for US may use US National Atlas Equal Area (epsg: 9311)"""
 
-    gdf = gdf.to_crs(epsg=settings.EPSG_CODE)
+    gdf = gdf.to_crs(crs=settings.EPSG_CODE)
     gdf["x"] = gdf.geometry.x
     gdf["y"] = gdf.geometry.y
     df = pd.DataFrame(gdf.drop(columns="geometry"))

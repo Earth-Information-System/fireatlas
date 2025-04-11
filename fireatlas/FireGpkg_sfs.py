@@ -284,7 +284,7 @@ def make_sf_nfplist(allfires, t, regnm, fids):
                 df.columns = sfkeys
                 gdf_1f = gpd.GeoDataFrame(
                     df,
-                    crs="epsg:" + str(settings.EPSG_CODE),
+                    crs=str(settings.EPSG_CODE),
                     geometry=gpd.points_from_xy(df.x, df.y),
                 )
 
