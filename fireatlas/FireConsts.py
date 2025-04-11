@@ -66,7 +66,7 @@ class Settings(BaseSettings):
         4, description="fire area threshold for determining large fires"
     )
 
-    EPSG_CODE: int = Field(
+    EPSG_CODE: int | str= Field(
         9311,
         description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
