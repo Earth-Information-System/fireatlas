@@ -198,6 +198,15 @@ def check_preprocessed_file(
     fs = fsspec.filesystem(location, use_listings_cache=False)
     # check that there is preprocessed data for these dates and if not, keep track
 
+    # Get times before and after start times (in UTC) so that local-days that span two files will be included
+    if (freq == "monthly"):
+        tst = FireTime.t_nm(tst, "previous")
+        ted = FireTime.t_nm(ted, "next")
+    elif(freq == "NRT"):
+        tst = FireTime.t_nb(FireTime.t_nb(tst, "previous"), "previous")
+        ted = FireTime.t_nb(FireTime.t_nb(ted, "next"), "next")
+        
+        
     needs_processing = []
     for t in t_generator(tst, ted):
         filepath = preprocessed_filename(t, sat=sat, location=location)
@@ -235,9 +244,13 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     if "VNP14IMGTDL" in filepath:
         sat = "SNPP"
         df = FireIO.read_VNP14IMGTDL(filepath)
+        df_prev = FireIO.read_VNP14IMGTDL(filepath_prev)
+        df_next = FireIO.read_VNP14IMGTDL(filepath_next)
     elif "VJ114IMGTDL" in filepath:
         sat = "NOAA20"
         df = FireIO.read_VJ114IMGTDL(filepath)
+        df_prev = FireIO.read_VJ114IMGTDL(filepath_prev)
+        df_next = FireIO.read_VJ114IMGTDL(filepath_next)
     elif "VNP14IMGML" in filepath:
         sat = "SNPP"
         df = FireIO.read_VNP14IMGML(filepath)
@@ -257,31 +270,48 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     elif "FIRMS_VIIRS_SNPP_NRT" in filepath: 
         sat = "SNPP" 
         df = FireIO.read_FIRMS_VIIRS_NRT(filepath) 
+        df_prev = FireIO.read_FIRMS_VIIRS_NRT(filepath_prev) 
+        df_next = FireIO.read_FIRMS_VIIRS_NRT(filepath_next) 
     elif "FIRMS_VIIRS_SNPP_SP" in filepath: 
         sat = "SNPP"
         df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
         df = df.loc[df["Type"] == 0] 
+        df_prev = FireIO.read_FIRMS_VIIRS_SP(filepath_prev) 
+        df_prev = df_prev.loc[df_prev["Type"] == 0] 
+        df_next = FireIO.read_FIRMS_VIIRS_SP(filepath_next) 
+        df_next = df.loc[df_next["Type"] == 0]
         # filter: inferred hot spot type == presumed vegetation fire
     elif "FIRMS_VIIRS_NOAA20_NRT" in filepath:
         sat = "NOAA20"
         df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
+        df_prev = FireIO.read_FIRMS_VIIRS_NRT(filepath_prev)
+        df_next = FireIO.read_FIRMS_VIIRS_NRT(filepath_next)
     elif "FIRMS_VIIRS_NOAA20_SP" in filepath:
         sat = "NOAA20"
         df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
         df = df.loc[df["Type"] == 0] 
+        df_prev = FireIO.read_FIRMS_VIIRS_SP(filepath_prev) 
+        df_prev = df_prev.loc[df_prev["Type"] == 0]
+        df_next = FireIO.read_FIRMS_VIIRS_SP(filepath_next) 
+        df_next = df_prev.loc[df_next["Type"] == 0]
         # filter: inferred hot spot type == presumed vegetation fire
     elif "FIRMS_VIIRS_NOAA21_NRT" in filepath:
         sat = "NOAA21"
         df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
+        df_prev = FireIO.read_FIRMS_VIIRS_NRT(filepath_prev)
+        df_next = FireIO.read_FIRMS_VIIRS_NRT(filepath_next)
     else:
         raise ValueError("please set SNPP, NOAA20, or NOAA21 for sat")
-        
-    yr, mth = df['datetime'].dt.year, df['datetime'].dt.month # assuming that UTC month and year matched local month and year
+
+    df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
+    local_day = df['datetime'].dt.day.iloc[0] ## User input local time asy the day, used it to query in UTC
+    yr, mth = df['local_datetime'].dt.year.iloc[0], df['local_datetime'].dt.month.iloc[0] 
     df = pd.concat([df_prev, df, df_next])
     df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
     if ("VJ114IMGML" in filepath) or ("VNP14IMGML" in filepath):
         df = df[(df.local_datetime.dt.year == yr) & (df.local_datetime.dt.month == mth)]
-    
+    else:
+        df = df[(df.local_datetime.dt.day == local_day) & (df.local_datetime.dt.year == yr)]
         
     # set ampm
     df = FireIO.AFP_setampm(df)
@@ -296,6 +326,10 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     df_next["Sat"] = sat
     df_next["input_filename"] = filepath_next.split("/")[-1]
 
+    # groupby days and if there are more than 1 days, include a progress bar
+    
+    gb = df.groupby(df["local_datetime"].dt.date)
+    
     # return selected columns
     df = df[
         ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
@@ -303,9 +337,7 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
 
     output_paths = []
 
-    # groupby days and if there are more than 1 days, include a progress bar
-    
-    gb = df.groupby(df["local_datetime"].dt.date)
+
     
     if gb.ngroups > 1:
         gb = tqdm(gb, "Processing days", file=sys.stdout)
@@ -337,8 +369,14 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 
 
 def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
+    t_prev = FireTime.t_nb(t, "previous")
+    day_prev = FireTime.t_nb(t_prev, "previous")
+    filepath_prev = NRT_filepath(day_prev, sat= sat)
+    t_next = FireTime.t_nb(t, "next")
+    day_next = FireTime.t_nb(t_next, "next")
+    filepath_next = NRT_filepath(day_next, sat= sat)
     filepath = NRT_filepath(t, sat=sat)
-    return preprocess_input_file(filepath)
+    return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
 
 @timed
