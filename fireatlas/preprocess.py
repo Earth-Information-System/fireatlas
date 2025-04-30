@@ -238,8 +238,11 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     """
     if filepath is None:
         raise ValueError("Please provide a valid filepath")
-
+        
+    logger.info(f"preprocessing previous file {filepath_prev.split('/')[-1]}")
     logger.info(f"preprocessing {filepath.split('/')[-1]}")
+    logger.info(f"preprocessing next file {filepath_next.split('/')[-1]}")
+    
 
     if "VNP14IMGTDL" in filepath:
         sat = "SNPP"
@@ -302,7 +305,12 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
         df_next = FireIO.read_FIRMS_VIIRS_NRT(filepath_next)
     else:
         raise ValueError("please set SNPP, NOAA20, or NOAA21 for sat")
+    ## Add file retrival information
+    df["input_filename"] = filepath.split("/")[-1]
+    df_prev["input_filename"] = filepath_prev.split("/")[-1]
+    df_next["input_filename"] = filepath_next.split("/")[-1]
 
+    ## Put into local time
     df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
     local_day = df['datetime'].dt.day.iloc[0] ## User input local time asy the day, used it to query in UTC
     yr, mth = df['local_datetime'].dt.year.iloc[0], df['local_datetime'].dt.month.iloc[0] 
@@ -318,13 +326,9 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
 
     # add the satellite information
     df["Sat"] = sat
-    df["input_filename"] = filepath.split("/")[-1]
-
     df_prev["Sat"] = sat
-    df_prev["input_filename"] = filepath_prev.split("/")[-1]
-
     df_next["Sat"] = sat
-    df_next["input_filename"] = filepath_next.split("/")[-1]
+    
 
     # groupby days and if there are more than 1 days, include a progress bar
     
