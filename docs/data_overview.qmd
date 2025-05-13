@@ -4,7 +4,7 @@ title: Data Overview
 
 The Fire Event Data Suite (FEDS) algorithm (Chen et al., 2022) uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.
 
-The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a "snapshot" of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 5 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.
+The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a "snapshot" of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 4 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.
 
 The estimated perimeter data are routinely produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.
 
@@ -12,14 +12,13 @@ The estimated perimeter data are routinely produced within approximately four ho
 
 The following sections describe the NRT data, as well as previously published FEDS datasets over specific geographic regions. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.
 
-### NRT FEDS
+### Near Real Time (NRT) FEDS
 
 -   Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada
--   Data available for most recent two weeks
 -   Detailed documentation is available [here](nrt.qmd).
 
-### Published datasets
+### Static datasets
 
-Published datasets contain static, unchanging FEDS outputs for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.
+Published datasets contain static, unchanging FEDS and FEDS-like outputs for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.
 
 [Published dataset descriptions.](https://www.ess.uci.edu/~uci-nasa-firetracking/)
