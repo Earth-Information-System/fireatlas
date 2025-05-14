@@ -13,11 +13,11 @@ Our group generates FEDS estimated fire perimeters over the continental United S
 - [Explore Our Data](https://us-fire-events-tool.netlify.app/) 
 - [Developer Documentation](https://earth-information-system.github.io/fireatlas/docs/contributing.html) 
 
----
-<div align="center">
-  <img src="docs/images/READMEfig.svg" width="60%" alt="Fire perimeters for the Creek fire" />
-</div>
 
+<div align="center">
+  <img src="docs/images/READMEfig.svg" width="50%" alt="Fire perimeters for the Creek fire" />
+</div>
+_Example FEDS perimeters showing the estimated progression of the 2020 Creek fire in California at 12-hour intervals_
 
 ## Repository Organization 
 - `fireatlas` module: Implements core FEDS algorithm as described in [Chen et al., 2022](https://doi.org/10.1038/s41597-022-01343-0)
