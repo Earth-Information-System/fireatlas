@@ -8,7 +8,7 @@ Our group generates FEDS estimated fire perimeters over the continental United S
 
 <figure>
   <img src="docs/images/READMEfig.svg" alt="my alt text"/>
-  <figcaption>Subdaily FEDS fire perimeters for the Creek fire in 2020 show the fire's progression over time.</figcaption>
+  <figcaption>(Subdaily FEDS fire perimeters for the Creek fire in 2020 show the fire's progression over time.)</figcaption>
 </figure>
 
 ## Table of Contents 
