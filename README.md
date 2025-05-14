@@ -17,6 +17,7 @@ Our group generates FEDS estimated fire perimeters over the continental United S
 <div align="center">
   <img src="docs/images/READMEfig.svg" width="50%" alt="Fire perimeters for the Creek fire" />
 </div>
+
 _Example FEDS perimeters showing the estimated progression of the 2020 Creek fire in California at 12-hour intervals_
 
 ## Repository Organization 
