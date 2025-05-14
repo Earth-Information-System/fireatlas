@@ -6,13 +6,16 @@ The Fire Events Data Suite (FEDS) algorithm processes satellite active fire dete
 
 Our group generates FEDS estimated fire perimeters over the continental United States every 12 hours, using data from the VIIRS sensors on the Suomi-NPP, NOAA-20, and NOAA-21 satellites. 
 
-![](/docs/images/READMEfig.svg)
 
-## Table of Contents 
+## Quick Links
 - [Project Website](https://earth-information-system.github.io/fireatlas/docs/) (Start here!)
 - [Available Data Products](https://earth-information-system.github.io/fireatlas/docs/data_overview.html)
 - [Explore Our Data](https://us-fire-events-tool.netlify.app/) 
 - [Developer Documentation](https://earth-information-system.github.io/fireatlas/docs/contributing.html) 
+
+---
+
+![](/docs/images/READMEfig.svg)
 
 ## Repository Organization 
 - `fireatlas` module: Implements core FEDS algorithm as described in [Chen et al., 2022](https://doi.org/10.1038/s41597-022-01343-0)
