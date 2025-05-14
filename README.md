@@ -14,8 +14,10 @@ Our group generates FEDS estimated fire perimeters over the continental United S
 - [Developer Documentation](https://earth-information-system.github.io/fireatlas/docs/contributing.html) 
 
 ---
+<div align="center">
+  <img src="docs/images/READMEfig.svg" width="40%" alt="Fire perimeters for the Creek fire" />
+</div>
 
-![](/docs/images/READMEfig.svg)
 
 ## Repository Organization 
 - `fireatlas` module: Implements core FEDS algorithm as described in [Chen et al., 2022](https://doi.org/10.1038/s41597-022-01343-0)
