@@ -15,7 +15,7 @@ Our group generates FEDS estimated fire perimeters over the continental United S
 
 ---
 <div align="center">
-  <img src="docs/images/READMEfig.svg" width="40%" alt="Fire perimeters for the Creek fire" />
+  <img src="docs/images/READMEfig.svg" width="60%" alt="Fire perimeters for the Creek fire" />
 </div>
 
 
