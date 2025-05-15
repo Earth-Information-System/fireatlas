@@ -10,7 +10,7 @@ Our group generates FEDS estimated fire perimeters over the continental United S
 ## Quick Links
 - [Project Website](https://earth-information-system.github.io/fireatlas/docs/) (Start here!)
 - [Available Data Products](https://earth-information-system.github.io/fireatlas/docs/data_overview.html)
-- [Explore Our Data](https://us-fire-events-tool.netlify.app/) 
+- [NRT Fire Data Explorer](https://us-fire-events-tool.netlify.app/) 
 - [Developer Documentation](https://earth-information-system.github.io/fireatlas/docs/contributing.html) 
 
 
@@ -23,18 +23,21 @@ _Example FEDS perimeters showing the estimated progression of the 2020 Creek fir
 ## Repository Organization 
 - `fireatlas` module: Implements core FEDS algorithm as described in [Chen et al., 2022](https://doi.org/10.1038/s41597-022-01343-0)
 - `maap_runtime` and GitHub Actions: Infrastructure for our NRT data processing pipeline using the NASA-ESA MAAP DPS
-- `tests`: automated unit and intergration tests using `pytest`
+- `tests`: automated unit and integration tests using `pytest`
 - `docs`: Documentation, including source files for our Quarto-based static site
 
 ## Contributors 
-Yang Chen, Rebecca Scholten, Stijn Hantson, Casey Graff, Shane Coffield, Alexey Shiklomanov, Tempest McCabe, Elijah Orland, Julia Signell, Greg Corradini, and Zeb Becker
+
+**Maintainers**: Yang Chen, Rebecca Scholten, Tempest McCabe, Elijah Orland, Zeb Becker
+
+**Past contributors**: Stijn Hantson, Casey Graff, Shane Coffield, Alexey Shiklomanov, Lisa Rosenthal, Julia Signell, Greg Corradini
 
 
 ## Contact
 
 We welcome contributions and collaborations! We use GitHub Issues to coordinate development work. Please [open an issue](https://github.com/Earth-Information-System/fireatlas/issues) to discuss bugs, feature requests, or data errors with the team. 
 
-For science-related questions, you can also reach out to yang.chen@uci.edu. 
+To contact the team by email, please use [this form](https://forms.gle/vHX7FvHhamDVRDHn9). 
 
 ## License
 COPYRIGHT: This code is open-source and can be free used for research purposes
