@@ -439,3 +439,50 @@ def save_individual_fire(allfires_gdf, tst, ted, region):
 
     # save fire layers - use region name as fid
     save_fire_layers(data, region, region[0], tst)
+
+def fill_and_merge_allfires(af, ted, client=None, outpath=None):
+    """
+    Utility function to create a forward-filled and merged intermediate allfires output. 
+
+    Similar to save_large_fires_layers, but without size filtering or actually 
+    saving fgb layers. 
+
+    Optionally writes resulting product to parquet if provided with an outpath. 
+    """    
+    af = af.reset_index()
+
+    filled = fill_activefire_rows(af, ted)
+    merge_needed = (filled.mergeid != filled.fireID) & (filled.invalid == False)
+    print(f"{merge_needed.sum()} rows that potentially need a merge")
+
+    filled.loc[merge_needed, "fireID"] = filled.loc[merge_needed, "mergeid"]
+
+    def merge_fire(data, fid):
+        # merge any rows that have the same t
+        if data.t.duplicated().any():
+            data = merge_rows(data, fid)
+        return data
+
+    futures = []
+    processed_gdfs = []
+
+    for fid, data in filled.groupby("fireID"):
+        if client:
+            futures.append(client.submit(merge_fire, data, fid))
+        else:
+            processed_gdfs.append(merge_fire(data, fid))
+    if futures:
+        processed_gdfs = client.gather(futures)
+
+    res = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
+
+    # filter out invalid fires
+    res = res[~res["invalid"]]
+
+    # reset index to match incoming allfires object
+    res = res.set_index(["t", "fireID"])
+    
+    if outpath:
+        res.to_parquet(outpath, index=True)
+    
+    return res
