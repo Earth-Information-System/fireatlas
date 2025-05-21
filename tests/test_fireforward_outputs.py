@@ -18,7 +18,7 @@ def v3_run(tmp_settings_context_manager,
         remove_static_sources=False, 
         FTYP_OPT = "CA", 
         CONT_OPT="CA", 
-        S3_PATH="s3://eis-fire-public" 
+        READ_LOCATION="local" 
     ):
 
         from fireatlas import FireMain, postprocess, FireTime, preprocess, settings
