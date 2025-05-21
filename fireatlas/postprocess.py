@@ -19,7 +19,7 @@ warnings.filterwarnings("ignore", "Sending large graph", UserWarning)
 from fireatlas.utils import timed
 from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.FireTime import t2dt, t_generator
-from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
+from fireatlas.FireGpkg_sfs import getdd  as singlefire_getdd
 from fireatlas.FireGpkg import getdd as snapshot_getdd
 from fireatlas import settings
 
@@ -439,3 +439,60 @@ def save_individual_fire(allfires_gdf, tst, ted, region):
 
     # save fire layers - use region name as fid
     save_fire_layers(data, region, region[0], tst)
+
+@timed
+def allfires_nifc_data_join(allfires_gdf,active_only=True,time_filter=None):
+    
+     """
+     Adds NIFC metadata to an allfires object. 
+     
+    Args:
+        allfires_gdf: allfires object in gdf form (e.g., allfires.gdf).
+        active_only: Bool. Indicates whether to use the current NIFC data 
+                           representing active incidents, or the year to date record. 
+        time_filter: Int. Optional filter to limit NIFC-FEDS matches to a fixed ignition window. 
+                          Providing an integer for this argument returns only matches that fall in 
+                          the absolute value of the difference between the FEDS 't_st' and the NIFC 'attr_FireDiscoveryDateTime'
+                          attributes. Values are in the units of fractional day (e.g. 6 hrs difference = 0.25, 24hrs difference = 1)
+                          
+    
+    Returns:
+        allfires_gdf: object with extra columns denoting NIFC matches
+        grouped_records (optional): metadata with detailing each merge ID to NIFC match
+     
+     """
+    
+    # define geometry for allfires spatial join
+    allfires_gdf.set_geometry('hull',inplace=True)
+
+    if active_only:
+        nifc_perimeters = gpd.read_file('https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_Current/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson')
+    else:
+        nifc_perimeters = gpd.read_file('https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_YearToDate/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson')
+
+    nifc_perimeters = nifc_perimeters.to_crs(allfires_gdf.crs) # reproject
+    # convert discovery date col to datetime
+    nifc_perimeters['attr_FireDiscoveryDateTime'] = pd.to_datetime(nifc_perimeters['attr_FireDiscoveryDateTime'],unit='ms')
+    # clean up irwin id
+    nifc_perimeters['poly_IRWINID'] = nifc_perimeters['poly_IRWINID'].apply(lambda x: x.strip('{}'))
+
+    sjoin = allfires_gdf.sjoin(nifc_perimeters)
+    
+    if time_filter:
+        sjoin['feds_nifc_time_diff'] = abs(sjoin['t_st'] - sjoin['attr_FireDiscoveryDateTime']) / pd.to_timedelta('24h')
+        sjoin = sjoin[sjoin['feds_nifc_time_diff']<=time_filter]
+    
+    # aggregate all unique NIFC fires for each fireID
+    grouped_records = sjoin.groupby('mergeid')[['attr_FireDiscoveryDateTime','poly_IncidentName',
+                                               'poly_IRWINID','attr_IncidentTypeCategory']].agg(['unique'])
+    grouped_records = grouped_records.droplevel(level=1,axis=1) # clean up columns from agg operation
+    grouped_records = grouped_records.rename(columns={'attr_FireDiscoveryDateTime': 'NIFC_DiscoveryDT', 
+                                                      'poly_IncidentName': 'NIFC_IncidentName',
+                                                      'poly_IRWINID': 'NIFC_IRWINID',
+                                                      'attr_IncidentTypeCategory': 'NIFC_IncidentType'})
+    # clear list (array) instance if only single entry per fire
+    for col in grouped_records.columns:
+        grouped_records[col] = grouped_records[col].apply(lambda x: x[0] if len(x) == 1 else list(x))
+
+    allfires_gdf = allfires_gdf.merge(grouped_records,left_on='mergeid',right_index=True,how='left')
+    return allfires_gdf, grouped_records
