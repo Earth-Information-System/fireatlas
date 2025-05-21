@@ -441,29 +441,27 @@ def save_individual_fire(allfires_gdf, tst, ted, region):
     save_fire_layers(data, region, region[0], tst)
 
 @timed
-def allfires_nifc_data_join(allfires_gdf,active_only=True,time_filter=None):
+def allfires_nifc_data_join(allfires_gdf, active_only=True, time_filter=None):
+    """
+    Adds NIFC metadata to an allfires object. 
     
-     """
-     Adds NIFC metadata to an allfires object. 
-     
     Args:
         allfires_gdf: allfires object in gdf form (e.g., allfires.gdf).
         active_only: Bool. Indicates whether to use the current NIFC data 
-                           representing active incidents, or the year to date record. 
+                          representing active incidents, or the year to date record. 
         time_filter: Int. Optional filter to limit NIFC-FEDS matches to a fixed ignition window. 
-                          Providing an integer for this argument returns only matches that fall in 
-                          the absolute value of the difference between the FEDS 't_st' and the NIFC 'attr_FireDiscoveryDateTime'
-                          attributes. Values are in the units of fractional day (e.g. 6 hrs difference = 0.25, 24hrs difference = 1)
+                         Providing an integer for this argument returns only matches that fall in 
+                         the absolute value of the difference between the FEDS 't_st' and the NIFC 'attr_FireDiscoveryDateTime'
+                         attributes. Values are in the units of fractional day (e.g. 6 hrs difference = 0.25, 24hrs difference = 1)
                           
     
     Returns:
         allfires_gdf: object with extra columns denoting NIFC matches
         grouped_records (optional): metadata with detailing each merge ID to NIFC match
-     
-     """
+    """
     
     # define geometry for allfires spatial join
-    allfires_gdf.set_geometry('hull',inplace=True)
+    allfires_gdf.set_geometry('hull', inplace=True)
 
     if active_only:
         nifc_perimeters = gpd.read_file('https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_Current/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson')
