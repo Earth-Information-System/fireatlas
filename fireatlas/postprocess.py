@@ -457,7 +457,7 @@ def allfires_nifc_data_join(allfires_gdf, active_only=True, time_filter=None):
     
     Returns:
         allfires_gdf: object with extra columns denoting NIFC matches
-        grouped_records (optional): metadata with detailing each merge ID to NIFC match
+        grouped_records (optional): metadata detailing each merge ID to NIFC match
     """
     
     # define geometry for allfires spatial join
