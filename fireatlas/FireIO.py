@@ -803,7 +803,7 @@ def AFP_regfilter(df, shp_Reg):
     df_filtered : pandas DataFrame
         the filtered fire pixels
     """
-
+    
     point_data = [Point(xy) for xy in zip(df["Lon"], df["Lat"])]
     gdf_filtered = gpd.GeoDataFrame(df, geometry=point_data, crs=4326)
 
@@ -967,8 +967,8 @@ def get_any_shp(filename):
     shp = gpd_read_file(filepath)
     geo_dissolved = shp.dissolve()
 
-    ### REMOVE THIS. IF THIS STAYS IN HERE, BLAME ELI
-    geo_dissolved = geo_dissolved.to_crs(settings.EPSG_CODE)
+    # convert to lat lon for df filtering in next step
+    geo_dissolved = geo_dissolved.to_crs("EPSG:4326") 
     
     return geo_dissolved.iloc[0].geometry
 
