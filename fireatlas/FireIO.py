@@ -803,23 +803,9 @@ def AFP_regfilter(df, shp_Reg):
     df_filtered : pandas DataFrame
         the filtered fire pixels
     """
-    # preliminary spatial filter and quality filter
 
-    # minx, miny, maxx, maxy = shp_Reg.bounds
-    # bounds_box = box(minx, miny, maxx, maxy)
-    # transformer = Transformer.from_crs(settings.EPSG_CODE, "EPSG:4326", always_xy=True)
-
-    # reprojected_box = transform(transformer.transform(x, y), bounds_box)
-    # regext = shp_Reg_lat_lon.bounds
-    
-    # newfirepixels = df.loc[
-    #     (df["Lat"] >= regext[1])
-    #     & (df["Lat"] <= regext[3])
-    #     & (df["Lon"] >= regext[0])
-    #     & (df["Lon"] <= regext[2])
-    # ]
-    point_data = [Point(xy) for xy in zip(newfirepixels["Lon"], newfirepixels["Lat"])]
-    gdf_filtered = gpd.GeoDataFrame(newfirepixels, geometry=point_data, crs=4326)
+    point_data = [Point(xy) for xy in zip(df["Lon"], df["Lat"])]
+    gdf_filtered = gpd.GeoDataFrame(df, geometry=point_data, crs=4326)
 
     # Do detailed filtering (within shp_Reg)
     gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
