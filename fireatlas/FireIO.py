@@ -960,7 +960,7 @@ def get_any_shp(filename):
         the shapefile names saved in the directory dirextdata/shapefiles/
     """
     
-    dirshape = os.path.join(settings.dirextdata, "shapefiles")
+    dirshape = os.path.join(settings.dirextdata, "GlobalShapefiles")
     filepath = os.path.join(dirshape, filename)
 
     # read the geometry
