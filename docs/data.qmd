@@ -1,0 +1,19 @@
+---
+title: Data
+---
+
+The Fire Event Data Suite (FEDS) algorithm [(Chen et al., 2022)](https://www.nature.com/articles/s41597-022-01343-0/) uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.
+
+A detailed overview of the FEDS algorithm and fire tracking data can be found in the [Data Overview](data_overview.qmd) section.
+
+## Available Datasets
+
+FEDS data is available in Near Real Time (NRT) over CONUS and Canada.  Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available.  Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.
+
+### [Near Real Time (NRT) FEDS](nrt.qmd)
+
+- Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada
+
+### [Published Datasets](published_dataset.qmd)
+
+- Static, unchanging FEDS and FEDS-like fire tracking datasets for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.

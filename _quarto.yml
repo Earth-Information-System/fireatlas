@@ -29,12 +29,11 @@ website:
       - text: "Home"
         href: docs/index.qmd
       - section: "Data"
-        href: docs/data_overview.qmd
+        href: docs/data.qmd
         contents:
           - docs/data_overview.qmd
           - docs/nrt.qmd
-          - text: Published Datasets
-            href: https://www.ess.uci.edu/~uci-nasa-firetracking/
+          - docs/published_dataset.qmd
       - section: "Developer Documentation"
         contents: 
           - docs/fireatlas_core.qmd
@@ -43,6 +42,8 @@ website:
           - docs/contributing.qmd
           - docs/releasing.qmd
           - docs/playbook_dps_debug.md
+      - text: "Our Team"
+        href: docs/team.qmd
 
 
   page-footer:

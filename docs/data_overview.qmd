@@ -2,23 +2,10 @@
 title: Data Overview
 ---
 
-The Fire Event Data Suite (FEDS) algorithm (Chen et al., 2022) uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.
+The Fire Event Data Suite (FEDS) algorithm [(Chen et al., 2022)](https://www.nature.com/articles/s41597-022-01343-0/) uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (Figure 1).
 
-The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a "snapshot" of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 4 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.
+![Figure 1. A schematic diagram of the FEDS fire tracking algorithm [(Chen et al., 2022)](https://www.nature.com/articles/s41597-022-01343-0/). (a) Two idealized fire objects (Fire 1, Fire 2) at the time step t. Colored and grey dots represent newly detected and previously detected VIIRS 375 m active fire pixels, respectively. The brown segments along the fire perimeter are estimates of the active portions of the fire perimeter, or active fire line segments. (b) At the next time step t+1, new fire pixels (in red) are clustered (C1, C2, C3), and are used for forming a new fire object (C1 for Fire 3), or for the growth of an existing fire object (C2 for Fire 1). Expanded fire objects (Fire 2) are merged with an existing active fire object (Fire 1) if they grow close enough (due to the addition of C3). Vector shapes of the estimated fire perimeter and active fire line segments for each fire object are updated at each 12-hour time step.](images/feds.png)
+
+The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each estimated perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the fire perimeter every 12 hours. For fires that ultimately grow larger than 4 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.
 
 The estimated perimeter data are routinely produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.
-
-## Available datasets
-
-The following sections describe the NRT data, as well as previously published FEDS datasets over specific geographic regions. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.
-
-### Near Real Time (NRT) FEDS
-
--   Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada
--   Detailed documentation is available [here](nrt.qmd).
-
-### Static datasets
-
-Published datasets contain static, unchanging FEDS and FEDS-like outputs for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.
-
-[Published dataset descriptions.](https://www.ess.uci.edu/~uci-nasa-firetracking/)
