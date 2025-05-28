@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Zeb Becker">
 
-<title>NRT System Architecture – Wildfire Tracking Lab</title>
+<title>Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -34,7 +33,6 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/quarto.js"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
@@ -72,7 +70,7 @@ ul.task-list li input[type="checkbox"] {
 <link rel="stylesheet" href="../docs/styles.css">
 </head>
 
-<body class="nav-sidebar docked nav-fixed">
+<body class="nav-fixed fullcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -88,290 +86,52 @@ ul.task-list li input[type="checkbox"] {
           <div id="quarto-search" class="" title="Search"></div>
       </div> <!-- /container-fluid -->
     </nav>
-  <nav class="quarto-secondary-nav">
-    <div class="container-fluid d-flex">
-      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
-        <i class="bi bi-layout-text-sidebar-reverse"></i>
-      </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/system_architecture.html">NRT System Architecture</a></li></ol></nav>
-        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
-        </a>
-      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
-        <i class="bi bi-search"></i>
-      </button>
-    </div>
-  </nav>
 </header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
-  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
-    <div class="pt-lg-2 mt-2 text-center sidebar-header">
-      <a href="../docs/index.html" class="sidebar-logo-link">
-      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
-      </a>
-      <div class="sidebar-tools-main">
-    <a href="https://fire.eis.smce.nasa.gov/" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-globe"></i></a>
-    <a href="https://github.com/Earth-Information-System/fireatlas" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-github"></i></a>
-</div>
-      </div>
-        <div class="mt-2 flex-shrink-0 align-items-center">
-        <div class="sidebar-search">
-        <div id="quarto-search" class="" title="Search"></div>
-        </div>
-        </div>
-    <div class="sidebar-menu-container"> 
-    <ul class="list-unstyled mt-1">
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Home</span></a>
-  </div>
-</li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a href="../docs/data.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Data</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Data Overview</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/nrt.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Near Real Time Data</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/published_dataset.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Published Datasets</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
- <span class="menu-text">Developer Documentation</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">FEDS Algorithm</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">How To Run FEDS on DPS</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/system_architecture.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">NRT System Architecture</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/contributing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Contributing</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/releasing.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Releasing</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/playbook_dps_debug.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">DPS Debugging Playbook</span></a>
-  </div>
-</li>
-      </ul>
-  </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../docs/team.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Our Team</span></a>
-  </div>
-</li>
-    </ul>
-    </div>
-</nav>
-<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a>
-  <ul class="collapse">
-  <li><a href="#scheduled-jobs" id="toc-scheduled-jobs" class="nav-link" data-scroll-target="#scheduled-jobs">Scheduled Jobs</a></li>
-  <li><a href="#manual-jobs" id="toc-manual-jobs" class="nav-link" data-scroll-target="#manual-jobs">Manual Jobs</a></li>
-  </ul></li>
-  <li><a href="#actions" id="toc-actions" class="nav-link" data-scroll-target="#actions">Actions</a>
-  <ul class="collapse">
-  <li><a href="#run-dps-job-v3" id="toc-run-dps-job-v3" class="nav-link" data-scroll-target="#run-dps-job-v3">run-dps-job-v3</a></li>
-  <li><a href="#alert-on-failed-dps-jobs" id="toc-alert-on-failed-dps-jobs" class="nav-link" data-scroll-target="#alert-on-failed-dps-jobs">alert-on-failed-dps-jobs</a></li>
-  <li><a href="#release" id="toc-release" class="nav-link" data-scroll-target="#release">release</a></li>
-  </ul></li>
-  <li><a href="#workflows" id="toc-workflows" class="nav-link" data-scroll-target="#workflows">Workflows</a>
-  <ul class="collapse">
-  <li><a href="#schedule-alert-failed-dps-jobs" id="toc-schedule-alert-failed-dps-jobs" class="nav-link" data-scroll-target="#schedule-alert-failed-dps-jobs">schedule-alert-failed-dps-jobs</a></li>
-  <li><a href="#manual-v3" id="toc-manual-v3" class="nav-link" data-scroll-target="#manual-v3">manual-v3</a></li>
-  <li><a href="#pytest" id="toc-pytest" class="nav-link" data-scroll-target="#pytest">pytest</a></li>
-  <li><a href="#schedule-region-nrt-v3" id="toc-schedule-region-nrt-v3" class="nav-link" data-scroll-target="#schedule-region-nrt-v3">schedule-{region}-nrt-v3</a></li>
-  <li><a href="#release-1" id="toc-release-1" class="nav-link" data-scroll-target="#release-1">release</a></li>
-  </ul></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/system_architecture.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
-    </div>
+    
 <!-- main -->
-<main class="content" id="quarto-document-content">
-
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/system_architecture.html">NRT System Architecture</a></li></ol></nav>
+<div class="quarto-about-broadside column-page">
+  <div class="about-main">
+    <div class="about-entity" style="background-image: url('images/READMEfig.svg')"></div>
+    <div class="about-contents"><header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">NRT System Architecture</h1>
+<h1 class="title">Wildfire Tracking Lab</h1>
 </div>
-
-
-
 <div class="quarto-title-meta">
-
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Zeb Becker </p>
-          </div>
   </div>
-    
-  
-    
+</header><main class="content" id="quarto-document-content">
+<section id="our-work" class="level2">
+<h2 data-anchor-id="our-work">Our Work</h2>
+<p>We seek to understand how global fire activity alters ecosystems, contributes to greenhouse gas emissions, and affects air quality.</p>
+<p>Our approach to track individual fires using satellite active fire data captures sub-daily changes in fire behavior. In contrast to traditional representation of active fires and their corresponding burned areas as a series of gridded pixels, fire tracking groups individual active fire detections based on their locations in space and time, and treats them as discrete objects that persist, expand, and evolve together. This “event-based” tracking strategy allows for detailed, regular monitoring of large fires as they spread across a landscape.</p>
+<p>Our team analyzes fire tracking data to characterize new extremes in fire behavior in a warming world, evaluate the influence of fire suppression and historic fuels treatments on fire behavior, and quantify fire emissions.</p>
+</section>
+<section id="data" class="level2">
+<h2 data-anchor-id="data">Data</h2>
+<p>Our team develops and maintains the Fire Event Data Suite, or FEDS. The FEDS algorithm <a href="https://www.nature.com/articles/s41597-022-01343-0/">(Chen et al., 2022)</a> uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.</p>
+<p>This site contains more information about the <a href="../docs/data_overview.html">FEDS data</a>, available platforms for FEDS fire tracking <a href="../docs/nrt.html">visualization and data access</a>, as well as <a href="../docs/published_dataset.html">publications</a>, developer information, and technical documentation.</p>
+<p>The FEDS code is open source and available <a href="https://github.com/Earth-Information-System/fireatlas">on GitHub</a>.</p>
+</section>
+<section id="our-team" class="level2">
+<h2 data-anchor-id="our-team">Our Team</h2>
+<p>FEDS is developed and maintained by scientists at NASA’s Goddard Space Flight Center and the University of California, Irvine. See our <a href="../docs/team.html">Team</a> page for more information on current team members, alumni, and collaborators.</p>
+<p>To contact the science team by email, please use <a href="https://forms.gle/vHX7FvHhamDVRDHn9">this form</a>.</p>
+
+
+</section>
+</main></div>
   </div>
-  
-
-
-</header>
-
-
-<p>In addition to the core FEDS algorithm, the team maintains a production system to track current fires in near-real time (NRT). This data is made available on our <a href="../docs/nrt.html#accessing-nrt-data">API</a>. It ingests fire detection data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites, runs the FEDS fire even tracking algorithm forward to account for these new observations, and outputs the updated data to the API.</p>
-<p>This documentation describes the technical architecture of the production system, primarily for the benefit of our development team and partners.</p>
-<section id="overview" class="level2">
-<h2 class="anchored" data-anchor-id="overview">Overview</h2>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/feds-production.drawio.svg" class="img-fluid figure-img"></p>
-<figcaption>Production system architecture. Icons in black represent resources managed through this repo.</figcaption>
-</figure>
-</div>
-<p>Data flows through the system from left to right. The LANCE NRT3 server provides low-latency access to incoming satellite data.</p>
-<p>All of the computational tasks are completed as jobs on the NASA-ESA <a href="https://docs.maap-project.org/en/2.0.0/intro.html">Multi-Mission Algorithm and Analysis Platform’s</a> Data Processing System: the DPS, for short. We use GitHub Actions to schedule and submit jobs to the DPS, as detailed in the next section.</p>
-<section id="scheduled-jobs" class="level3">
-<h3 class="anchored" data-anchor-id="scheduled-jobs">Scheduled Jobs</h3>
-<p>At a high level, regularly scheduled jobs check for new NRT data from the LANCE server, then save it to the <code>FEDSinput/</code> folder on our <code>gsfc_landslides</code> MAAP S3 shared bucket. This data is preprocessed, then stored in <code>FEDSpreprocessed/NOAA20</code> or <code>FEDSpreprocessed/SNPP</code>, depending on its source.</p>
-<p>Twice a day, at 15:25 and 23:25 UTC, each scheduled region is run through the main FireForward algorithm to incorporate any new observations. The outputs from these runs are saved to <code>FEDSoutputs-v3/</code> and copied to the VEDA S3 bucket. This triggers a workflow that makes the outputs available on the <a href="https://github.com/NASA-IMPACT/veda-features-api-cdk">VEDA Features API</a>.</p>
-</section>
-<section id="manual-jobs" class="level3">
-<h3 class="anchored" data-anchor-id="manual-jobs">Manual Jobs</h3>
-<p>See <a href="../docs/custom_regions.html#running-manually">How To Run A New Region</a> for information about how you can manually create data for a new region or time period.</p>
-</section>
-</section>
-<section id="actions" class="level2">
-<h2 class="anchored" data-anchor-id="actions">Actions</h2>
-<p>We use GitHub Actions to drive the process of scheduling and submitting all computations in our production system, as well as for testing, releasing, and deploying our code. Below, we give explanations for each Action, which are in turn called by Workflows. Together, these Workflows coordinate the production system.</p>
-<section id="run-dps-job-v3" class="level3">
-<h3 class="anchored" data-anchor-id="run-dps-job-v3">run-dps-job-v3</h3>
-<p>In a container based on the vanilla MAAP image (so that the <code>maap</code> Python package is available), run <a href="https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/maap_runtime/submit-dps-job.py"><code>submit-dps-jobs.py</code></a>. This calls the MAAP API and submits a job with the passed parameters.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
+  <div class="about-links">
+  <a href="https://github.com/Earth-Information-System/fireatlas" class="about-link" rel="" target="">
+    <i class="bi bi-github"></i>
+     <span class="about-link-text">GitHub</span>
+  </a>
 </div>
 </div>
-<div class="callout-body-container callout-body">
-<p>Note that when we submit a job to DPS, we include an algorithm version tag (<code>github_ref</code>) in addition to the <code>algo_name</code> parameter. This tells DPS which specific prebuilt image to use for that job. The version of the fireatlas code that is used in a particular image will always be the version it was originally built with, even if more commits have been made to the repo in the meantime.</p>
-<p>This is important! See <a href="../docs/releasing.html">Releasing</a> for more information.</p>
-</div>
-</div>
-<p>Most of our workflows use this action to submit different combinations of input parameters to the DPS.</p>
-<p>Once DPS has created a container using the tagged image, it runs the <a href=""><code>run_dps_cli.sh</code></a> script. Depending on the arguments passed, this will trigger one of:</p>
-<ul>
-<li><p><code>FireRunDaskCoordinator.py</code></p></li>
-<li><p><code>FireRunDataUpdateChecker.py</code></p></li>
-<li><p><code>FireRunPreprocessRegion.py</code></p></li>
-<li><p><code>FireRunByRegionAndT.py</code></p></li>
-<li><p><code>FireRunFireForward.py</code></p></li>
-</ul>
-<p><code>FireRunDaskCoordinator.py</code> is the main coordinating program, and is where most users should start if attempting to run FEDS locally. In practice, it is also usually what runs on DPS.</p>
-</section>
-<section id="alert-on-failed-dps-jobs" class="level3">
-<h3 class="anchored" data-anchor-id="alert-on-failed-dps-jobs">alert-on-failed-dps-jobs</h3>
-<p>This action spins up a container using the base MAAP image, uses the MAAP API to check if any jobs by certain users have failed in the past hour. If any have, the action lists them out and fails.</p>
-</section>
-<section id="release" class="level3">
-<h3 class="anchored" data-anchor-id="release">release</h3>
-<p>See <a href="../docs/releasing.html">Releasing</a> for more information.</p>
-</section>
-</section>
-<section id="workflows" class="level2">
-<h2 class="anchored" data-anchor-id="workflows">Workflows</h2>
-<section id="schedule-alert-failed-dps-jobs" class="level3">
-<h3 class="anchored" data-anchor-id="schedule-alert-failed-dps-jobs">schedule-alert-failed-dps-jobs</h3>
-<p>Runs the <a href="https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/.github/workflows/schedule-alert-failed-dps-jobs.yaml"><code>alert-on-failed-dps-jobs</code></a> action every hour. If a failure is detected, sends a notification to the <code>#fireatlas-alerts</code> channel in our Slack workspace. (This is neccessary because only the GitHub account that initiated the workflow will recieve an email notification if it fails.)</p>
-</section>
-<section id="manual-v3" class="level3">
-<h3 class="anchored" data-anchor-id="manual-v3">manual-v3</h3>
-<p>Used to kick off a one-time run on the production system. Useful for archival data generation and testing new features or datasets. See <a href="../docs/custom_regions.html#running-manually">How To Run A New Region</a>.</p>
-</section>
-<section id="pytest" class="level3">
-<h3 class="anchored" data-anchor-id="pytest">pytest</h3>
-<p>Uses <code>pytest</code> to automatically run test suite on any PR or pull to the main <code>conus-dps</code> branch. These include several integration tests that only run with the <code>--runslow</code> flag. These tests are slower and can take ~15 minutes to run.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket <code>s3://eis-fire-public</code>, as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.</p>
-</div>
-</div>
-</section>
-<section id="schedule-region-nrt-v3" class="level3">
-<h3 class="anchored" data-anchor-id="schedule-region-nrt-v3">schedule-{region}-nrt-v3</h3>
-<p>Ongoing jobs that update fire perimeters in the specified regions twice per day.</p>
-</section>
-<section id="release-1" class="level3">
-<h3 class="anchored" data-anchor-id="release-1">release</h3>
-<p>See <a href="../docs/releasing.html">Releasing</a> for more information.</p>
-
-
-</section>
-</section>
-
-</main> <!-- /main -->
+ <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
@@ -392,13 +152,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
   toggleBodyColorPrimary();  
-  const icon = "";
-  const anchorJS = new window.AnchorJS();
-  anchorJS.options = {
-    placement: 'right',
-    icon: icon
-  };
-  anchorJS.add('.anchored');
   const isCodeAnnotation = (el) => {
     for (const clz of el.classList) {
       if (clz.startsWith('code-annotation-')) {                     
@@ -464,7 +217,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/Earth-Information-System\.github\.io\/fireatlas\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -800,7 +553,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/system_architecture.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/home_mockup.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
