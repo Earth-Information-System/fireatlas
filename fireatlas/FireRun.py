@@ -593,7 +593,7 @@ def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat = 'SNPP', d
     preprocess.preprocess_landcover()
 
     # read perimeter data + preprocess
-    perimeter_gdf = gpd.read_file(perimeter_gdf_path)
+    perimeter_gdf = gpd.read_file(perimeter_gdf_path, engine='pyogrio')
     perimeter_gdf = FireIO.preprocess_polygon(perimeter_gdf, data_source=data_source, id_col=id_col)
 
     settings.FIRE_SOURCE = sat
