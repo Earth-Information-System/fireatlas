@@ -8,12 +8,12 @@ A detailed overview of the FEDS algorithm and fire tracking data can be found in
 
 ## Available Datasets
 
-FEDS data is available in Near Real Time (NRT) over CONUS and Canada.  Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available.  Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.
+FEDS data are available in Near Real Time (NRT) over CONUS and Canada.  Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available.  Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.
 
 ### [Near Real Time (NRT) FEDS](nrt.qmd)
 
-- Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada
+- Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada. 
 
 ### [Published Datasets](published_dataset.qmd)
 
-- Static, unchanging FEDS and FEDS-like fire tracking datasets for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.
+- FEDS and FEDS-like fire tracking datasets for a particular region and time span. Each dataset is associated with one or more scientific  publications, where more information about that particular dataset can be found.

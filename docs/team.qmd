@@ -1,4 +1,51 @@
 ---
 title: Our Team
 --- 
+FEDS is developed and maintained by scientists at NASA’s Goddard Space Flight Center and the University of California, Irvine. Our group collaborates with a wide range of researchers and practicioners across academia and government. 
+
+To contact the science team by email, please use [this form](https://forms.gle/vHX7FvHhamDVRDHn9). 
+
+## Current Team 
+| Name | Affiliation | 
+| ---- | ----------- | 
+| Zeb Becker | NASA GSFC / University of Maryland ESSIC | 
+| Jon Case | | 
+| Yang Chen | University of California, Irvine | 
+| Shane Coffield | NASA GSFC / University of Maryland ESSIC | 
+| Robert Field | NASA GISS / Columbia University | 
+| Melanie Follette-Cook | NASA GSFC | 
+| Tempest (Tess) McCabe | NASA GSFC / University of Maryland ESSIC | 
+| Doug Morton | NASA GSFC | 
+| Eli Orland | NASA GSFC / University of Maryland, Baltimore County GESTAR II | 
+| Jim Randerson | University of California, Irvine | 
+| Rebecca Scholten | University of California, Irvine | 
+| Chris Schultz | NASA MSFC | 
+| Alexey Shiklomanov | NASA GSFC | 
+| Liz Wiggens | NASA LARC | 
+
+## External Collaborators 
+| Name | Affiliation | 
+| ---- | ----------- | 
+| Adam Barker | |
+| Rachel Loehman | USGS | 
+| Kurtis Nelson | USGS | 
+| Birgit Peterson | USGS |
+| Lisa Rosenthal | California Air Resources Board | 
+| Jesse Young | USFS |
+
+## Previous Contributors  
+| Name | 
+| ---- | 
+| Tejas Chandakkar | 
+| Greg Corradini | 
+| Avery Fratto | 
+| Jaskaran Gill | 
+| Tina Liu | 
+| Gianna Martinez | 
+| Nelofar Qulizada | 
+| Katrina Sharonin | 
+| Julia Signell | 
+| Pam Wales | 
+
+
 
