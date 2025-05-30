@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Data – Wildfire Tracking Lab</title>
+<title>Experiments – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -78,7 +112,7 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../docs/index.html">
+    <a class="navbar-brand" href="index.qmd">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
   </div>
@@ -92,7 +126,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data.html">Data</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Experiments</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -106,7 +140,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-      <a href="../docs/index.html" class="sidebar-logo-link">
+      <a href="index.qmd" class="sidebar-logo-link">
       <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
@@ -129,7 +163,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/data.html" class="sidebar-item-text sidebar-link active">
+            <a href="../docs/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -219,20 +253,17 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#available-datasets" id="toc-available-datasets" class="nav-link active" data-scroll-target="#available-datasets">Available Datasets</a>
-  <ul class="collapse">
-  <li><a href="#near-real-time-nrt-feds" id="toc-near-real-time-nrt-feds" class="nav-link" data-scroll-target="#near-real-time-nrt-feds">Near Real Time (NRT) FEDS</a></li>
-  <li><a href="#published-datasets" id="toc-published-datasets" class="nav-link" data-scroll-target="#published-datasets">Published Datasets</a></li>
-  </ul></li>
+  <li><a href="#merge-experiments" id="toc-merge-experiments" class="nav-link active" data-scroll-target="#merge-experiments">Merge Experiments</a></li>
+  <li><a href="#groupby-experiments" id="toc-groupby-experiments" class="nav-link" data-scroll-target="#groupby-experiments">Groupby experiments</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/05_Experiments.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Data</h1>
+<h1 class="title">Experiments</h1>
 </div>
 
 
@@ -249,25 +280,140 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The Fire Event Data Suite (FEDS) algorithm <a href="https://www.nature.com/articles/s41597-022-01343-0/">(Chen et al., 2022)</a> uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.</p>
-<p>A detailed overview of the FEDS algorithm and fire tracking data can be found in the <a href="../docs/data_overview.html">Data Overview</a> section.</p>
-<section id="available-datasets" class="level2">
-<h2 class="anchored" data-anchor-id="available-datasets">Available Datasets</h2>
-<p>FEDS data are available in Near Real Time (NRT) over CONUS and Canada. Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.</p>
-<section id="near-real-time-nrt-feds" class="level3">
-<h3 class="anchored" data-anchor-id="near-real-time-nrt-feds"><a href="../docs/nrt.html">Near Real Time (NRT) FEDS</a></h3>
-<ul>
-<li>Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</li>
-</ul>
+<p>This notebook constains some more experimental code.</p>
+<section id="merge-experiments" class="level2">
+<h2 class="anchored" data-anchor-id="merge-experiments">Merge Experiments</h2>
+<p>When creating the large fire outputs there are scenarios where clusters that were previously treated as separate fires at a certain timestep merge into one fire. When that happens the target fireID in is stored in the <code>mergeID</code> column. So we need to treat the rows after the fact and merge the rows that have the same fireID/mergeID and t.</p>
+<div id="b5080aeb-a848-44c4-aed9-05f335c70024" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> geopandas <span class="im">as</span> gpd</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas <span class="im">import</span> FireMain, FireTime, FireObj, postprocess, preprocess</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas.utils <span class="im">import</span> timed</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">8</span>, <span class="dv">28</span>, <span class="st">'AM'</span>]</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>ted <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">9</span>, <span class="dv">6</span>, <span class="st">'AM'</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> (<span class="st">'WesternUS'</span>,[<span class="op">-</span><span class="fl">125.698046875</span>,<span class="fl">31.676476158707615</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>                       <span class="op">-</span><span class="fl">101.00078125</span>,<span class="fl">49.51429477264348</span>])</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>list_of_ts <span class="op">=</span> <span class="bu">list</span>(FireTime.t_generator(tst, ted))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="d1bfd52c-0804-4533-a2f4-29696dda393a" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>allpixels <span class="op">=</span> postprocess.read_allpixels(tst, ted, region, location<span class="op">=</span><span class="st">"local"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>allfires_gdf <span class="op">=</span> postprocess.read_allfires_gdf(tst, ted, region, location<span class="op">=</span><span class="st">"local"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="ff63fc8e-968d-404d-909a-f1c4555db743" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>large_fires <span class="op">=</span> postprocess.find_largefires(allfires_gdf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll start by looking for the places where we need to perform this merge.</p>
+<div id="5df5833e-4d29-473c-8bf3-9c41b25b7e92" class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>gdf <span class="op">=</span> allfires_gdf.reset_index()</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>merge_needed <span class="op">=</span> (gdf.mergeid <span class="op">!=</span> gdf.fireID) <span class="op">&amp;</span> (gdf.invalid <span class="op">==</span> <span class="va">False</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>merge_needed<span class="sc">.</span><span class="bu">sum</span>()<span class="sc">}</span><span class="ss"> rows that potentially need a merge"</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># we'll set the "fireID" to "mergeid" in those spots</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>gdf.loc[merge_needed, <span class="st">"fireID"</span>] <span class="op">=</span> gdf.loc[merge_needed, <span class="st">"mergeid"</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Here are two different ideas of how to merge rows:</p>
+<ol type="1">
+<li>The first version of the <code>merge_rows</code> function uses a unary union to join the hull and then recalculates the fline and the ftype. This is inspired by Lisa’s single-fire workflow.</li>
+<li>The second version of the <code>merge_rows</code> function uses code that is more similar to the existing merge function. It constructs a MultiGeometry out of the various geometry objects.</li>
+</ol>
+<div id="93c592f9-91b6-446c-8b0b-730b30d53473" class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data_per_fid <span class="op">=</span> {}</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid, data <span class="kw">in</span> gdf[gdf[<span class="st">"fireID"</span>].isin(large_fires)].groupby(<span class="st">"fireID"</span>):</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># merge any rows that have the same t</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> data.t.duplicated().<span class="bu">any</span>():</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>        data_per_fid[fid] <span class="op">=</span> merge_rows(data)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="1ef99dde-add8-4a15-b227-22f799e047d9" class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> merge_rows(data):</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> cumunion(x):</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="im">from</span> shapely.ops <span class="im">import</span> unary_union</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="bu">len</span>(x)):</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            x[i] <span class="op">=</span> unary_union([x[i<span class="op">-</span><span class="dv">1</span>], x[i]])</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> x</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># summarize file by t. make sure you dissolve the hull</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    merged_t <span class="op">=</span> data.set_geometry(<span class="st">"hull"</span>).dissolve(by<span class="op">=</span><span class="st">'t'</span>, aggfunc<span class="op">=</span>{</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>        <span class="st">'meanFRP'</span>: <span class="kw">lambda</span> x: (data.loc[x.index, <span class="st">'meanFRP'</span>] <span class="op">*</span> data.loc[x.index, <span class="st">'n_newpixels'</span>]).<span class="bu">sum</span>() <span class="op">/</span> data.loc[x.index, <span class="st">'n_newpixels'</span>].<span class="bu">sum</span>(),</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">'n_newpixels'</span>: <span class="st">'sum'</span>,</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">'duration'</span>: <span class="st">'max'</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    }).reset_index()</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate cumulative sum of n_newpixels</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'n_pixels'</span>] <span class="op">=</span> merged_t[<span class="st">'n_newpixels'</span>].cumsum()</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># combine the geometries from previous days</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'hull'</span>] <span class="op">=</span> cumunion(merged_t[<span class="st">'hull'</span>].tolist())</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">"fline"</span>] <span class="op">=</span> cumunion(data.set_geometry(<span class="st">"fline"</span>).dissolve(by<span class="op">=</span><span class="st">'t'</span>)[<span class="st">"fline"</span>].tolist())</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># do the rest of the calculations</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'farea'</span>] <span class="op">=</span> merged_t[<span class="st">'hull'</span>].area <span class="op">/</span> <span class="dv">10</span><span class="op">**</span><span class="dv">6</span>  <span class="co"># convert to km^2</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    merged_t[<span class="st">'pixden'</span>] <span class="op">=</span> merged_t[<span class="st">'n_pixels'</span>] <span class="op">/</span> merged_t[<span class="st">'farea'</span>]</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="co"># reorder columns</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    col_order <span class="op">=</span> [<span class="st">'t'</span>, <span class="st">'duration'</span>, <span class="st">'n_pixels'</span>, <span class="st">'n_newpixels'</span>, <span class="st">'meanFRP'</span>, <span class="st">'pixden'</span>, <span class="st">'farea'</span>, <span class="st">'hull'</span>, <span class="st">'fline'</span>]</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>    merged_t <span class="op">=</span> merged_t[col_order]</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> merged_t</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="78cf3f83-6297-4e39-a888-0e7a1ad13c1a" class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> merge_rows(data):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""For a subset of allfires data containing only one fire, merge any</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">    rows that have the same `t`</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    output <span class="op">=</span> data.drop_duplicates(subset<span class="op">=</span>[<span class="st">"t"</span>]).set_index(<span class="st">"t"</span>).copy()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># clean up any merges that are needed</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> dt, rows <span class="kw">in</span> data[data.t.duplicated(<span class="va">False</span>)].groupby(<span class="st">"t"</span>):</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="co"># first get the weighted sums for pixden and meanFRP</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        pixweight <span class="op">=</span> (rows[<span class="st">"pixden"</span>] <span class="op">*</span> rows[<span class="st">"farea"</span>]).<span class="bu">sum</span>()</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        FRPweight <span class="op">=</span> (rows[<span class="st">"meanFRP"</span>] <span class="op">*</span> rows[<span class="st">"n_pixels"</span>]).<span class="bu">sum</span>()</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> col <span class="kw">in</span> [<span class="st">"n_pixels"</span>, <span class="st">"n_newpixels"</span>, <span class="st">"farea"</span>, <span class="st">"fperim"</span>, <span class="st">"flinelen"</span>]:</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            output.loc[dt, col] <span class="op">=</span> rows[col].<span class="bu">sum</span>()</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        output.loc[dt, <span class="st">"t_st"</span>] <span class="op">=</span> rows[<span class="st">"t_st"</span>].<span class="bu">min</span>()</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>        output.loc[dt, <span class="st">"pixden"</span>] <span class="op">=</span> pixweight <span class="op">/</span> output.loc[dt, <span class="st">"farea"</span>]</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        output.loc[dt, <span class="st">"meanFRP"</span>] <span class="op">=</span> FRPweight <span class="op">/</span> output.loc[dt, <span class="st">"n_pixels"</span>]</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        dissolved <span class="op">=</span> rows.dissolve()</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> col <span class="kw">in</span> [<span class="st">"hull"</span>, <span class="st">"fline"</span>, <span class="st">"nfp"</span>]:</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>            output.loc[dt, col] <span class="op">=</span> dissolved[col].item()</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> output.reset_index()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
-<section id="published-datasets" class="level3">
-<h3 class="anchored" data-anchor-id="published-datasets"><a href="../docs/published_dataset.html">Published Datasets</a></h3>
-<ul>
-<li>FEDS and FEDS-like fire tracking datasets for a particular region and time span. Each dataset is associated with one or more scientific publications, where more information about that particular dataset can be found.</li>
-</ul>
+<section id="groupby-experiments" class="level2">
+<h2 class="anchored" data-anchor-id="groupby-experiments">Groupby experiments</h2>
+<p>Does it make a big difference if you filter first rather than after?</p>
+<div id="d3508587-0318-4e5f-926a-8bb89bfba655" class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid, data <span class="kw">in</span> gdf[gdf[<span class="st">"fireID"</span>].isin(large_fires)].groupby(<span class="st">"fireID"</span>):</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="787d37e5-0168-4dec-8182-06454dea7508" class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid, data <span class="kw">in</span> gdf.groupby(<span class="st">"fireID"</span>):</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> fid <span class="kw">in</span> large_fires:</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>        f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="178b5a35-b74f-4f5a-bf9d-8860404ebf2f" class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid <span class="kw">in</span> large_fires:</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> gdf[gdf[<span class="st">"fireID"</span>] <span class="op">==</span> fid]</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="5eb093a2-8bcd-4b90-bebe-92d9adac3b1c" class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> fid <span class="kw">in</span> large_fires:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    data <span class="op">=</span> allfires_gdf.loc[fid]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    f <span class="op">=</span> fid</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -699,7 +845,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/05_Experiments.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

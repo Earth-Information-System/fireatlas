@@ -175,7 +175,7 @@
     "href": "docs/data.html#available-datasets",
     "title": "Data",
     "section": "Available Datasets",
-    "text": "Available Datasets\nFEDS data is available in Near Real Time (NRT) over CONUS and Canada. Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.\n\nNear Real Time (NRT) FEDS\n\nAvailable within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada\n\n\n\nPublished Datasets\n\nStatic, unchanging FEDS and FEDS-like fire tracking datasets for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.",
+    "text": "Available Datasets\nFEDS data are available in Near Real Time (NRT) over CONUS and Canada. Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.\n\nNear Real Time (NRT) FEDS\n\nAvailable within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.\n\n\n\nPublished Datasets\n\nFEDS and FEDS-like fire tracking datasets for a particular region and time span. Each dataset is associated with one or more scientific publications, where more information about that particular dataset can be found.",
     "crumbs": [
       "Data"
     ]
@@ -394,7 +394,7 @@
     "href": "docs/nrt.html",
     "title": "Near Real Time Data",
     "section": "",
-    "text": "Two platforms provide mapping capabilities for NRT FEDS fire tracking data.\nNASA FIRMS US/Canada - FEDS output for North America (continental US, Alaska, Canada, and Northern Mexico) are viewable on the Experimental tab within NASA’s Fire Information for Resource Management System (FIRMS) US/Canada map application under the name “VIIRS Modeled Fire Perimeters.” Using FIRMS, you can view FEDS perimeter information from the current calendar year.\nDisclaimer: The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.\nFire Events Explorer - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and active fire detections from VIIRS on the Suomi-NPP and NOAA-20 satellites.",
+    "text": "Two platforms provide mapping capabilities for NRT FEDS fire tracking data.\nNASA FIRMS US/Canada - FEDS output for North America (continental US, Alaska, Canada, and Northern Mexico) are viewable on the Experimental tab within NASA’s Fire Information for Resource Management System (FIRMS) US/Canada map application under the name “VIIRS Modeled Fire Perimeters.” Using FIRMS, you can view FEDS perimeter information from the current calendar year.\nDisclaimer: The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.\nFire Events Explorer - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites.",
     "crumbs": [
       "Data",
       "Near Real Time Data"
@@ -405,7 +405,7 @@
     "href": "docs/nrt.html#visualize-near-real-time-data",
     "title": "Near Real Time Data",
     "section": "",
-    "text": "Two platforms provide mapping capabilities for NRT FEDS fire tracking data.\nNASA FIRMS US/Canada - FEDS output for North America (continental US, Alaska, Canada, and Northern Mexico) are viewable on the Experimental tab within NASA’s Fire Information for Resource Management System (FIRMS) US/Canada map application under the name “VIIRS Modeled Fire Perimeters.” Using FIRMS, you can view FEDS perimeter information from the current calendar year.\nDisclaimer: The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.\nFire Events Explorer - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and active fire detections from VIIRS on the Suomi-NPP and NOAA-20 satellites.",
+    "text": "Two platforms provide mapping capabilities for NRT FEDS fire tracking data.\nNASA FIRMS US/Canada - FEDS output for North America (continental US, Alaska, Canada, and Northern Mexico) are viewable on the Experimental tab within NASA’s Fire Information for Resource Management System (FIRMS) US/Canada map application under the name “VIIRS Modeled Fire Perimeters.” Using FIRMS, you can view FEDS perimeter information from the current calendar year.\nDisclaimer: The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.\nFire Events Explorer - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites.",
     "crumbs": [
       "Data",
       "Near Real Time Data"
@@ -416,7 +416,7 @@
     "href": "docs/nrt.html#access-near-real-time-data",
     "title": "Near Real Time Data",
     "section": "Access Near Real Time Data",
-    "text": "Access Near Real Time Data\nNRT data are available programatically via OGC API. An example notebook that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.\nThe API status Binder notebook also provides a quick way to visualize recent NRT outputs from the OGC API in your browser, without the need for any environment setup or downloads.",
+    "text": "Access Near Real Time Data\nNRT data are available via OGC API. An example notebook that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.\nThe API status Binder notebook also provides a quick way to visualize recent NRT outputs from the OGC API in your browser, without the need for any environment setup or downloads.",
     "crumbs": [
       "Data",
       "Near Real Time Data"
@@ -456,6 +456,46 @@
     ]
   },
   {
+    "objectID": "docs/team.html",
+    "href": "docs/team.html",
+    "title": "Our Team",
+    "section": "",
+    "text": "FEDS is developed and maintained by scientists at NASA’s Goddard Space Flight Center and the University of California, Irvine. Our group collaborates with a wide range of researchers and practicioners across academia and government.\nTo contact the science team by email, please use this form.",
+    "crumbs": [
+      "Our Team"
+    ]
+  },
+  {
+    "objectID": "docs/team.html#current-team",
+    "href": "docs/team.html#current-team",
+    "title": "Our Team",
+    "section": "Current Team",
+    "text": "Current Team\n\n\n\n\n\n\n\nName\nAffiliation\n\n\n\n\nZeb Becker\nNASA GSFC / University of Maryland ESSIC\n\n\nJon Case\n\n\n\nYang Chen\nUniversity of California, Irvine\n\n\nShane Coffield\nNASA GSFC / University of Maryland ESSIC\n\n\nRobert Field\nNASA GISS / Columbia University\n\n\nMelanie Follette-Cook\nNASA GSFC\n\n\nTempest (Tess) McCabe\nNASA GSFC / University of Maryland ESSIC\n\n\nDoug Morton\nNASA GSFC\n\n\nEli Orland\nNASA GSFC / University of Maryland, Baltimore County GESTAR II\n\n\nJim Randerson\nUniversity of California, Irvine\n\n\nRebecca Scholten\nUniversity of California, Irvine\n\n\nChris Schultz\nNASA MSFC\n\n\nAlexey Shiklomanov\nNASA GSFC\n\n\nLiz Wiggens\nNASA LARC",
+    "crumbs": [
+      "Our Team"
+    ]
+  },
+  {
+    "objectID": "docs/team.html#external-collaborators",
+    "href": "docs/team.html#external-collaborators",
+    "title": "Our Team",
+    "section": "External Collaborators",
+    "text": "External Collaborators\n\n\n\nName\nAffiliation\n\n\n\n\nAdam Barker\n\n\n\nRachel Loehman\nUSGS\n\n\nKurtis Nelson\nUSGS\n\n\nBirgit Peterson\nUSGS\n\n\nLisa Rosenthal\nCalifornia Air Resources Board\n\n\nJesse Young\nUSFS",
+    "crumbs": [
+      "Our Team"
+    ]
+  },
+  {
+    "objectID": "docs/team.html#previous-contributors",
+    "href": "docs/team.html#previous-contributors",
+    "title": "Our Team",
+    "section": "Previous Contributors",
+    "text": "Previous Contributors\n\n\n\nName\n\n\n\n\nTejas Chandakkar\n\n\nGreg Corradini\n\n\nAvery Fratto\n\n\nJaskaran Gill\n\n\nTina Liu\n\n\nGianna Martinez\n\n\nNelofar Qulizada\n\n\nKatrina Sharonin\n\n\nJulia Signell\n\n\nPam Wales",
+    "crumbs": [
+      "Our Team"
+    ]
+  },
+  {
     "objectID": "docs/index.html",
     "href": "docs/index.html",
     "title": "Wildfire Tracking Lab",
@@ -470,7 +510,7 @@
     "href": "docs/index.html#our-work",
     "title": "Wildfire Tracking Lab",
     "section": "Our Work",
-    "text": "Our Work\nWe seek to understand how global fire activity alters ecosystems, contributes to greenhouse gas emissions, and affects air quality.\nOur approach to track individual fires using satellite active fire data captures sub-daily changes in fire behavior. In contrast to traditional representation of active fires and their corresponding burned areas as a series of gridded pixels, fire tracking groups individual active fire detections based on their locations in space and time, and treats them as discrete objects that persist, expand, and evolve together. This “event-based” tracking strategy allows for detailed, regular monitoring of large fires as they spread across a landscape.\nOur team analyzes fire tracking data to characterize new extremes in fire behavior in a warming world, evaluate the influence of fire suppression and historic fuels treatments on fire behavior, and quantify fire emissions.",
+    "text": "Our Work\nWe seek to understand how global fire activity alters ecosystems, contributes to greenhouse gas emissions, and affects air quality. Detecting and tracking individual fire events using satellite data improves our understanding of fires in the Earth system, including new extremes in fire behavior in a warmer, more flammable world.\nOur approach tracks the growth and intensity of individual fires every 12 hours using satellite active fire data. In contrast to active fire pixels or gridded burned area data, fire tracking clusters individual active fire detections in space and time and treats them as discrete objects that persist, expand, and evolve together. This “event-based” tracking strategy allows for detailed monitoring of large fires as they spread across a landscape.\nOur team analyzes fire tracking data to characterize the behavior of individual fires, evaluate regional and seasonal patterns of fire activity, and quantify fire emissions.",
     "crumbs": [
       "Home"
     ]

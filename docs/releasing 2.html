@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="GC">
+<meta name="author" content="Zeb Becker">
 
-<title>Data – Wildfire Tracking Lab</title>
+<title>Releasing – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +21,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -92,7 +128,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data.html">Data</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/releasing.html">Releasing</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -129,7 +165,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/data.html" class="sidebar-item-text sidebar-link active">
+            <a href="../docs/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -191,7 +227,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/releasing.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/releasing.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Releasing</span></a>
   </div>
 </li>
@@ -219,26 +255,37 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#available-datasets" id="toc-available-datasets" class="nav-link active" data-scroll-target="#available-datasets">Available Datasets</a>
+  <li><a href="#background" id="toc-background" class="nav-link active" data-scroll-target="#background">Background</a></li>
+  <li><a href="#how-to-release" id="toc-how-to-release" class="nav-link" data-scroll-target="#how-to-release">How to Release</a>
   <ul class="collapse">
-  <li><a href="#near-real-time-nrt-feds" id="toc-near-real-time-nrt-feds" class="nav-link" data-scroll-target="#near-real-time-nrt-feds">Near Real Time (NRT) FEDS</a></li>
-  <li><a href="#published-datasets" id="toc-published-datasets" class="nav-link" data-scroll-target="#published-datasets">Published Datasets</a></li>
+  <li><a href="#choose-a-version-number" id="toc-choose-a-version-number" class="nav-link" data-scroll-target="#choose-a-version-number">Choose a Version Number</a></li>
+  <li><a href="#create-a-new-pr-for-dps-jobs" id="toc-create-a-new-pr-for-dps-jobs" class="nav-link" data-scroll-target="#create-a-new-pr-for-dps-jobs">Create a new PR for DPS Jobs</a></li>
+  <li><a href="#merge-pr-and-manually-release" id="toc-merge-pr-and-manually-release" class="nav-link" data-scroll-target="#merge-pr-and-manually-release">Merge PR and Manually Release</a></li>
+  <li><a href="#release-publish-workflow" id="toc-release-publish-workflow" class="nav-link" data-scroll-target="#release-publish-workflow">Release Publish Workflow</a></li>
+  <li><a href="#verify-dps-image-build" id="toc-verify-dps-image-build" class="nav-link" data-scroll-target="#verify-dps-image-build">Verify DPS Image Build</a></li>
   </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/releasing.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/releasing.html">Releasing</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Data</h1>
+<h1 class="title">Releasing</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>GC </p>
+             <p>Zeb Becker </p>
+          </div>
+  </div>
     
   
     
@@ -249,22 +296,132 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The Fire Event Data Suite (FEDS) algorithm <a href="https://www.nature.com/articles/s41597-022-01343-0/">(Chen et al., 2022)</a> uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.</p>
-<p>A detailed overview of the FEDS algorithm and fire tracking data can be found in the <a href="../docs/data_overview.html">Data Overview</a> section.</p>
-<section id="available-datasets" class="level2">
-<h2 class="anchored" data-anchor-id="available-datasets">Available Datasets</h2>
-<p>FEDS data are available in Near Real Time (NRT) over CONUS and Canada. Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.</p>
-<section id="near-real-time-nrt-feds" class="level3">
-<h3 class="anchored" data-anchor-id="near-real-time-nrt-feds"><a href="../docs/nrt.html">Near Real Time (NRT) FEDS</a></h3>
+<section id="background" class="level1">
+<h1>Background</h1>
+<p>To improve reproducibility and reliability, we use tagged releases in our GitHub repo to determine which version of the FEDS code our <a href="../docs/nrt.html">NRT production system</a> uses. The NRT system does <strong><em>not</em></strong> automatically incorporate changes pushed to the main branch of the GitHub repository. For your changes to be reflected in the production system, you need to release a new version as described in this document. This will trigger DPS to build a new image with the tagged version of the code downloaded from the repository and installed. DPS will use this new image for all subsequent scheduled jobs, until another version is released.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Releasing a new tagged version is not the only way to create a new DPS image! If you want to test changes on the DPS or run large jobs with an experimental branch, you can manually create and use your own custom DPS image as detailed in our <a href="../docs/custom_regions.html#running-different-feds-versions-on-dps">DPS documentation</a>.</p>
+</div>
+</div>
+</section>
+<section id="how-to-release" class="level1">
+<h1>How to Release</h1>
+<p>In this context “releasing” means the following things:</p>
 <ul>
-<li>Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</li>
+<li><p>tagging the algorithm with a certain <a href="https://semver.org/">semantic version</a> (semver for short)</p></li>
+<li><p>build and publishing <code>fireatlas</code> on PyPI</p>
+<ul>
+<li>NOTE: this step is currently paused; we are not publishing the package to PyPI at the moment</li>
+</ul></li>
+<li><p>building an image off that tag that will be used in some async task runner (currently only DPS) to run the regional algorithm jobs asynchronously.</p></li>
+</ul>
+<p>Most of this can be automated but since <a href="https://semver.org/">semver</a> is often about considering if the newest set of changes we are packaging up under a version is backward compatible it does require a human to choose the version.</p>
+<p>That said, the <code>fireatlas</code> code isn’t a library that others will be using in their code and so that also relieves us of considering backward incompatible changes. Therefore, we will probably never increment the major release number and only minor or patch in <code>&lt;major&gt;.&lt;minor&gt;.&lt;patch&gt;</code>. Another way of saying that is we <code>fireatlas</code> will always be releasing within the <code>&gt;=1.0.0,&lt;2.0.0</code> range</p>
+<hr>
+<section id="choose-a-version-number" class="level2">
+<h2 class="anchored" data-anchor-id="choose-a-version-number">Choose a Version Number</h2>
+<p>The releaser should look at the <a href="https://github.com/Earth-Information-System/fireatlas/tags">current release tags and versions</a> and decide if the minor or patch version should be incremented:</p>
+<ul>
+<li>are all the merged changes in this release just bug fixes? then bump the patch (<code>1.&lt;minor&gt;.&lt;patch&gt;</code>) version by one</li>
+<li>did any of the merged changes going out include new features? then bump the minor (<code>1.&lt;minor&gt;.&lt;patch&gt;</code>) version by one</li>
 </ul>
 </section>
-<section id="published-datasets" class="level3">
-<h3 class="anchored" data-anchor-id="published-datasets"><a href="../docs/published_dataset.html">Published Datasets</a></h3>
+<section id="create-a-new-pr-for-dps-jobs" class="level2">
+<h2 class="anchored" data-anchor-id="create-a-new-pr-for-dps-jobs">Create a new PR for DPS Jobs</h2>
+<p>Once the releaser has a version number, then will need to create a PR that modifies version in a couple places:</p>
 <ul>
-<li>FEDS and FEDS-like fire tracking datasets for a particular region and time span. Each dataset is associated with one or more scientific publications, where more information about that particular dataset can be found.</li>
+<li>the algorithm config <code>algorithm_version</code> in <code>./maap_runtime/coordinator/algorithm_config.yaml</code>:</li>
 </ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">algorithm_description</span><span class="kw">:</span><span class="at"> </span><span class="st">"coordinator for all regional jobs, preprocess and FireForward steps"</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">algorithm_version</span><span class="kw">:</span><span class="at"> &lt;NEW VERSION NUMBER HERE&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">environment</span><span class="kw">:</span><span class="at"> ubuntu</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<ul>
+<li>unfortunately all the scheduled jobs also pass this version to kick off jobs and therefore also need to be updated in <code>./.github/workflows/schedule-*.yaml</code>:</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> kick off the DPS job</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">uses</span><span class="kw">:</span><span class="at"> Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">with</span><span class="kw">:</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">algo_name</span><span class="kw">:</span><span class="at"> eis-feds-dask-coordinator-v3</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">github_ref</span><span class="kw">:</span><span class="at"> &lt;NEW VERSION NUMBER HERE&gt;</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">username</span><span class="kw">:</span><span class="at"> gcorradini</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="merge-pr-and-manually-release" class="level2">
+<h2 class="anchored" data-anchor-id="merge-pr-and-manually-release">Merge PR and Manually Release</h2>
+<p>The releaser can merge the above PR and then kick off a new release by doing the following:</p>
+<ol start="0" type="1">
+<li><p>Go to <a href="https://github.com/Earth-Information-System/fireatlas/releases">https://github.com/Earth-Information-System/fireatlas/releases</a></p></li>
+<li><p>click “Draft New Release”</p></li>
+<li><p>create a new tag for this release that matches the version chosen above</p></li>
+<li><p>click the “Generate release notes”</p></li>
+<li><p>review the release notes and clean up</p></li>
+<li><p>click the “Publish release”</p></li>
+</ol>
+</section>
+<section id="release-publish-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="release-publish-workflow">Release Publish Workflow</h2>
+<p>The manual step in the last section will kick off an async GH actions workflow that does the following</p>
+<ul>
+<li><p>uses our version information and builds a python package using <code>twine</code></p></li>
+<li><p>publishes the package to PyPI with that version number</p>
+<ul>
+<li>NOTE: this step is currently paused; we are not publishing the package to PyPI at the moment</li>
+</ul></li>
+<li><p>kicks off a DPS job that builds a new image</p></li>
+</ul>
+</section>
+<section id="verify-dps-image-build" class="level2">
+<h2 class="anchored" data-anchor-id="verify-dps-image-build">Verify DPS Image Build</h2>
+<p>The biggest thing that can wrong with this workflow is that the DPS image builder fails to build our image. Then the algorithm will not be running the newest code. In the GH release action job you should be able see in the logs where the DPS image job is building and check the status:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"code"</span><span class="fu">:</span> <span class="dv">200</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"message"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"id"</span><span class="fu">:</span> <span class="st">"ec3202d4adeb02f7d887d88d2af9784184e60344"</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"short_id"</span><span class="fu">:</span> <span class="st">"ec3202d4"</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"created_at"</span><span class="fu">:</span> <span class="st">"2024-07-30T20:34:28.000+00:00"</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"parent_ids"</span><span class="fu">:</span> <span class="ot">[</span><span class="st">"91dfb3a4edff20c7049825101f015b67c8a05d3a"</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"title"</span><span class="fu">:</span> <span class="st">"Registering algorithm: eis-feds-dask-coordinator-v3"</span><span class="fu">,</span> </span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"message"</span><span class="fu">:</span> <span class="st">"Registering algorithm: eis-feds-dask-coordinator-v3"</span><span class="fu">,</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"author_name"</span><span class="fu">:</span> <span class="st">"root"</span><span class="fu">,</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"author_email"</span><span class="fu">:</span> <span class="st">"root@845666954fdb"</span><span class="fu">,</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"authored_date"</span><span class="fu">:</span> <span class="st">"2024-07-30T20:34:28.000+00:00"</span><span class="fu">,</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"committer_name"</span><span class="fu">:</span> <span class="st">"root"</span><span class="fu">,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"committer_email"</span><span class="fu">:</span> <span class="st">"root@845666954fdb"</span><span class="fu">,</span> </span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"committed_date"</span><span class="fu">:</span> <span class="st">"2024-07-30T20:34:28.000+00:00"</span><span class="fu">,</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"trailers"</span><span class="fu">:</span> <span class="fu">{},</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"web_url"</span><span class="fu">:</span> <span class="st">"https://repo.maap-project.org/root/register-job-hysds-v4/-/commit/ec3202d4adeb02f7d887d88d2af9784184e60344"</span><span class="fu">,</span> </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"stats"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"additions"</span><span class="fu">:</span> <span class="dv">7</span><span class="fu">,</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"deletions"</span><span class="fu">:</span> <span class="dv">7</span><span class="fu">,</span> </span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"total"</span><span class="fu">:</span> <span class="dv">14</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">},</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"status"</span><span class="fu">:</span> <span class="st">"created"</span><span class="fu">,</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"project_id"</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"last_pipeline"</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"id"</span><span class="fu">:</span> <span class="dv">14293</span><span class="fu">,</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"iid"</span><span class="fu">:</span> <span class="dv">1332</span><span class="fu">,</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"project_id"</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"sha"</span><span class="fu">:</span> <span class="st">"ec3202d4adeb02f7d887d88d2af9784184e60344"</span><span class="fu">,</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"ref"</span><span class="fu">:</span> <span class="st">"main"</span><span class="fu">,</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"status"</span><span class="fu">:</span> <span class="st">"created"</span><span class="fu">,</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"source"</span><span class="fu">:</span> <span class="st">"push"</span><span class="fu">,</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"created_at"</span><span class="fu">:</span> <span class="st">"2024-07-30T20:34:29.737Z"</span><span class="fu">,</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"updated_at"</span><span class="fu">:</span> <span class="st">"2024-07-30T20:34:29.737Z"</span><span class="fu">,</span> </span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>      <span class="dt">"web_url"</span><span class="fu">:</span> <span class="st">"https://repo.maap-project.org/root/register-job-hysds-v4/-/pipelines/14293"</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">},</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"job_web_url"</span><span class="fu">:</span> <span class="st">"https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578"</span><span class="fu">,</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="dt">"job_log_url"</span><span class="fu">:</span> <span class="st">"https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/14578/raw"</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Please verify that the job succeeds or you’ll have to manually trigger an image build again via <code>./maap_runtime/register-all.ipynb</code>. To verify that the job succeeded, you can view the DPS job’s progress in GitLab at the <code>job_web_url</code> provided in the response from DPS as shown above.</p>
 
 
 </section>
@@ -699,7 +856,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/releasing.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

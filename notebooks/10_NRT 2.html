@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Data – Wildfire Tracking Lab</title>
+<title>NRT – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -78,7 +112,7 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../docs/index.html">
+    <a class="navbar-brand" href="index.qmd">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
   </div>
@@ -92,7 +126,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data.html">Data</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">NRT</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -106,7 +140,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-      <a href="../docs/index.html" class="sidebar-logo-link">
+      <a href="index.qmd" class="sidebar-logo-link">
       <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
@@ -129,7 +163,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/data.html" class="sidebar-item-text sidebar-link active">
+            <a href="../docs/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -219,20 +253,21 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#available-datasets" id="toc-available-datasets" class="nav-link active" data-scroll-target="#available-datasets">Available Datasets</a>
-  <ul class="collapse">
-  <li><a href="#near-real-time-nrt-feds" id="toc-near-real-time-nrt-feds" class="nav-link" data-scroll-target="#near-real-time-nrt-feds">Near Real Time (NRT) FEDS</a></li>
-  <li><a href="#published-datasets" id="toc-published-datasets" class="nav-link" data-scroll-target="#published-datasets">Published Datasets</a></li>
-  </ul></li>
+  <li><a href="#preprocess-the-region" id="toc-preprocess-the-region" class="nav-link active" data-scroll-target="#preprocess-the-region">Preprocess the region</a></li>
+  <li><a href="#are-preprocessed-input-files-available" id="toc-are-preprocessed-input-files-available" class="nav-link" data-scroll-target="#are-preprocessed-input-files-available">Are preprocessed input files available?</a></li>
+  <li><a href="#preprocess-for-region-and-t" id="toc-preprocess-for-region-and-t" class="nav-link" data-scroll-target="#preprocess-for-region-and-t">Preprocess for region and t</a></li>
+  <li><a href="#run-the-fire-expansion-and-merging-algorithm" id="toc-run-the-fire-expansion-and-merging-algorithm" class="nav-link" data-scroll-target="#run-the-fire-expansion-and-merging-algorithm">Run the fire expansion and merging algorithm</a></li>
+  <li><a href="#write-snapshot-files" id="toc-write-snapshot-files" class="nav-link" data-scroll-target="#write-snapshot-files">Write Snapshot files</a></li>
+  <li><a href="#write-largefire-files" id="toc-write-largefire-files" class="nav-link" data-scroll-target="#write-largefire-files">Write Largefire files</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/10_NRT.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Data</h1>
+<h1 class="title">NRT</h1>
 </div>
 
 
@@ -249,25 +284,95 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The Fire Event Data Suite (FEDS) algorithm <a href="https://www.nature.com/articles/s41597-022-01343-0/">(Chen et al., 2022)</a> uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.</p>
-<p>A detailed overview of the FEDS algorithm and fire tracking data can be found in the <a href="../docs/data_overview.html">Data Overview</a> section.</p>
-<section id="available-datasets" class="level2">
-<h2 class="anchored" data-anchor-id="available-datasets">Available Datasets</h2>
-<p>FEDS data are available in Near Real Time (NRT) over CONUS and Canada. Static FEDS or FEDS-like outputs associated with peer-reviewed publications are also available. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.</p>
-<section id="near-real-time-nrt-feds" class="level3">
-<h3 class="anchored" data-anchor-id="near-real-time-nrt-feds"><a href="../docs/nrt.html">Near Real Time (NRT) FEDS</a></h3>
-<ul>
-<li>Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</li>
-</ul>
+<p>This notebook runs all the preprocessing steps using NRT data for a specific region and time.</p>
+<div id="f77b1006-0611-41c6-9bf9-35b1dbc07dc7" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you haven't installed the fireatlas code yet, uncomment the following line and run this cell.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install -e .. -q</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># After this runs, restart the notebook kernel.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="b83d030e-eabd-4ed1-b0a1-82b3602f9190" class="cell" data-tags="[]">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> geopandas <span class="im">as</span> gpd</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas <span class="im">import</span> FireIO, FireMain, FireTime, FireObj, postprocess, preprocess</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas.utils <span class="im">import</span> timed</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">8</span>, <span class="dv">28</span>, <span class="st">'AM'</span>]</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>ted <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">9</span>, <span class="dv">6</span>, <span class="st">'AM'</span>]</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> (<span class="st">'WesternUS'</span>,[<span class="op">-</span><span class="fl">125.698046875</span>,<span class="fl">31.676476158707615</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>                       <span class="op">-</span><span class="fl">101.00078125</span>,<span class="fl">49.51429477264348</span>])</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>list_of_ts <span class="op">=</span> <span class="bu">list</span>(FireTime.t_generator(tst, ted))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="preprocess-the-region" class="level2">
+<h2 class="anchored" data-anchor-id="preprocess-the-region">Preprocess the region</h2>
+<p>Preprocess the region to get rid of static flare sources. Save that new “swiss cheese” shape off into a geojson file for later.</p>
+<div id="1a3c495d-66fa-458f-8afb-01e982b0709a" class="cell" data-tags="[]">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>preprocess.preprocess_region(region)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 </section>
-<section id="published-datasets" class="level3">
-<h3 class="anchored" data-anchor-id="published-datasets"><a href="../docs/published_dataset.html">Published Datasets</a></h3>
-<ul>
-<li>FEDS and FEDS-like fire tracking datasets for a particular region and time span. Each dataset is associated with one or more scientific publications, where more information about that particular dataset can be found.</li>
-</ul>
+<section id="are-preprocessed-input-files-available" class="level2">
+<h2 class="anchored" data-anchor-id="are-preprocessed-input-files-available">Are preprocessed input files available?</h2>
+<p>Check to see if all the files that we need have already been processed and are available on s3.</p>
+<div id="8451d5d6-05b0-4393-a850-70758cd365db" class="cell" data-tags="[]">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>ts_that_need_preprocessing <span class="op">=</span> <span class="bu">set</span>([</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>preprocess.check_preprocessed_file(tst, ted, sat<span class="op">=</span><span class="st">"NOAA20"</span>, freq<span class="op">=</span><span class="st">"NRT"</span>, location<span class="op">=</span><span class="st">"s3"</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>preprocess.check_preprocessed_file(tst, ted, sat<span class="op">=</span><span class="st">"SNPP"</span>, freq<span class="op">=</span><span class="st">"NRT"</span>, location<span class="op">=</span><span class="st">"s3"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="ba10e2b4-a8a1-4f26-943e-0779b140c4ee" class="cell" data-tags="[]">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> <span class="bu">len</span>(ts_that_need_preprocessing) <span class="op">==</span> <span class="dv">0</span>, <span class="st">"All input fires should be on s3"</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="preprocess-for-region-and-t" class="level2">
+<h2 class="anchored" data-anchor-id="preprocess-for-region-and-t">Preprocess for region and t</h2>
+<p>Do initial filtering and clustering using the preprocessed region (from local) and the half day files (from s3).</p>
+<div id="5ed3b8b4-7330-48e4-a3ff-4ca4d56add2c" class="cell" data-editable="true" data-scrolled="true" data-slideshow="{&quot;slide_type&quot;:&quot;&quot;}" data-tags="[]">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> list_of_ts:</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    preprocess.preprocess_region_t(t, region<span class="op">=</span>region, read_location<span class="op">=</span><span class="st">"s3"</span>, read_region_location<span class="op">=</span><span class="st">"local"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="run-the-fire-expansion-and-merging-algorithm" class="level2">
+<h2 class="anchored" data-anchor-id="run-the-fire-expansion-and-merging-algorithm">Run the fire expansion and merging algorithm</h2>
+<p>Now that we have all the region-specific preprocessed fires, we can go ahead and run <code>Fire_Forward</code>.</p>
+<div id="f9177ca7-7ddb-4472-97a2-054467bf86f0" class="cell" data-scrolled="true" data-tags="[]">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>FireMain.Fire_Forward(tst<span class="op">=</span>tst, ted<span class="op">=</span>ted, region<span class="op">=</span>region, read_location<span class="op">=</span><span class="st">"local"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="write-snapshot-files" class="level2">
+<h2 class="anchored" data-anchor-id="write-snapshot-files">Write Snapshot files</h2>
+<p>Start by reading in the outputs from the run:</p>
+<div id="8d41cbc8-f2c0-4b03-b9bc-d360a2bdd231" class="cell" data-tags="[]">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>allpixels <span class="op">=</span> postprocess.read_allpixels(tst, ted, region, location<span class="op">=</span><span class="st">"local"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>allfires_gdf <span class="op">=</span> postprocess.read_allfires_gdf(tst, ted, region, location<span class="op">=</span><span class="st">"local"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Then iterate through all of the ts and save the snapshot layers.</p>
+<div id="be5fe52c-793d-4f9a-9bd7-8cf0421daecb" class="cell" data-scrolled="true" data-tags="[]">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>postprocess.save_snapshots(allfires_gdf, region, tst, ted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="write-largefire-files" class="level2">
+<h2 class="anchored" data-anchor-id="write-largefire-files">Write Largefire files</h2>
+<p>First we will find all the large fires:</p>
+<div id="130838af-f05c-48fe-b52f-1e8d0a5d6747" class="cell" data-tags="[]">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>large_fires <span class="op">=</span> postprocess.find_largefires(allfires_gdf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>First we’ll use the <code>allpixels</code> object to create the <code>nplist</code> layer</p>
+<div id="0718c1ae-99f2-4edd-9e89-a101279e3515" class="cell" data-scrolled="true" data-tags="[]">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>postprocess.save_large_fires_nplist(allpixels, region, large_fires, tst)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The rest of the layers will be created directly from the <code>allfires_gdf</code> and have some merge handling</p>
+<div id="09f77f34-e642-4de7-872c-3ba8b7d9a4c3" class="cell" data-scrolled="true" data-tags="[]">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>postprocess.save_large_fires_layers(allfires_gdf, region, large_fires, tst)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -699,7 +804,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/10_NRT.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
