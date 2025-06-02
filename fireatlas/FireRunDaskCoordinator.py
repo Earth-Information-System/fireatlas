@@ -236,6 +236,8 @@ def Run_local(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool=F
     Similar to Run, but does not attempt to read from or write to s3 at all. Like Run, 
     uses a Dask client to parallelize some computations on the local machine, making 
     use of multiple CPU cores when available. 
+
+    Remember to set settings.READ_LOCATION to "local"!
     """
 
 
@@ -290,6 +292,20 @@ def Run_local(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool=F
     save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
     
     client.gather(snapshot_futures)
+
+    # If flag matching flat set, add overlaps with this year's NIFC incidents to 
+    # CombinedLargefire/lf_perimeter.fgb for ted only. 
+    if settings.DO_NIFC_MATCHING:
+        logger.info("Started NIFC matching")
+        combined_lf_perims_nifc_join(
+            tst, 
+            ted, 
+            region, 
+            active_only=settings.NIFC_MATCHING_ACTIVE_ONLY, 
+            time_filter=None
+        )
+        logger.info("Finished NIFC matching")
+
 
     logger.info("------------- Done -------------")
 
@@ -353,7 +369,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
         logger.info("Started NIFC matching")
         combined_lf_perims_nifc_join(tst, ted, region, active_only=True, time_filter=None)
         logger.info("Finished NIFC matching")
-        
+
     # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
     fgb_s3_upload_futures = client.map(

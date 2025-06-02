@@ -191,6 +191,11 @@ class Settings(BaseSettings):
         description="If true, reads from the NIFC incident database for the current year and adds columns with info for matching fires to the combinedLargfire perimeter fgb outputs."
     )
 
+    NIFC_MATCHING_ACTIVE_ONLY: bool = Field(
+        True, 
+        description="If True, uses NIFC's WFIGS Current Interagency Fire Perimeters. Else, uses NIFC's WFIGS {current year} to date."
+    )
+
     # ------------------------------------------------------------------------------
     # fire type related parameters
     # ------------------------------------------------------------------------------
