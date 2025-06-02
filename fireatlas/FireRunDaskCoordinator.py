@@ -350,8 +350,10 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
     # If flag matching flat set, add overlaps with this year's NIFC incidents to 
     # CombinedLargefire/lf_perimeter.fgb for ted only. 
     if settings.DO_NIFC_MATCHING:
+        logger.info("Started NIFC matching")
         combined_lf_perims_nifc_join(tst, ted, region, active_only=True, time_filter=None)
-
+        logger.info("Finished NIFC matching")
+        
     # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
     fgb_s3_upload_futures = client.map(
