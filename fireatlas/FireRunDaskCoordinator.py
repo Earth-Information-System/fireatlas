@@ -25,6 +25,7 @@ from fireatlas.postprocess import (
     save_large_fires_nplist,
     read_allfires_gdf,
     read_allpixels,
+    combined_lf_perims_nifc_join
 )
 from fireatlas.preprocess import (
     check_preprocessed_file,
@@ -345,6 +346,11 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
     
     # run fire forward algorithm (which cannot be run in parallel)
     job_fire_forward(region=region, tst=tst, ted=ted, client=client)
+
+    # If flag matching flat set, add overlaps with this year's NIFC incidents to 
+    # CombinedLargefire/lf_perimeter.fgb for ted only. 
+    if settings.DO_NIFC_MATCHING:
+        combined_lf_perims_nifc_join(tst, ted, region, active_only=True, time_filter=None)
 
     # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
