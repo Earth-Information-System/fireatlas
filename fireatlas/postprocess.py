@@ -439,3 +439,26 @@ def save_individual_fire(allfires_gdf, tst, ted, region):
 
     # save fire layers - use region name as fid
     save_fire_layers(data, region, region[0], tst)
+
+def save_nifc_nrt():
+    
+    url_ytd = 'https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_YearToDate/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson'
+
+    url_current = 'https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_Current/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson'
+    
+    # Get today's date in YYYY-MM-DD format
+    today_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    filename_ytd = f'wildfire_perimeters_{today_date}.csv'
+    dirnifc = os.path.join(settings.dirextdata, "NIFC_Perimeters")
+    ytd_filepath = os.path.join(dirnifc, filename)
+    print(filepath)
+    
+    # # Create filename with today's date
+    # filename = f'wildfire_perimeters_{today_date}.csv'
+
+    # # Read the GeoJSON data directly from URL
+    # gdf = gpd.read_file(url)
+        
+    # # Save as CSV
+    # gdf.to_csv(filename, index=False)
