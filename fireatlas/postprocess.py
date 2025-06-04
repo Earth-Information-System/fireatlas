@@ -1,6 +1,7 @@
 import os
 
 import datetime
+import json
 from typing import Literal
 
 import fsspec
@@ -498,8 +499,7 @@ def combined_lf_perims_nifc_join(tst: TimeStep, ted: TimeStep, region: Region, a
     
     # clear list (array) instance if only single entry per fire
     for col in grouped_records.columns:
-        grouped_records[col] = grouped_records[col].apply(lambda x: x[0] if len(x) == 1 else list(x))
-
+        grouped_records[col] = grouped_records[col].apply(lambda x: x[0] if len(x) == 1 else json.dumps(list(x)))
 
     lf = lf.merge(grouped_records, left_on='mergeid', right_index=True, how='left')
     lf.to_file(perims_filepath, driver="FlatGeobuf")
