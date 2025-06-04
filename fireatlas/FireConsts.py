@@ -160,6 +160,16 @@ class Settings(BaseSettings):
     )
     N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
 
+    DO_NIFC_MATCHING: bool = Field(
+        False, 
+        description="If True, reads from the NIFC incident database for current year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output."
+    )
+
+    NIFC_MATCHING_ACTIVE_ONLY: bool = Field(
+        False, 
+        description="If True, uses 'WFIGS Current' NIFC database. Else, uses 'WFIGS {current year} to date'."
+    )
+
     # ------------------------------------------------------------------------------
     # fire type related parameters
     # ------------------------------------------------------------------------------
