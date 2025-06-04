@@ -1,127 +1,115 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/12_One_Year_Region_t.html</loc>
-    <lastmod>2025-05-28T18:30:34.046Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/03_Output.html</loc>
-    <lastmod>2025-05-28T18:30:34.045Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/02_Run.html</loc>
-    <lastmod>2025-05-28T18:30:34.045Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/01_Ingest.html</loc>
-    <lastmod>2025-05-28T18:30:34.044Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/10_NRT.html</loc>
-    <lastmod>2025-05-28T18:30:34.045Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/data.html</loc>
-    <lastmod>2025-05-30T08:55:51.810Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/old_index.html</loc>
-    <lastmod>2025-05-28T18:30:34.037Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/running_tests.html</loc>
-    <lastmod>2025-05-28T18:30:34.037Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/published_dataset.html</loc>
-    <lastmod>2025-05-28T18:30:48.905Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/getting_started.html</loc>
-    <lastmod>2025-05-28T18:30:34.015Z</lastmod>
-  </url>
-  <url>
     <loc>https://Earth-Information-System.github.io/fireatlas/docs/notebooks.html</loc>
-    <lastmod>2025-05-28T18:30:34.036Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/data_overview.html</loc>
-    <lastmod>2025-05-28T18:30:48.884Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/system_architecture.html</loc>
-    <lastmod>2025-05-28T18:30:34.037Z</lastmod>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
   </url>
   <url>
     <loc>https://Earth-Information-System.github.io/fireatlas/docs/custom_regions.html</loc>
-    <lastmod>2025-05-28T18:30:34.015Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/dps-interactive-coordinator.html</loc>
-    <lastmod>2025-05-28T18:30:34.043Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/register-all.html</loc>
-    <lastmod>2025-05-28T18:30:34.044Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/dps-coordinator.html</loc>
-    <lastmod>2025-05-28T18:30:34.043Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/MAAP-DPS.html</loc>
-    <lastmod>2025-05-28T18:30:34.043Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/nrt.html</loc>
-    <lastmod>2025-05-30T08:57:19.836Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/contributing.html</loc>
-    <lastmod>2025-05-28T18:30:48.882Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/team.html</loc>
-    <lastmod>2025-05-30T09:29:48.552Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/index.html</loc>
-    <lastmod>2025-05-30T08:54:31.718Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/releasing.html</loc>
-    <lastmod>2025-05-28T18:30:34.037Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/docs/playbook_dps_debug.html</loc>
-    <lastmod>2025-05-28T18:30:34.037Z</lastmod>
+    <lastmod>2025-06-04T13:17:08.167Z</lastmod>
   </url>
   <url>
     <loc>https://Earth-Information-System.github.io/fireatlas/docs/fireatlas_core.html</loc>
-    <lastmod>2025-05-28T18:30:34.015Z</lastmod>
+    <lastmod>2025-06-04T13:17:08.167Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/data_overview.html</loc>
+    <lastmod>2025-06-04T13:17:08.167Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/old_index.html</loc>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
   </url>
   <url>
     <loc>https://Earth-Information-System.github.io/fireatlas/docs/algorithm_explanation.html</loc>
-    <lastmod>2025-05-28T18:30:34.014Z</lastmod>
+    <lastmod>2025-06-04T13:17:08.167Z</lastmod>
   </url>
   <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/13_One_Month_Fire_Forward.html</loc>
-    <lastmod>2025-05-28T18:30:34.046Z</lastmod>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/releasing.html</loc>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
   </url>
   <url>
     <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/05_Experiments.html</loc>
-    <lastmod>2025-05-28T18:30:34.045Z</lastmod>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/10_NRT.html</loc>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/12_One_Year_Region_t.html</loc>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/03_Output.html</loc>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/13_One_Month_Fire_Forward.html</loc>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/MAAP-DPS.html</loc>
+    <lastmod>2025-06-04T13:17:08.185Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/dps-coordinator.html</loc>
+    <lastmod>2025-06-04T13:17:08.185Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/dps-interactive-coordinator.html</loc>
+    <lastmod>2025-06-04T13:17:08.185Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/maap_runtime/register-all.html</loc>
+    <lastmod>2025-06-04T13:17:08.185Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/02_Run.html</loc>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/01_Ingest.html</loc>
+    <lastmod>2025-06-04T13:17:08.185Z</lastmod>
   </url>
   <url>
     <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/14_Hulls.html</loc>
-    <lastmod>2025-05-28T18:30:34.046Z</lastmod>
-  </url>
-  <url>
-    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/11_Archive.html</loc>
-    <lastmod>2025-05-28T18:30:34.045Z</lastmod>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
   </url>
   <url>
     <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/04_Explore.html</loc>
-    <lastmod>2025-05-28T18:30:34.045Z</lastmod>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/notebooks/11_Archive.html</loc>
+    <lastmod>2025-06-04T13:17:08.186Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/system_architecture.html</loc>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/contributing.html</loc>
+    <lastmod>2025-06-04T13:17:08.167Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/index.html</loc>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/playbook_dps_debug.html</loc>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/nrt.html</loc>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/running_tests.html</loc>
+    <lastmod>2025-06-04T13:17:08.183Z</lastmod>
+  </url>
+  <url>
+    <loc>https://Earth-Information-System.github.io/fireatlas/docs/getting_started.html</loc>
+    <lastmod>2025-06-04T13:17:08.167Z</lastmod>
   </url>
 </urlset>
