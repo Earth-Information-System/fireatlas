@@ -2367,6 +2367,17 @@ def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileS
             "low_confidence_grouping",
             "geometry",
         ]
+
+        if settings.DO_NIFC_MATCHING:
+            select_cols.append(
+                [
+                    "NIFC_DiscoveryDT",
+                    "NIFC_IncidentName",
+                    "NIFC_IRWINID",
+                    "NIFC_IncidentType"
+                ]
+            )
+            
     elif "lf_fireline" in from_maap_s3_path:
         select_cols = ["fireID", "t", "primarykey", "region", "geometry"]
     elif "lf_newfirepix" in from_maap_s3_path:
