@@ -93,7 +93,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data Overview</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -130,7 +130,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link active">
+            <a href="../docs/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -151,7 +151,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="https://www.ess.uci.edu/~uci-nasa-firetracking/" class="sidebar-item-text sidebar-link">
+  <a href="../docs/published_dataset.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Published Datasets</span></a>
   </div>
 </li>
@@ -204,28 +204,24 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/team.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Our Team</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#available-datasets" id="toc-available-datasets" class="nav-link active" data-scroll-target="#available-datasets">Available datasets</a>
-  <ul class="collapse">
-  <li><a href="#near-real-time-nrt-feds" id="toc-near-real-time-nrt-feds" class="nav-link" data-scroll-target="#near-real-time-nrt-feds">Near Real Time (NRT) FEDS</a></li>
-  <li><a href="#static-datasets" id="toc-static-datasets" class="nav-link" data-scroll-target="#static-datasets">Static datasets</a></li>
-  </ul></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data_overview.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/data.html">Data</a></li><li class="breadcrumb-item"><a href="../docs/data_overview.html">Data Overview</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Data Overview</h1>
 </div>
@@ -244,27 +240,17 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The Fire Event Data Suite (FEDS) algorithm (Chen et al., 2022) uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.</p>
-<p>The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each modeled perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the modeled fire perimeter every 12 hours. For fires that ultimately grow larger than 4 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.</p>
+<p>The Fire Event Data Suite (FEDS) algorithm <a href="https://www.nature.com/articles/s41597-022-01343-0/">(Chen et al., 2022)</a> uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections (Figure 1).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/feds.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 1. A schematic diagram of the FEDS fire tracking algorithm <a href="https://www.nature.com/articles/s41597-022-01343-0/">(Chen et al., 2022)</a>. (a) Two idealized fire objects (Fire 1, Fire 2) at the time step t. Colored and grey dots represent newly detected and previously detected VIIRS 375 m active fire pixels, respectively. The brown segments along the fire perimeter are estimates of the active portions of the fire perimeter, or active fire line segments. (b) At the next time step t+1, new fire pixels (in red) are clustered (C1, C2, C3), and are used for forming a new fire object (C1 for Fire 3), or for the growth of an existing fire object (C2 for Fire 1). Expanded fire objects (Fire 2) are merged with an existing active fire object (Fire 1) if they grow close enough (due to the addition of C3). Vector shapes of the estimated fire perimeter and active fire line segments for each fire object are updated at each 12-hour time step.</figcaption>
+</figure>
+</div>
+<p>The FEDS algorithm clusters active fire detections into individual events, estimates the fire perimeter and fire characteristics, and tracks fire growth for each 12-hour time step. The vector data product includes multiple attributes for each estimated perimeter, including the active portion of the fire perimeter and metrics of fire behavior for each 12-hour growth increment. The FEDS algorithm inherits the spatial resolution and geolocation accuracy of the VIIRS 375 m active fire product from the Suomi-NPP and NOAA-20 satellites and estimates the fire perimeter every 12 hours to generate a vector output. For all fire events, regardless of fire size or duration, the FEDS algorithm provides a “snapshot” of the fire perimeter every 12 hours. For fires that ultimately grow larger than 4 km2, these modeled perimeters and associated attributes are stored in sequence to track the growth and behavior of each large fire event.</p>
 <p>The estimated perimeter data are routinely produced within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada.</p>
-<section id="available-datasets" class="level2">
-<h2 class="anchored" data-anchor-id="available-datasets">Available datasets</h2>
-<p>The following sections describe the NRT data, as well as previously published FEDS datasets over specific geographic regions. Navigate to a section using the left menu bar for more detailed dataset descriptions and data access.</p>
-<section id="near-real-time-nrt-feds" class="level3">
-<h3 class="anchored" data-anchor-id="near-real-time-nrt-feds">Near Real Time (NRT) FEDS</h3>
-<ul>
-<li>Available within approximately four hours of each VIIRS overpass for the Continental United States (CONUS) and Canada</li>
-<li>Detailed documentation is available <a href="../docs/nrt.html">here</a>.</li>
-</ul>
-</section>
-<section id="static-datasets" class="level3">
-<h3 class="anchored" data-anchor-id="static-datasets">Static datasets</h3>
-<p>Published datasets contain static, unchanging FEDS and FEDS-like outputs for a particular region and time span. They are associated with a specific publication, where more information about that particular dataset can be found.</p>
-<p><a href="https://www.ess.uci.edu/~uci-nasa-firetracking/">Published dataset descriptions.</a></p>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -674,7 +660,7 @@ ul.task-list li input[type="checkbox"] {
 </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data_overview.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/data_overview.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

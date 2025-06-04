@@ -130,7 +130,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link">
+            <a href="../docs/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -151,7 +151,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="https://www.ess.uci.edu/~uci-nasa-firetracking/" class="sidebar-item-text sidebar-link">
+  <a href="../docs/published_dataset.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Published Datasets</span></a>
   </div>
 </li>
@@ -204,6 +204,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/team.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Our Team</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -240,15 +246,20 @@ ul.task-list li input[type="checkbox"] {
 </div>
 <section id="our-work" class="level2">
 <h2 class="anchored" data-anchor-id="our-work">Our Work</h2>
-<p>Our understanding of fire behavior, specifically its predictability on near-term time-scales as well as its impact on ecosystems and air quality, requires routine and comprehensive observations of fire spread and fire intensity alongside ancillary environmental information. Satellite observations provide high-resolution information on fire location and intensity with sub-daily temporal resolution.<br>
-In contrast to traditional representation of active fires and their corresponding burned areas as a series of gridded pixels, fire tracking groups individual pixels based on their locations in space and time, and treats them as discrete objects that persist, expand, and evolve together. This “event-based” tracking strategy allows for detailed, regular monitoring of large fires as they spread across a landscape.</p>
+<p>We seek to understand how global fire activity alters ecosystems, contributes to greenhouse gas emissions, and affects air quality. Detecting and tracking individual fire events using satellite data improves our understanding of fires in the Earth system, including new extremes in fire behavior in a warmer, more flammable world.</p>
+<p>Our approach tracks the growth and intensity of individual fires every 12 hours using satellite active fire data. In contrast to active fire pixels or gridded burned area data, fire tracking clusters individual active fire detections in space and time and treats them as discrete objects that persist, expand, and evolve together. This “event-based” tracking strategy allows for detailed monitoring of large fires as they spread across a landscape.</p>
+<p>Our team analyzes fire tracking data to characterize the behavior of individual fires, evaluate regional and seasonal patterns of fire activity, and quantify fire emissions.</p>
 </section>
-<section id="resources" class="level2">
-<h2 class="anchored" data-anchor-id="resources">Resources</h2>
-<p>Our team and collaborators develop and maintain the Fire Event Data Suite, or FEDS. The FEDS code is open source and available <a href="https://github.com/Earth-Information-System/fireatlas">on GitHub</a>.</p>
-<p>With FEDS, we continously generate subdaily estimated fire perimeters using data from the VIIRS sensors on Suomi-NPP and NOAA20 satellites. We currently make data available for several regions of interest, including the continental United States, on our public <a href="../docs/nrt.html">API</a> and on <a href="../docs/nrt.html">NASA FIRMS US/Canada</a>.</p>
-<p>Researchers interested in exploring our data can read more about our <a href="../docs/data_overview.html">data products</a> and <a href="../docs/data_overview.html#published-datasets">recent publications</a>, and are welcome to contact us for further discussion.</p>
-<p>Developers should consult our <a href="../docs/system_architecture.html">technical documentation</a> and engage with our community on GitHub.</p>
+<section id="data" class="level2">
+<h2 class="anchored" data-anchor-id="data">Data</h2>
+<p>Our team develops and maintains the Fire Event Data Suite, or FEDS. The FEDS algorithm <a href="https://www.nature.com/articles/s41597-022-01343-0/">(Chen et al., 2022)</a> uses an alpha shape approach to estimate the perimeter and properties of ongoing fire events every 12 hours, based on Visible Infrared Imaging Radiometer Suite (VIIRS) 375 m active fire detections.</p>
+<p>This site contains more information about the <a href="../docs/data_overview.html">FEDS data</a>, available platforms for FEDS fire tracking <a href="../docs/nrt.html">visualization and data access</a>, as well as <a href="../docs/published_dataset.html">publications</a>, developer information, and technical documentation.</p>
+<p>The FEDS code is open source and available <a href="https://github.com/Earth-Information-System/fireatlas">on GitHub</a>.</p>
+</section>
+<section id="our-team" class="level2">
+<h2 class="anchored" data-anchor-id="our-team">Our Team</h2>
+<p>FEDS is developed and maintained by scientists at NASA’s Goddard Space Flight Center and the University of California, Irvine. See our <a href="../docs/team.html">Team</a> page for more information on current team members, alumni, and collaborators.</p>
+<p>To contact the science team by email, please use <a href="https://forms.gle/vHX7FvHhamDVRDHn9">this form</a>.</p>
 
 
 </section>

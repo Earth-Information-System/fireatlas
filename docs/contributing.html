@@ -131,7 +131,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
-            <a href="../docs/data_overview.html" class="sidebar-item-text sidebar-link">
+            <a href="../docs/data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Data</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
@@ -152,7 +152,7 @@ ul.task-list li input[type="checkbox"] {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="https://www.ess.uci.edu/~uci-nasa-firetracking/" class="sidebar-item-text sidebar-link">
+  <a href="../docs/published_dataset.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Published Datasets</span></a>
   </div>
 </li>
@@ -205,6 +205,12 @@ ul.task-list li input[type="checkbox"] {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../docs/team.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Our Team</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -279,19 +285,6 @@ $ git commit -m "Add NOAA21 inputs"</code></pre></li>
 <li><p>Run tests (from fireatlas root dir)</p>
 <pre><code>$ pytest -v tests/ </code></pre></li>
 <li><p>OPTIONAL: run long-running (~15mins) integration tests</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Requires configured read access to <code>s3://eis-fire-public</code> to run locally. These tests can also be run manually with the <a href="https://github.com/Earth-Information-System/fireatlas/actions/workflows/pytest.yml">pytest workflow</a> on GitHub Actions, and will be run automatically on any PR or push to the main branch of the repository.</p>
-</div>
-</div>
 <pre><code>$ pytest -v --runslow tests/ </code></pre></li>
 <li><p>Push to your branch on GitHub.</p>
 <pre><code># The first time you push your new branch, set upstream: 
