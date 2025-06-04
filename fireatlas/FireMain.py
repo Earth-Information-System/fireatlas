@@ -22,6 +22,7 @@ import os
 import geopandas as gpd
 import pandas as pd
 import collections
+import contextlib
 
 from fireatlas.FireTypes import Region, TimeStep
 from fireatlas.utils import timed
@@ -172,7 +173,7 @@ def maybe_remove_static_sources(region: Region) -> Region:
     
 
 @timed
-def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
+def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea, landcover):
     """ Use daily new AF pixels to create new Fobj or combine with existing Fobj
 
     Parameters
@@ -183,6 +184,8 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
         preprocessed dataframe of new active fire pixels
     fids_ea : list
         fire ids of existing active fires at previous time step
+    landcover : np.array or None 
+        landcover dataset. None if FTYP_OPT == "preset"
 
     Returns
     -------
@@ -253,7 +256,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
                 newfire.extpixels = pixels
                 newfire.hull = hull
                 newfire.updatefline()
-                newfire.updateftype()  # update the fire type
+                newfire.updateftype(landcover)  # update the fire type
 
                 # add the new fire object to the fires list in the Allfires object
                 allfires.fires[id_newfire] = newfire
@@ -279,7 +282,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
             f.updatefline()
 
             # update the fire type
-            f.updateftype()
+            f.updateftype(landcover)
 
             # update the end time after everything else
             f.t_ed = allfires.t
@@ -295,7 +298,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea):
 
 
 @timed
-def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
+def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep, landcover):
     """ For newly formed/expanded fires close to existing active fires or sleepers, merge them
 
     Parameters
@@ -306,6 +309,8 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
         ids of newly formed/expanded fires
     fids_ea : list
         ids of existing active fire objects (including newly formed/expanded fires)
+    landcover : np.array or None 
+        previously landcover dataset. None if FTYP_OPT == "preset"
 
     Returns
     -------
@@ -439,7 +444,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
             f_source.mergeid = f_target.mergeid
 
             # update target fire ftype
-            f_target.updateftype()
+            f_target.updateftype(landcover)
             
             # - target fire set end time to current time
             f_target.t_ed = allfires.t
@@ -456,7 +461,7 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep):
     return allfires
 
 @timed
-def Fire_Forward_one_step(allfires, allpixels, tst, t, region):    
+def Fire_Forward_one_step(allfires, allpixels, tst, t, region, landcover):    
     logger.info("--------------------")
     logger.info(f"Fire tracking at {t}")
 
@@ -474,14 +479,14 @@ def Fire_Forward_one_step(allfires, allpixels, tst, t, region):
     # 4.5. if active fire pixels are detected, do fire expansion/merging
     if len(tpixels) > 0:
         # 4. do fire expansion/creation using allpixels
-        allfires = Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea)
+        allfires = Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea, landcover)
 
         # 5. do fire merging using updated fids_ne, fid_ea, fid_sleep
         fids_ne = allfires.fids_ne  # new or expanded fires id
         fids_ea = sorted(set(fids_ea + allfires.fids_new))  # existing active fires (new fires included)
         fids_sleep = allfires.fids_sleeper
         if len(fids_ne) > 0:
-            allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep)
+            allfires = Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep, landcover)
 
     # 7. manualy invalidate static fires (with exceptionally large fire density)
     if settings.remove_static_small_fires:
@@ -597,9 +602,20 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         # initialize an empty allfires object
         allfires = Allfires(tst)
 
-    # loop over every t during the period, mutate allfires, allpixels, save
-    for t in list_of_ts:
-        allfires = Fire_Forward_one_step(allfires, allpixels, tst, t, region)
+    # load landcover dataset into memory just once at the beginning of the loop
+    if settings.FTYP_OPT == "preset":
+        # preset fire type -> no landcover file used
+        cm = contextlib.nullcontext()
+    else:
+        cm = FireIO.load_landcover() 
+        
+    with cm as landcover:
+        
+        # loop over every t during the period, mutate allfires, allpixels, save
+        for t in list_of_ts:
+            allfires = Fire_Forward_one_step(
+                allfires, allpixels, tst, t, region, landcover
+            )
 
     # save allpixels and allfires locally for ted
     save_allpixels(allpixels, tst, ted, region)

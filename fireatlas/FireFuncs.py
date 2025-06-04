@@ -46,13 +46,15 @@ def get_CONNECTIVITY_FIRE(fire):
         return v
 
 
-def set_ftype(fire):
+def set_ftype(fire, landcover):
     """set fire type and dominant LCT for newly activated fires
 
     Parameters
     ----------
     fire : fire object
         the fire associated with the CONNECTIVITY_FIRE_KM
+    landcover : np.array or None 
+        landcover dataset. None if FTYP_OPT == "preset" 
 
     """
     from fireatlas import FireConsts, FireIO, settings
@@ -75,7 +77,7 @@ def set_ftype(fire):
             ]
 
         # get all LCT for the fire pixels
-        vLCT = FireIO.get_LCT_CONUS(uselocs)
+        vLCT = FireIO.get_LCT_CONUS(uselocs, landcover)
         try:
             # extract the LCT with most pixel counts
             LCTmax = max(set(vLCT), key=vLCT.count)
@@ -115,7 +117,8 @@ def set_ftype(fire):
             ]
 
         vLCT = FireIO.get_LCT_Global(
-            uselocs
+            uselocs, 
+            landcover
         )  # call get_LCT to get all LCT for the fire pixels
 
         try:

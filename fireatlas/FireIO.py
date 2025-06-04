@@ -772,105 +772,133 @@ def get_reg_shp(reg):
 
     return shp_Reg
 
-
-def get_LCT(locs):
-    """Get land cover type for active fires
-
-    Parameters
-    ----------
-    locs : list of lists (nx2)
-        lat and lon values for each active fire detection
+def load_landcover():
+    """Load appropriate landcover file into memory once
 
     Returns
     -------
-    vLCT : list of ints
-        land cover types for all input active fires
+    landcover : np.array or None
+        opened landcover dataset 
+
     """
-    # read NLCD 500m data
-    fnmLCT = os.path.join(settings.dirextdata, "CA", "nlcd_510m.tif")
-    dataset = rasterio.open(fnmLCT)
-    transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
-    locs_crs_x, locs_crs_y = transformer.transform(
-        # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
-        # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
-        # here.
-        [l[1] for l in locs],
-        [l[0] for l in locs],
-    )
-    locs_crs = list(zip(locs_crs_x, locs_crs_y))
-    samps = list(dataset.sample(locs_crs))
-    vLCT = [int(s) for s in samps]
-    return vLCT
+    
+    from fireatlas import settings
+
+    if settings.FTYP_OPT == "preset":
+        # preset ftype: no landcover data is used to determine fire type 
+        return None 
+    elif settings.FTYP_OPT == "CA":
+        
+        # read NLCD 500m data
+        from fireatlas.preprocess import preprocessed_landcover_filename
+        
+        fnmLCT = preprocessed_landcover_filename("nlcd_export_510m_simplified")
+        dataset = rasterio.open(fnmLCT)
+        
+        return dataset   
+    elif settings.FTYP_OPT == "global":
+        
+        fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic.tif")
+        dataset = rasterio.open(fnmLCT)
+        
+        return dataset
+    
+    return None
 
 
-def get_LCT_CONUS(locs):
+# def get_LCT(locs):
+#     """Get land cover type for active fires
+
+#     Parameters
+#     ----------
+#     locs : list of lists (nx2)
+#         lat and lon values for each active fire detection
+
+#     Returns
+#     -------
+#     vLCT : list of ints
+#         land cover types for all input active fires
+#     """
+#     # read NLCD 500m data
+#     fnmLCT = os.path.join(settings.dirextdata, "CA", "nlcd_510m.tif")
+#     dataset = rasterio.open(fnmLCT)
+#     transformer = pyproj.Transformer.from_crs("epsg:4326", dataset.crs)
+#     locs_crs_x, locs_crs_y = transformer.transform(
+#         # NOTE: EPSG 4326 expected coordinate order latitude, longitude, but
+#         # `locs` is x (longitude), y (latitude). That's why `l[1]`, then `l[0]`
+#         # here.
+#         [l[1] for l in locs],
+#         [l[0] for l in locs],
+#     )
+#     locs_crs = list(zip(locs_crs_x, locs_crs_y))
+#     samps = list(dataset.sample(locs_crs))
+#     vLCT = [int(s) for s in samps]
+#     return vLCT
+
+
+def get_LCT_CONUS(locs, landcover):
     """Get land cover type for active fires - CONUS scale.
-        This is the same function as get_LCT but with a CONUS wide file.
 
     Parameters
     ----------
     locs : np.array (nx2)
         lat and lon values for each active fire detection
+    landcover : np.array
+        previously loaded landcover dataset
 
     Returns
     -------
     vLCT : list of ints
         land cover types for all input active fires
     """
-    from fireatlas.preprocess import preprocessed_landcover_filename
-
-    # read NLCD 500m data
-    fnmLCT = preprocessed_landcover_filename("nlcd_export_510m_simplified")
-    dataset = rasterio.open(fnmLCT)
-    vLCT = dataset.sample(locs, indexes=1)
+    vLCT = landcover.sample(locs, indexes=1)
     vLCT = [lc[0] for lc in vLCT]
     return vLCT
 
 
-def get_LCT_Global(locs):
-    """Get land cover type for active fires - CONUS scale.
-        This is the same function as get_LCT but with global file.
+def get_LCT_Global(locs, landcover):
+    """Get land cover type for active fires - global scale.
 
     Parameters
     ----------
     locs : np.array (nx2)
         lat and lon values for each active fire detection
+    landcover : np.array or None 
+        previously landcover dataset. None if FTYP_OPT == "preset"
 
     Returns
     -------
     vLCT : list of ints
         land cover types for all input active fires
     """
-    fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic.tif")
-    dataset = rasterio.open(fnmLCT)
 
     # previous LC data sources were in a different crs and needed a transform
     # the VIIRS and LC data in this case are both in EPSG:4326, so we can sample directly
-    samps = list(dataset.sample(locs))
+    samps = list(landcover.sample(locs))
     vLCT = [s[0] for s in samps]
     return vLCT
 
 
-def get_LCT_NLCD(locs):
-    """Get land cover type from NCLD for multiple locations
+# def get_LCT_NLCD(locs):
+#     """Get land cover type from NCLD for multiple locations
 
-    Parameters
-    ----------
-    locs : np.array (nx2)
-        lon and lat values for each active fire detection
+#     Parameters
+#     ----------
+#     locs : np.array (nx2)
+#         lon and lat values for each active fire detection
 
-    Returns
-    -------
-    vLCT : list of ints
-        land cover types for all input active fires
-    """
-    # read NLCD 500m data
-    fnmLCT = os.path.join(settings.dirextdata, "CA", "nlcd_510m_latlon.tif")
-    dataset = rasterio.open(fnmLCT)
-    vLCT = dataset.sample(locs, indexes=1)
-    vLCT = [lc[0] for lc in vLCT]  # list values
+#     Returns
+#     -------
+#     vLCT : list of ints
+#         land cover types for all input active fires
+#     """
+#     # read NLCD 500m data
+#     fnmLCT = os.path.join(settings.dirextdata, "CA", "nlcd_510m_latlon.tif")
+#     dataset = rasterio.open(fnmLCT)
+#     vLCT = dataset.sample(locs, indexes=1)
+#     vLCT = [lc[0] for lc in vLCT]  # list values
 
-    return vLCT
+#     return vLCT
 
 
 def get_FM1000(t, lon, lat):

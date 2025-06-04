@@ -674,11 +674,11 @@ class Fire:
         return flinelen
 
     # functions
-    def updateftype(self):
+    def updateftype(self, landcover):
         """Update fire type
         # do not use ftype as property since it may mess up when t updates (without pixel addition)
         """
-        self.ftype = set_ftype(self)
+        self.ftype = set_ftype(self, landcover)
 
     def updatefhull(self, *hulls):
         """Update the hull using old hull and new locs"""
