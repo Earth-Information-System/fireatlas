@@ -478,7 +478,7 @@ def combined_lf_perims_nifc_join(tst: TimeStep, ted: TimeStep, region: Region, a
         nifc_perimeters = gpd.read_file('https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_YearToDate/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson')
     nifc_perimeters = nifc_perimeters.to_crs(lf.crs) # reproject
     # convert discovery date col to datetime
-    nifc_perimeters['attr_FireDiscoveryDateTime'] = pd.to_datetime(nifc_perimeters['attr_FireDiscoveryDateTime'],unit='ms')
+    nifc_perimeters['attr_FireDiscoveryDateTime'] = pd.to_datetime(nifc_perimeters['attr_FireDiscoveryDateTime'],unit='ms').dt.strftime('%Y-%m-%d %H:%M:%S')
     # clean up irwin id
     nifc_perimeters['poly_IRWINID'] = nifc_perimeters['poly_IRWINID'].apply(lambda x: x.strip('{}'))
 
