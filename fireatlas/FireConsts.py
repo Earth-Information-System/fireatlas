@@ -76,7 +76,7 @@ class Settings(BaseSettings):
         allowed = (3571, 32610, 9311, 6933)
         if epsg not in allowed:
             warnings.warn(
-                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)"
+                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.) The code should only be run with a projected coordinate system."
             )
         return epsg
 
