@@ -1,6 +1,7 @@
 import os
 
 import datetime
+import json
 from typing import Literal
 
 import fsspec
@@ -486,3 +487,67 @@ def fill_and_merge_allfires(af, ted, client=None, outpath=None):
         res.to_parquet(outpath, index=True)
     
     return res
+
+@timed
+def combined_lf_perims_nifc_join(tst: TimeStep, ted: TimeStep, region: Region, active_only=True, time_filter=None):
+    """
+    Adds NIFC incident metadata to a combined largefires perimeter object. 
+    Reads the combined largefires perimeter file from local for ted/region, connects to the NIFC database, 
+    pulls latest fire perimeters, assigns columns with info on any overlapping incidents 
+    to the combined_largefire object, then saves that back to disk in the same location. 
+    
+    Args:
+        ted: TimeStep. The last timestep processed in the most recent fire forward run. 
+        region: Region. The region processed. 
+        active_only: Bool. Indicates whether to use the current NIFC data 
+                          representing active incidents, or the year to date record. 
+        time_filter: None or Int. Optional filter to limit NIFC-FEDS matches to a fixed ignition window. 
+                         Providing an integer for this argument returns only matches that fall in 
+                         the absolute value of the difference between the FEDS 't_st' and the NIFC 'attr_FireDiscoveryDateTime'
+                         attributes. Values are in the units of fractional day (e.g. 6 hrs difference = 0.25, 24hrs difference = 1)
+                          
+    
+    Returns:
+        lf: altered combined largefires dataframe with NIFC matches 
+        grouped_records (optional): metadata detailing each merge ID to NIFC match
+    """
+
+    # read in combined largefires perimeters from final timestep
+    input_dir = combined_largefire_folder(region, tst, ted, location="local")
+    perims_filepath = os.path.join(input_dir, "lf_perimeter.fgb")
+    lf = gpd.read_file(perims_filepath, engine="pyogrio")
+
+    # load NIFC perimeters from ArcGIS service 
+    if active_only:
+        nifc_perimeters = gpd.read_file('https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_Current/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson')
+    else:
+        nifc_perimeters = gpd.read_file('https://services3.arcgis.com/T4QMspbfLg3qTGWY/arcgis/rest/services/WFIGS_Interagency_Perimeters_YearToDate/FeatureServer/0/query?outFields=*&where=1%3D1&f=geojson')
+    nifc_perimeters = nifc_perimeters.to_crs(lf.crs) # reproject
+    # convert discovery date col to datetime
+    nifc_perimeters['attr_FireDiscoveryDateTime'] = pd.to_datetime(nifc_perimeters['attr_FireDiscoveryDateTime'],unit='ms').dt.strftime('%Y-%m-%d %H:%M:%S')
+    # clean up irwin id
+    nifc_perimeters['poly_IRWINID'] = nifc_perimeters['poly_IRWINID'].apply(lambda x: x.strip('{}'))
+
+    sjoin = lf.sjoin(nifc_perimeters)
+
+    if time_filter:
+        sjoin['feds_nifc_time_diff'] = abs(sjoin['t_st'] - sjoin['attr_FireDiscoveryDateTime']) / pd.to_timedelta('24h')
+        sjoin = sjoin[sjoin['feds_nifc_time_diff'] <= time_filter]
+
+    # aggregate all unique NIFC fires for each fireID
+    grouped_records = sjoin.groupby('mergeid')[['attr_FireDiscoveryDateTime','poly_IncidentName',
+                                               'poly_IRWINID','attr_IncidentTypeCategory']].agg(['unique'])
+    grouped_records = grouped_records.droplevel(level=1,axis=1) # clean up columns from agg operation
+    grouped_records = grouped_records.rename(columns={'attr_FireDiscoveryDateTime': 'NIFC_DiscoveryDT', 
+                                                      'poly_IncidentName': 'NIFC_IncidentName',
+                                                      'poly_IRWINID': 'NIFC_IRWINID',
+                                                      'attr_IncidentTypeCategory': 'NIFC_IncidentType'})
+
+    # clear list (array) instance if only single entry per fire
+    for col in grouped_records.columns:
+        grouped_records[col] = grouped_records[col].apply(lambda x: x[0] if len(x) == 1 else json.dumps(list(x)))
+
+    lf = lf.merge(grouped_records, left_on='mergeid', right_index=True, how='left')
+    lf.to_file(perims_filepath, driver="FlatGeobuf")
+
+    return lf, grouped_records

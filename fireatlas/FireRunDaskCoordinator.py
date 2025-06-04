@@ -23,6 +23,7 @@ from fireatlas.postprocess import (
     save_large_fires_nplist,
     read_allfires_gdf,
     read_allpixels,
+    combined_lf_perims_nifc_join
 )
 from fireatlas.preprocess import (
     check_preprocessed_file,
@@ -202,6 +203,85 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     return futures
 
 @timed
+def Run_local(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool=False):
+    """
+    Coordinates all parts of a run: region preprocessing, downloading and preprocessing
+    input fire detection data if needed, running FireForward, and saving snapshot layers.
+    Similar to Run, but does not attempt to read from or write to s3 at all. Like Run, 
+    uses a Dask client to parallelize some computations on the local machine, making 
+    use of multiple CPU cores when available. 
+    Remember to set settings.READ_LOCATION to "local"!
+    """
+
+    client = Client(n_workers=settings.N_DASK_WORKERS)
+    region_future = client.submit(preprocess_region, region)
+    logger.info(f"Running preprocess-region JSON for {region[0]}")
+    data_update_futures = job_data_update_checker(client, tst, ted)
+
+    client.gather(data_update_futures)
+    client.gather(region_future)
+
+    logger.info("------------- Done with preprocessing t -------------")
+
+    # then run all region-plus-t in parallel that need it
+    timesteps_needing_processing = get_timesteps_needing_region_t_processing(
+        tst, ted, region, force=True
+    )
+    region_and_t_futures = client.map(
+        partial(preprocess_region_t, region=region, force=True),
+        timesteps_needing_processing
+    )
+    # block until preprocessing is complete
+    client.gather(region_and_t_futures)
+
+    logger.info("------------- Done with preprocessing region + t -------------")
+
+    # run fire forward algorithm (which cannot be run in parallel)
+
+    logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
+
+    try:
+        allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
+        allfires_gdf = allfires.gdf
+        if t_saved is None:
+            # NOTE: this happens if we're running a region full-on
+            # from start to finish that has never been run before
+            # and therefore no existin allpixels/allfires save has been found
+            t_saved = tst
+    except KeyError as e:
+        logger.warning(f"Fire forward has already run. {e}")
+        allpixels = read_allpixels(tst, ted, region)
+        allfires_gdf = read_allfires_gdf(tst, ted, region)
+        # NOTE: this means we've already found an
+        # allfires and allpixels save for this ted timestep
+        t_saved = ted
+
+    snapshot_futures = save_snapshots(allfires_gdf, region, t_saved, ted, client=client)
+
+    large_fires = find_largefires(allfires_gdf)
+    save_large_fires_nplist(allpixels, region, large_fires, tst)
+    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
+
+    client.gather(snapshot_futures)
+
+    # If flag matching flat set, add overlaps with this year's NIFC incidents to 
+    # CombinedLargefire/lf_perimeter.fgb for ted only. 
+    if settings.DO_NIFC_MATCHING:
+        logger.info("Started NIFC matching")
+        combined_lf_perims_nifc_join(
+            tst, 
+            ted, 
+            region, 
+            active_only=settings.NIFC_MATCHING_ACTIVE_ONLY, 
+            time_filter=None
+        )
+        logger.info("Finished NIFC matching")
+
+    logger.info("------------- Done -------------")
+
+    client.close()
+
+@timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
 
     ctime = datetime.now(tz=timezone.utc)
@@ -252,6 +332,14 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
     
     # run fire forward algorithm (which cannot be run in parallel)
     job_fire_forward(region=region, tst=tst, ted=ted, client=client)
+
+    # If flag matching flat set, add overlaps with this year's NIFC incidents to 
+    # CombinedLargefire/lf_perimeter.fgb for ted only. 
+    if settings.DO_NIFC_MATCHING:
+        logger.info("Started NIFC matching")
+        combined_lf_perims_nifc_join(tst, ted, region, active_only=True, time_filter=None)
+        logger.info("Finished NIFC matching")
+
 
     # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
