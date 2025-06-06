@@ -10,7 +10,7 @@ Our group generates FEDS estimated fire perimeters over the continental United S
 ## Quick Links
 - [Project Website](https://earth-information-system.github.io/fireatlas/docs/) (Start here!)
 - [Available Data Products](https://earth-information-system.github.io/fireatlas/docs/data_overview.html)
-- [NRT Fire Data Explorer](https://us-fire-events-tool.netlify.app/) 
+- [NRT Fire Data Explorer](https://earthdata.nasa.gov/dashboard/tools/fire-event-explorer) 
 - [Developer Documentation](https://earth-information-system.github.io/fireatlas/docs/contributing.html) 
 
 
@@ -38,6 +38,3 @@ _Example FEDS perimeters showing the estimated progression of the 2020 Creek fir
 We welcome contributions and collaborations! We use GitHub Issues to coordinate development work. Please [open an issue](https://github.com/Earth-Information-System/fireatlas/issues) to discuss bugs, feature requests, or data errors with the team. 
 
 To contact the team by email, please use [this form](https://forms.gle/vHX7FvHhamDVRDHn9). 
-
-## License
-COPYRIGHT: This code is open-source and can be free used for research purposes

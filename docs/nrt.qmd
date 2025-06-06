@@ -9,11 +9,11 @@ Two platforms provide mapping capabilities for NRT FEDS fire tracking data.
 
 ***Disclaimer:*** *The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.*
 
-[**Fire Events Explorer**](https://us-fire-events-tool.netlify.app/) - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites. 
+[**Fire Events Explorer**](https://earthdata.nasa.gov/dashboard/tools/fire-event-explorer) - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites. 
 
 ## Access Near Real Time Data 
 
-NRT data are available via [OGC API](https://firenrt.delta-backend.com/). An [example notebook](https://docs.openveda.cloud/user-guide/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.
+NRT data are available via [OGC API](https://openveda.cloud/api/features/). An [example notebook](https://docs.openveda.cloud/user-guide/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.
 
 The [API status Binder notebook](https://mybinder.org/v2/gh/zebbecker/fire-utils/HEAD?labpath=api_status.ipynb) also provides a quick way to visualize recent NRT outputs from the OGC API in your browser, without the need for any environment setup or downloads.
 
@@ -46,7 +46,7 @@ FEDS fire tracking data is labeled as "VIIRS Modeled Fire Perimeter" on the NASA
 
 **6. What is the temporal extent of the FEDS fire tracking data?**
 
-**A:** FEDS fire tracking data are currently available from 2018-2021 for the Western US and from Jan 1, 2025 to present for North America (continental US, Alaska, Canada, and Northern Mexico) via [OGC API](https://firenrt.delta-backend.com/). This [example notebook](https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html) demonstrates how to subset, analyze, and visualize these data.
+**A:** FEDS fire tracking data are currently available from 2018-2021 for the Western US and from Jan 1, 2025 to present for North America (continental US, Alaska, Canada, and Northern Mexico) via [OGC API](https://earthdata.nasa.gov/dashboard/tools/fire-event-explorer). This [example notebook](https://nasa-impact.github.io/veda-docs/notebooks/tutorials/mapping-fires.html) demonstrates how to subset, analyze, and visualize these data.
 
 FEDS fire tracking perimeters are viewable through FIRMS beginning January 1 of the current calendar year.
 
@@ -82,4 +82,4 @@ FEDS fire tracking perimeters, active fireline, and VIIRS active fire detections
 
 **11. How can I find more information about the FEDS algorithm, data product versions, and related analyses?**
 
-**A:** Additional information about the FEDS algorithm can be found in [Chen et al., (2022)](https://www.nature.com/articles/s41597-022-01343-0). The source code used to generate the VIIRS Modeled Fire Perimeter data product is available on [GitHub](https://github.com/Earth-Information-System/fireatlas), and an [example notebook](https://docs.openveda.cloud/user-guide/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the FEDS output outside of FIRMS is available on NASA’s VEDA platform. Finally, the data products from the FEDS algorithm are also available via [OGC API](https://firenrt.delta-backend.com/).  
+**A:** Additional information about the FEDS algorithm can be found in [Chen et al., (2022)](https://www.nature.com/articles/s41597-022-01343-0). The source code used to generate the VIIRS Modeled Fire Perimeter data product is available on [GitHub](https://github.com/Earth-Information-System/fireatlas), and an [example notebook](https://docs.openveda.cloud/user-guide/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the FEDS output outside of FIRMS is available on NASA’s VEDA platform. Finally, the data products from the FEDS algorithm are also available via [OGC API](https://openveda.cloud/api/features/).  

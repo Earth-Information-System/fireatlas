@@ -48,7 +48,6 @@ website:
 
   page-footer:
     right: "This page is built with ❤️ and [Quarto](https://quarto.org/)."
-    left: "LICENSE"
 
 
 
