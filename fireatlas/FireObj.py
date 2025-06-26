@@ -318,30 +318,6 @@ class Allfires:
         long_number = 100000000000000
         if(any(x >= long_number for x in self.fids_active) | any(x >= long_number for x in self.fids_sleeper)):
             logger.warning(f"WARNING: Fire ID is longer than {long_number}")
-            
-    def newyear_reset(self, regnm, location = "s3"):
-        """reset fire ids at the start of a new year"""
-        # re-id all active fires
-        newfires = {}
-        fidmapping = []
-        fids_keep = self.fids_active + self.fids_sleeper
-        for i, fid in enumerate(fids_keep):
-            newfires[i] = self.fires[fid]  # record new fireID and fire object
-            newfires[i].fireID = i  # also update fireID attribute of fire object
-            fidmapping.append((fid, i))
-        self.fires = newfires
-
-        # lastyearfires = {}
-        # fidmapping = []
-        # nfid = 0
-        # for f in self.activefires:
-        #     ofid = f.fireID
-        #     f.fireID = nfid
-        #     # lastyearfires.append(f)
-        #     lastyearfires[nfid] = f
-        #     fidmapping.append((ofid,nfid))
-        #     nfid += 1
-        # self.fires = lastyearfires
 
         # clean heritages
         self.heritages = []
