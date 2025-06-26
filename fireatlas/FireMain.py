@@ -466,7 +466,8 @@ def Fire_Forward_one_step(allfires, allpixels, tst, t, region, landcover):
     logger.info(f"Fire tracking at {t}")
 
     if FireTime.isyearst(t):
-        allfires.newyear_reset(region[0])
+        allfires.check_fid_len(region[0]) ## Check if fireID lengths have gotten too long
+        
 
     # 1. record existing active fire ids (before fire tracking at t)
     fids_ea = allfires.fids_active
