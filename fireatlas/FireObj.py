@@ -21,6 +21,7 @@ from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireIO import save_newyearfidmapping
 from fireatlas import FireVector
 from fireatlas import FireConsts
+from fireatlas.FireTypes import Location
 from fireatlas import settings
 
 
@@ -311,7 +312,7 @@ class Allfires:
             []
         )  # a list of ids for fires invalidated at current time step
 
-    def newyear_reset(self, regnm):
+    def newyear_reset(self, regnm, location = "s3"):
         """reset fire ids at the start of a new year"""
         # re-id all active fires
         newfires = {}
@@ -340,7 +341,7 @@ class Allfires:
 
         # save the mapping table
         if len(fidmapping) > 0:
-            save_newyearfidmapping(fidmapping, self.t[0], regnm)
+            save_newyearfidmapping(fidmapping, self.t[0], regnm, location = location)
 
     # functions to be run after tracking VIIRS active fire pixels at each time step
     def record_fids_change(
@@ -493,6 +494,10 @@ class Fire:
     @property
     def fireID(self):
         return self._fid
+        
+    @fireID.setter
+    def fireID(self, newid):
+        self._fid = newid
 
     @property
     def pixels(self):

@@ -461,12 +461,12 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep, landcover):
     return allfires
 
 @timed
-def Fire_Forward_one_step(allfires, allpixels, tst, t, region, landcover):    
+def Fire_Forward_one_step(allfires, allpixels, tst, t, region, landcover, location = "s3"):    
     logger.info("--------------------")
     logger.info(f"Fire tracking at {t}")
 
     if FireTime.isyearst(t):
-        allfires.newyear_reset(region[0])
+        allfires.newyear_reset(region[0], location = location)
 
     # 1. record existing active fire ids (before fire tracking at t)
     fids_ea = allfires.fids_active
@@ -614,7 +614,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         # loop over every t during the period, mutate allfires, allpixels, save
         for t in list_of_ts:
             allfires = Fire_Forward_one_step(
-                allfires, allpixels, tst, t, region, landcover
+                allfires, allpixels, tst, t, region, landcover, location = read_location
             )
 
     # save allpixels and allfires locally for ted

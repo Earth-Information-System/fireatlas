@@ -1825,13 +1825,14 @@ def load_gdfobj(regnm, t="", op=""):
     return gdf
 
 
-def save_newyearfidmapping(fidmapping, year, regnm):
+def save_newyearfidmapping(fidmapping, year, regnm, location):
     """Save the cross year fid mapping tuples"""
     # convert list to dataframe
     df = pd.DataFrame(fidmapping, columns=["oldfid", "newfid"])
 
     # determine output file name
-    strdir = os.path.join(settings.diroutdata, regnm, str(year), "Summary")
+    strdir =  os.path.join(settings.get_path(location), settings.OUTPUT_DIR, regnm, str(year), "Summary")
+
     fnmout = os.path.join(strdir, "CrossyrFidmapping_" + str(year) + ".csv")
     check_filefolder(fnmout)
 
