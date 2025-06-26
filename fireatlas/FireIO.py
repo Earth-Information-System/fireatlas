@@ -957,12 +957,11 @@ def get_any_shp(filename):
     Parameters
     ----------
     filename : str
-        the shapefile names saved in the directory dirextdata/shapefiles/
+        the shapefile names saved in the directory dirextdata/Shapefiles/
     """
     
-    dirshape = os.path.join(settings.dirextdata, "GlobalShapefiles")
+    dirshape = os.path.join(settings.dirextdata, "Shapefiles")
     filepath = os.path.join(dirshape, filename)
-
     # read the geometry
     shp = gpd_read_file(filepath)
     geo_dissolved = shp.dissolve()
@@ -996,7 +995,7 @@ def get_reg_shp(reg):
         region definition, one of the following
          - a geometry
          - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
-         - the name of a file containing a region geometry in settings.direxdata/shapefiles/
+         - the name of a file containing a region geometry in settings.direxdata/Shapefiles/
 
     Returns
     -------
@@ -1025,7 +1024,7 @@ def get_reg_shp(reg):
         )
     else:
         print(
-            "Please use geometry, country name (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
+            "Please use geometry, region filename (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
         )
         return None
 
