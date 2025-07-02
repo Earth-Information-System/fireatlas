@@ -366,7 +366,7 @@ def preprocess_region_t(
                 f"Both NOAA20 and SNPP files are not available for {t=}")
         else:
             df = pd.concat(dfs, ignore_index=True)
-    if source == "SNPP-NRTbackup":
+    elif source == "SNPP-NRTbackup":
         try:
             # Try reading SNPP file first
             df = read_preprocessed_input(t, sat="SNPP", location=read_location)
