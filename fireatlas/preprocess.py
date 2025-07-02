@@ -21,7 +21,8 @@ from fireatlas import FireIO, FireMain, settings
 
 def preprocessed_region_filename(region: Region, location: Location = None):
     return os.path.join(
-        settings.get_path(location), settings.PREPROCESSED_DIR, region[0], f"{region[0]}.json"
+        settings.get_path(
+            location), settings.PREPROCESSED_DIR, region[0], f"{region[0]}.json"
     )
 
 
@@ -65,9 +66,11 @@ def preprocessed_landcover_filename(
 @timed
 def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
     # if landcover output already exists, exit early so we don't reprocess
-    output_filepath = preprocessed_landcover_filename(filename, location="local")
+    output_filepath = preprocessed_landcover_filename(
+        filename, location="local")
     if not force and os.path.exists(output_filepath):
-        logger.info("Preprocessing has already occurred for this landcover file.")
+        logger.info(
+            "Preprocessing has already occurred for this landcover file.")
         logger.debug("Use `force=True` to rerun this preprocessing step.")
         return output_filepath
 
@@ -84,7 +87,8 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
         )
         kwargs = src.meta.copy()
         kwargs.update(
-            {"crs": dst_crs, "transform": transform, "width": width, "height": height}
+            {"crs": dst_crs, "transform": transform,
+                "width": width, "height": height}
         )
 
         with rasterio.open(output_filepath, "w", **kwargs) as dst:
@@ -259,7 +263,8 @@ def preprocess_input_file(filepath: str):
 
     # return selected columns
     df = df[
-        ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
+        ["Lat", "Lon", "FRP", "Sat", "DT", "DS",
+            "input_filename", "datetime", "ampm"]
     ]
 
     output_paths = []
@@ -342,7 +347,8 @@ def preprocess_region_t(
         return output_filepath
 
     # read in the preprocessed region
-    region = read_region(region, location=read_region_location or read_location)
+    region = read_region(
+        region, location=read_region_location or read_location)
     source = settings.FIRE_SOURCE
     logger.info(
         f"filtering and clustering {t[0]}-{t[1]}-{t[2]} {t[3]}, {source}, {region[0]}"
@@ -351,13 +357,30 @@ def preprocess_region_t(
         dfs = []
         for sat in ["SNPP", "NOAA20"]:
             try:
-                dfs.append(read_preprocessed_input(t, sat=sat, location=read_location))
+                dfs.append(read_preprocessed_input(
+                    t, sat=sat, location=read_location))
             except FileNotFoundError as e:
                 logger.info(f"{sat} file not available at {t=}: '{str(e)}'")
         if len(dfs) == 0:
-            raise ValueError(f"Both NOAA20 and SNPP files are not available for {t=}")
+            raise ValueError(
+                f"Both NOAA20 and SNPP files are not available for {t=}")
         else:
             df = pd.concat(dfs, ignore_index=True)
+    if source == "SNPP-NRTbackup":
+        try:
+            # Try reading SNPP file first
+            df = read_preprocessed_input(t, sat="SNPP", location=read_location)
+        except FileNotFoundError as e_snpp:
+            logger.info(f"SNPP file not available at {t=}: '{str(e_snpp)}'")
+        try:
+            # If SNPP doesn't exist, try reading NOAA20
+            df = read_preprocessed_input(
+                t, sat="NOAA20", location=read_location)
+        except FileNotFoundError as e_noaa20:
+            logger.info(
+                f"NOAA20 file not available at {t=}: '{str(e_noaa20)}'")
+            raise ValueError(
+                f"Both SNPP and NOAA20 files are not available for {t=}")
     else:
         df = read_preprocessed_input(t, sat=source, location=read_location)
 
