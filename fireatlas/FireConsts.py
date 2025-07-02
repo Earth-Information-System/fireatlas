@@ -18,11 +18,13 @@ root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
 
+
 class Settings(BaseSettings):
     # read in all env vars prefixed with `FEDS_` they can be in a .env file
 
-    model_config = SettingsConfigDict(env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_")
-    
+    model_config = SettingsConfigDict(
+        env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_")
+
     # ------------------------------------------------------------------------------
     # where data is stored
     # ------------------------------------------------------------------------------
@@ -54,9 +56,9 @@ class Settings(BaseSettings):
         os.path.join(root_dir, 'running.log'), description="absolute path for log file"
     )
 
-    LOG_SUBDIR: bool = Field(False, description="should the region/year-specific logs be saved within subdirectories?")
+    LOG_SUBDIR: bool = Field(
+        False, description="should the region/year-specific logs be saved within subdirectories?")
 
-    
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
     # ------------------------------------------------------------------------------
@@ -66,18 +68,18 @@ class Settings(BaseSettings):
     LARGEFIRE_FAREA: int = Field(
         4, description="fire area threshold for determining large fires"
     )
-    
 
     EPSG_CODE: int = Field(
         9311, description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
-    
+
     @field_validator('EPSG_CODE')
     @classmethod
     def check_epsg(cls, epsg: int):
         allowed = (3571, 32610, 9311, 6933)
         if epsg not in allowed:
-            warnings.warn(f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)")
+            warnings.warn(
+                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)")
         return epsg
 
     # temporal parameters for fire object definition
@@ -114,17 +116,20 @@ class Settings(BaseSettings):
     extbuffer: int = Field(
         1000, description="buffer to define interior/exterior region, m"
     )
-    area_VI: float = Field(0.141, description="area of each 375m VIIRS pixel, km2")
+    area_VI: float = Field(
+        0.141, description="area of each 375m VIIRS pixel, km2")
 
     # MODIS pixel size
-    MCD64buf: float = Field(231.7, description="MODIS fire perimeter buffer, m")
+    MCD64buf: float = Field(
+        231.7, description="MODIS fire perimeter buffer, m")
 
     # fire source data
-    FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
+    FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD", "SNPP-NRTbackup"] = Field(
         "NOAA20", description="fire source data"
     )
     FIRE_NRT: bool = Field(True, description="whether to use NRT data")
-    FIRE_SENSOR: Literal["viirs", "mcd64"] = Field("viirs", description="fire sensor")
+    FIRE_SENSOR: Literal["viirs", "mcd64"] = Field(
+        "viirs", description="fire sensor")
 
     # ------------------------------------------------------------------------------
     # static fire parameters
@@ -229,7 +234,7 @@ FTYP = {
         4: "Savana",
         5: "Agriculture",
         6: "Deforestation",
-    },  #  use algorithm proposed for global study
+    },  # use algorithm proposed for global study
 }
 
 CONT = {
