@@ -77,7 +77,7 @@ class Allfires:
                 "fireID",
                 "t",
             ],
-            crs=f"epsg:{settings.EPSG_CODE}",
+            crs=str(settings.EPSG_CODE),
             geometry="hull",
         )
         self.gdf = gdf.set_index(["fireID", "t"])

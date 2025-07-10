@@ -6,6 +6,7 @@ running controls
 from typing import Literal
 import os
 import warnings
+from pyproj import CRS
 
 import fsspec
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -65,7 +66,7 @@ class Settings(BaseSettings):
         4, description="fire area threshold for determining large fires"
     )
 
-    EPSG_CODE: int = Field(
+    EPSG_CODE: int | str= Field(
         9311,
         description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
@@ -73,10 +74,33 @@ class Settings(BaseSettings):
     @field_validator("EPSG_CODE")
     @classmethod
     def check_epsg(cls, epsg: int):
-        allowed = (3571, 32610, 9311, 6933)
+        allowed = (
+            3571, 
+            32610, 
+            9311, 
+            6933, 
+            "ESRI:102008", 
+            "EPSG:10603",
+            "EPSG:7764",
+            "ESRI:102022",
+            "EPSG:10601",
+            "EPSG:6933",
+            "EPSG:10601",
+            "EPSG:8859",
+            "EPSG:3576",
+            "EPSG:3575",
+            "EPSG:3035",
+            "EPSG:3576"
+        )
         if epsg not in allowed:
             warnings.warn(
-                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)"
+                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.) The code should only be run with a projected coordinate system."
+            )
+
+        crs = CRS.from_user_input(epsg)
+        if not crs.is_projected:
+            warnings.warn(
+                f"FEDS assumes a projected coordinate system, but user-specified code {epsg} was not recognized as projected."
             )
         return epsg
 
@@ -161,6 +185,16 @@ class Settings(BaseSettings):
         False, description="whether to export data from MAAP to VEDA s3"
     )
     N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
+
+    DO_NIFC_MATCHING: bool = Field(
+        False, 
+        description="If True, reads from the NIFC incident database for current year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output."
+    )
+
+    NIFC_MATCHING_ACTIVE_ONLY: bool = Field(
+        False, 
+        description="If True, uses 'WFIGS Current' NIFC database. Else, uses 'WFIGS {current year} to date'."
+    )
 
     # ------------------------------------------------------------------------------
     # fire type related parameters
