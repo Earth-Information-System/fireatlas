@@ -94,7 +94,7 @@ class Settings(BaseSettings):
         )
         if epsg not in allowed:
             warnings.warn(
-                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)"
+                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.) The code should only be run with a projected coordinate system."
             )
 
         crs = CRS.from_user_input(epsg)
@@ -185,6 +185,16 @@ class Settings(BaseSettings):
         False, description="whether to export data from MAAP to VEDA s3"
     )
     N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
+
+    DO_NIFC_MATCHING: bool = Field(
+        False, 
+        description="If True, reads from the NIFC incident database for current year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output."
+    )
+
+    NIFC_MATCHING_ACTIVE_ONLY: bool = Field(
+        False, 
+        description="If True, uses 'WFIGS Current' NIFC database. Else, uses 'WFIGS {current year} to date'."
+    )
 
     # ------------------------------------------------------------------------------
     # fire type related parameters

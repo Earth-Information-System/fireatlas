@@ -1,0 +1,7 @@
+---
+title: Published Datasets
+--- 
+
+Several published FEDS and FEDS-like fire tracking datasets are available. 
+
+The UCI-NASA [Wildfire Event Tracking Using Satellites Fire Detections](https://www.ess.uci.edu/~uci-nasa-firetracking/) page provides an overview of the different fire tracking algorithms we have developed, the datasets they have generated, and the scientific studies that have leveraged these data to advance our understanding of wildfire behavior and impacts.
