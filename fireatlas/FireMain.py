@@ -162,8 +162,8 @@ def maybe_remove_static_sources(region: Region) -> Region:
     reg_df = gpd.GeoDataFrame.from_dict({"name":[region[0]], "geometry":[reg]}) # Put geometry into dataframe for join
     
     # ensure everything is in the same projection
-    global_flaring = global_flaring.set_crs("EPSG:" + str(settings.EPSG_CODE)) ## Translate to the user-input coordinate system
-    reg_df = reg_df.set_crs("EPSG:" + str(settings.EPSG_CODE))
+    global_flaring = global_flaring.set_crs(str(settings.EPSG_CODE)) ## Translate to the user-input coordinate system
+    reg_df = reg_df.set_crs(str(settings.EPSG_CODE))
     
     # Take the difference of points and region
     diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
@@ -464,9 +464,6 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep, landcover):
 def Fire_Forward_one_step(allfires, allpixels, tst, t, region, landcover):    
     logger.info("--------------------")
     logger.info(f"Fire tracking at {t}")
-
-    if FireTime.isyearst(t):
-        allfires.newyear_reset(region[0])
 
     # 1. record existing active fire ids (before fire tracking at t)
     fids_ea = allfires.fids_active

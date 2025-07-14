@@ -73,10 +73,33 @@ class Settings(BaseSettings):
     @field_validator("EPSG_CODE")
     @classmethod
     def check_epsg(cls, epsg: int):
-        allowed = (3571, 32610, 9311, 6933)
+        allowed = (
+            3571, 
+            32610, 
+            9311, 
+            6933, 
+            "ESRI:102008", 
+            "EPSG:10603",
+            "EPSG:7764",
+            "ESRI:102022",
+            "EPSG:10601",
+            "EPSG:6933",
+            "EPSG:10601",
+            "EPSG:8859",
+            "EPSG:3576",
+            "EPSG:3575",
+            "EPSG:3035",
+            "EPSG:3576"
+        )
         if epsg not in allowed:
             warnings.warn(
-                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.)"
+                f"EPSG projection code {epsg} not recognized as one of: {allowed}. (A new code can be registered in FireConsts.py if needed.) The code should only be run with a projected coordinate system."
+            )
+
+        crs = CRS.from_user_input(epsg)
+        if not crs.is_projected:
+            warnings.warn(
+                f"FEDS assumes a projected coordinate system, but user-specified code {epsg} was not recognized as projected."
             )
         return epsg
 

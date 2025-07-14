@@ -47,10 +47,6 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
 
 4.  OPTIONAL: run long-running (\~15mins) integration tests
 
-    ::: callout-note
-    Requires configured read access to `s3://eis-fire-public` to run locally. These tests can also be run manually with the [pytest workflow](https://github.com/Earth-Information-System/fireatlas/actions/workflows/pytest.yml) on GitHub Actions, and will be run automatically on any PR or push to the main branch of the repository.
-    :::
-
     ```         
     $ pytest -v --runslow tests/ 
     ```
