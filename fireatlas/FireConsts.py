@@ -34,7 +34,7 @@ class Settings(BaseSettings):
         description="absolute path to where local data are stored",
     )
     S3_PATH: str = Field(
-        "s3://maap-ops-workspace/shared/zbecker/FEDSstaging",
+        "s3://maap-ops-workspace/shared/gsfc_landslides",
         description="s3 path where remote data are stored",
     )
 
@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     )
 
     EPSG_CODE: int = Field(
-        9311,
+        6933,
         description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
 
@@ -166,10 +166,10 @@ class Settings(BaseSettings):
     # fire type related parameters
     # ------------------------------------------------------------------------------
     FTYP_OPT: Literal["preset", "CA", "global"] = Field(
-        "CA", description="fire type option"
+        "global", description="fire type option"
     )
     CONT_OPT: Literal["preset", "CA", "global"] = Field(
-        "CA", description="continuity threshold option"
+        "global", description="continuity threshold option"
     )
 
     @validator("LOCAL_PATH")
