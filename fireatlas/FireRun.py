@@ -593,7 +593,7 @@ def WesternUSYrRun(year):
     FireGpkg_sfs.save_sfts_trng(tst, ted, regnm=region[0])
 
 
-def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat='SNPP', data_source='FRAP', id_col='INC_NUM'):
+def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, data_source='FRAP', id_col='INC_NUM'):
     """
     Runs fire_forward within the specified time range and constrains viirs pixels to the supplied fire perimeters.
     Derives region from the perimeter and updates tst/ted based on the fire start/end dates.
@@ -612,7 +612,8 @@ def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat='SNPP', dat
     perimeter_gdf = FireIO.preprocess_polygon(
         perimeter_gdf, data_source=data_source, id_col=id_col)
 
-    settings.FIRE_SOURCE = sat
+    # set snpp with noaa20 as backup
+    settings.FIRE_SOURCE = 'SNPP-NOAA20backup'
 
     # convert gdf to a series
     perimeter = perimeter_gdf.iloc[0]
@@ -632,19 +633,20 @@ def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, sat='SNPP', dat
 
     # get lists of times to run fire_forward
     list_of_ts = list(FireTime.t_generator(tst, ted))
-    unique_ym = preprocess.check_preprocessed_file(tst, ted, sat, 'monthly')
+    unique_ym = preprocess.check_preprocessed_file(tst, ted, 'SNPP', 'monthly')
 
     # preprocess the monthly files--will only do for those not already processed
     for ym in unique_ym:
-        output_files = preprocess.preprocess_monthly_file(ym, sat)
+        output_files = preprocess.preprocess_monthly_file(ym, 'SNPP')
         if settings.READ_LOCATION == 's3':
             for f in output_files:
                 FireIO.copy_from_local_to_s3(f, settings.fs)
 
-    # check to make sure you have all the dates. fill in missing with NRT.
-    missing_days = preprocess.check_preprocessed_file(tst, ted, sat, 'NRT')
-    for t in missing_days:
-        preprocess.preprocess_NRT_file(t, 'NOAA20')
+    # check to make sure you have all the dates. fill in missing with other satellite.
+    missing_days = preprocess.check_preprocessed_file(tst, ted, 'SNPP', 'NRT')
+    missing_ym = set([date[:2] for date in missing_days])
+    for ym in missing_ym:
+        preprocess.preprocess_monthly_file(ym, 'NOAA20')
 
     # filter VIIRS to the perimeter for each time step
     region = preprocess.read_region(region, 'local')
