@@ -390,9 +390,76 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
 
 if __name__ == "__main__":
     """coordinating all jobs
+
+    CLI script for coordinating full FEDS runs. 
+
+    This script is the main entry point for orchestrating DPS runs
+    and can also be used locally. 
+
+    Parameters
+    ----------
+    --regnm : str
+        Name of the region to run FEDS over, e.g. "CONUS", "Central_Asia"
+        If using a predefined shapefile or looking to pick up settings from 
+        a .env file in FEDSpreprocessed, this must match the name of the 
+        region shapefile and folder exactly. 
     
-    Example:
-    python3 FireRunDaskCoordinator.py --regnm="CONUS" --bbox="[-126,24,-61,49]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]"
+    --bbox : str (JSON list)
+        Rectangular lat/lon bounding box. FEDS will only run over this region. 
+        Only active fire detections within this region will be used. 
+        If reg_shp is provided, it will override bbox and this can be left empty. 
+        If the region has already been run before and has an existing geometry 
+        in FEDSpreprocessed/REGION/REGION.json, that will override the bbox. 
+        
+    
+    --tst : str (JSON list)
+        Time start. FEDS will start running at this timestep. 
+        Provided as a JSON list- be careful to escape the quotes around AM/PM. 
+        If tst is "" or "[]", the first day of the current year will be used. 
+        Example: "[2023,6,1,\"AM\"]"
+    
+    --ted : str (JSON list)
+        Time end. FEDS will run through this timestep (inclusive). 
+        If no ted is given, the most recent timestep will be used. 
+        Leave empty ("" or "[]") for NRT runs. 
+
+    
+    --reg_shp : str, optional 
+        Optional. Should be the name of a file containing a single 
+        geometry to use to delimit the run region instead of a bounding box.
+        Only active fire detections within this region will be used.  
+        Expects that there will be a file with this input name in 
+        settings.dirextdata/Shapefiles/
+        Example: "Africa.geojson" 
+            Assumes that "data/FEDSinput/Shapefiles/Africa.geojson" exists. 
+
+    --no-veda-copy : flag, optional 
+        If set, disables copying output to the VEDA S3 bucket to be ingested
+        and served via OGC API. Use for all testing and local runs. 
+
+    
+    Usage examples:
+    python3 FireRunDaskCoordinator.py --regnm="example_CONUS" \
+        --bbox="[-126,24,-61,49]" \
+        --tst="[2023,6,1,\"AM\"]" \
+        --ted="[2023,9,1,\"AM\"]" \
+        --no-veda-copy
+
+    # Use shapefile to define bounds
+    python3 FireRunDaskCoordinator.py --regnm="example_Africa" \
+        --bbox="[]" \
+        --tst="[2024,1,1,\"AM\"]" \
+        --ted="[2024,2,1,\"PM\"]" \
+        --reg_shp="Africa.geojson" \
+        --no-veda-copy
+
+    # NRT run for SE Asia- uses latest timestep as ted
+    python3 FireRunDaskCoordinator.py --regnm="example_SE_Asia" \
+        --bbox="[]" \
+        --tst="[2024,1,1,\"AM\"]" \
+        --ted="" \
+        --reg_shp="SE_Asia.geojson" \
+        --no-veda-copy
     """
     
     parser = argparse.ArgumentParser()
