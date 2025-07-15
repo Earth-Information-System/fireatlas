@@ -1,3 +1,10 @@
+from fireatlas import settings
+from fireatlas.FireLog import logger_subdir
+from fireatlas.FireGpkg import getdd as snapshot_getdd
+from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
+from fireatlas.FireTime import t2dt, t_generator
+from fireatlas.FireTypes import Region, TimeStep, Location
+from fireatlas.utils import timed
 import os
 
 import datetime
@@ -12,17 +19,9 @@ from shapely.ops import unary_union
 import warnings
 
 warnings.filterwarnings("ignore", "GeoSeries.notna", UserWarning)
-warnings.filterwarnings("ignore", "Large object * detected in task graph", UserWarning)
+warnings.filterwarnings(
+    "ignore", "Large object * detected in task graph", UserWarning)
 warnings.filterwarnings("ignore", "Sending large graph", UserWarning)
-
-
-from fireatlas.utils import timed
-from fireatlas.FireTypes import Region, TimeStep, Location
-from fireatlas.FireTime import t2dt, t_generator
-from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
-from fireatlas.FireGpkg import getdd as snapshot_getdd
-from fireatlas.FireLog import logger_subdir
-from fireatlas import settings
 
 
 def all_dir(tst: TimeStep, region: Region, location: Location = None):
@@ -32,18 +31,21 @@ def all_dir(tst: TimeStep, region: Region, location: Location = None):
 def get_t_of_last_allfires_run(tst: TimeStep, ted: TimeStep, region: Region, location: Location = None):
     """Look at the files in a given location and figure out the t of the last
     allfires run. 
-    
+
     Returns
     -------
     t: TimeStep
        latest t within range for which there are allfires and allpixels files
     """
-    fs = fsspec.filesystem(location or settings.READ_LOCATION, use_listings_cache=False)
+    fs = fsspec.filesystem(
+        location or settings.READ_LOCATION, use_listings_cache=False)
     all_filenames = {
         os.path.basename(f).split(".")[0]
         for f in [
-            *fs.glob(os.path.join(all_dir(tst, region, location=location), "allpixels*")),
-            *fs.glob(os.path.join(all_dir(tst, region, location=location), "allfires*")),
+            *fs.glob(os.path.join(all_dir(tst, region,
+                     location=location), "allpixels*")),
+            *fs.glob(os.path.join(all_dir(tst, region,
+                     location=location), "allfires*")),
         ]
     }
 
@@ -87,6 +89,7 @@ def read_allpixels(
         df[col] = pd.to_datetime(df[col], format='ISO8601')
 
     return df
+
 
 def allfires_filepath(
     tst: TimeStep,
@@ -133,6 +136,7 @@ def snapshot_folder(
         f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}",
     )
 
+
 def create_snapshot_data(
         allfires_gdf,
         layer: Literal["perimeter", "fireline", "newfirepix"],
@@ -158,12 +162,14 @@ def create_snapshot_data(
         data["t_inactive"] = (ted - data["t_ed"]).dt.days
 
         data['invalid'] = data['invalid'].fillna(False)
-        data["isactive"] = ~data["invalid"] & (data["t_inactive"] <= settings.maxoffdays)
-        data["isdead"] = ~data["invalid"] & (data["t_inactive"] > settings.limoffdays)
+        data["isactive"] = ~data["invalid"] & (
+            data["t_inactive"] <= settings.maxoffdays)
+        data["isdead"] = ~data["invalid"] & (
+            data["t_inactive"] > settings.limoffdays)
         data["mayreactivate"] = (
-                ~data["invalid"]
-                & (settings.maxoffdays < data["t_inactive"])
-                & (data["t_inactive"] <= settings.limoffdays)
+            ~data["invalid"]
+            & (settings.maxoffdays < data["t_inactive"])
+            & (data["t_inactive"] <= settings.limoffdays)
         )
 
         # map booleans to integers
@@ -173,9 +179,9 @@ def create_snapshot_data(
         # apply filter flag
         data["geom_counts"] = (
             data[["fireID", "geometry"]]
-                .explode(index_parts=True)
-                .groupby(["fireID"])
-                .nunique()["geometry"]
+            .explode(index_parts=True)
+            .groupby(["fireID"])
+            .nunique()["geometry"]
         )  # count number of polygons
         data["low_confidence_grouping"] = np.where(
             data["geom_counts"] > 5, 1, 0
@@ -187,7 +193,7 @@ def create_snapshot_data(
 
     # primary key is: region + fireID + 12hr slice
     data["primarykey"] = (
-            data["region"] + "|" + data["fireID"].astype(str) + "|" + data['t']
+        data["region"] + "|" + data["fireID"].astype(str) + "|" + data['t']
     )
 
     # drop the columns we don't actually need
@@ -206,7 +212,8 @@ def save_snapshot_layers(allfires_gdf_t, region: Region, tst: TimeStep, ted: Tim
         if layer == "perimeter":
             # only include perimeters what are active or may reactivate
             data = data[(data['isactive'] == 1) | (data['mayreactivate'] == 1)]
-        data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
+        data.to_file(os.path.join(
+            output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 
 
 @timed
@@ -218,7 +225,8 @@ def save_snapshots(allfires_gdf, region, tst, ted, client=None):
         dt = t2dt(t)
         data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last")
         if client:
-            futures.append(client.submit(save_snapshot_layers, data, region, tst, t))
+            futures.append(client.submit(
+                save_snapshot_layers, data, region, tst, t))
         else:
             save_snapshot_layers(data, region, tst, t)
     return futures
@@ -230,7 +238,8 @@ def find_largefires(allfires_gdf):
 
     last_seen = gdf.drop_duplicates("fireID", keep="last")
     last_large = last_seen[
-        (last_seen.farea > settings.LARGEFIRE_FAREA) & (last_seen.invalid == False)
+        (last_seen.farea > settings.LARGEFIRE_FAREA) & (
+            last_seen.invalid == False)
     ]
     # don't include fires that later get merged in.
     return last_large["mergeid"].unique()
@@ -291,7 +300,8 @@ def save_fire_layers(allfires_gdf_fid, region, fid, tst):
         data = data.set_geometry("geometry", crs=settings.EPSG_CODE)
         data = data[data.geometry.notna() & ~data.geometry.is_empty]
 
-        data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
+        data.to_file(os.path.join(
+            output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 
 
 @timed
@@ -302,7 +312,8 @@ def save_combined_large_fire_layers(allfires_gdf, tst: TimeStep, ted: TimeStep, 
     dt = t2dt(ted)
     for layer in ["perimeter", "fireline", "newfirepix"]:
         data = create_snapshot_data(allfires_gdf, layer, region, dt)
-        data.to_file(os.path.join(output_dir, f"lf_{layer}.fgb"), driver="FlatGeobuf")
+        data.to_file(os.path.join(
+            output_dir, f"lf_{layer}.fgb"), driver="FlatGeobuf")
 
 
 @timed
@@ -311,7 +322,7 @@ def fill_activefire_rows(allfires_gdf, ted):
     active, but is not burning.
     """
     dd = singlefire_getdd("all")
-    
+
     if allfires_gdf.index.names == ['fireID', 't']:
         gdf = allfires_gdf.reset_index()
     else:
@@ -321,24 +332,26 @@ def fill_activefire_rows(allfires_gdf, ted):
     all_new_rows = []
     for fid, allfires_gdf_fid in gdf.groupby("fireID"):
         d = allfires_gdf_fid.set_index("t")
-        
+
         # set last timestep so we fill after the fire has stopped burning
         if not d.iloc[-1]["invalid"]:
             last_t = d.index[-1]
             if last_t != dt:
-                last_t = min(last_t + datetime.timedelta(days=settings.maxoffdays), dt)
+                last_t = min(
+                    last_t + datetime.timedelta(days=settings.maxoffdays), dt)
                 d.loc[last_t] = None
 
-        ffilled = d.resample("12H").ffill(limit=settings.limoffdays*2).dropna(how="all")
+        ffilled = d.resample("12H").ffill(
+            limit=settings.limoffdays*2).dropna(how="all")
 
         # get all the rows that are new
         new_rows = ffilled[~ffilled.index.isin(d.index)]
 
         # set values that should not be forward filled.
-        new_rows.loc[:,["n_newpixels", "meanFRP", "nfp"]] = 0, None, None
-        
+        new_rows.loc[:, ["n_newpixels", "meanFRP", "nfp"]] = 0, None, None
+
         all_new_rows.append(new_rows.reset_index())
-            
+
     output = pd.concat([gdf, *all_new_rows]).sort_values(["t", "fireID"])
     for k, tp in dd.items():
         output[k] = output[k].astype(tp)
@@ -353,8 +366,8 @@ def merge_rows(allfires_gdf_fid, fid: int | str):
         by="t",
         aggfunc={
             "meanFRP": lambda x: (
-                None 
-                if (n_newpixels := allfires_gdf_fid.loc[x.index, "n_newpixels"]).sum() == 0 
+                None
+                if (n_newpixels := allfires_gdf_fid.loc[x.index, "n_newpixels"]).sum() == 0
                 else (x * n_newpixels).sum() / n_newpixels.sum()
             ),
             "n_newpixels": "sum",
@@ -369,7 +382,8 @@ def merge_rows(allfires_gdf_fid, fid: int | str):
     output["n_pixels"] = output.n_newpixels.cumsum()
     output["farea"] = output.hull.area / 1e6  # km2
     output["fperim"] = output.hull.length / 1e3  # km
-    output["flinelen"] = output.fline.apply(lambda x: 0 if x is None else x.length) / 1e3  # km
+    output["flinelen"] = output.fline.apply(
+        lambda x: 0 if x is None else x.length) / 1e3  # km
     output["pixden"] = output.n_pixels / output.farea
     output["fireID"] = fid
     output["mergeid"] = fid
@@ -386,11 +400,12 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=
     """
     gdf = allfires_gdf.reset_index()
 
-    gdf = gdf[gdf["fireID"].isin(large_fires) | gdf["mergeid"].isin(large_fires)]
-    
+    gdf = gdf[gdf["fireID"].isin(large_fires) |
+              gdf["mergeid"].isin(large_fires)]
+
     # forward fill any timesteps that are mising
     gdf = fill_activefire_rows(gdf, ted)
-    
+
     merge_needed = (gdf.mergeid != gdf.fireID) & (gdf.invalid == False)
     print(f"{merge_needed.sum()} rows that potentially need a merge")
 
@@ -404,7 +419,7 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=
 
         # save off single large fire artifacts
         save_fire_layers(data, region, int(fid), tst)
-        
+
         # accumulate each fid for combined large fires
         return data
 
@@ -420,7 +435,8 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=
 
     # save off all large fire artifacts
     if len(processed_gdfs) != 0:
-        all_gdfs = gpd.GeoDataFrame(pd.concat(processed_gdfs, ignore_index=True))
+        all_gdfs = gpd.GeoDataFrame(
+            pd.concat(processed_gdfs, ignore_index=True))
         save_combined_large_fire_layers(all_gdfs, tst, ted, region)
 
 
