@@ -169,7 +169,8 @@ def viirs_pixel_size(sample, band="i", rtSCAN_ANGLE=False):
     r = earth_radius + h  # r for satellite[km]
 
     # calculate along-scan degrees
-    abs_sample = (sample >= st3) * (sample + 1 - st3) + (sample < st3) * (st3 - sample)
+    abs_sample = (sample >= st3) * (sample + 1 - st3) + \
+        (sample < st3) * (st3 - sample)
     zone1 = abs_sample <= st1
     zone2 = np.logical_and(abs_sample > st1, abs_sample <= st2)
     zone3 = abs_sample > st2
@@ -205,7 +206,8 @@ def read_geojson_nv_CA(y0=2012, y1=2019):
         the points of non vegetation fire location
     """
     fnm = (
-        settings.dirextdata + "CA/Calnvf/FCs_nv_" + str(y0) + "-" + str(y1) + ".geojson"
+        settings.dirextdata + "CA/Calnvf/FCs_nv_" +
+        str(y0) + "-" + str(y1) + ".geojson"
     )
     gdf = gpd_read_file(fnm)
 
@@ -235,7 +237,8 @@ def VNP14IMGML_filepath(t: TimeStep):
 
     filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
     if not settings.fs.exists(filepath):
-        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
+        filepath = os.path.join(
+            file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
     if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
@@ -508,6 +511,290 @@ def read_VJ114IMGTDL(filepath: str):
     return df
 
 
+def FIRMS_VIIRS_SNPP_NRT_filepath(t: TimeStep):
+    """Filepath for SNPP NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_SNPP_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_SNPP_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+
+def FIRMS_VIIRS_SNPP_SP_filepath(t: TimeStep):
+    """Filepath for SNPP SP data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist.  
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_SNPP_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_SNPP_SP_{datestring}.csv"
+    )
+
+    return filepath
+
+
+def FIRMS_VIIRS_NOAA20_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA20 NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data 
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_NOAA20_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_NOAA20_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+
+def FIRMS_VIIRS_NOAA20_SP_filepath(t: TimeStep):
+    """Filepath for NOAA20 SP data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_NOAA20_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_NOAA20_SP_{datestring}.csv"
+    )
+
+    return filepath
+
+
+def FIRMS_VIIRS_NOAA21_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA21 NRT data downloaded from FIRMS API. 
+    Looks for source files for individual days (UTC). 
+
+    Returns the filepath where data would be for this day 
+    even if that file doesn't yet exist. 
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data 
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_NOAA21_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_NOAA21_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+
+def read_FIRMS_VIIRS_SP(filepath: str):
+    """Read VIIRS standard product fire location data. 
+    Input data from the FIRMS API is formatted in the same way for all satellites. 
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3. 
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires 
+
+    """
+
+    usecols = [
+        "latitude",
+        "longitude",
+        "scan",
+        "track",
+        "acq_date",
+        "acq_time",
+        "confidence",
+        "frp",
+        "daynight",
+        "type"
+    ]
+
+    df = pd.read_csv(
+        filepath,
+        usecols=usecols,
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+
+    df["acq_time"] = df["acq_time"].str.zfill(4)
+    # convert 700 to 0700 or 110 to 0110
+
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS",
+            "track": "DT",
+            "frp": "FRP",
+            "daynight": "DNFlag",
+            "type": "Type",
+            "confidence": "Confidence"
+        }
+    )
+
+    return df
+
+
+def read_FIRMS_VIIRS_NRT(filepath: str):
+    """Read VIIRS NRT product fire location data. 
+
+    Input data from the FIRMS API is formatted in the same way for all satellites. 
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3. 
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires 
+
+    """
+
+    usecols = [
+        "latitude",
+        "longitude",
+        "scan",
+        "track",
+        "acq_date",
+        "acq_time",
+        "confidence",
+        "frp",
+        "daynight"
+    ]
+
+    df = pd.read_csv(
+        filepath,
+        usecols=usecols,
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+
+    df["acq_time"] = df["acq_time"].str.zfill(4)
+    # convert 700 to 0700 or 110 to 0110
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS",
+            "track": "DT",
+            "frp": "FRP",
+            "daynight": "DNFlag",
+            "confidence": "Confidence"
+        }
+    )
+
+    return df
+
+
 def AFP_regfilter(df, shp_Reg):
     """filter fire pixels using a given shp_Reg
 
@@ -531,8 +818,10 @@ def AFP_regfilter(df, shp_Reg):
         & (df["Lon"] >= regext[0])
         & (df["Lon"] <= regext[2])
     ]
-    point_data = [Point(xy) for xy in zip(newfirepixels["Lon"], newfirepixels["Lat"])]
-    gdf_filtered = gpd.GeoDataFrame(newfirepixels, geometry=point_data, crs=4326)
+    point_data = [Point(xy) for xy in zip(
+        newfirepixels["Lon"], newfirepixels["Lat"])]
+    gdf_filtered = gpd.GeoDataFrame(
+        newfirepixels, geometry=point_data, crs=4326)
 
     # Do detailed filtering (within shp_Reg)
     gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
@@ -559,7 +848,8 @@ def AFP_nonstatfilter(df):
 
     # filter non-veg fires using a pre-derived mask
     gdf_nv = read_geojson_nv_CA()
-    buf_nv = 0.0071  # buffer for each nv point (now set to 0.0071 deg = 0.71 km)
+    # buffer for each nv point (now set to 0.0071 deg = 0.71 km)
+    buf_nv = 0.0071
     df_filtered = df[
         (df.geometry.within(gdf_nv.iloc[0].geometry.buffer(0.005)) == False)
     ]
@@ -581,7 +871,8 @@ def AFP_setampm(df):
         the DataFrame with 'ampm' column
     """
     # calculate local hour using the longitude and datetime column
-    localhour = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"]).dt.hour
+    localhour = (pd.to_timedelta(df.Lon / 15, unit="hours") +
+                 df["datetime"]).dt.hour
 
     # set am/pm flag based on local hour
     df_withampm = df.assign(
@@ -631,7 +922,8 @@ def read_mcd64_pixels(year, ext=[]):
     #                 for i in filelist_viirs], ignore_index=True)
     # df['sensor'] = 'viirs'
 
-    filelist_mcd64 = os.path.join(mcd64dir, "ba_centroids_" + str(year) + ".csv")
+    filelist_mcd64 = os.path.join(
+        mcd64dir, "ba_centroids_" + str(year) + ".csv")
     df = pd.read_csv(
         filelist_mcd64,
         dtype={"lat": np.float64, "lon": np.float64},
@@ -702,7 +994,8 @@ def get_Cal_shp():
         will be deleted or modified later !!!
     """
     # find the california shapefile
-    statefnm = os.path.join(settings.dirextdata, "CA", "Calshape", "California.shp")
+    statefnm = os.path.join(settings.dirextdata, "CA",
+                            "Calshape", "California.shp")
 
     # read the geometry
     shp_Cal = gpd_read_file(statefnm).iloc[0].geometry
@@ -841,7 +1134,8 @@ def get_LCT_Global(locs):
     vLCT : list of ints
         land cover types for all input active fires
     """
-    fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic.tif")
+    fnmLCT = os.path.join(settings.dirextdata, "GlobalLC",
+                          "global_lc_mosaic.tif")
     dataset = rasterio.open(fnmLCT)
 
     # previous LC data sources were in a different crs and needed a transform
@@ -1174,7 +1468,8 @@ def get_gpkgobj_fnm(t, regnm):
     """
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(settings.diroutdata, regnm, d.strftime("%Y"), "Snapshot")
+    strdir = os.path.join(settings.diroutdata, regnm,
+                          d.strftime("%Y"), "Snapshot")
 
     # get the output file name
     fnm = os.path.join(strdir, d.strftime("%Y%m%d") + t[-1])
@@ -1195,10 +1490,12 @@ def get_gpkgsfs_fnm(t, fid, regnm):
     """
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(settings.diroutdata, regnm, d.strftime("%Y"), "Largefire")
+    strdir = os.path.join(settings.diroutdata, regnm,
+                          d.strftime("%Y"), "Largefire")
 
     # get the output file name
-    fnm = os.path.join(strdir, "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1])
+    fnm = os.path.join(strdir, "F" + str(int(fid)) +
+                       "_" + d.strftime("%Y%m%d") + t[-1])
 
     return fnm
 
@@ -1235,11 +1532,13 @@ def get_NFPlistsfs_fnm(t, fid, regnm):
     """
     # determine output dir
     d = date(*t[:-1])
-    strdir = os.path.join(settings.diroutdata, regnm, d.strftime("%Y"), "Largefire")
+    strdir = os.path.join(settings.diroutdata, regnm,
+                          d.strftime("%Y"), "Largefire")
 
     # get the output file name
     fnm = os.path.join(
-        strdir, "F" + str(int(fid)) + "_" + d.strftime("%Y%m%d") + t[-1] + "_NFP.txt"
+        strdir, "F" + str(int(fid)) + "_" +
+        d.strftime("%Y%m%d") + t[-1] + "_NFP.txt"
     )
 
     return fnm
@@ -1323,7 +1622,8 @@ def save_gdfobj(gdf, t, regnm, param="", fid="", op=""):
     gdf["id"] = gdf.index
     gdf = gdf.set_index("id")
     if op == "FL":
-        gdf["fireID"] = gdf["fireID"].astype(int)  # data types are screwed up in fline
+        # data types are screwed up in fline
+        gdf["fireID"] = gdf["fireID"].astype(int)
 
     # save file
     gdf.to_file(fnm, driver="GPKG")
@@ -1775,7 +2075,8 @@ def get_summary_fnm_lt(t, regnm):
     """
     # if there's no summary file for this year, return the first time step of the year
     fnms = settings.fs.glob(
-        os.path.join(settings.diroutdata, regnm, str(t[0]), "Summary", "fsummary_*.nc")
+        os.path.join(settings.diroutdata, regnm, str(
+            t[0]), "Summary", "fsummary_*.nc")
     )
     if len(fnms) == 0:
         return None
@@ -1906,7 +2207,8 @@ def get_lts_VNP14IMGTDL(year=None):
     dirFC = os.path.join(settings.dirextdata, "VNP14IMGTDL") + "/"
     fnms = settings.fs.glob(
         os.path.join(
-            dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + str(year) + "*.txt"
+            dirFC, "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" +
+            str(year) + "*.txt"
         )
     )
     fnms.sort()
@@ -1921,14 +2223,16 @@ def get_lts_serialization(regnm, year=None):
         year = date.today().year
 
     fnms = settings.fs.glob(
-        os.path.join(settings.diroutdata, regnm, str(year), "Serialization", "*.pkl")
+        os.path.join(settings.diroutdata, regnm,
+                     str(year), "Serialization", "*.pkl")
     )
 
     if len(fnms) > 0:
         fnms.sort()
         fnm_lts = os.path.basename(fnms[-1])
 
-        lts = [int(fnm_lts[0:4]), int(fnm_lts[4:6]), int(fnm_lts[6:8]), fnm_lts[8:10]]
+        lts = [int(fnm_lts[0:4]), int(fnm_lts[4:6]),
+               int(fnm_lts[6:8]), fnm_lts[8:10]]
     else:
         lts = None
 
@@ -2010,17 +2314,20 @@ def pixel2World(gt, Xpixel, Ypixel):
 
 
 def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileSystem | None = None):
-    from_maap_s3_path = local_filepath.replace(settings.LOCAL_PATH, settings.S3_PATH)
+    from_maap_s3_path = local_filepath.replace(
+        settings.LOCAL_PATH, settings.S3_PATH)
     if fs is None:
         fs = s3fs.S3FileSystem()
     filename = os.path.basename(from_maap_s3_path)
     filename_no_ext = os.path.splitext(filename)[0]
 
     if "fireline.fgb" == filename:
-        select_cols = ["fireID", "mergeid", "t", "primarykey", "region", "geometry"]
+        select_cols = ["fireID", "mergeid", "t",
+                       "primarykey", "region", "geometry"]
 
     elif "newfirepix.fgb" == filename:
-        select_cols = ["fireID", "mergeid", "t", "primarykey", "region", "geometry"]
+        select_cols = ["fireID", "mergeid", "t",
+                       "primarykey", "region", "geometry"]
 
     elif "perimeter.fgb" == filename:
         select_cols = [
@@ -2094,7 +2401,8 @@ def copy_from_local_to_veda_s3(local_filepath: str, regnm: str, fs: s3fs.S3FileS
     # fiona has a bug where it cannot write GPKG files to s3 even though FileGeobuf work fine
     # so to work around this issue we just write them locally to /tmp first
     gdf[select_cols].to_file(local_tmp_filepath, driver="GPKG")
-    fs.put_file(local_tmp_filepath, f"s3://veda-data-store-staging/{to_veda_s3_path}")
+    fs.put_file(local_tmp_filepath,
+                f"s3://veda-data-store-staging/{to_veda_s3_path}")
 
 
 def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
@@ -2127,3 +2435,62 @@ def copy_from_local_to_s3(filepath: str, fs: s3fs.S3FileSystem, **tags):
     # tags = dict([(str(k)[:64], str(v)[:128]) for k, v in tags.items()][-10:])
     #
     # s3.put_tags(dst, tags)
+
+
+def convert_v2_pkl_to_csv(files, output_dir, sat):
+    """Convert tmp data pickles created by v2 runs
+    into preprocessed daily files to input into v3.
+
+    Used for setting up new tests, where converted
+    v2 pickles can be used as the input data source
+    for newer versions. This ensures that both versions
+    being compared are running on the same input data.
+
+    Parameters
+    ----------
+    files : list of strings
+        list of pathnames to v2 pickles to convert
+    output_dir : string
+        directory to write output files to
+    sat : string
+        satellite, e.g. SNPP
+
+
+    Returns
+    -------
+    output_paths : list of strings
+        list of files written
+    """
+    output_paths = []
+    for file in files:
+
+        with open(file, "rb") as f:
+            df = pickle.load(f)
+            df["datetime"] = pd.to_datetime(
+                df["YYYYMMDD_HHMM"], format="%Y%m%d %H%M"
+            )
+
+            df["Sat"] = sat
+            df["input_filename"] = file.split("/")[-1]
+
+            df = df.loc[df["Type"] == 0]  # type filtering
+
+            df = df[
+                ["Lat", "Lon", "FRP", "Sat", "DT", "DS",
+                 "input_filename", "datetime", "ampm"]
+            ]
+
+            gb = df.groupby(df["datetime"].dt.date)
+
+            for day, data in gb:
+                for ampm in ["AM", "PM"]:
+                    time_filtered_df = data.loc[df["ampm"] == ampm]
+
+                    output_filepath = (output_dir
+                                       + sat + "/" + day.strftime("%Y%m%d")
+                                       + "_" + ampm + ".txt")
+
+                    time_filtered_df.to_csv(output_filepath, index=False)
+                    output_paths.append(output_filepath)
+
+    return output_paths
