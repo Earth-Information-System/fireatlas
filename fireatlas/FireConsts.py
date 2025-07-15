@@ -6,6 +6,7 @@ running controls
 from typing import Literal
 import os
 import warnings
+from pyproj import CRS
 
 import fsspec
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,7 +35,7 @@ class Settings(BaseSettings):
         description="absolute path to where local data are stored",
     )
     S3_PATH: str = Field(
-        "s3://maap-ops-workspace/shared/gsfc_landslides",
+        "s3://maap-ops-workspace/shared/zbecker/FEDSstaging",
         description="s3 path where remote data are stored",
     )
 
@@ -66,7 +67,7 @@ class Settings(BaseSettings):
     )
 
     EPSG_CODE: int = Field(
-        6933,
+        9311,
         description="epsg projection code ( 3571: North Pole LAEA; 32610: WGS 84 / UTM zone 10N; 9311: US National Atlas Equal Area)",
     )
 
@@ -185,14 +186,27 @@ class Settings(BaseSettings):
     )
     N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
 
+    DO_NIFC_MATCHING: bool = Field(
+        False, 
+        description="If True, reads from the NIFC incident database for current "
+        "year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output."
+    )
+
+    NIFC_MATCHING_ACTIVE_ONLY: bool = Field(
+        False, 
+        description="If True, uses 'WFIGS Current' NIFC database. "
+        "Else, uses 'WFIGS {current year} to date'."
+    )
+
+
     # ------------------------------------------------------------------------------
     # fire type related parameters
     # ------------------------------------------------------------------------------
     FTYP_OPT: Literal["preset", "CA", "global"] = Field(
-        "global", description="fire type option"
+        "CA", description="fire type option"
     )
     CONT_OPT: Literal["preset", "CA", "global"] = Field(
-        "global", description="continuity threshold option"
+        "CA", description="continuity threshold option"
     )
 
     @validator("LOCAL_PATH")
