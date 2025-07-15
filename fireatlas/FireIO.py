@@ -803,6 +803,13 @@ def AFP_regfilter(df, shp_Reg):
     df_filtered : pandas DataFrame
         the filtered fire pixels
     """
+
+    regext = shp_Reg.total_bounds
+    df = df.loc[
+        (df["Lat"] >= regext[1])
+        & (df["Lat"] <= regext[3])
+        & (df["Lon"] >= regext[0])
+        & (df["Lon"] <= regext[2])]
     
     point_data = [Point(xy) for xy in zip(df["Lon"], df["Lat"])]
     gdf_filtered = gpd.GeoDataFrame(df, geometry=point_data, crs=4326)
