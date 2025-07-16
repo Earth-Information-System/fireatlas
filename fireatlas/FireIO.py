@@ -397,49 +397,53 @@ def read_VJ114IMGML(filepath: str):
     df : pandas.DataFrame
         monthly DataFrame containing standardized columns of VIIRS active fires
     """
-    usecols = [
-        "year",
-        "month",
-        "day",
-        "hh",
-        "mm",
-        "lon",
-        "lat",
-        "mask",
-        "line",
-        "sample",
-        "frp",
-    ]
 
-    df = pd.read_csv(
-        filepath,
-        dtype={col: "string" for col in ["year", "month", "day", "hh", "mm"]},
-        usecols=usecols,
-        skipinitialspace=True,
-    )
-    df["datetime"] = pd.to_datetime(
-        df["year"]
-        + "-"
-        + df["month"]
-        + "-"
-        + df["day"]
-        + " "
-        + df["hh"]
-        + ":"
-        + df["mm"],
-        format="%Y-%m-%d %H:%M",
-    )
-    df = df.rename(
-        columns={
-            "lat": "Lat",
-            "lon": "Lon",
-            "frp": "FRP",
-            "line": "Line",
-            "sample": "Sample",
-        }
-    )
-    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-    return df
+    # collection 2 data now uses the same format as for SNPP
+    return read_VNP14IMGML(filepath)
+
+    # usecols = [
+    #     "year",
+    #     "month",
+    #     "day",
+    #     "hh",
+    #     "mm",
+    #     "lon",
+    #     "lat",
+    #     "mask",
+    #     "line",
+    #     "sample",
+    #     "frp",
+    # ]
+
+    # df = pd.read_csv(
+    #     filepath,
+    #     dtype={col: "string" for col in ["year", "month", "day", "hh", "mm"]},
+    #     usecols=usecols,
+    #     skipinitialspace=True,
+    # )
+    # df["datetime"] = pd.to_datetime(
+    #     df["year"]
+    #     + "-"
+    #     + df["month"]
+    #     + "-"
+    #     + df["day"]
+    #     + " "
+    #     + df["hh"]
+    #     + ":"
+    #     + df["mm"],
+    #     format="%Y-%m-%d %H:%M",
+    # )
+    # df = df.rename(
+    #     columns={
+    #         "lat": "Lat",
+    #         "lon": "Lon",
+    #         "frp": "FRP",
+    #         "line": "Line",
+    #         "sample": "Sample",
+    #     }
+    # )
+    # df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    # return df
 
 
 def VJ114IMGTDL_filepath(t: TimeStep):
