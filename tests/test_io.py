@@ -83,7 +83,7 @@ def test_gpd_read_static_source(
     ],
 )
 def test_get_reg_shp(input_value, expected_geometry, monkeypatch):
-    monkeypatch.setattr(FireIO, "get_Cty_shp", lambda reg: None)
+    # monkeypatch.setattr(FireIO, "get_reg_shp", lambda reg: None) # including this line was causing tests 1,2, and 4 to fail
     result = FireIO.get_reg_shp(input_value)
     assert result == expected_geometry
 
