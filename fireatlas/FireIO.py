@@ -804,7 +804,7 @@ def AFP_regfilter(df, shp_Reg):
         the filtered fire pixels
     """
 
-    regext = shp_Reg.total_bounds
+    regext = shp_Reg.bounds
     df = df.loc[
         (df["Lat"] >= regext[1])
         & (df["Lat"] <= regext[3])
