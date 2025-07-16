@@ -188,13 +188,16 @@ class Settings(BaseSettings):
 
     DO_NIFC_MATCHING: bool = Field(
         False, 
-        description="If True, reads from the NIFC incident database for current year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output."
+        description="If True, reads from the NIFC incident database for current "
+        "year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output."
     )
 
     NIFC_MATCHING_ACTIVE_ONLY: bool = Field(
         False, 
-        description="If True, uses 'WFIGS Current' NIFC database. Else, uses 'WFIGS {current year} to date'."
+        description="If True, uses 'WFIGS Current' NIFC database. "
+        "Else, uses 'WFIGS {current year} to date'."
     )
+
 
     # ------------------------------------------------------------------------------
     # fire type related parameters

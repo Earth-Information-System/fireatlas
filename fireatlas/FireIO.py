@@ -20,8 +20,10 @@ import fsspec
 import pickle
 import xarray as xr
 import warnings
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, box
 from datetime import datetime, date
+from pyproj import Transformer
+from shapely.ops import transform
 
 from fireatlas.FireLog import logger
 from fireatlas.FireTypes import TimeStep
@@ -801,16 +803,16 @@ def AFP_regfilter(df, shp_Reg):
     df_filtered : pandas DataFrame
         the filtered fire pixels
     """
-    # preliminary spatial filter and quality filter
+
     regext = shp_Reg.bounds
-    newfirepixels = df.loc[
+    df = df.loc[
         (df["Lat"] >= regext[1])
         & (df["Lat"] <= regext[3])
         & (df["Lon"] >= regext[0])
-        & (df["Lon"] <= regext[2])
-    ]
-    point_data = [Point(xy) for xy in zip(newfirepixels["Lon"], newfirepixels["Lat"])]
-    gdf_filtered = gpd.GeoDataFrame(newfirepixels, geometry=point_data, crs=4326)
+        & (df["Lon"] <= regext[2])]
+    
+    point_data = [Point(xy) for xy in zip(df["Lon"], df["Lat"])]
+    gdf_filtered = gpd.GeoDataFrame(df, geometry=point_data, crs=4326)
 
     # Do detailed filtering (within shp_Reg)
     gdf_filtered = gdf_filtered[gdf_filtered["geometry"].within(shp_Reg)]
@@ -962,16 +964,19 @@ def get_any_shp(filename):
     Parameters
     ----------
     filename : str
-        the shapefile names saved in the directory dirextdata/shapefiles/
+        the shapefile names saved in the directory dirextdata/Shapefiles/
     """
-    # find the california shapefile
-    dirshape = os.path.join(settings.dirextdata, "shapefiles")
-    statefnm = os.path.join(dirshape, filename)
-
+    
+    dirshape = os.path.join(settings.dirextdata, "Shapefiles")
+    filepath = os.path.join(dirshape, filename)
     # read the geometry
-    shp = gpd_read_file(statefnm).iloc[0].geometry
+    shp = gpd_read_file(filepath)
+    geo_dissolved = shp.dissolve()
 
-    return shp
+    # convert to lat lon for df filtering in next step
+    geo_dissolved = geo_dissolved.to_crs("EPSG:4326") 
+    
+    return geo_dissolved.iloc[0].geometry
 
 
 def get_Cal_shp():
@@ -988,25 +993,6 @@ def get_Cal_shp():
     return shp_Cal
 
 
-def get_Cty_shp(ctr):
-    """get shapefile of a country
-
-    Parameters
-    ----------
-    ctr : str
-        country name
-    """
-    ctyfnm = os.path.join(settings.dirextdata, "World", "country.shp")
-
-    gdf_cty = gpd_read_file(ctyfnm)
-
-    if ctr in gdf_cty["CNTRY_NAME"].values:
-        g = gdf_cty[gdf_cty.CNTRY_NAME == ctr].iloc[0].geometry
-        return g
-    else:
-        return None
-
-
 def get_reg_shp(reg):
     """return the shape of a region, given an optional reg input
 
@@ -1016,7 +1002,7 @@ def get_reg_shp(reg):
         region definition, one of the following
          - a geometry
          - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
-         - a country name
+         - the name of a file containing a region geometry in settings.direxdata/Shapefiles/
 
     Returns
     -------
@@ -1028,10 +1014,11 @@ def get_reg_shp(reg):
     if isinstance(reg, shapely.geometry.base.BaseGeometry):
         shp_Reg = reg
     elif isinstance(reg, str):
-        shp_Reg = get_Cty_shp(reg)
+        print(f'Running get_any_shp for {reg}')
+        shp_Reg = get_any_shp(reg)
         if shp_Reg is None:
-            print("Please input a valid Country name")
-            return None
+            raise Exception('Specified input did not produce valid geometry.')
+            
     elif isinstance(reg, list):
         shp_Reg = Polygon(
             [
@@ -1044,7 +1031,7 @@ def get_reg_shp(reg):
         )
     else:
         print(
-            "Please use geometry, country name (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
+            "Please use geometry, region filename (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
         )
         return None
 
