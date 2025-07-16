@@ -199,30 +199,31 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             sp_filepath_func = FIRMS_VIIRS_NOAA20_SP_filepath
             nrt_filepath_func = FIRMS_VIIRS_NOAA20_NRT_filepath
         elif sat == "NOAA21":
-            # monthly_filepath_func = VJ24IMGML_filepath # @TODO
             sp_filepath_func = None 
             nrt_filepath_func = FIRMS_VIIRS_NOAA21_NRT_filepath
 
         # gives list of timesteps for which there is no preprocessed file available
         timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
+        
+        # there are no monthly arachive files for NOAA21 yet, so only check for SNPP and NOAA20
+        if sat in ["SNPP", "NOAA20"]:
+            monthly_timesteps = list(set([(t[0], t[1]) for r in timesteps]))
+            monthly_filepaths = [monthly_filepath_func(t) for t in monthly_timesteps]
 
-        monthly_timesteps = list(set([(t[0], t[1]) for r in timesteps]))
-        monthly_filepaths = [monthly_filepath_func(t) for t in monthly_timesteps]
+            # narrow down to the monthly filepaths and timesteps that actually exist 
+            indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
+            monthly_timesteps = [monthly_timesteps[i] for i in indices]
+            monthly_filepaths = [monthly_filepaths[i] for i in indices]
 
-        # narrow down to the monthly filepaths and timesteps that actually exist 
-        indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
-        monthly_timesteps = [monthly_timesteps[i] for i in indices]
-        monthly_filepaths = [monthly_filepaths[i] for i in indices]
+            # set up jobs to preprocess existing monthly files that need it
+            futures.extend(client.map(preprocess_input_file, monthly_filepaths))
 
-        # set up jobs to preprocess existing monthly files that need it
-        futures.extend(client.map(preprocess_input_file, monthly_filepaths))
+            # calculate any remaining missing timesteps not in monthly files
+            timesteps = [
+                t for t in timesteps if (t[0], t[1]) not in monthly_timesteps
+            ]
 
-        # calculate any remaining missing timesteps not in monthly files
-        missing_timesteps = [
-            t for t in timesteps if (t[0], t[1]) not in monthly_timesteps
-        ]
-
-        for t in missing_timesteps:
+        for t in timesteps:
             d = dt.datetime(t[0], t[1], t[2])
 
             if sp_start and (sp_start <= d <= sp_end):  
