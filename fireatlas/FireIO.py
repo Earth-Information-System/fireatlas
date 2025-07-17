@@ -234,10 +234,12 @@ def VNP14IMGML_filepath(t: TimeStep):
         "VIIRS",
         "VNP14IMGML",
     )
-
-    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
+    # prefers collection 2 version 3 (latest as of July 2025)
+    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.03.txt")
     if not settings.fs.exists(filepath):
         filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
+    if not settings.fs.exists(filepath):
+        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
     if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
@@ -372,13 +374,15 @@ def VJ114IMGML_filepath(t: TimeStep):
     filepath : str
         Path to input data or None if file does not exist
     """
-    filepath = os.path.join(
+    year, month = t[0], t[1]
+
+    file_dir = os.path.join(
         settings.dirextdata,
         "VIIRS",
         "VJ114IMGML",
-        str(t[0]),
-        f"VJ114IMGML_{t[0]}{t[1]:02}.txt",
     )
+    # looks for collection 2 version 3 (latest as of July 2025)
+    filepath = os.path.join(file_dir, f"VJ114IMGML.{year}{month:02}.C2.03.txt")
     if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
@@ -399,49 +403,53 @@ def read_VJ114IMGML(filepath: str):
     df : pandas.DataFrame
         monthly DataFrame containing standardized columns of VIIRS active fires
     """
-    usecols = [
-        "year",
-        "month",
-        "day",
-        "hh",
-        "mm",
-        "lon",
-        "lat",
-        "mask",
-        "line",
-        "sample",
-        "frp",
-    ]
 
-    df = pd.read_csv(
-        filepath,
-        dtype={col: "string" for col in ["year", "month", "day", "hh", "mm"]},
-        usecols=usecols,
-        skipinitialspace=True,
-    )
-    df["datetime"] = pd.to_datetime(
-        df["year"]
-        + "-"
-        + df["month"]
-        + "-"
-        + df["day"]
-        + " "
-        + df["hh"]
-        + ":"
-        + df["mm"],
-        format="%Y-%m-%d %H:%M",
-    )
-    df = df.rename(
-        columns={
-            "lat": "Lat",
-            "lon": "Lon",
-            "frp": "FRP",
-            "line": "Line",
-            "sample": "Sample",
-        }
-    )
-    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
-    return df
+    # collection 2 data now uses the same format as for SNPP
+    return read_VNP14IMGML(filepath)
+
+    # usecols = [
+    #     "year",
+    #     "month",
+    #     "day",
+    #     "hh",
+    #     "mm",
+    #     "lon",
+    #     "lat",
+    #     "mask",
+    #     "line",
+    #     "sample",
+    #     "frp",
+    # ]
+
+    # df = pd.read_csv(
+    #     filepath,
+    #     dtype={col: "string" for col in ["year", "month", "day", "hh", "mm"]},
+    #     usecols=usecols,
+    #     skipinitialspace=True,
+    # )
+    # df["datetime"] = pd.to_datetime(
+    #     df["year"]
+    #     + "-"
+    #     + df["month"]
+    #     + "-"
+    #     + df["day"]
+    #     + " "
+    #     + df["hh"]
+    #     + ":"
+    #     + df["mm"],
+    #     format="%Y-%m-%d %H:%M",
+    # )
+    # df = df.rename(
+    #     columns={
+    #         "lat": "Lat",
+    #         "lon": "Lon",
+    #         "frp": "FRP",
+    #         "line": "Line",
+    #         "sample": "Sample",
+    #     }
+    # )
+    # df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    # return df
 
 
 def VJ114IMGTDL_filepath(t: TimeStep):
