@@ -204,10 +204,13 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
         # gives list of timesteps for which there is no preprocessed file available
         timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
+
+        if len(timesteps) < 1: # no processing needed
+            return futures
         
         # there are no monthly arachive files for NOAA21 yet, so only check for SNPP and NOAA20
         if sat in ["SNPP", "NOAA20"]:
-            monthly_timesteps = list(set([(t[0], t[1]) for r in timesteps]))
+            monthly_timesteps = list(set([(t[0], t[1]) for t in timesteps]))
             monthly_filepaths = [monthly_filepath_func(t) for t in monthly_timesteps]
 
             # narrow down to the monthly filepaths and timesteps that actually exist 
