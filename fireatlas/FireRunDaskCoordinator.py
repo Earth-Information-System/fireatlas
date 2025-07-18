@@ -491,7 +491,6 @@ if __name__ == "__main__":
     """
     
     parser = argparse.ArgumentParser()
-    parser = argparse.ArgumentParser()
     parser.add_argument("--regnm", type=str)
     parser.add_argument("--bbox", type=validate_json)
     parser.add_argument("--reg_shp", type=str)
@@ -501,7 +500,7 @@ if __name__ == "__main__":
                         help="defaults to True but if passed will stop a copy to VEDA s3 bucket")
     args = parser.parse_args()
     
-    if args.reg_shp and len(args.reg_shp) > 0:
+    if args.reg_shp:
         Run([args.regnm, args.reg_shp], args.tst, args.ted, args.copy_to_veda)
         
     else:

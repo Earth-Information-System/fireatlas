@@ -159,7 +159,7 @@ elif [[ $selected_flag == "coordinate-all" ]]; then
 elif [[ $selected_flag == "coordinate-all-no-veda-copy" ]]; then
   #scalene --cli --no-browser --reduced-profile --html --column-width 180 \
   #  --outfile "${output_dir}/profile.html" --- ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --tst="$tst" --ted="$ted"
-  python ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" ---reg_shp=$reg_shp -tst="$tst" --ted="$ted" --no-veda-copy
+  python ../fireatlas/FireRunDaskCoordinator.py --regnm=$regnm --bbox="$bbox" --reg_shp=$reg_shp --tst="$tst" --ted="$ted" --no-veda-copy
 fi
 
 popd
