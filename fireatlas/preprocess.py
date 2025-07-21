@@ -119,7 +119,7 @@ def preprocessed_filename(
     )
 
 
-def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
+def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     """Filepath for NRT VIIRS data
 
     Parameters
