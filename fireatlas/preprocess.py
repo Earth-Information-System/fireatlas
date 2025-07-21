@@ -224,6 +224,12 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     """
     Preprocess monthly or daily NRT file of fire location data.
 
+    NOTE: Input files are named by UTC date or month. Output files are named   
+    with the aprox local solar date/time for each observation. Pixels in the 
+    output file YYYYMMDD_AM.txt are for the AM overpass for that date as defined 
+    by aprox local solar time. This means that they may come from the previous
+    or next UTC date. 
+
     NOTE: Satellite is deduced from the filepath.
 
     Parameters
@@ -311,11 +317,13 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     df_next["input_filename"] = filepath_next.split("/")[-1]
 
     ## Put into local time
-    df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
+    df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"]) # aprox local solar time
     local_day = df['datetime'].dt.day.iloc[0] ## User input local time asy the day, used it to query in UTC
     yr, mth = df['local_datetime'].dt.year.iloc[0], df['local_datetime'].dt.month.iloc[0] 
+
     df = pd.concat([df_prev, df, df_next])
     df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
+    
     if ("VJ114IMGML" in filepath) or ("VNP14IMGML" in filepath):
         df = df[(df.local_datetime.dt.year == yr) & (df.local_datetime.dt.month == mth)]
     else:
@@ -326,12 +334,8 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
 
     # add the satellite information
     df["Sat"] = sat
-    df_prev["Sat"] = sat
-    df_next["Sat"] = sat
-    
 
     # groupby days and if there are more than 1 days, include a progress bar
-    
     gb = df.groupby(df["local_datetime"].dt.date)
     
     # return selected columns
@@ -341,8 +345,6 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
 
     output_paths = []
 
-
-    
     if gb.ngroups > 1:
         gb = tqdm(gb, "Processing days", file=sys.stdout)
 

@@ -169,6 +169,12 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     Prefers SP (standard product) data over NRT data. If SP is available, it will be used
     instead of the NRT data for the same day. 
 
+    NOTE: Does not automatically reprocess a timestep that was previously preprocessed
+    from NRT data when the standard product data becomes available. 
+
+    Generally, assumes that if a preprocessed file for a date already exists, it does 
+    not need to be reprocessed unless it is from the most recent two days of the NRT record. 
+
     Returns: 
     --------
     futures : list[dask.distributed.client.Future]
@@ -229,25 +235,138 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         for t in timesteps:
             d = dt.datetime(t[0], t[1], t[2])
 
-            if sp_start and (sp_start <= d <= sp_end):  
-                # SP is now available for this day; do we already have it? 
-                # If not, download and overwrite old preprocessed file.
-                fp = sp_filepath_func(t)
-                if fs.exists(fp):
+            if sp_start and d < sp_start:
+                # before start of SP record for this satellite 
+                logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+            elif sp_start and sp_start == d:
+                # first day of SP record 
+                pfp = preprocessed_filename(t, sat, location=location)
 
-                    pfp = preprocessed_filename(t, sat, location=location)
-                    if not fs.exists(pfp):
-                        futures.append(client.submit(preprocess_input_file, fp))
-                else:
-                    futures.append(client.submit(update_FIRMS, d, sat, "SP"))
-            elif nrt_start <= d <= nrt_end:
+                # if not already preprocessed, do so now
+                if not fs.exists(pfp):
+                    # preprocess with prev = None 
+                    prev_fp = None
+                    
+                    fp = sp_filepath_func(t)
+                    if not fs.exists(fp):
+                        fp = client.submit(update_FIRMS, d, sat, "SP")
+                    
+                    next_fp = sp_filepath_func(t=dt2t(d+ dt.timedelta(days=1)))
+                    if not fs.exists(next_fp):
+                        next_fp = client.submit(update_FIRMS, d + dt.timedelta(days=1), sat, "SP")
+
+                    futures.append(client.submit(preprocess_input_file, fp, prev_fp, next_fp))
+            elif sp_start and sp_start < d < sp_end:
+                # within SP record 
+                pfp = preprocessed_filename(t, sat, location=location)
+
+                if not fs.exists(pfp):
+                    
+                    prev_fp = sp_filepath_func(t=dt2t(d-dt.timedelta(days=1)))
+                    if not fs.exists(prev_fp):
+                        prev_fp = client.submit(update_FIRMS, d-dt.timedelta(days=1), sat, "SP")
+                    
+                    fp = sp_filepath_func(t)
+                    if not fs.exists(fp):
+                        fp = client.submit(update_FIRMS, d, sat, "SP")
+                    
+                    next_fp = sp_filepath_func(t=dt2t(d+dt.timedelta(days=1)))
+                    if not fs.exists(next_fp):
+                        next_fp = client.submit(update_FIRMS, d+dt.timedelta(days=1), sat, "SP")
+ 
+                    futures.append(client.submit(preprocess_input_file, fp, prev_fp, next_fp))
+            elif sp_start and d == sp_end:
+                # last day in SP record
+                # preprocess with prev = sp-1, next = nrt+1 
+                pfp = preprocessed_filename(t, sat, location=location)
+
+                if not fs.exists(pfp):
+                    prev_fp = sp_filepath_func(t=dt2t(d-dt.timedelta(days=1)))
+                    if not fs.exists(prev_fp):
+                        prev_fp = client.submit(update_FIRMS, d-dt.timedelta(days=1), sat, "SP")
+                    
+                    fp = sp_filepath_func(t)
+                    if not fs.exists(fp):
+                        fp = client.submit(update_FIRMS, d, sat, "SP")
+                    
+                    # note that for last day in SP, next day will only be available in NRT
+                    next_fp = nrt_filepath_func(t=dt2t(d+dt.timedelta(days=1)))
+                    if not fs.exists(next_fp):
+                        next_fp = client.submit(update_FIRMS, d+dt.timedelta(days=1), sat, "NRT")
+                    
+                    futures.append(client.submit(preprocess_input_file, fp, prev_fp, next_fp))
+            elif d == nrt_start:
+                # first day in NRT record 
+                # assumes that previous day exists in SP 
+                # preprocess with prev = sp-1, next = nrt+1 
+
+                pfp = preprocessed_filename(t, sat, location=location)
+                if not fs.exists(pfp):
+                    
+                    prev_fp = sp_filepath_func(t=dt2t(d-dt.timedelta(days=1)))
+                    if not fs.exists(prev_fp):
+                        prev_fp = client.submit(update_FIRMS, d-dt.timedelta(days=1), sat, "SP")
+
+                    fp = nrt_filepath_func(t)
+                    if not fs.exists(fp):
+                        fp = client.submit(update_FIRMS, d, sat, "NRT")
+
+                    next_fp = nrt_filepath_func(t=dt2t(d+dt.timedelta(days=1)))
+                    if not fs.exists(next_fp):
+                        next_fp = client.submit(update_FIRMS, d+dt.timedelta(days=1), sat, "NRT")
+                    
+                    futures.append(client.submit(preprocess_input_file, fp, prev_fp, next_fp))
+            elif nrt_start < d < nrt_end - dt.timedelta(days=1):
+                # fully within NRT record 
+                # preprocess with prev = nrt-1, next = nrt+1 
+                
+                pfp = preprocessed_filename(t, sat, location=location)
+                if not fs.exists(pfp):
+                    prev_fp = nrt_filepath_func(t=dt2t(d-dt.timedelta(days=1)))
+                    if not fs.exists(prev_fp):
+                        prev_fp = client.submit(update_FIRMS, d-dt.timedelta(days=1), sat, "NRT")
+                    
+                    fp = nrt_filepath_func(t)
+                    if not fs.exists(fp):
+                        fp = client.submit(update_FIRMS, d, sat, "NRT")
+                    
+                    next_fp = nrt_filepath_func(dt2t(d+dt.timedelta(days=1)))
+                    if not fs.exists(next_fp):
+                        next_fp = client.submit(update_FIRMS, d+dt.timedelta(days=1), sat, "NRT")
+
+                    futures.append(client.submit(preprocess_input_file, fp, prev_fp, next_fp))
+            elif d == nrt_end - dt.timedelta(days=1):
+                # always force reprocess- the last time this was run, 
+                # there would have beeen no "next day" file 
+
+                prev_fp = nrt_filepath_func(t=dt2t(d-dt.timedelta(days=1)))
+                if not fs.exists(prev_fp):
+                    prev_fp = client.submit(update_FIRMS, d-dt.timedelta(days=1), sat, "NRT")
+                
                 fp = nrt_filepath_func(t)
-                if fs.exists(fp):
-                    pfp = preprocessed_filename(t, sat, location=location)
-                    if not fs.exists(pfp):
-                        futures.append(client.submit(preprocess_input_file, fp)) 
-                else: 
-                    futures.append(client.submit(update_FIRMS, d, sat, "NRT"))
+                if not fs.exists(fp):
+                    fp = client.submit(update_FIRMS, d, sat, "NRT")
+                
+                next_fp = nrt_filepath_func(t=dt2t(d+dt.timedelta(days=1)))
+                if not fs.exists(next_fp):
+                    next_fp = client.submit(update_FIRMS, d+dt.timedelta(days=1), sat, "NRT")
+                
+                futures.append(client.submit(preprocess_input_file(fp, prev_fp, next_fp)))
+            elif d == nrt_end:
+                # last/most recent day of NRT record 
+                # always force preprocess with prev = nrt-1, next=None 
+
+                prev_fp = nrt_filepath_func(t=dt2t(d-dt.timedelta(days=1)))
+                if not fs.exists(prev_fp):
+                    prev_fp = client.submit(update_FIRMS, d-dt.timedelta(days=1), sat, "NRT")
+                
+                fp = nrt_filepath_func(t)
+                if not fs.exists(fp):
+                    fp = client.submit(update_FIRMS, d, sat, "NRT")
+                
+                next_fp = None
+
+                futures.append(client.submit(preprocess_input_file, fp, prev_fp, next_fp))
             else:
                 # Neither NRT nor SP available
                 logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
