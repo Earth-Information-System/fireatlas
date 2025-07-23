@@ -470,10 +470,6 @@ class Fire:
     @property
     def fireID(self):
         return self._fid
-        
-    @fireID.setter
-    def fireID(self, newid):
-        self._fid = newid
 
     @property
     def pixels(self):
