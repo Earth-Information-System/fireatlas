@@ -21,7 +21,6 @@ from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
 from fireatlas.FireIO import save_newyearfidmapping
 from fireatlas import FireVector
 from fireatlas import FireConsts
-from fireatlas.FireTypes import Location
 from fireatlas import settings
 
 
