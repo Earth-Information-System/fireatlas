@@ -318,12 +318,6 @@ class Allfires:
         if(any(x >= long_number for x in self.fids_active) | any(x >= long_number for x in self.fids_sleeper)):
             logger.warning(f"WARNING: Fire ID is longer than {long_number}")
 
-        # clean heritages
-        self.heritages = []
-
-        # save the mapping table
-        if len(fidmapping) > 0:
-            save_newyearfidmapping(fidmapping, self.t[0], regnm, location = location)
 
     # functions to be run after tracking VIIRS active fire pixels at each time step
     def record_fids_change(
