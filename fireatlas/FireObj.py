@@ -18,7 +18,7 @@ from fireatlas.FireTime import t2dt, dt2t, t_nb, t_dif
 from fireatlas.postprocess import read_allfires_gdf, read_allpixels
 from fireatlas.FireFuncs import set_ftype
 from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
-from fireatlas.FireIO import save_newyearfidmapping
+from fireatlas.FireLog import logger
 from fireatlas import FireVector
 from fireatlas import FireConsts
 from fireatlas import settings
