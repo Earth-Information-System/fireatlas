@@ -144,7 +144,9 @@ def maybe_remove_static_sources(region: Region) -> Region:
     """
     if not settings.remove_static_sources:
         # should make sure region[1] is a geometry
+        logger.info(f"Not removing static sources. Calling get_reg_shp on {region[1]}")
         geom = FireIO.get_reg_shp(region[1])
+        logger.info(f"get_reg_shp returned geom with bounds {geom.bounds}")
         region = (region[0], geom)
         return region
     
