@@ -967,7 +967,9 @@ def load_mcd64(year, xoff=0, yoff=0, xsize=None, ysize=None):
 
 
 def get_any_shp(filename):
-    """get shapefile of any region given the input file name
+    """get shapefile of any region given the input file name. 
+
+    Reprojects to geographic coordinate system (EPSG:4326) from input CRS. 
 
     Parameters
     ----------
@@ -1022,7 +1024,7 @@ def get_reg_shp(reg):
     if isinstance(reg, shapely.geometry.base.BaseGeometry):
         shp_Reg = reg
     elif isinstance(reg, str):
-        print(f'Running get_any_shp for {reg}')
+        logger.info(f'Running get_any_shp for {reg}')
         shp_Reg = get_any_shp(reg)
         if shp_Reg is None:
             raise Exception('Specified input did not produce valid geometry.')
