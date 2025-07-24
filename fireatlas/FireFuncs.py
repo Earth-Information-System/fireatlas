@@ -136,7 +136,7 @@ def set_ftype(fire, landcover):
         # ^^^ current catch-all for 'Other'.
         # See: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_Landcover_100m_Proba-V-C3_Global
 
-        elif LCTmax in [20]:  # Shrub --> Savanna
+        elif LCTmax in [20, 30]:  # Shrub, Herb --> Savanna
             ftype = 4
 
         elif LCTmax in [40]:  # Agriculture class
