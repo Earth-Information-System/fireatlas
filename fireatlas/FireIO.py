@@ -979,22 +979,20 @@ def get_any_shp(filename):
     
     dirshape = os.path.join(settings.dirextdata, "Shapefiles")
     filepath = os.path.join(dirshape, filename)
-    logger.info(f"get_any_shp reading from shapefile {filepath}")
-    logger.info(f"Read location setting: {settings.READ_LOCATION}")
     # read the geometry
     shp = gpd_read_file(filepath)
-    logger.info(f"Read shapefile. shp.crs = {shp.crs}")
+    logger.info(f"Read region bounding shape from {filepath}")
+    logger.info(f"shp.crs = {shp.crs}")
+    
     geo_dissolved = shp.dissolve()
     logger.info(f"Dissolved shp bounds: {geo_dissolved.geometry.total_bounds}")
 
     # convert to lat lon for df filtering in next step
     logger.info("Converting to EPSG 4326")
     geo_dissolved = geo_dissolved.to_crs("EPSG:4326") 
-    logger.info(f"Finished. total bounds = {geo_dissolved.geometry.total_bounds}")
+    logger.info(f"After conversion, total bounds = {geo_dissolved.geometry.total_bounds}")
     logger.info(f"CRS reads as: {geo_dissolved.crs}")
     
-    logger.info(f"len(geo_dissolved) = {len(geo_dissolved)}")
-    logger.info(f"Bounds of geo_dissolved.iloc[0].geometry: {geo_dissolved.iloc[0].geometry.bounds}")
     return geo_dissolved.iloc[0].geometry
 
 

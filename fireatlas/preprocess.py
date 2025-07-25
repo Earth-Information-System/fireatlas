@@ -36,12 +36,8 @@ def preprocess_region(region: Region, force=False):
     # make path if necessary
     os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
 
-    logger.info(f"Calling maybe_remove_static_sources, region = {str(region)}")
     region = FireMain.maybe_remove_static_sources(region)
 
-    logger.info(f"Exited maybe_remove_static_sources, region bounds = {region[1].bounds}")
-
-    logger.info(f"Writing region JSON to {output_filepath}")
     with open(output_filepath, "w") as f:
         f.write(to_geojson(region[1], indent=2))
 
