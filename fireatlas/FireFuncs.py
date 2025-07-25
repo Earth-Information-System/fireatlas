@@ -39,7 +39,7 @@ def get_CONNECTIVITY_FIRE(fire):
             v = fnpix * 0.7 / 25 + 0.7  # 0.7 (0) - 1.4 (25)
         elif ftype_name == "Bore Forest":
             v = fnpix * 3.2 / 25 + 1.0  # 1.0 (0) - 4.2 (25)
-        elif ftype_name == "Savana":
+        elif ftype_name == "Savanna":
             v = fnpix * 2.5 / 25 + 0.9  # 0.9 (0) - 3.4 (25)
         else:
             v = 0.7
@@ -136,7 +136,7 @@ def set_ftype(fire, landcover):
         # ^^^ current catch-all for 'Other'.
         # See: https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_Landcover_100m_Proba-V-C3_Global
 
-        elif LCTmax in [20]:  # Shrub --> Savanna
+        elif LCTmax in [20, 30]:  # Shrub, Herb --> Savanna
             ftype = 4
 
         elif LCTmax in [40]:  # Agriculture class

@@ -1080,7 +1080,7 @@ def load_landcover():
         return dataset   
     elif settings.FTYP_OPT == "global":
         
-        fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic.tif")
+        fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic_recompute.tif")
         dataset = rasterio.open(fnmLCT)
         
         return dataset
