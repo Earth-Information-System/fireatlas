@@ -53,6 +53,7 @@ from fireatlas.FireIO import (
 from fireatlas.FireTime import t_generator, t_nb, t2dt, dt2t, d2t
 from fireatlas.FireLog import logger
 from fireatlas import settings
+import geopandas as gpd
 
 dask.config.set({'logging.distributed': 'error'})
 
@@ -336,6 +337,9 @@ def Run_local(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool=F
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
 
+    
+    gpd.show_versions()
+    
     ctime = datetime.now(tz=timezone.utc)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
