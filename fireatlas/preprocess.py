@@ -290,19 +290,20 @@ def preprocess_input_file(filepath: str):
 
     for day, data in gb:
         for ampm in ["AM", "PM"]:
-            time_filtered_df = data.loc[df["ampm"] == ampm]
-
-            output_filepath = preprocessed_filename(
-                (day.year, day.month, day.day, ampm), sat=sat, location="local"
-            )
-
-            # make nested path if necessary
-            os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
-
-            # save active pixels at this time step (day and ampm filter)
-            time_filtered_df.to_csv(output_filepath, index=False)
-
-            output_paths.append(output_filepath)
+            time_filtered_df = data.loc[data["ampm"] == ampm]
+            
+            if len(time_filtered_df)>0: # if there's data for this ampm condition, write it out
+                output_filepath = preprocessed_filename(
+                    (day.year, day.month, day.day, ampm), sat=sat, location="local"
+                )
+    
+                # make nested path if necessary
+                os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
+    
+                # save active pixels at this time step (day and ampm filter)
+                time_filtered_df.to_csv(output_filepath, index=False)
+    
+                output_paths.append(output_filepath)
 
     return output_paths
 
@@ -323,8 +324,10 @@ def read_preprocessed_input(
     sat: Literal["NOAA20", "NOAA21", "SNPP"],
     location: Location = None,
 ):
+    
     filename = preprocessed_filename(t, sat=sat, location=location)
     df = pd.read_csv(filename)
+
     return df
 
 
@@ -370,7 +373,7 @@ def preprocess_region_t(
         for sat in ["SNPP", "NOAA20", "NOAA21"]:
             try:
                 dfs.append(read_preprocessed_input(t, sat=sat, location=read_location))
-            except FileNotFoundError as e:
+            except (FileNotFoundError, pd.errors.EmptyDataError) as e:
                 logger.info(f"{sat} file not available at {t=}: '{str(e)}'")
         if len(dfs) == 0:
             raise ValueError(f"NOAA20, NOAA21, and SNPP files are not available for {t=}")
