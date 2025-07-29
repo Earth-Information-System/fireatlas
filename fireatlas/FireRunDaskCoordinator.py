@@ -209,7 +209,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         if len(timesteps) < 1: # no processing needed
             return futures
         
-        # there are no monthly arachive files for NOAA21 yet, so only check for SNPP and NOAA20
+        # there are no monthly archive files for NOAA21 yet, so only check for SNPP and NOAA20
         if sat in ["SNPP", "NOAA20"]:
             monthly_timesteps = list(set([(t[0], t[1]) for t in timesteps]))
             monthly_filepaths = [monthly_filepath_func(t) for t in monthly_timesteps]

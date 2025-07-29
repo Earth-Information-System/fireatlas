@@ -207,7 +207,7 @@ def check_preprocessed_file(
     if freq == "monthly":
         return list(set([(t[0], t[1]) for t in needs_processing]))
     else:
-        return list(set([(t[0], t[1], t[2]) for t in needs_processing]))
+        return list(set([(t[0], t[1], t[2], t[3]) for t in needs_processing]))
 
 
 @timed
