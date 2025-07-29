@@ -124,7 +124,7 @@ class Settings(BaseSettings):
         231.7, description="MODIS fire perimeter buffer, m")
 
     # fire source data
-    FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD", "SNPP-NRTbackup"] = Field(
+    FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD", "SNPP-NRTbackup", "SNPP-NOAA20backup"] = Field(
         "NOAA20", description="fire source data"
     )
     FIRE_NRT: bool = Field(True, description="whether to use NRT data")
