@@ -633,20 +633,29 @@ def constrainByShape_Run(perimeter_gdf_path, tst=None, ted=None, data_source='FR
 
     # get lists of times to run fire_forward
     list_of_ts = list(FireTime.t_generator(tst, ted))
-    unique_ym = preprocess.check_preprocessed_file(tst, ted, 'SNPP', 'monthly')
+    unique_ym = preprocess.check_preprocessed_file_monthly(
+        tst, ted, 'SNPP')
 
     # preprocess the monthly files--will only do for those not already processed
     for ym in unique_ym:
-        output_files = preprocess.preprocess_monthly_file(ym, 'SNPP')
+        output_files = preprocess.preprocess_monthly_file_FIRMS(ym, 'SNPP')
         if settings.READ_LOCATION == 's3':
             for f in output_files:
                 FireIO.copy_from_local_to_s3(f, settings.fs)
+        # record that monthly file got processed
+        preprocess.record_preprocessed_monthly(ym, 'SNPP')
 
-    # check to make sure you have all the dates. fill in missing with other satellite.
-    missing_days = preprocess.check_preprocessed_file(tst, ted, 'SNPP', 'NRT')
-    missing_ym = set([date[:2] for date in missing_days])
-    for ym in missing_ym:
-        preprocess.preprocess_monthly_file(ym, 'NOAA20')
+    # find what's still missing from SNPP
+    missing_ym_SNPP = preprocess.check_preprocessed_file(
+        tst, ted, 'SNPP', 'monthly')
+    # see if NOAA has that already processed
+    missing_ym_NOAA20 = preprocess.check_preprocessed_file_monthly(
+        ym_t=missing_ym_SNPP, sat='NOAA20')
+    # process NOAA for those needed
+    for ym in missing_ym_NOAA20:
+        preprocess.preprocess_monthly_file_FIRMS(ym, 'NOAA20')
+        # record that monthly file got processed
+        preprocess.record_preprocessed_monthly(ym, 'NOAA20')
 
     # filter VIIRS to the perimeter for each time step
     region = preprocess.read_region(region, 'local')

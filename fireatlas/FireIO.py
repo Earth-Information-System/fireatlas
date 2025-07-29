@@ -870,6 +870,10 @@ def AFP_setampm(df):
     df_withampm : pandas DataFrame
         the DataFrame with 'ampm' column
     """
+    # convert datetime column to datetime if needed
+    if df['datetime'].dtype == 'object':
+        df['datetime'] = pd.to_datetime(df['datetime'])
+
     # calculate local hour using the longitude and datetime column
     localhour = (pd.to_timedelta(df.Lon / 15, unit="hours") +
                  df["datetime"]).dt.hour

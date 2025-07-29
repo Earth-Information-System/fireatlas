@@ -249,3 +249,14 @@ def update_tst_ted(polygon_series, tst=None, ted=None):
         )
 
     return tst, ted
+
+
+def t2ymstring(t: tuple):
+    mo = str(t[1]).zfill(2)
+    yr = str(t[0])
+    return yr + mo
+
+
+def ymstring2t(ym: str):
+    t = (int(ym[:4]), int(ym[-2:]), 1)
+    return t

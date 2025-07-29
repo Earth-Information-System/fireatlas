@@ -1,3 +1,4 @@
+from pathlib import Path
 import os
 import uuid
 import fsspec
@@ -15,7 +16,7 @@ from fireatlas.postprocess import all_dir
 from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
 from fireatlas.FireClustering import do_clustering
-from fireatlas.FireTime import t_generator, t2dt
+from fireatlas.FireTime import t_generator, t2dt, t2ymstring, ymstring2t
 from fireatlas import FireIO, FireMain, settings
 
 
@@ -148,6 +149,30 @@ def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
     return filepath
 
 
+def NRT_filepath_FIRMS(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
+    """Filepath for NRT VIIRS data
+
+    Parameters
+    ----------
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
+    sat: Literal["SNPP", "NOAA20"]
+        which satellite to use
+
+    Returns
+    -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    if sat == "SNPP":
+        filepath = FireIO.FIRMS_VIIRS_SNPP_NRT_filepath(t)
+    elif sat == "NOAA20":
+        filepath = FireIO.FIRMS_VIIRS_NOAA20_NRT_filepath(t)
+    else:
+        raise ValueError("Please set SNPP or NOAA20 for sat")
+    return filepath
+
+
 def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     """Filepath for monthly VIIRS data
 
@@ -167,6 +192,30 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
         filepath = FireIO.VNP14IMGML_filepath(t)
     elif sat == "NOAA20":
         filepath = FireIO.VJ114IMGML_filepath(t)
+    else:
+        raise ValueError("please set SNPP or NOAA20 for sat")
+    return filepath
+
+
+def monthly_filepath_FIRMS(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
+    """Filepath for monthly VIIRS data
+
+    Parameters
+    ----------
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
+    sat: Literal["SNPP", "NOAA20"]
+        which satellite to use
+
+    Returns
+    -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    if sat == "SNPP":
+        filepath = FireIO.FIRMS_VIIRS_SNPP_SP_filepath(t)
+    elif sat == "NOAA20":
+        filepath = FireIO.FIRMS_VIIRS_NOAA20_SP_filepath(t)
     else:
         raise ValueError("please set SNPP or NOAA20 for sat")
     return filepath
@@ -210,9 +259,69 @@ def check_preprocessed_file(
             needs_processing.append(t)
 
     if freq == "monthly":
-        return list(set([(t[0], t[1]) for t in needs_processing]))
+        return list(set([(t[0], t[1], 1) for t in needs_processing]))
     else:
         return list(set([(t[0], t[1], t[2]) for t in needs_processing]))
+
+
+def check_preprocessed_file_monthly(tst=None, ted=None, sat=None, ym_t=None):
+    """
+    Check if monthly satellite data has been preprocessed. If the monthly file has missing days, 
+    `check_preprocessed_file` will repeat itself endlessly. Here, a txt file acts as a log to
+    record which monthly files have already been processed. 
+
+    Parameters:
+    - tst: TimeStep, start time (optional if ym is provided)
+    - ted: TimeStep, end time (optional if ym is provided)
+    - sat: str, satellite name
+    - ym_t: list or set of year month tuples (e.g. (2024, 7, 1))
+
+    Returns:
+    - missing: list of year-month tuples that are not in the log file
+    """
+    # If ym is not specified, calculate year-months from tst and ted
+    if ym_t is None:
+        if tst is None or ted is None:
+            raise ValueError(
+                "If 'ym' is not specified, both 'tst' and 'ted' must be provided.")
+        # Get year-months within this timespan
+        ym_t = set()
+        for t in t_generator(tst, ted):
+            ym_t_tuple = (int(t[0]), int(t[1]), 1)
+            ym_t.add(ym_t_tuple)
+
+    # Check if strings in ym are in the txt file
+    path = Path(settings.get_path()) / settings.PREPROCESSED_DIR / \
+        sat / 'processed_monthly.txt'
+    if not path.exists():
+        # Return all ym as missing if the file doesn't exist
+        return ym_t
+    # convert tuple to string
+    ym_strings = [t2ymstring(t) for t in ym_t]
+    with open(path, 'r') as file:
+        file_content = file.read()
+        missing = [ymstring2t(ym_item)
+                   for ym_item in ym_strings if ym_item not in file_content]
+
+    return missing
+
+
+def record_preprocessed_monthly(t, sat):
+    '''After processing the monthly files, make sure to record that it has been processed in the 
+    txt log file. 
+    '''
+    # get path to preprocessed txt file
+    path = Path(settings.get_path())/settings.PREPROCESSED_DIR / \
+        sat/'processed_monthly.txt'
+    path.parent.mkdir(exist_ok=True, parents=True)
+
+    # convert t to year-month string
+    ym_string = t2ymstring(t)
+
+    # add time string to file
+    with open(path, 'a+') as file:
+        file.write(f"{ym_string}\n")
+    logger.info(f"{ym_string} of {sat} processed and recorded.")
 
 
 @timed
@@ -251,6 +360,21 @@ def preprocess_input_file(filepath: str):
         sat = "NOAA20"
         df = FireIO.read_VJ114IMGML(filepath)
         df = df.loc[df["mask"] >= 7]
+    # add in firms data too
+    elif "FIRMS_VIIRS_NOAA20_SP" in filepath:
+        sat = 'NOAA20'
+        df = pd.read_csv(filepath)
+        df = df.loc[df["Type"] == 0]  # type filtering
+    elif "FIRMS_VIIRS_SNPP_SP" in filepath:
+        sat = 'SNPP'
+        df = pd.read_csv(filepath)
+        df = df.loc[df["Type"] == 0]  # type filtering
+    elif "FIRMS_VIIRS_NOAA20_NRT" in filepath:
+        sat = 'NOAA20'
+        df = pd.read_csv(filepath)
+    elif "FIRMS_VIIRS_SNPP_NRT" in filepath:
+        sat = 'SNPP'
+        df = pd.read_csv(filepath)
     else:
         raise ValueError("please set SNPP or NOAA20 for sat")
 
@@ -300,6 +424,16 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 
 def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     filepath = NRT_filepath(t, sat=sat)
+    return preprocess_input_file(filepath)
+
+
+def preprocess_monthly_file_FIRMS(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
+    filepath = monthly_filepath_FIRMS(t, sat=sat)
+    return preprocess_input_file(filepath)
+
+
+def preprocess_NRT_file_FIRMS(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
+    filepath = NRT_filepath_FIRMS(t, sat=sat)
     return preprocess_input_file(filepath)
 
 
@@ -372,15 +506,15 @@ def preprocess_region_t(
             df = read_preprocessed_input(t, sat="SNPP", location=read_location)
         except FileNotFoundError as e:
             logger.info(f"SNPP file not available at {t=}: '{str(e)}'")
-        try:
-            # If SNPP doesn't exist, try reading NOAA20
-            df = read_preprocessed_input(
-                t, sat="NOAA20", location=read_location)
-        except FileNotFoundError as e:
-            logger.info(
-                f"NOAA20 file not available at {t=}: '{str(e)}'")
-            raise ValueError(
-                f"Both SNPP and NOAA20 files are not available for {t=}")
+            try:
+                # If SNPP doesn't exist, try reading NOAA20
+                df = read_preprocessed_input(
+                    t, sat="NOAA20", location=read_location)
+            except FileNotFoundError as e:
+                logger.info(
+                    f"NOAA20 file not available at {t=}: '{str(e)}'")
+                raise ValueError(
+                    f"Both SNPP and NOAA20 files are not available for {t=}")
     else:
         df = read_preprocessed_input(t, sat=source, location=read_location)
 
