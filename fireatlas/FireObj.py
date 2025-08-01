@@ -154,25 +154,26 @@ class Allfires:
             if (fid, dt) in self.gdf.index:
                 raise ValueError(f"Error writing gdf: {fid} already at {self.t}")
 
-            row = {"fid": fid, "dt": dt} # get index levels  
+            row = {"fireID": fid, "t": dt} # get index levels  
             for k, tp in dd.items(): 
                 val = getattr(f, k)
                 row[k] = t2dt(val) if tp == "datetime64[ns]" else val
             new_rows.append(row)
         
-        # create a new gdf with updated rows 
-        gdf_updates = gpd.GeoDataFrame(
-            new_rows,
-            geometry="hull", 
-            crs=settings.EPSG_CODE
-        ).set_index(["fid", "dt"])
+        if len(new_rows) > 0: 
+            # create a new gdf with updated rows 
+            gdf_updates = gpd.GeoDataFrame(
+                new_rows,
+                geometry="hull", 
+                crs=settings.EPSG_CODE
+            ).set_index(["fireID", "t"])
 
-        # ensure/cast types once 
-        for k, tp in dd.items(): 
-            gdf_updates[k] = gdf_updates[k].astype(tp)
+            # ensure/cast types once 
+            for k, tp in dd.items(): 
+                gdf_updates[k] = gdf_updates[k].astype(tp)
 
-        # append updated rows to existing dataframe in one batch- much faster than looping through 
-        self.gdf = pd.concat([self.gdf, gdf_updates], axis=0)
+            # append updated rows to existing dataframe in one batch- much faster than looping through 
+            self.gdf = pd.concat([self.gdf, gdf_updates], axis=0)
 
         for h0, h1 in self.heritages:
             if h0 in self.gdf.index:
@@ -540,11 +541,12 @@ class Fire:
             & (self.allpixels["t"] == t2dt(self.t))
         ]
 
+    # @TODO can we call this less? 
     @property
     def newlocs(self):
         """List of new fire pixels locations (lat,lon)"""
         return self.newpixels[["x", "y"]].values
-
+    # @TODO can we call THIS less? 
     @property
     def newlocs_geo(self):
         """List of new fire pixels locations (lat,lon)"""
@@ -556,6 +558,15 @@ class Fire:
         mp = MultiPoint(self.newlocs)
         return mp
 
+    # @TODO can we call this less? 
+    @property
+    def newpixelatts(self):
+        """List of new fire pixels attributes"""
+        return [
+            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
+            for p in self.newpixels
+        ]
+    # @TODO duplicate of above? 
     @property
     def newpixelatts(self):
         """List of new fire pixels attributes"""
@@ -564,14 +575,7 @@ class Fire:
             for p in self.newpixels
         ]
 
-    @property
-    def newpixelatts(self):
-        """List of new fire pixels attributes"""
-        return [
-            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
-            for p in self.newpixels
-        ]
-
+    # @TODO can we call this less? 
     @property
     def n_newpixels(self):
         """Total number of new fire pixels"""
