@@ -374,7 +374,7 @@ def preprocess_region_t(
             try:
                 dfs.append(read_preprocessed_input(t, sat=sat, location=read_location))
             except (FileNotFoundError, pd.errors.EmptyDataError) as e:
-                logger.info(f"{sat} file not available at {t=}: '{str(e)}'")
+                logger.info(f"{sat} file or data not available at {t=}: '{str(e)}'")
         if len(dfs) == 0:
             raise ValueError(f"NOAA20, NOAA21, and SNPP files are not available for {t=}")
         else:
