@@ -220,7 +220,7 @@ def check_preprocessed_file(
 
 
 @timed
-def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str):
+def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_next: str | None):
     """
     Preprocess monthly or daily NRT file of fire location data.
 
@@ -236,6 +236,13 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     ----------
     filepath : str
         Path to input data. Can be local or s3.
+    filepath_prev : str | None 
+        Path to input data for previous timestep. If None, this function will simply not 
+        check the input file for the previous UTC timestep. This can lead to 
+        missing values that are within the current timestep in local time but not 
+        UTC time. 
+    filepath_next : str | None 
+        Path to input data for next timestep. 
 
     Returns
     -------
@@ -244,100 +251,79 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
     """
     if filepath is None:
         raise ValueError("Please provide a valid filepath")
-        
-    logger.info(f"preprocessing previous file {filepath_prev.split('/')[-1]}")
-    logger.info(f"preprocessing {filepath.split('/')[-1]}")
-    logger.info(f"preprocessing next file {filepath_next.split('/')[-1]}")
     
+    dfs = []
+    sat = None 
+    for f in [filepath_prev, filepath, filepath_next]:
+        if not f: 
+            # it can be valid to have no prev or next file
+            logger.warning(f"No input file found for {f}")
+            # move on to next file
+            continue 
+        logger.info(f"preprocessing {f.split('/')[-1]}")
 
-    if "VNP14IMGTDL" in filepath:
-        sat = "SNPP"
-        df = FireIO.read_VNP14IMGTDL(filepath)
-        df_prev = FireIO.read_VNP14IMGTDL(filepath_prev)
-        df_next = FireIO.read_VNP14IMGTDL(filepath_next)
-    elif "VJ114IMGTDL" in filepath:
-        sat = "NOAA20"
-        df = FireIO.read_VJ114IMGTDL(filepath)
-        df_prev = FireIO.read_VJ114IMGTDL(filepath_prev)
-        df_next = FireIO.read_VJ114IMGTDL(filepath_next)
-    elif "VNP14IMGML" in filepath:
-        sat = "SNPP"
-        df = FireIO.read_VNP14IMGML(filepath)
-        df = df.loc[df["Type"] == 0]  # type filtering
-        df_prev = FireIO.read_VNP14IMGML(filepath_prev)
-        df_prev = df_prev.loc[df_prev["Type"] == 0]
-        df_next = FireIO.read_VNP14IMGML(filepath_next)
-        df_next = df_next.loc[df_next["Type"] == 0]
-    elif "VJ114IMGML" in filepath:
-        sat = "NOAA20"
-        df = FireIO.read_VJ114IMGML(filepath)
-        df = df.loc[df["mask"] >= 7]
-        df_prev = FireIO.read_VJ114IMGML(filepath_prev)
-        df_prev = df_prev.loc[df_prev["mask"] >= 7]
-        df_next = FireIO.read_VJ114IMGML(filepath_next)
-        df_next = df_next.loc[df_next["mask"] >= 7]
-    elif "FIRMS_VIIRS_SNPP_NRT" in filepath: 
-        sat = "SNPP" 
-        df = FireIO.read_FIRMS_VIIRS_NRT(filepath) 
-        df_prev = FireIO.read_FIRMS_VIIRS_NRT(filepath_prev) 
-        df_next = FireIO.read_FIRMS_VIIRS_NRT(filepath_next) 
-    elif "FIRMS_VIIRS_SNPP_SP" in filepath: 
-        sat = "SNPP"
-        df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
-        df = df.loc[df["Type"] == 0] 
-        df_prev = FireIO.read_FIRMS_VIIRS_SP(filepath_prev) 
-        df_prev = df_prev.loc[df_prev["Type"] == 0] 
-        df_next = FireIO.read_FIRMS_VIIRS_SP(filepath_next) 
-        df_next = df.loc[df_next["Type"] == 0]
-        # filter: inferred hot spot type == presumed vegetation fire
-    elif "FIRMS_VIIRS_NOAA20_NRT" in filepath:
-        sat = "NOAA20"
-        df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
-        df_prev = FireIO.read_FIRMS_VIIRS_NRT(filepath_prev)
-        df_next = FireIO.read_FIRMS_VIIRS_NRT(filepath_next)
-    elif "FIRMS_VIIRS_NOAA20_SP" in filepath:
-        sat = "NOAA20"
-        df = FireIO.read_FIRMS_VIIRS_SP(filepath) 
-        df = df.loc[df["Type"] == 0] 
-        df_prev = FireIO.read_FIRMS_VIIRS_SP(filepath_prev) 
-        df_prev = df_prev.loc[df_prev["Type"] == 0]
-        df_next = FireIO.read_FIRMS_VIIRS_SP(filepath_next) 
-        df_next = df_prev.loc[df_next["Type"] == 0]
-        # filter: inferred hot spot type == presumed vegetation fire
-    elif "FIRMS_VIIRS_NOAA21_NRT" in filepath:
-        sat = "NOAA21"
-        df = FireIO.read_FIRMS_VIIRS_NRT(filepath)
-        df_prev = FireIO.read_FIRMS_VIIRS_NRT(filepath_prev)
-        df_next = FireIO.read_FIRMS_VIIRS_NRT(filepath_next)
-    else:
-        raise ValueError("please set SNPP, NOAA20, or NOAA21 for sat")
-    ## Add file retrival information
-    df["input_filename"] = filepath.split("/")[-1]
-    df_prev["input_filename"] = filepath_prev.split("/")[-1]
-    df_next["input_filename"] = filepath_next.split("/")[-1]
+        # read file 
+        if "VNP14IMGTDL" in f: 
+            sat = "SNPP"
+            df = FireIO.read_VNP14IMGTDL(f)
+        elif "VJ114IMGTDL" in f: 
+            sat = "NOAA20"
+            df = FireIO.read_VJ114IMGTDL(f)
+        elif "VNP14IMGML" in f:
+            sat = "SNPP"
+            df = FireIO.read_VNP14IMGML(f)
+            df = df.loc[df["Type"] == 0]
+        elif "VJ114IMGML" in f: 
+            sat = "NOAA20" 
+            df = FireIO.read_VJ114IMGML(f)
+        elif "FIRMS_VIIRS_SNPP_NRT" in f: 
+            sat = "SNPP" 
+            df = FireIO.read_FIRMS_VIIRS_NRT(f)
+        elif "FIRMS_VIIRS_SNPP_SP" in f: 
+            sat = "SNPP"
+            df = FireIO.read_FIRMS_VIIRS_SP(f)
+            df = df.loc[df["Type"] == 0]
+            # Type filter: inferred hot spot type == presumed vegetation fire
+        elif "FIRMS_VIIRS_NOAA20_NRT" in f: 
+            sat = "NOAA20" 
+            df = FireIO.read_FIRMS_VIIRS_NRT(f)
+        elif "FIRMS_VIIRS_NOAA20_SP" in f: 
+            sat = "NOAA20" 
+            df = FireIO.read_FIRMS_VIIRS_SP
+            df = df.loc[df["Type"] == 0]
+            # Type filter: inferred hot spot type == presumed vegetation fire
+        elif "FIRMS_VIIRS_NOAA21_NRT" in f: 
+            sat = "NOAA21" 
+            df = FireIO.read_FIRMS_VIIRS_NRT(f)
+        else: 
+            raise ValueError(f"Filepath {f} not recognized during preprocessing.")
 
-    ## Put into local time
-    df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"]) # aprox local solar time
-    local_day = df['datetime'].dt.day.iloc[0] ## User input local time asy the day, used it to query in UTC
-    yr, mth = df['local_datetime'].dt.year.iloc[0], df['local_datetime'].dt.month.iloc[0] 
+        # add file retrieval information 
+        df["input_filename"] = f.split("/")[-1]
 
-    df = pd.concat([df_prev, df, df_next])
-    df['local_datetime'] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
-    
+        dfs.append(df)
+ 
+    df = pd.concat(dfs)
+
+    # Convert from UTC to aprox local time
+    df["local_datetime"]  = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
+
+     # User input local time as the day, use it to query in UTC
+    local_day = df["datetime"].dt.day.iloc[0]
+    yr = df["datetime"].dt.year.iloc[0]
+    mth = df["datetime"].dt.month.iloc[0]
+
     if ("VJ114IMGML" in filepath) or ("VNP14IMGML" in filepath):
         df = df[(df.local_datetime.dt.year == yr) & (df.local_datetime.dt.month == mth)]
-    else:
+    else: 
         df = df[(df.local_datetime.dt.day == local_day) & (df.local_datetime.dt.year == yr)]
-        
-    # set ampm
-    df = FireIO.AFP_setampm(df)
 
-    # add the satellite information
-    df["Sat"] = sat
+    df = FireIO.AFP_setampm(df)
+    df["Sat"] = sat 
 
     # groupby days and if there are more than 1 days, include a progress bar
     gb = df.groupby(df["local_datetime"].dt.date)
-    
+
     # return selected columns
     df = df[
         ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
@@ -350,7 +336,7 @@ def preprocess_input_file(filepath: str, filepath_prev: str, filepath_next: str)
 
     for day, data in gb:
         for ampm in ["AM", "PM"]:
-            time_filtered_df = data.loc[df["ampm"] == ampm]
+            time_filtered_df = data.loc[data["ampm"] == ampm]
 
             output_filepath = preprocessed_filename(
                 (day.year, day.month, day.day, ampm), sat=sat, location="local"
