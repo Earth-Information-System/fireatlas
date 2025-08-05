@@ -194,7 +194,7 @@ def test_data_dir(request):
 def nrt_snpp_tmpfile(request):
     """read_VNP14IMGTDL"""
     abs_path = pathlib.Path(os.path.abspath(f"{request.fspath.dirname}/data/"))
-    subpath = abs_path / "VIIRS" / "VNP14IMGTDL"
+    subpath = abs_path / "FEDSinput" / "VIIRS" / "VNP14IMGTDL"
     dt = datetime(2023, 11, 9)
     return str(
         subpath / f"SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{dt.strftime('%Y%j')}.txt"

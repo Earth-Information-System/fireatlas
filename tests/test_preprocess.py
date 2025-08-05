@@ -232,4 +232,32 @@ def test_preprocess_region_t(
         assert len(pd.read_csv(outfile_df_path)) > 0
         os.remove(outfile_df_path)
 
+@pytest.mark.parametrize(
+    "filepath, filepath_prev, filepath_next, should_raise", 
+    [
+        (None, None, None, True),
+        (None, "valid", "valid", True),
+        ("valid", None, None, False),
+        ("valid", "valid", None, False),
+        ("valid", None, "valid", False)
+    ]
+)
+def test_preprocess_input_file_raises_on_none_filepath(
+    monkeypatch, test_data_dir, nrt_snpp_tmpfile, filepath, filepath_prev, filepath_next, should_raise
+):
+    monkeypatch.setattr(settings, "READ_LOCATION", "local")
+    monkeypatch.setattr(settings, "LOCAL_PATH", test_data_dir)
 
+    def resolve(key):
+        return nrt_snpp_tmpfile if key == "valid" else None 
+    
+    filepath = resolve(filepath)
+    filepath_prev = resolve(filepath_prev)
+    filepath_next = resolve(filepath_next)
+
+    if should_raise:
+        with pytest.raises(ValueError):
+            preprocess.preprocess_input_file(filepath, filepath_prev, filepath_next)
+    else: 
+        output = preprocess.preprocess_input_file(filepath, filepath_prev, filepath_next)
+        assert(isinstance(output, list))
