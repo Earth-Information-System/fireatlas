@@ -235,7 +235,7 @@ def VNP14IMGML_filepath(t: TimeStep):
         "VNP14IMGML",
     )
     # prefers collection 2 version 3 (latest as of July 2025)
-    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.03.txt")
+    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.03.csv")
     if not settings.fs.exists(filepath):
         filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
     if not settings.fs.exists(filepath):
