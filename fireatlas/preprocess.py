@@ -14,9 +14,8 @@ from fireatlas.FireLog import logger
 from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
 from fireatlas.FireClustering import do_clustering
-from fireatlas.FireTime import t_generator, t2dt
+from fireatlas.FireTime import t_generator, t2dt, t_nb, t_nd, t_nm
 from fireatlas import FireIO, FireMain, settings, FireTime
-
 
 def preprocessed_region_filename(region: Region, location: Location = None):
     return os.path.join(
@@ -142,6 +141,61 @@ def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
         raise ValueError("Please set SNPP or NOAA20 for sat")
     return filepath
 
+def FIRMS_NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
+    """Filepath for daily NRT VIIRS data from FIRMS 
+
+    Parameters 
+    ----------
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
+    sat: Literal["SNPP", "NOAA20", "NOAA21"]
+        which satellite to use
+
+    Returns
+    -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    if sat == "SNPP": 
+        filepath = FireIO.FIRMS_VIIRS_SNPP_NRT_filepath(t) 
+    elif sat == "NOAA20": 
+        filepath = FireIO.FIRMS_VIIRS_NOAA20_NRT_filepath(t) 
+    elif sat == "NOAA21": 
+        filepath = FireIO.FIRMS_VIIRS_NOAA21_NRT_filepath(t)
+    else: 
+        raise ValueError("Please set SNPP, NOAA20, or NOAA21 for sat")
+        
+    if not settings.fs.exists(filepath): 
+        return None 
+    else: 
+        return filepath
+    
+def FIRMS_SP_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
+    """Filepath for daily SP VIIRS data from FIRMS 
+
+    Parameters 
+    ----------
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
+    sat: Literal["SNPP", "NOAA20", "NOAA21"]
+        which satellite to use
+
+    Returns
+    -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    if sat == "SNPP": 
+        filepath = FireIO.FIRMS_VIIRS_SNPP_SP_filepath(t) 
+    elif sat == "NOAA20": 
+        filepath = FireIO.FIRMS_VIIRS_NOAA20_SP_filepath(t) 
+    else: 
+        raise ValueError("Please set SNPP or NOAA20 for sat")
+    
+    if not settings.fs.exists(filepath): 
+        return None 
+    else: 
+        return filepath
 
 def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     """Filepath for monthly VIIRS data
@@ -163,7 +217,7 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     elif sat == "NOAA20":
         filepath = FireIO.VJ114IMGML_filepath(t)
     else:
-        raise ValueError("please set SNPP or NOAA20 for sat")
+        raise ValueError(f"sat={sat} not recognized: please set SNPP or NOAA20 for sat")
     return filepath
 
 
@@ -200,11 +254,11 @@ def check_preprocessed_file(
 
     # Get times before and after start times (in UTC) so that local-days that span two files will be included
     if (freq == "monthly"):
-        tst = FireTime.t_nm(tst, "previous")
-        ted = FireTime.t_nm(ted, "next")
+        tst = t_nm(tst, "previous")
+        ted = t_nm(ted, "next")
     elif(freq == "NRT"):
-        tst = FireTime.t_nb(FireTime.t_nb(tst, "previous"), "previous")
-        ted = FireTime.t_nb(FireTime.t_nb(ted, "next"), "next")
+        tst = t_nb(t_nb(tst, "previous"), "previous")
+        ted = t_nb(t_nb(ted, "next"), "next")
         
         
     needs_processing = []
@@ -354,22 +408,51 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
 
 
 def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
-    filepath_prev = monthly_filepath(FireTime.t_nm(t, "previous"), sat= sat)
+    filepath_prev = monthly_filepath(t_nm(t, "previous"), sat=sat)
     filepath = monthly_filepath(t, sat=sat)
-    filepath_next = monthly_filepath(FireTime.t_nm(t, "next"), sat= sat)
+    filepath_next = monthly_filepath(t_nm(t, "next"), sat=sat)
     return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
 
 def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
-    t_prev = FireTime.t_nb(t, "previous")
-    day_prev = FireTime.t_nb(t_prev, "previous")
+    t_prev = t_nb(t, "previous")
+    day_prev = t_nb(t_prev, "previous")
     filepath_prev = NRT_filepath(day_prev, sat= sat)
-    t_next = FireTime.t_nb(t, "next")
-    day_next = FireTime.t_nb(t_next, "next")
+    t_next = t_nb(t, "next")
+    day_next = t_nb(t_next, "next")
     filepath_next = NRT_filepath(day_next, sat= sat)
     filepath = NRT_filepath(t, sat=sat)
     return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
+def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
+    """Find previous and next daily input files, then preprocess this timestep. 
+    Prefers FIRMS standard product (SP) over FIRMS NRT if we have both. 
+    Parameters
+    ----------
+    filepath : str 
+        path to the daily input file to be preprocessed 
+    t : TimeStep 
+        time of the input daily file
+    sat : Literal["SNPP", "NOAA20", "NOAA21"]
+        which satellite the input file is from 
+    
+    Returns 
+    -------
+    output_paths : list[str]
+        List of filepaths that preprocess_input_file function has written to.
+    """
+    day_prev = t_nd(t, "previous")
+    day_next = t_nd(t, "next")
+
+    filepath_prev = FIRMS_SP_filepath(day_prev, sat=sat) 
+    if not filepath_prev: 
+        filepath_prev = FIRMS_NRT_filepath(day_prev, sat) 
+
+    filepath_next = FIRMS_SP_filepath(day_next, sat=sat)
+    if not filepath_next: 
+        filepath_next = FIRMS_NRT_filepath(day_next, sat=sat) 
+
+    return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
 @timed
 def read_preprocessed_input(

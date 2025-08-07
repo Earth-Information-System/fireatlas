@@ -28,7 +28,7 @@ def t_nb(t, nb="next"):
 
     Returns
     -------
-    t_out : tuple, (int,int,int,str)
+    t_out : list, [int,int,int,str]
         the year, month, day and 'AM'|'PM' for next/previous time
     """
 
@@ -57,20 +57,59 @@ def t_nb(t, nb="next"):
             t_out = [d_out.year, d_out.month, d_out.day, "PM"]
     return t_out
 
+def t_nd(t: tuple, nd: str):
+    """
+    Shift the TimeStep one day backward or forward. If "AM" or "PM" is given, 
+    preserves that and returns (Y, M, D, "AM"/"PM"), otherwise returns (Y, M, D). 
+
+    Parameters 
+    ----------
+    t : tuple, (int,int,int,str) | (int, int, int)
+        the year, month, day and (optionally) 'AM'|'PM' for present time
+    nd : str, 'next'|'previous'
+        option to extract next or previous day
+
+    Returns
+    -------
+    t_out : list, [int,int,int,str] | [int, int, int]
+        the year, month, day and 'AM'|'PM' for two timesteps next/prev
+        This will be on the next/prev day whether t was "AM" or "PM" to start
+    """
+    has_ampm = len(t) == 4
+    y, m, d = t[:3] 
+
+    dt = datetime(y,m,d)
+
+    if nd == "previous":
+        dt -= timedelta(days=1)
+    elif nd == "next": 
+        dt += timedelta(days=1)
+    else: 
+        raise ValueError("Enter previous or next for nd")
+    
+    if has_ampm: 
+        return [dt.year, dt.month, dt.day, t[-1]]
+    else: 
+        return [dt.year, dt.month, dt.day]
+    
+
 def t_nm(t: tuple, nb: str) -> datetime.date:
   """
-  Returns the date of the first day next month or the laast day of the previous month given a datetime object.
+  Returns the date of the first day next month or the last day of the previous month given a datetime object.
 
   Args:
-    t: A datetime.datetime object.
+    t: (int, int, int (optional), str(optional))
+        A tuple with (y,m,d (optional) and AM/PM (optional))
     nb: 'next' or 'previous' to specify the desired month.
 
   Returns:
-    A datetime.date object representing the first day of the adjacent month.
+    A TimeStep list representing the first day of the next month (AM)
+    or the last day of the previous month (PM).
   Raises:
     ValueError: if nb is not 'next' or 'previous'
   """
-  t = t2dt(t)
+  t = datetime(t[0], t[1], 1)
+
   if nb == 'next':
     if t.month == 12:
       next_month = 1
@@ -78,18 +117,12 @@ def t_nm(t: tuple, nb: str) -> datetime.date:
     else:
       next_month = t.month + 1
       next_year = t.year
-    return (next_year, next_month, 1, "AM")
+    return [next_year, next_month, 1, "AM"]
 
   elif nb == 'previous':
-    if t.month == 1:
-      previous_month = 12
-      previous_year = t.year - 1
-    else:
-      previous_month = t.month - 1
-      previous_year = t.year
     last_day_previous_month = (date(t.year, t.month, 1) + timedelta(days=-1))
 
-    return (last_day_previous_month.year, last_day_previous_month.month, last_day_previous_month.day, "PM")
+    return [last_day_previous_month.year, last_day_previous_month.month, last_day_previous_month.day, "PM"]
 
   else:
     raise ValueError("nb must be 'next' or 'previous'")
