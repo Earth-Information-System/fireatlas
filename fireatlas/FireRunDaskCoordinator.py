@@ -250,7 +250,6 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             
             # gives list of timesteps for which there is no preprocessed file available 
             timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
-            timesteps = set((t[0], t[1], t[2]) for t in timesteps) # one per date
 
             if len(timesteps) < 1: # no processing needed for this sat
                 continue
