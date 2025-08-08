@@ -174,6 +174,9 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     then preprocess any unprocessed NRT data (FIRMS_VIIRS_SNPP_NRT, FIRMS_VIIRS_NOAA20_NRT, 
     FIRMS_VIIRS_NOAA21_NRT). Does not try to use monthly files. 
 
+    NOTE: If settings.FIRE_NRT and any input files are needed, 
+    blocks for downloads inside this function and returns only preprocessing futures. 
+
     NOTE: Does not automatically reprocess a timestep that was previously preprocessed 
     from NRT data when the standard data product becomes available. 
 
@@ -184,7 +187,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     Returns: 
     --------
     futures : list[dask.distributed.client.Future]
-    List of download and preprocessing jobs to execute
+        List of preprocessing jobs to execute
     """
 
     source = settings.FIRE_SOURCE
@@ -219,8 +222,6 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             
             monthly_filepaths = [monthly_filepath_func(t) for t in timesteps] 
 
-            # so, we can expect that there will sometimes be files that are not there. 
-            # maybe i should warn here> 
             indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
             missing_indices = [i for i, f in enumerate(monthly_filepaths) if f is None]
 
@@ -233,7 +234,6 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
         elif settings.FIRE_NRT: 
 
-            # use NRT data only 
             if sat == "SNPP": 
                 nrt_filepath_func = FIRMS_VIIRS_SNPP_NRT_filepath
                 sp_filepath_func = FIRMS_VIIRS_SNPP_SP_filepath
@@ -254,33 +254,46 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             # check firms data availability 
             sp_start, sp_end, nrt_start, nrt_end = get_FIRMS_data_availability(sat)
 
+            # use these to ensure all downloads are done before any preprocessing starts
+            download_futures = {} # (t, sat) -> dask future 
+            preprocess_tasks = {} # (t, sat) -> filepath
+
             for t in timesteps: 
                 d = dt.datetime(t[0], t[1], t[2])
-                # figure out where to get this from. note that sp_start is None for NOAA21 
+
                 if d > nrt_end: 
                     logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
-                elif d >= nrt_start: 
-                    # use NRT data 
+                    continue 
+                elif d >= nrt_start: # in NRT availability range
                     fp = nrt_filepath_func(t)
 
-                    # if we don't have the input file, try to download it 
-                    if not fs.exists(fp): 
-                        fp = client.submit(update_FIRMS, d, sat, "NRT")
-                    
-                    # preprocess downloaded file 
-                    futures.append(client.submit(preprocess_daily_file, fp, t, sat))
-                elif sp_start and d >= sp_start: 
-                    # use SP data 
-                    fp = sp_filepath_func(t) 
-
-                    if not fs.exists(fp): 
-                        fp = client.submit(update_FIRMS, d, sat, "SP")
-                    
-                    futures.append(client.submit(preprocess_daily_file, fp, t, sat))
+                    if fs.exists(fp): 
+                        preprocess_tasks[(t, sat)] = fp 
+                    # if we don't already have this input file, try to download from FIRMS 
+                    else: 
+                        download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
+                elif sp_start and d >= sp_start: # check if sp_start because NOAA21 does not have yet
+                    # in standard product availability range 
+                    fp = sp_filepath_func(t)
+                    if fs.exists(fp): 
+                        preprocess_tasks[(t, sat)] = fp 
+                    else: 
+                        download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "SP")
                 else: 
                     # either before sp_start, or this is NOAA21 (so, no sp_start) and it is before 
                     # nrt start. either way, warn but allow
                     logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+
+            if len(download_futures) > 0: 
+                # block to finish downloads before starting any preprocessing
+                downloaded_paths = client.gather(download_futures)
+                preprocess_tasks.update(downloaded_paths)
+
+            # schedule preprocessing 
+            for (tk, satk), fp in preprocess_tasks.items(): 
+                tk = list(tk)
+                futures.append(client.submit(preprocess_daily_file, fp, tk, satk))
+
     return futures 
 
 @timed
