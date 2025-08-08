@@ -2,6 +2,7 @@ import os
 import uuid
 import fsspec
 import pandas as pd
+import datetime as dt
 from typing import Literal, Optional
 from shapely import to_geojson, from_geojson
 import sys
@@ -353,16 +354,17 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
     # Convert from UTC to aprox local time
     df["local_datetime"]  = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
 
-     # User input local time as the day, use it to query in UTC
-    local_day = df["datetime"].dt.day.iloc[0]
-    yr = df["datetime"].dt.year.iloc[0]
-    mth = df["datetime"].dt.month.iloc[0]
-
+    # get the date of the main input file 
+    query_year, query_month, query_day = get_date_from_input_filename(filepath)
+    # Select only observations that are on the date of the main input file in the local timezone
     if ("VJ114IMGML" in filepath) or ("VNP14IMGML" in filepath):
-        df = df[(df.local_datetime.dt.year == yr) & (df.local_datetime.dt.month == mth)]
+        df = df[(df.local_datetime.dt.year == query_year) & (df.local_datetime.dt.month == query_month)]
     else: 
-        df = df[(df.local_datetime.dt.day == local_day) & (df.local_datetime.dt.year == yr)]
-
+        df = df[(df.local_datetime.dt.day == query_day) & 
+                (df.local_datetime.dt.month == query_month) &
+                (df.local_datetime.dt.year == query_year)
+            ]
+        
     df = FireIO.AFP_setampm(df)
     df["Sat"] = sat 
 
@@ -397,6 +399,34 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
 
     return output_paths
 
+
+def get_date_from_input_filename(filepath): 
+    filename = os.path.basename(filepath)
+    day = None 
+    if "14IMGML" in filename: 
+        # monthly file e.g. VNP14IMGML.201201.C2.05.csv
+        datestring = filename.split(".")[1]
+        year = datestring[:4]
+        month = datestring[-2:]
+    elif "IMGTDL" in filename: 
+        # daily file e.g. SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_2012360.txt
+        datestring = filename.split("_")[6]
+        year = datestring[:4] 
+        julian_day = datestring[4:7]
+        d = dt.date(int(year), 1, 1) + dt.timedelta(days=int(julian_day) - 1)
+        year = d.year
+        month = d.month 
+        day = d.day
+    elif "FIRMS_VIIRS" in filename: 
+        # FIRMS downloaded daily file, e.g. FIRMS_VIIRS_SNPP_SP_20120101.csv
+        datestring = filename.split("_")[4]
+        year = datestring[:4] 
+        month = datestring[4:6]
+        day = datestring[6:8]
+    else: 
+        raise ValueError(f"Could not infer date from input filename {filename}")
+    
+    return int(year), int(month), int(day) if day else None 
 
 def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     filepath_prev = monthly_filepath(t_nm(t, "previous"), sat=sat)

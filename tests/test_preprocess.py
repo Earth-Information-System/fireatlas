@@ -261,3 +261,35 @@ def test_preprocess_input_file_raises_on_none_filepath(
     else: 
         output = preprocess.preprocess_input_file(filepath, filepath_prev, filepath_next)
         assert(isinstance(output, list))
+
+@pytest.mark.parametrize(
+        "path,expected",
+        [
+            # SNPP monthly (day should be None) 
+            (
+                "whatever/dir/VNP14IMGML.201201.C2.03.csv",
+                (2012, 1, None)
+            ),
+            # NOAA20, old format 
+            (
+                "FEDSinput/VIIRS/NOAA20/VJ114IMGML.202011.C1.05.txt",
+                (2020, 11, None)
+            ),
+            # Old daily files (julian day)
+            (
+                "whatever/dir/SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_2025002.txt",
+                (2025, 1, 2)
+            ),
+            # FIRMS daily
+            (
+                "FEDSinput/VIIRS/FIRMS_VIIRS_NOAA21_NRT/FIRMS_VIIRS_NOAA21_NRT_20250304.csv",
+                (2025,3,4)
+            )
+        ]
+)
+def test_get_date_from_input_filename_valid(path, expected): 
+    assert preprocess.get_date_from_input_filename(path) == expected
+
+def test_get_date_from_input_filename_invalid(): 
+    with pytest.raises(ValueError):
+        preprocess.get_date_from_input_filename("invalid_file.csv")
