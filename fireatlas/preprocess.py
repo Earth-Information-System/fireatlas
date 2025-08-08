@@ -251,15 +251,6 @@ def check_preprocessed_file(
     location = location or settings.READ_LOCATION
     fs = fsspec.filesystem(location, use_listings_cache=False)
     # check that there is preprocessed data for these dates and if not, keep track
-
-    # Get times before and after start times (in UTC) so that local-days that span two files will be included
-    if (freq == "monthly"):
-        tst = t_nm(tst, "previous")
-        ted = t_nm(ted, "next")
-    elif(freq == "NRT"):
-        tst = t_nb(t_nb(tst, "previous"), "previous")
-        ted = t_nb(t_nb(ted, "next"), "next")
-        
         
     needs_processing = []
     for t in t_generator(tst, ted):

@@ -49,7 +49,7 @@ from fireatlas.FireIO import (
     FIRMS_VIIRS_NOAA20_NRT_filepath, 
     FIRMS_VIIRS_NOAA21_NRT_filepath
 )
-from fireatlas.FireTime import t_generator, d2t
+from fireatlas.FireTime import t_generator, d2t, t_nm, t_nd
 from fireatlas.FireLog import logger
 from fireatlas import settings
 
@@ -218,6 +218,13 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                 continue 
             
             monthly_filepaths = [monthly_filepath_func(t) for t in timesteps] 
+            
+            # we don't need to preprocess outside of time range, but we do need 
+            # the previous and next months to preprocess the first and last days 
+            prev_month, next_month = t_nm(tst, "previous"), t_nm(ted, "next")
+            for m in [prev_month, next_month]:
+                if not monthly_filepath_func(m):
+                    logger.warning(f"No monthly input file found for {m} for {sat}")
 
             indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
             missing_indices = [i for i, f in enumerate(monthly_filepaths) if f is None]
@@ -279,6 +286,26 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                 else: 
                     # either before sp_start, or this is NOAA21 (so, no sp_start) and it is before 
                     # nrt start. either way, warn but allow
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+
+            # need to have these available to preprocess tst and ted, if possible
+            prev_day = t_nd(tst, "previous")
+            next_day = t_nd(ted, "next")
+
+            for t in [prev_day, next_day]: 
+                d = dt.datetime(t[0], t[1], t[2])
+
+                if d > nrt_end: 
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+                elif d >= nrt_start: 
+                    fp = nrt_filepath_func(t)
+                    if not fs.exists(fp):
+                        update_FIRMS(d, sat, "NRT")
+                elif d >= sp_start: 
+                    fp = sp_filepath_func(t) 
+                    if not fs.exists(fp): 
+                        update_FIRMS(d, sat, "SP")
+                else: 
                     logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
 
             if len(download_futures) > 0: 
