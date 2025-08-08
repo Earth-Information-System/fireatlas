@@ -30,7 +30,6 @@ from fireatlas.postprocess import (
 from fireatlas.preprocess import (
     check_preprocessed_file,
     preprocessed_filename,
-    preprocess_input_file,
     preprocess_region_t,
     preprocess_region,
     preprocessed_region_filename,
@@ -38,21 +37,19 @@ from fireatlas.preprocess import (
     preprocess_daily_file
 )
 
-from fireatlas.DataCheckUpdate import update_FIRMS, update_VJ114IMGTDL, update_VNP14IMGTDL, get_FIRMS_data_availability
+from fireatlas.DataCheckUpdate import update_FIRMS, get_FIRMS_data_availability
 from fireatlas.FireIO import (
     copy_from_local_to_s3, 
     copy_from_local_to_veda_s3, 
     VNP14IMGML_filepath, 
     VJ114IMGML_filepath, 
-    VJ114IMGTDL_filepath, 
-    VNP14IMGTDL_filepath, 
     FIRMS_VIIRS_SNPP_SP_filepath, 
     FIRMS_VIIRS_SNPP_NRT_filepath, 
     FIRMS_VIIRS_NOAA20_SP_filepath, 
     FIRMS_VIIRS_NOAA20_NRT_filepath, 
     FIRMS_VIIRS_NOAA21_NRT_filepath
 )
-from fireatlas.FireTime import t_generator, t_nd, t_nm, t2dt, dt2t, d2t
+from fireatlas.FireTime import t_generator, d2t
 from fireatlas.FireLog import logger
 from fireatlas import settings
 
