@@ -263,7 +263,7 @@ FTYP = {
         1: "Temp Forest",
         2: "Trop Forest",
         3: "Bore Forest",
-        4: "Savana",
+        4: "Savanna",
         5: "Agriculture",
         6: "Deforestation",
     },  #  use algorithm proposed for global study

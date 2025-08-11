@@ -967,7 +967,9 @@ def load_mcd64(year, xoff=0, yoff=0, xsize=None, ysize=None):
 
 
 def get_any_shp(filename):
-    """get shapefile of any region given the input file name
+    """get shapefile of any region given the input file name. 
+
+    Reprojects to geographic coordinate system (EPSG:4326) from input CRS. 
 
     Parameters
     ----------
@@ -979,10 +981,17 @@ def get_any_shp(filename):
     filepath = os.path.join(dirshape, filename)
     # read the geometry
     shp = gpd_read_file(filepath)
+    logger.info(f"Read region bounding shape from {filepath}")
+    logger.info(f"shp.crs = {shp.crs}")
+    
     geo_dissolved = shp.dissolve()
+    logger.info(f"Dissolved shp bounds: {geo_dissolved.geometry.total_bounds}")
 
     # convert to lat lon for df filtering in next step
+    logger.info("Converting to EPSG 4326")
     geo_dissolved = geo_dissolved.to_crs("EPSG:4326") 
+    logger.info(f"After conversion, total bounds = {geo_dissolved.geometry.total_bounds}")
+    logger.info(f"CRS reads as: {geo_dissolved.crs}")
     
     return geo_dissolved.iloc[0].geometry
 
@@ -1022,7 +1031,7 @@ def get_reg_shp(reg):
     if isinstance(reg, shapely.geometry.base.BaseGeometry):
         shp_Reg = reg
     elif isinstance(reg, str):
-        print(f'Running get_any_shp for {reg}')
+        logger.info(f'Running get_any_shp for {reg}')
         shp_Reg = get_any_shp(reg)
         if shp_Reg is None:
             raise Exception('Specified input did not produce valid geometry.')
@@ -1071,7 +1080,7 @@ def load_landcover():
         return dataset   
     elif settings.FTYP_OPT == "global":
         
-        fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic.tif")
+        fnmLCT = os.path.join(settings.dirextdata, "GlobalLC", "global_lc_mosaic_recompute.tif")
         dataset = rasterio.open(fnmLCT)
         
         return dataset

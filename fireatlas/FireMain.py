@@ -140,11 +140,16 @@ def maybe_remove_static_sources(region: Region) -> Region:
     Returns
     -------
     region : region obj
-        A region that is the difference between the user-supplied region and the points identified as static flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there were points, with a buffer around points determined by "remove_static_sources_buffer". 
+        A region that is the difference between the user-supplied region and the points identified as static 
+        flaring/gas according to the source. Creates a "swiss cheese"- like region, with negative space where there 
+        were points, with a buffer around points determined by "remove_static_sources_buffer". 
+
+        Filters and returns input geometry in geographic coordinate system (EPSG:4326).  
     """
     if not settings.remove_static_sources:
         # should make sure region[1] is a geometry
         geom = FireIO.get_reg_shp(region[1])
+        logger.info(f"get_reg_shp returned geometry with bounds {geom.bounds}")
         region = (region[0], geom)
         return region
     
@@ -153,17 +158,17 @@ def maybe_remove_static_sources(region: Region) -> Region:
     global_flaring = global_flaring.drop_duplicates()
     global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
 
-    global_flaring = gpd.GeoDataFrame(global_flaring, geometry=gpd.points_from_xy(global_flaring.Longitude, global_flaring.Latitude)) # Convert to point geometries
+    global_flaring = gpd.GeoDataFrame(
+        global_flaring, 
+        geometry=gpd.points_from_xy(global_flaring.Longitude, global_flaring.Latitude),
+        crs="EPSG:4326"
+    ) # Convert to point geometries
     global_flaring["buffer_geometry"] = global_flaring.buffer(settings.remove_static_sources_buffer)
     global_flaring = global_flaring.set_geometry(col = "buffer_geometry")
     
     # get region geometry
     reg = FireIO.get_reg_shp(region[1])
-    reg_df = gpd.GeoDataFrame.from_dict({"name":[region[0]], "geometry":[reg]}) # Put geometry into dataframe for join
-    
-    # ensure everything is in the same projection
-    global_flaring = global_flaring.set_crs(str(settings.EPSG_CODE)) ## Translate to the user-input coordinate system
-    reg_df = reg_df.set_crs(str(settings.EPSG_CODE))
+    reg_df = gpd.GeoDataFrame.from_dict({"name":[region[0]], "geometry":[reg]}, crs="EPSG:4326") # Put geometry into dataframe for join
     
     # Take the difference of points and region
     diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
@@ -464,6 +469,9 @@ def Fire_merge_rtree(allfires, fids_ne, fids_ea, fids_sleep, landcover):
 def Fire_Forward_one_step(allfires, allpixels, tst, t, region, landcover):    
     logger.info("--------------------")
     logger.info(f"Fire tracking at {t}")
+
+    if FireTime.isyearst(t):
+        allfires.check_fid_len(region[0])
 
     # 1. record existing active fire ids (before fire tracking at t)
     fids_ea = allfires.fids_active

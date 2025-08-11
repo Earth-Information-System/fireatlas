@@ -7,7 +7,7 @@ FOUR LAYERS OF OBJECTS
     c. Cluster:   the class of active fire pixel cluster (only for supporting)
     d. FirePixel: the class of an active fire pixel
 """
-
+import pandas as pd
 import geopandas as gpd
 from datetime import date, timedelta
 from shapely.geometry import MultiLineString, MultiPoint
@@ -18,7 +18,7 @@ from fireatlas.FireTime import t2dt, dt2t, t_nb, t_dif
 from fireatlas.postprocess import read_allfires_gdf, read_allpixels
 from fireatlas.FireFuncs import set_ftype
 from fireatlas.FireGpkg_sfs import getdd as singlefire_getdd
-from fireatlas.FireIO import save_newyearfidmapping
+from fireatlas.FireLog import logger
 from fireatlas import FireVector
 from fireatlas import FireConsts
 from fireatlas import settings
@@ -134,21 +134,46 @@ class Allfires:
 
     @timed
     def update_gdf(self):
+        """
+        The idea here is that we need to update self.gdf with the latest
+        attributes for each burning fire, as those may have changed 
+        as we progressed through the last timestep. 
+
+        But, instead of looping through those and writing each cell one at a 
+        time, like the original code did, here we are going to make a new dataframe 
+        with what each active row should be updated to, then drop the old versions 
+        of those rows and append the new versions so that we only mutate the dataframe once. 
+        """
         dd = singlefire_getdd("all")
         dt = t2dt(self.t)
 
+        new_rows = [] # collect row dicts for a batch update 
+
+        # all active fires need to be updated 
         for fid, f in self.burningfires.items():
             if (fid, dt) in self.gdf.index:
                 raise ValueError(f"Error writing gdf: {fid} already at {self.t}")
 
-            for k, tp in dd.items():
-                if tp == "datetime64[ns]":
-                    self.gdf.loc[(fid, dt), k] = t2dt(getattr(f, k))
-                else:
-                    self.gdf.loc[(fid, dt), k] = getattr(f, k)
+            row = {"fireID": fid, "t": dt} # get index levels  
+            for k, tp in dd.items(): 
+                val = getattr(f, k)
+                row[k] = t2dt(val) if tp == "datetime64[ns]" else val
+            new_rows.append(row)
+        
+        if len(new_rows) > 0: 
+            # create a new gdf with updated rows 
+            gdf_updates = gpd.GeoDataFrame(
+                new_rows,
+                geometry="hull", 
+                crs=settings.EPSG_CODE
+            ).set_index(["fireID", "t"])
 
-        for k, tp in dd.items():
-            self.gdf[k] = self.gdf[k].astype(tp)
+            # ensure/cast types once 
+            for k, tp in dd.items(): 
+                gdf_updates[k] = gdf_updates[k].astype(tp)
+
+            # append updated rows to existing dataframe in one batch- much faster than looping through 
+            self.gdf = pd.concat([self.gdf, gdf_updates], axis=0)
 
         for h0, h1 in self.heritages:
             if h0 in self.gdf.index:
@@ -311,36 +336,19 @@ class Allfires:
             []
         )  # a list of ids for fires invalidated at current time step
 
-    def newyear_reset(self, regnm):
-        """reset fire ids at the start of a new year"""
-        # re-id all active fires
-        newfires = {}
-        fidmapping = []
-        fids_keep = self.fids_active + self.fids_sleeper
-        for i, fid in enumerate(fids_keep):
-            newfires[i] = self.fires[fid]  # record new fireID and fire object
-            newfires[i].fireID = i  # also update fireID attribute of fire object
-            fidmapping.append((fid, i))
-        self.fires = newfires
-
-        # lastyearfires = {}
-        # fidmapping = []
-        # nfid = 0
-        # for f in self.activefires:
-        #     ofid = f.fireID
-        #     f.fireID = nfid
-        #     # lastyearfires.append(f)
-        #     lastyearfires[nfid] = f
-        #     fidmapping.append((ofid,nfid))
-        #     nfid += 1
-        # self.fires = lastyearfires
-
-        # clean heritages
-        self.heritages = []
-
-        # save the mapping table
-        if len(fidmapping) > 0:
-            save_newyearfidmapping(fidmapping, self.t[0], regnm)
+    def check_fid_len(self, regnm):
+        """
+        Throw a warning if any fireID is larger than 1e14
+        """
+        max_fid_len = 1e14
+        if (
+            any( x>= max_fid_len for x in self.fids_active) |
+            any(x>= max_fid_len for x in self.fids_sleeper)
+        ):
+            logger.warning(
+                f"WARNING: FireID is longer than {max_fid_len} in region {regnm}. "
+            )
+        return
 
     # functions to be run after tracking VIIRS active fire pixels at each time step
     def record_fids_change(
@@ -533,11 +541,12 @@ class Fire:
             & (self.allpixels["t"] == t2dt(self.t))
         ]
 
+    # @TODO can we call this less? 
     @property
     def newlocs(self):
         """List of new fire pixels locations (lat,lon)"""
         return self.newpixels[["x", "y"]].values
-
+    # @TODO can we call THIS less? 
     @property
     def newlocs_geo(self):
         """List of new fire pixels locations (lat,lon)"""
@@ -549,6 +558,15 @@ class Fire:
         mp = MultiPoint(self.newlocs)
         return mp
 
+    # @TODO can we call this less? 
+    @property
+    def newpixelatts(self):
+        """List of new fire pixels attributes"""
+        return [
+            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
+            for p in self.newpixels
+        ]
+    # @TODO duplicate of above? 
     @property
     def newpixelatts(self):
         """List of new fire pixels attributes"""
@@ -557,14 +575,7 @@ class Fire:
             for p in self.newpixels
         ]
 
-    @property
-    def newpixelatts(self):
-        """List of new fire pixels attributes"""
-        return [
-            (p.Lon, p.Lat, p.FRP, p.DS, p.DT, p.datetime, p.ampm, p.Sat)
-            for p in self.newpixels
-        ]
-
+    # @TODO can we call this less? 
     @property
     def n_newpixels(self):
         """Total number of new fire pixels"""
