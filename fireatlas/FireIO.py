@@ -241,7 +241,7 @@ def VNP14IMGML_filepath(t: TimeStep):
     if not settings.fs.exists(filepath):
         filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
     if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
+        logger.warning(f"No VNP14IMGML file found for {year}-{month:02}")
         return
 
     return filepath
@@ -310,7 +310,7 @@ def VNP14IMGTDL_filepath(t: TimeStep):
         f"SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{d.strftime('%Y%j')}.txt",
     )
     if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
+        logger.warning(f"No VNP14IMGTDL file found for {d.strftime('%Y%j')}")
         return
 
     return filepath
@@ -384,7 +384,7 @@ def VJ114IMGML_filepath(t: TimeStep):
     # looks for collection 2 version 3 (latest as of July 2025)
     filepath = os.path.join(file_dir, f"VJ114IMGML.{year}{month:02}.C2.03.txt")
     if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
+        logger.warning(f"No VJ114IMGML file found for {year}-{month:02}")
         return
 
     return filepath
@@ -474,7 +474,7 @@ def VJ114IMGTDL_filepath(t: TimeStep):
         f"J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_{d.strftime('%Y%j')}.txt",
     )
     if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
+        logger.warning(f"No VJ114IMGTDL file found for {d.strftime('%Y%j')}")
         return
 
     return filepath

@@ -298,15 +298,14 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
     if filepath is None:
         raise ValueError("Please provide a valid filepath")
     
+    logger.info(f"preprocessing {filepath.split('/')[-1]}")
     dfs = []
     sat = None 
     for f in [filepath_prev, filepath, filepath_next]:
         if not f: 
             # it can be valid to have no prev or next file
-            logger.warning(f"No input file found for {f}")
             # move on to next file
             continue 
-        logger.info(f"preprocessing {f.split('/')[-1]}")
 
         # read file 
         if "VNP14IMGTDL" in f: 

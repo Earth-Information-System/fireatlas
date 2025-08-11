@@ -265,7 +265,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                 d = dt.datetime(t[0], t[1], t[2])
 
                 if d > nrt_end: 
-                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}: date out of range.")
                     continue 
                 elif d >= nrt_start: # in NRT availability range
                     fp = nrt_filepath_func(t)
@@ -285,7 +285,8 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                 else: 
                     # either before sp_start, or this is NOAA21 (so, no sp_start) and it is before 
                     # nrt start. either way, warn but allow
-                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
+                                   "Date may be out of range.")
 
             # need to have these available to preprocess tst and ted, if possible
             prev_day = t_nd(tst, "previous")
@@ -295,7 +296,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                 d = dt.datetime(t[0], t[1], t[2])
 
                 if d > nrt_end: 
-                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. Date out of range.")
                 elif d >= nrt_start: 
                     fp = nrt_filepath_func(t)
                     if not fs.exists(fp):
@@ -305,7 +306,8 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                     if not fs.exists(fp): 
                         update_FIRMS(d, sat, "SP")
                 else: 
-                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}.")
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
+                                   "Date may be out of range.")
 
             if len(download_futures) > 0: 
                 # block to finish downloads before starting any preprocessing
