@@ -90,6 +90,11 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         "SP": standard product 
 
     If approaching API download rate limits, will back off automatically. 
+
+    Returns: 
+    --------
+    downloaded_filepath: str
+        Location of downloaded data file
     """
 
     if (sat == "NOAA21") and (product == "SP"):
@@ -145,8 +150,7 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
     os.makedirs(os.path.dirname(downloaded_filepath), exist_ok=True)
     df.to_csv(downloaded_filepath)
     
-    preprocess_input_file(downloaded_filepath)
-    return
+    return downloaded_filepath
 
 def update_GridMET_fm1000():
     ''' Get updated GridMET data (including fm1000)
