@@ -9,7 +9,12 @@ import warnings
 from pyproj import CRS
 
 import fsspec
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings, 
+    SettingsConfigDict, 
+    PydanticBaseSettingsSource, 
+    YamlConfigSettingsSource
+)
 from pydantic import Field, validator, field_validator
 
 
@@ -18,14 +23,48 @@ from fireatlas.FireTypes import Location
 root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
-
+YAML_ABS_PATH = os.path.join(os.path.dirname(__file__), "run_config.yaml")
 
 class Settings(BaseSettings):
-    # read in all env vars prefixed with `FEDS_` they can be in a .env file
 
-    model_config = SettingsConfigDict(
-        env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_"
-    )
+    if os.path.exists(YAML_ABS_PATH):
+        model_config = SettingsConfigDict(
+            yaml_file=YAML_ABS_PATH, 
+            yaml_config_section="settings",
+            env_file=DOTENV_ABS_PATH, 
+            extra="ignore",
+            env_prefix="FEDS_" # note: expects env vars as FEDS_env_var_name
+        )
+    else:
+        model_config = SettingsConfigDict(
+            env_file=DOTENV_ABS_PATH, 
+            extra="ignore",
+            env_prefix="FEDS_"
+        )
+
+    # Settings resolution order (in ascending order of priority): 
+    # 1. Starts with default field values provided in FireConsts.py
+    # 2. Overrides with settings from run_config.yaml if available
+    # 3. Overrides with environment variables from .env file if available
+    # 4. Overrides with environment variables from the system env if set
+    # 5. Overrides with settings passed to the Settings class initializer if passed
+    # Result: init > system env vars > .env file > yaml file > default values
+    @classmethod
+    def settings_customise_sources(
+        cls, 
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource, 
+        env_settings: PydanticBaseSettingsSource, 
+        dotenv_settings: PydanticBaseSettingsSource, 
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (
+            init_settings, 
+            env_settings, 
+            dotenv_settings,
+            YamlConfigSettingsSource(settings_cls), 
+            )
+
 
     # ------------------------------------------------------------------------------
     # where data is stored
@@ -143,7 +182,9 @@ class Settings(BaseSettings):
     # MODIS pixel size
     MCD64buf: float = Field(231.7, description="MODIS fire perimeter buffer, m")
 
-    # fire source data
+    # ------------------------------------------------------------------------------
+    # fire data source parameters
+    # ------------------------------------------------------------------------------
 
     FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
         "VIIRS", description="fire source data"
@@ -208,6 +249,8 @@ class Settings(BaseSettings):
     CONT_OPT: Literal["preset", "CA", "global"] = Field(
         "CA", description="continuity threshold option"
     )
+    # ------------------------------------------------------------------------------
+
 
     @validator("LOCAL_PATH")
     def local_path_must_not_end_with_slash(cls, v: str) -> str:
