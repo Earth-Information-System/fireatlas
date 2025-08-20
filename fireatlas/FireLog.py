@@ -19,7 +19,7 @@ def get_logger(name):
         ch.setLevel(logging.INFO)
 
         # create a file handler as well
-        fh = logging.FileHandler(os.path.join(root_dir, settings.LOG_FILENAME))
+        fh = logging.FileHandler(settings.LOG_FILEPATH)
         fh.setLevel(logging.INFO)
 
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

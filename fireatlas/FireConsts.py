@@ -3,7 +3,7 @@ This is the module containing all constants used in this project as well as the
 running controls
 """
 
-from typing import Literal
+from typing import Literal, Optional, Tuple
 import os
 import warnings
 from pyproj import CRS
@@ -13,7 +13,7 @@ from pydantic_settings import (
     BaseSettings, 
     SettingsConfigDict, 
     PydanticBaseSettingsSource, 
-    YamlConfigSettingsSource
+    YamlConfigSettingsSource,
 )
 from pydantic import Field, validator, field_validator
 
@@ -23,7 +23,8 @@ from fireatlas.FireTypes import Location
 root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
-YAML_ABS_PATH = os.path.join(os.path.dirname(__file__), "run_config.yaml")
+YAML_FILENAME = "run_config.yaml"
+YAML_ABS_PATH = os.path.join(os.path.dirname(__file__), YAML_FILENAME)
 
 class Settings(BaseSettings):
 
@@ -87,13 +88,20 @@ class Settings(BaseSettings):
     OUTPUT_DIR: str = Field(
         "FEDSoutput-v3", description="directory where output data is stored"
     )
+    REGIONS_DIR: str = Field(
+        "region_definitions",
+        description="dirctory where region definitions are stored."
+    )
 
     READ_LOCATION: Location = Field(
         "s3",
         description="Final storage place for written files. This is where everything reads from",
     )
 
-    LOG_FILENAME: str = Field("running.log", description="Where to write logs to.")
+    LOG_FILEPATH: str = Field(
+        os.path.join(root_dir, "running.log"),
+        description="Absolute path to the log file."
+    )
 
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
@@ -157,6 +165,46 @@ class Settings(BaseSettings):
     )
     CONNECTIVITY_SLEEPER_KM: float = Field(
         1, description="the connectivity spatial threshold (to previous fire line), km"
+    )
+
+    # ------------------------------------------------------------------------------
+    # OPTIONAL: run parameters 
+    # Can be passed from run_config.yaml if using FireRunArchiveCoordinator.py
+    # or passed from the command line for all other scripts
+    # ------------------------------------------------------------------------------
+
+    TST: Optional[Tuple[int, int, int, Literal["AM", "PM"]]] = Field(
+        default=None, 
+        description="start time as [year, month, day, 'AM'/'PM']"
+    )
+
+    TED: Optional[Tuple[int, int, int, Literal["AM", "PM"]]] = Field(
+        default=None, 
+        description="end time as [year, month, day, 'AM'/'PM']"
+    )
+
+    @field_validator("TST", "TED", mode="after")
+    @classmethod
+    def _tuple_to_list(cls, v):
+        # v is already validated as a tuple of (int, int, int, str)
+        if v is None:
+            return None
+        return list(v)
+   
+    RUN_NAME: Optional[str] = Field(
+        default=None,
+        description="Run name, e.g. 'ArchiveCONUS' or 'ArchiveCONUS_test'."
+    )
+
+    REGION_SHAPEFILE: Optional[str] = Field(
+        default=None, 
+        description="Name of the file that holds a shapefile that defiens this region. " 
+        "Assumes that this file is in the FEDSinput/region_definitions/RUN_NAME/ directory."
+    )
+
+    REGION_BBOX: Optional[list[float]] = Field(
+        default=None,
+        description="Bounding box of the region, e.g. [-126,24,-61,49]."
     )
 
     # ------------------------------------------------------------------------------
@@ -225,8 +273,15 @@ class Settings(BaseSettings):
     export_to_veda: bool = Field(
         False, description="whether to export data from MAAP to VEDA s3"
     )
-    N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
 
+    # compute settings
+
+    N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
+    ARCHIVE_RUN_JOB_SIZE: int = Field(
+        10, 
+        description="How many days to run in each archive job chunk.")
+    
+    # NIFC matching options
     DO_NIFC_MATCHING: bool = Field(
         False, 
         description="If True, reads from the NIFC incident database for current "

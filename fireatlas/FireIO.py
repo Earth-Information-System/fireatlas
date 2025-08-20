@@ -27,6 +27,7 @@ from shapely.ops import transform
 
 from fireatlas.FireLog import logger
 from fireatlas.FireTypes import TimeStep
+from fireatlas.FireConsts import YAML_FILENAME
 from fireatlas import FireTime, settings
 
 
@@ -2496,3 +2497,24 @@ def convert_v2_pkl_to_csv(files, output_dir, sat):
                     output_paths.append(output_filepath)
 
     return output_paths
+
+def s3_log_destination_path(run_id: str):
+    """Provide destination path to copy logs from local to s3 output directory for this region"""
+    return os.path.join(
+        settings.get_path(location="s3"), 
+        settings.OUTPUT_DIR, 
+        run_id, 
+        "logs", 
+        os.path.basename(settings.LOG_FILEPATH)
+    )
+
+def s3_config_path(run_name: str):
+    """Provide path where the config file for run_name is expected on s3. 
+    Example: 
+    s3://maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSinput/region_definitions/{run_name}/run_config.yaml"""
+    return os.path.join(
+        settings.get_path(location="s3"), 
+        settings.INPUT_DIR,
+        settings.REGIONS_DIR, 
+        run_name, 
+        YAML_FILENAME)
