@@ -10,9 +10,10 @@ from shapely.ops import unary_union, polygonize
 from shapely.geometry import Polygon, MultiPoint, MultiLineString
 
 from scipy.spatial import Delaunay, ConvexHull
+from scipy.spatial._qhull import QhullError
 
 from fireatlas import settings
-
+from fireatlas.FireLog import logger
 
 def doConcH(points, alpha):
     """
@@ -95,14 +96,23 @@ def doConvH(locs):
         calculated hull shape
     """
     # calculate the convex hull using scipy.spatial.ConvexHull
-    qhull = ConvexHull(locs)
-
-    # derive qhull object vertices
-    verts = locs[qhull.vertices]
-
-    # convert vertices to polygon
-    hull = Polygon(verts)
-
+    try: 
+        qhull = ConvexHull(locs)
+        # derive qhull object vertices
+        verts = locs[qhull.vertices]
+        # convert vertices to polygon
+        hull = Polygon(verts)
+    
+    except QhullError as e:
+        logger.info(f'Encountered convex hull error: {e}\nTrying jitter...')
+        
+        jittered_locs = locs + np.random.normal(0, 1e-6, locs.shape) # random noise
+        qhull = ConvexHull(jittered_locs) # try again
+        # derive qhull object vertices
+        verts = jittered_locs[qhull.vertices]
+        # convert vertices to polygon
+        hull = Polygon(verts)
+        
     return hull
 
 
