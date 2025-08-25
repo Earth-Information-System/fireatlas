@@ -115,22 +115,27 @@ def set_ftype(fire, landcover):
             uselocs = fire.newlocs_geo[
                 np.random.choice(fire.newlocs_geo.shape[0], 1000, replace=False), :
             ]
-        
-        try:
-            vLCT = FireIO.get_LCT_Global(
-                uselocs, 
-                landcover
-            )  # call get_LCT to get all LCT for the fire pixels
-
- 
-            LCTmax = max(
-                set(vLCT), key=vLCT.count
-            )  # extract the LCT with most pixel counts
-        
-        except Exception as e:
-            logger.info(f"No LCT data available. Error: {e}\nSetting ftype to 0...")
-            ftype = 0
-            return ftype
+        for attempt in range(2):
+            try:
+                vLCT = FireIO.get_LCT_Global(
+                    uselocs, 
+                    landcover
+                )  # call get_LCT to get all LCT for the fire pixels
+    
+                LCTmax = max(
+                    set(vLCT), key=vLCT.count
+                )  # extract the LCT with most pixel counts 
+                break
+            
+            except Exception as e:
+                if attempt == 0: # don't do anything until we try again
+                    pass
+                elif attempt == 1:
+                    logger.info(f"No LCT data available. Error: {e}\nSetting ftype to 0...")
+                    ftype = 0
+                    return ftype
+                else: 
+                    raise e
 
         # print("LCTMAX:",LCTmax)
         if LCTmax in [0, 50, 60, 70, 80, 90, 100, 200]:
