@@ -465,13 +465,13 @@ def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", 
     day_prev = t_nd(t, "previous")
     day_next = t_nd(t, "next")
 
-    filepath_prev = FIRMS_SP_filepath(day_prev, sat=sat) 
-    if not filepath_prev: 
+    if settings.FIRE_NRT == True:
         filepath_prev = FIRMS_NRT_filepath(day_prev, sat) 
-
-    filepath_next = FIRMS_SP_filepath(day_next, sat=sat)
-    if not filepath_next: 
         filepath_next = FIRMS_NRT_filepath(day_next, sat=sat) 
+
+    else: 
+        filepath_prev = FIRMS_SP_filepath(day_prev, sat=sat) 
+        filepath_next = FIRMS_SP_filepath(day_next, sat=sat)
 
     return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
