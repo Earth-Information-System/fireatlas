@@ -411,10 +411,11 @@ def save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=
     futures = []
     processed_gdfs = []
     for fid, data in gdf[gdf["fireID"].isin(large_fires)].groupby("fireID"):
-        if client:
-            futures.append(client.submit(merge_and_save_fire, data, fid))
-        else:
+        if settings.DEPARALLELIZE_POSTPROCESS == True:
             processed_gdfs.append(merge_and_save_fire(data, fid))
+        else:
+            futures.append(client.submit(merge_and_save_fire, data, fid))
+
     if futures:
         processed_gdfs = client.gather(futures)
 
