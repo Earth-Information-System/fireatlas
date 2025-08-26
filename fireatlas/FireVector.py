@@ -3,6 +3,7 @@ This is the module used for vector related calculations
 """
 
 import math
+import numpy as np
 import geopandas as gpd
 import shapely.geometry as geometry
 
