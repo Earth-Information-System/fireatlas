@@ -139,7 +139,9 @@ def main(run_name):
     if run_ted < ted:
 
         print(f"*************** Mock submitting next job for {t_nb(run_ted)} to {ted} ****************")
-        # @TODO actually submit next job
+        
+        main(run_name)
+
         logger.info("------------- Submitted next job to DPS -------------")
     else:
         logger.info("------------- Full run completed -------------")
