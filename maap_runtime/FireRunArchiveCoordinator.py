@@ -53,11 +53,10 @@ def main(run_name, copy_to_veda=False):
     logger.info(f"Finished loading settings from {config_path}")
     logger.info(settings.model_dump())
 
-    # @TODO update this error message with correct location
-    if not (settings.RUN_NAME & settings.TST & settings.TED):
+    if settings.RUN_NAME is None or settings.TST is None or settings.TED is None:
         raise ValueError("Run parameters are not defined in run_config.yaml. "
         "To use this script, you must define the full run parameters and settings in " 
-        " FEDSinput/run_definitions/run_config.yaml.")
+        " FEDSinput/run_definitions/{run_name}/run_config.yaml.")
     else: 
         # parse TST and TED 
         tst = settings.TST
