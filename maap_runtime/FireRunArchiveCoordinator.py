@@ -1,4 +1,5 @@
 import argparse
+import subprocess
 import s3fs
 import glob
 import dask.config
@@ -67,9 +68,16 @@ def main(run_name):
             region = [regnm, settings.REGION_BBOX]
         else:
             raise ValueError("No region shape found. Did you set settings.REGION_SHAPEFILE or"
-                             "settings.REGION_BBOX in run_config.yaml.")
+                             "settings.REGION_BBOX in run_config.yaml?")
     
     gpd.show_versions() # for debugging 
+
+    # log commit hash of current fireatlas version
+    try:
+        logger.info(subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"],stderr=subprocess.DEVNULL, text=True).strip())
+        logger.info(subprocess.check_output(["git", "rev-parse", "HEAD"],stderr=subprocess.DEVNULL, text=True).strip())
+    except: 
+        pass 
 
     logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 
@@ -136,6 +144,7 @@ def main(run_name):
     else:
         logger.info("------------- Full run completed -------------")
 
+    # copy log file to s3
     fs.put_file(settings.LOG_FILEPATH, s3_log_destination_path(region[0]))
 
     return  
@@ -163,4 +172,4 @@ if __name__ == "__main__":
     parser.add_argument("run_name", type=str, help="Name of the run definition to execute")
     args = parser.parse_args()
 
-    main(args.run_id)
+    main(args.run_name)
