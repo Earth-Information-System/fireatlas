@@ -2511,7 +2511,7 @@ def s3_log_destination_path(run_id: str):
 def s3_config_path(run_name: str):
     """Provide path where the config file for run_name is expected on s3. 
     Example: 
-    s3://maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSinput/region_definitions/{run_name}/run_config.yaml"""
+    s3://maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSinput/run_definitions/{run_name}/run_config.yaml"""
     return os.path.join(
         settings.get_path(location="s3"), 
         settings.INPUT_DIR,

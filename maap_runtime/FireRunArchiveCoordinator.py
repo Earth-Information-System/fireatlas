@@ -57,7 +57,7 @@ def main(run_name, copy_to_veda=False):
     if not (settings.RUN_NAME & settings.TST & settings.TED):
         raise ValueError("Run parameters are not defined in run_config.yaml. "
         "To use this script, you must define the full run parameters and settings in " 
-        " FEDSinput/region_definitions/run_config.yaml.")
+        " FEDSinput/run_definitions/run_config.yaml.")
     else: 
         # parse TST and TED 
         tst = settings.TST

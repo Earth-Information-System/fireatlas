@@ -89,7 +89,7 @@ class Settings(BaseSettings):
         "FEDSoutput-v3", description="directory where output data is stored"
     )
     REGIONS_DIR: str = Field(
-        "region_definitions",
+        "run_definitions",
         description="dirctory where region definitions are stored."
     )
 
@@ -199,7 +199,7 @@ class Settings(BaseSettings):
     REGION_SHAPEFILE: Optional[str] = Field(
         default=None, 
         description="Name of the file that holds a shapefile that defiens this region. " 
-        "Assumes that this file is in the FEDSinput/region_definitions/RUN_NAME/ directory."
+        "Assumes that this file is in the FEDSinput/run_definitions/RUN_NAME/ directory."
     )
 
     REGION_BBOX: Optional[list[float]] = Field(
