@@ -1,4 +1,5 @@
 import argparse
+import os
 import subprocess
 import s3fs
 import glob
@@ -20,9 +21,9 @@ from fireatlas.FireRunDaskCoordinator import (
     get_timesteps_needing_region_t_processing
 )
 from fireatlas.FireConsts import YAML_ABS_PATH
-from fireatlas.FireIO import copy_from_local_to_s3, s3_log_destination_path, s3_config_path
+from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, s3_log_destination_path, s3_config_path
 from fireatlas.FireTime import dt2t, t2dt, t_nb
-from fireatlas.postprocess import allfires_filepath, allpixels_filepath, get_t_of_last_allfires_run
+from fireatlas.postprocess import all_dir, allfires_filepath, allpixels_filepath, combined_lf_perims_nifc_join, find_largefires, get_t_of_last_allfires_run, read_allfires_gdf, read_allpixels, save_large_fires_layers, save_large_fires_nplist, save_snapshots
 from fireatlas.utils import timed
 from fireatlas import settings
 from fireatlas.FireLog import logger
@@ -38,7 +39,7 @@ fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 # e.g. (from run_dps_cli.sh) copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
 
 
-def main(run_name):
+def main(run_name, copy_to_veda=False):
 
     config_path = s3_config_path(run_name)
     if not fs.exists(config_path):
@@ -122,17 +123,23 @@ def main(run_name):
         run_tst = t_nb(t_saved)
     else: 
         run_tst = tst 
+
+    # run for next chunk of timesteps only
     run_ted = min(ted, t2dt(run_tst) + dt.timedelta(days=settings.ARCHIVE_RUN_JOB_SIZE)) 
     run_ted = dt2t(run_ted)
     
     logger.info(f"------------- Running Fire_Forward for {run_tst=} to {run_ted=} -------------")
 
     try: 
-        Fire_Forward(tst=run_tst, ted=run_ted, region=region, restart=False)
+        allfires, allpixels, t_saved = Fire_Forward(tst=run_tst, ted=run_ted, region=region, restart=False)
+        allfires_gdf = allfires.gdf
         copy_from_local_to_s3(allpixels_filepath(run_tst, run_ted, region, location="local"), fs=fs)
         copy_from_local_to_s3(allfires_filepath(run_tst, run_ted, region, location="local"), fs=fs)
     except KeyError as e: 
         logger.warning(f"Fire_Forward has already run. {e}")
+        allpixels = read_allpixels(tst, ted, region)
+        allfires_gdf = read_allfires_gdf(tst, ted, region)
+        t_saved = run_ted
 
     logger.info(f"------------- Done running Fire_Forward for {run_tst=} to {run_ted=} -------------")
     
@@ -144,11 +151,45 @@ def main(run_name):
 
         logger.info("------------- Submitted next job to DPS -------------")
     else:
+        # all done with run: do postprocessing 
+
+        snapshot_futures = save_snapshots(allfires_gdf, region, t_saved, ted, client=client)
+        large_fires = find_largefires(allfires_gdf)
+        save_large_fires_nplist(allpixels, region, large_fires, tst)
+        save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
+
+        client.gather(snapshot_futures)
+
+        # If flag matching flat set, add overlaps with this year's NIFC incidents to 
+        # CombinedLargefire/lf_perimeter.fgb for ted only. 
+        if settings.DO_NIFC_MATCHING:
+            logger.info("Started NIFC matching")
+            combined_lf_perims_nifc_join(tst, ted, region, active_only=True, time_filter=None)
+            logger.info("Finished NIFC matching")
+
+
+        # take all fire forward output and upload all outputs in parallel
+        data_dir = all_dir(tst, region, location="local")
+        fgb_s3_upload_futures = client.map(
+            partial(copy_from_local_to_s3, fs=fs),
+            glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
+        )
+        # block until everything is uploaded
+        timed(client.gather, text=f"Dask upload of {len(fgb_s3_upload_futures)} files")(fgb_s3_upload_futures)
+
+        if copy_to_veda:
+            # take latest fire forward output and upload to VEDA S3 in parallel
+            fgb_veda_upload_futures = client.map(
+                partial(copy_from_local_to_veda_s3, fs=fs, regnm=region[0]),
+                glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
+            )
+            timed(client.gather, text=f"Dask upload of {len(fgb_veda_upload_futures)} files")(fgb_veda_upload_futures)
+
         logger.info("------------- Full run completed -------------")
 
     # copy log file to s3
     fs.put_file(settings.LOG_FILEPATH, s3_log_destination_path(region[0]))
-
+    client.close()
     return  
 
 if __name__ == "__main__": 
