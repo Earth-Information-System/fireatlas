@@ -41,6 +41,8 @@ fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
 def main(run_name, copy_to_veda=False):
 
+    wallclock_start = dt.datetime.now()
+    
     config_path = s3_config_path(run_name)
     if not fs.exists(config_path):
         raise FileNotFoundError(f"Run configuration file {config_path} does not exist on S3. "
@@ -74,8 +76,8 @@ def main(run_name, copy_to_veda=False):
 
     # log commit hash of current fireatlas version
     try:
-        logger.info(subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"],stderr=subprocess.DEVNULL, text=True).strip())
-        logger.info(subprocess.check_output(["git", "rev-parse", "HEAD"],stderr=subprocess.DEVNULL, text=True).strip())
+        logger.info("fireatlas current branch: " + subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"],stderr=subprocess.DEVNULL, text=True).strip())
+        logger.info("commit hash of fireatlas version used: " + subprocess.check_output(["git", "rev-parse", "HEAD"],stderr=subprocess.DEVNULL, text=True).strip())
     except: 
         pass 
 
@@ -118,14 +120,13 @@ def main(run_name, copy_to_veda=False):
 
     # get t of latest allfires/allpixels if any 
     t_saved = get_t_of_last_allfires_run(tst, ted, region=region, location=settings.READ_LOCATION)
-    if t_saved is not None: 
-        run_tst = t_nb(t_saved)
-    else: 
-        run_tst = tst 
 
-    # run for next chunk of timesteps only
-    run_ted = min(ted, t2dt(run_tst) + dt.timedelta(days=settings.ARCHIVE_RUN_JOB_SIZE)) 
-    run_ted = dt2t(run_ted)
+    # Pick up where we left off if possible; calculate size of next run chunk 
+    if t_saved is None or t2dt(t_saved) <= t2dt(tst) or t2dt(t_saved) > t2dt(ted): 
+        run_tst = tst 
+    else: 
+        run_tst = t_saved 
+    run_ted = dt2t(min(t2dt(ted), t2dt(run_tst) + dt.timedelta(days=settings.ARCHIVE_RUN_JOB_SIZE)))
     
     logger.info(f"------------- Running Fire_Forward for {run_tst=} to {run_ted=} -------------")
 
@@ -142,7 +143,7 @@ def main(run_name, copy_to_veda=False):
 
     logger.info(f"------------- Done running Fire_Forward for {run_tst=} to {run_ted=} -------------")
     
-    if run_ted < ted:
+    if t2dt(run_ted) < t2dt(ted):
 
         print(f"*************** Mock submitting next job for {t_nb(run_ted)} to {ted} ****************")
         
@@ -186,8 +187,11 @@ def main(run_name, copy_to_veda=False):
 
         logger.info("------------- Full run completed -------------")
 
+    wallclock_end = dt.datetime.now() 
+    run_duration = wallclock_end - wallclock_start 
+    logger.info(f"This job completed in {str(run_duration)}")
     # copy log file to s3
-    fs.put_file(settings.LOG_FILEPATH, s3_log_destination_path(region[0]))
+    fs.put_file(settings.LOG_FILEPATH, s3_log_destination_path(region[0], run_ted))
     client.close()
     return  
 
