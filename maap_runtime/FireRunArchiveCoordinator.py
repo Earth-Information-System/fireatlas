@@ -6,11 +6,6 @@ import glob
 import dask.config
 import geopandas as gpd
 import datetime as dt
-
-# @TODO add maap-py to the environment if needed, e.g.:
-# pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"        
-# from maap.maap import MAAP
-
 from functools import partial
 from dask.distributed import Client
 from fireatlas.FireMain import Fire_Forward
@@ -52,11 +47,6 @@ dask.config.set({'logging.distributed': 'error'})
 # via boto3/botocore common resolution paths
 fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
-# @TODO where should region defintions be stored, and, should they be copied from s3 
-# before settings initialization? 
-# e.g. (from run_dps_cli.sh) copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${regnm}/.env" ../fireatlas/.env
-
-
 def main(run_name, copy_to_veda=False):
 
     wallclock_start = dt.datetime.now()
@@ -81,7 +71,7 @@ def main(run_name, copy_to_veda=False):
         # parse TST and TED 
         tst = settings.TST
         ted = settings.TED
-        regnm = settings.RUN_NAME #@TODO set up the region definition correctly
+        regnm = settings.RUN_NAME 
         if settings.REGION_SHAPEFILE is not None: 
             region = [regnm, settings.REGION_SHAPEFILE]
         elif settings.REGION_BBOX is not None: 
@@ -162,8 +152,6 @@ def main(run_name, copy_to_veda=False):
     logger.info(f"------------- Done running Fire_Forward for {run_tst=} to {run_ted=} -------------")
     
     if t2dt(run_ted) < t2dt(ted):
-
-        
 
         logger.info(f"------------- Submitting next job for {t_nb(run_ted)} to {ted} -------------")
         
