@@ -2524,6 +2524,28 @@ def s3_log_destination_path(run_id: str, ted: TimeStep):
         ted_str + os.path.basename(settings.LOG_FILEPATH)
     )
 
+def s3_metadata_destination_path(run_name: str):
+    """Provide destination path to copy environment metadata from local to s3 output directory for this region. 
+    
+    Parameters 
+    ----------
+    run_name : str 
+        name of run definition 
+
+    Returns 
+    -------
+    path : str 
+        destination path 
+    """
+
+    return os.path.join(
+        settings.get_path(location="s3"), 
+        settings.OUTPUT_DIR, 
+        run_name, 
+        "logs", 
+        os.path.basename(settings.ENV_META_FILEPATH)
+    )
+
 def s3_config_path(run_name: str):
     """Provide path where the config file for run_name is expected on s3. 
     Example: 

@@ -21,12 +21,29 @@ from fireatlas.FireRunDaskCoordinator import (
     get_timesteps_needing_region_t_processing
 )
 from fireatlas.FireConsts import YAML_ABS_PATH
-from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, s3_log_destination_path, s3_config_path
+from fireatlas.FireIO import (
+    copy_from_local_to_s3, 
+    copy_from_local_to_veda_s3, 
+    s3_log_destination_path, s3_config_path, 
+    s3_metadata_destination_path
+)
 from fireatlas.FireTime import dt2t, t2dt, t_nb
-from fireatlas.postprocess import all_dir, allfires_filepath, allpixels_filepath, combined_lf_perims_nifc_join, find_largefires, get_t_of_last_allfires_run, read_allfires_gdf, read_allpixels, save_large_fires_layers, save_large_fires_nplist, save_snapshots
+from fireatlas.postprocess import (
+    all_dir, 
+    allfires_filepath, 
+    allpixels_filepath, 
+    combined_lf_perims_nifc_join, 
+    find_largefires, 
+    get_t_of_last_allfires_run, 
+    read_allfires_gdf, 
+    read_allpixels, 
+    save_large_fires_layers, 
+    save_large_fires_nplist, 
+    save_snapshots
+)
 from fireatlas.utils import timed
 from fireatlas import settings
-from fireatlas.FireLog import logger
+from fireatlas.FireLog import logger, write_run_metadata
 
 dask.config.set({'logging.distributed': 'error'})
 
@@ -190,9 +207,17 @@ def main(run_name, copy_to_veda=False):
     wallclock_end = dt.datetime.now() 
     run_duration = wallclock_end - wallclock_start 
     logger.info(f"This job completed in {str(run_duration)}")
-    # copy log file to s3
-    fs.put_file(settings.LOG_FILEPATH, s3_log_destination_path(region[0], run_ted))
+    
     client.close()
+    
+    # write environment metadata and copy to s3
+    metadata_path = write_run_metadata()
+    fs.put_file(metadata_path, s3_metadata_destination_path(region[0])) 
+    logger.info(f"Copied environment information to {s3_metadata_destination_path(region[0])}")
+    
+    # finally, copy log file to s3
+    fs.put_file(settings.LOG_FILEPATH, s3_log_destination_path(region[0], run_ted))
+
     return  
 
 if __name__ == "__main__": 

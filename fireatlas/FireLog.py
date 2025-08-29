@@ -1,6 +1,10 @@
 import logging
 import os
 from fireatlas import settings
+import sys 
+import platform 
+import subprocess
+import datetime as dt 
 
 _logger_configured = False
 
@@ -39,3 +43,34 @@ def get_logger(name):
     return logger
 
 logger = get_logger(__name__)
+
+
+def write_run_metadata():
+    """
+    Writes a text file to settings.ENV_META_FILEPATH that captures the output of 
+    pip freeze and basic platform information. 
+    """
+    t = dt.datetime.utcnow().isoformat() + "Z"
+    python_version = sys.version.replace("\n", " ")
+    platform_info = platform.platform() 
+
+    meta = [
+        f"# Environment metadata generated: {t}",
+        f"# Python: {python_version}", 
+        f"# Platform: {platform_info}", 
+        "#" * 60
+    ]
+
+    freeze_output = subprocess.run(
+        [sys.executable, "-m", "pip", "freeze"], 
+        capture_output=True, 
+        text=True, 
+        check=True
+    )
+
+    content = "\n".join(meta) + "\n" + freeze_output.stdout
+
+    with open(settings.ENV_META_FILEPATH, "w", encoding="utf-8") as f:
+        f.write(content) 
+    
+    return settings.ENV_META_FILEPATH 

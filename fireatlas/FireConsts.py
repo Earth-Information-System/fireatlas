@@ -103,6 +103,10 @@ class Settings(BaseSettings):
         description="Absolute path to the log file."
     )
 
+    ENV_META_FILEPATH: str = Field(
+        os.path.join(root_dir, "env_metadata.txt"),
+        description="Absolute path to the environment metadata file."
+    )
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
     # ------------------------------------------------------------------------------
