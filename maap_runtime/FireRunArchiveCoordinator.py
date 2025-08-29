@@ -44,6 +44,7 @@ from fireatlas.postprocess import (
 from fireatlas.utils import timed
 from fireatlas import settings
 from fireatlas.FireLog import logger, write_run_metadata
+from maap.maap import MAAP
 
 dask.config.set({'logging.distributed': 'error'})
 
@@ -162,11 +163,22 @@ def main(run_name, copy_to_veda=False):
     
     if t2dt(run_ted) < t2dt(ted):
 
-        print(f"*************** Mock submitting next job for {t_nb(run_ted)} to {ted} ****************")
         
-        main(run_name)
 
-        logger.info("------------- Submitted next job to DPS -------------")
+        logger.info(f"------------- Submitting next job for {t_nb(run_ted)} to {ted} -------------")
+        
+        maap = MAAP(maap_host='api.maap-project.org')
+        response = maap.submitJob(
+            identifier=f"job-eis-feds-archive:staging",
+        algo_id="eis-feds-archive",
+        version="staging",
+        username="zbecker", 
+        queue="maap-dps-eis-worker-128gb",
+        run_id=run_name
+        )
+
+        logger.info(f"------------- Submitted next job to DPS. Submission status: {response['status']} -------------")
+
     else:
         # all done with run: do postprocessing 
 
