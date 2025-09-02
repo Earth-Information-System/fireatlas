@@ -45,7 +45,7 @@ echo "Running in directory: $(pwd -P)"
 # we now secretly look for s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/<regnm>/.env
 # and copy it locally to ../fireatlas/.env so that pydantic can pick up our overrides
 copy_s3_object "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/${run_id}/.env" ../fireatlas/.env
-copy_s3_object "s3://maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSinput/region_definitions/${run_id}/run_config.yaml" ../fireatlas/run_config.yaml
+copy_s3_object "s3://maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSinput/run_definitions/${run_id}/run_config.yaml" ../fireatlas/run_config.yaml
 ls -lah ../fireatlas/
 
 python FireRunArchiveCoordinator.py "$run_id"
