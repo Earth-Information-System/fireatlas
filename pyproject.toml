@@ -26,11 +26,11 @@ dependencies = [
   "pandas",
   "dask",
   "distributed",
-  "geopandas==0.14.4",
+  "geopandas<1",
   "fiona",
   "shapely",
   "fsspec",
-  "s3fs==2024.6.0",
+  "s3fs>=2024.6",
   "rtree",
   "scikit-learn",
   "pyarrow",
@@ -38,9 +38,8 @@ dependencies = [
   "rasterio",
   "pyproj",
   "tqdm",
-  "scalene",
-  "awscli", 
-  "numpy<2.0.0", 
+  "scalene", 
+  "numpy<2", 
   "pyogrio", 
   "requests"
 ]
@@ -68,6 +67,11 @@ write_to_template = "__version__ = '{version}'"
 test = [
     "pytest",
     "pytest-cov",
+]
+dev = [
+    "pytest", 
+    "pytest-cov", 
+    "ipykernel"
 ]
 
 [tool.coverage.run]
