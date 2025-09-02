@@ -4,9 +4,10 @@ set -eo pipefail
 copy_s3_object() {
     local from_path="$1"
     local to_path="$2"
-    if ! aws s3 cp "$from_path" "$to_path" >/dev/null 2>&1; then
-        # log the error quietly, do not stop the script if fails
-        echo "Copy failed from $from_path to $to_path, continuing..." >&2
+    if ! out=$(aws s3 cp "$from_path" "$to_path" 2>&1); then
+        echo "Copy failed from $from_path to $to_path" >&2
+        echo "$out" >&2
+        return 0
     else
         echo "Copy succeeded from $from_path to $to_path"
     fi
