@@ -27,7 +27,8 @@ echo "conda: $(which conda)"
 echo "Python: $(which python)"
 
 python --version
-# conda activate fire_env
+source activate fire_env
+conda list | grep s3fs
 
 handle_exit() {
   popd
