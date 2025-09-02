@@ -97,23 +97,13 @@ def doConvH(locs):
         calculated hull shape
     """
     # calculate the convex hull using scipy.spatial.ConvexHull
-    try: 
-        qhull = ConvexHull(locs)
-        # derive qhull object vertices
-        verts = locs[qhull.vertices]
-        # convert vertices to polygon
-        hull = Polygon(verts)
-    
-    except QhullError as e:
-        logger.info(f'Encountered convex hull error: {e}\nTrying jitter...')
-        
-        jittered_locs = locs + np.random.normal(0, 1e-6, locs.shape) # random noise
-        qhull = ConvexHull(jittered_locs) # try again
-        # derive qhull object vertices
-        verts = jittered_locs[qhull.vertices]
-        # convert vertices to polygon
-        hull = Polygon(verts)
-        
+
+    qhull = ConvexHull(locs)
+    # derive qhull object vertices
+    verts = locs[qhull.vertices]
+    # convert vertices to polygon
+    hull = Polygon(verts)
+            
     return hull
 
 
@@ -134,7 +124,7 @@ def cal_hull(locs):
         buf = settings.VIIRSbuf
     elif settings.FIRE_SENSOR == "mcd64":
         buf = settings.MCD64buf
-
+    
     # number of pixels
     nfp = len(locs)
     hull = None
