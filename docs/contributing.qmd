@@ -14,19 +14,12 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ git clone https://github.com/Earth-Information-System/fireatlas.git
     $ cd fireatlas
 
-    # create virtual environment named `feds_env` with venv 
-    $ python -m venv feds_env
-    $ source feds_env/bin/activate
+    # create and activate environment named `fire_env`
+    $ conda env create -f env.yml
+    $ conda activate fire_env
 
-    # OR create a virtual environment with conda
-    $ conda create --name feds_env python=3.11
-    $ conda activate feds_env
-
-    # install required dependencies 
-    $ pip install -e . 
-
-    # install optional test dependencies if needed
-    $ pip install -e '.[test]'  
+    # install optional dev dependencies if needed 
+    $ pip install -e .[dev]
     ```
 
 2.  Create a new branch and make your changes as needed. Name the branch {your initials}/{descriptive feature name}:
@@ -39,7 +32,7 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ git commit -m "Add NOAA21 inputs"
     ```
 
-3.  Run tests (from fireatlas root dir)
+3.  Run tests from fireatlas root dir (requires optional dependencies) 
 
     ```         
     $ pytest -v tests/ 
@@ -62,6 +55,21 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     ```
 
 6.  When you are ready, [create a pull request](https://docs.github.com/en/get-started/using-github/github-flow#create-a-pull-request) to merge your branch into the main branch, `conus-dps`. Most substantive changes should be reviewed by another team member, and all changes must wait to be merged until the automated tests have passed.
+
+## Juptyer Notebooks 
+
+To use a Jupyter Notebook with the development environment: 
+
+```
+# First, create conda environment following directions in Step 1 above 
+# Then, from the fireatlasroot dir: 
+$ pip install .[dev]
+$ python -m ipykernel install --user --name fire_env --display-name "Python - FEDS development environment"
+# wait 30 seconds or so, then launch a new notebook. You should see this environment as an option to choose from in the launcher. 
+ 
+```
+
+This assumes you are using a JupyterLab interface such as the MAAP ADE. 
 
 ## Editing Docs
 
