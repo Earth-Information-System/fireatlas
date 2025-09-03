@@ -10,10 +10,9 @@ python --version
 # where mamba should be default resolver
 pushd "$basedir"
 
-conda create -n "fire_env" python=3.11
-source activate fire_env
+conda env create -f ../env.yml
+conda activate fire_env
 
-echo "Doing fireatlas install next..."
-/opt/conda/envs/fire_env/bin/pip install -e ..
-/opt/conda/envs/fire_env/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@develop"
+echo "Installing maap-py..." 
+/opt/conda/envs/fire_env/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@master"
 
