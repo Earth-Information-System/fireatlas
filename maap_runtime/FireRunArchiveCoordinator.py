@@ -50,17 +50,12 @@ fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 def main(run_name, copy_to_veda=False):
 
     wallclock_start = dt.datetime.now()
+
+    if os.path.exists(YAML_ABS_PATH): 
+        logger.info(f"run_config.yaml file found at {YAML_ABS_PATH}. Including settings overrides.")
+    else: 
+        logger.info(f"run_config.yaml NOT found at {YAML_ABS_PATH}.")
     
-    config_path = s3_config_path(run_name)
-    if not fs.exists(config_path):
-        raise FileNotFoundError(f"Run configuration file {config_path} does not exist on S3. "
-                                "Please ensure the run configuration is uploaded to S3 before running this script.")
-
-
-    # copy config file from s3 to local 
-    fs.get(config_path, YAML_ABS_PATH)
-    settings.__init__() # re-load settings with run_config.yaml
-    logger.info(f"Finished loading settings from {config_path}")
     logger.info(settings.model_dump())
 
     if settings.RUN_NAME is None or settings.TST is None or settings.TED is None:
@@ -156,7 +151,7 @@ def main(run_name, copy_to_veda=False):
         logger.info(f"------------- Submitting next job for {t_nb(run_ted)} to {ted} -------------")
         
         maap = MAAP(maap_host='api.maap-project.org')
-        response = maap.submitJob(
+        job = maap.submitJob(
             identifier=f"job-eis-feds-archive:staging",
         algo_id="eis-feds-archive",
         version="staging",
@@ -165,7 +160,7 @@ def main(run_name, copy_to_veda=False):
         run_id=run_name
         )
 
-        logger.info(f"------------- Submitted next job to DPS. Submission status: {response['status']} -------------")
+        logger.info(f"------------- Submitted next job to DPS. Submission status: {job.status} -------------")
 
     else:
         # all done with run: do postprocessing 
