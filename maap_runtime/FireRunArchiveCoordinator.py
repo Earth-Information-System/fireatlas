@@ -152,7 +152,7 @@ def main(run_name, copy_to_veda=False):
         
         maap = MAAP(maap_host='api.maap-project.org')
         job = maap.submitJob(
-            identifier=f"job-eis-feds-archive:staging",
+            identifier=f"job-eis-feds-archive:checkpoints",
         algo_id="eis-feds-archive",
         version="checkpoints",
         username="zbecker", 
