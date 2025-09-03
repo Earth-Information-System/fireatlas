@@ -62,7 +62,7 @@ def write_run_metadata():
     ]
 
     freeze_output = subprocess.run(
-        [sys.executable, "-m", "pip", "freeze"], 
+        ["conda", "env", "export"], 
         capture_output=True, 
         text=True, 
         check=True
