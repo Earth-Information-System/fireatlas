@@ -3,13 +3,18 @@ This is the module containing all constants used in this project as well as the
 running controls
 """
 
-from typing import Literal
+from typing import Literal, Optional, Tuple
 import os
 import warnings
 from pyproj import CRS
 
 import fsspec
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings, 
+    SettingsConfigDict, 
+    PydanticBaseSettingsSource, 
+    YamlConfigSettingsSource,
+)
 from pydantic import Field, validator, field_validator
 
 
@@ -18,14 +23,49 @@ from fireatlas.FireTypes import Location
 root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
-
+YAML_FILENAME = "run_config.yaml"
+YAML_ABS_PATH = os.path.join(os.path.dirname(__file__), YAML_FILENAME)
 
 class Settings(BaseSettings):
-    # read in all env vars prefixed with `FEDS_` they can be in a .env file
 
-    model_config = SettingsConfigDict(
-        env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_"
-    )
+    if os.path.exists(YAML_ABS_PATH):
+        model_config = SettingsConfigDict(
+            yaml_file=YAML_ABS_PATH, 
+            yaml_config_section="settings",
+            env_file=DOTENV_ABS_PATH, 
+            extra="ignore",
+            env_prefix="FEDS_" # note: expects env vars as FEDS_env_var_name
+        )
+    else:
+        model_config = SettingsConfigDict(
+            env_file=DOTENV_ABS_PATH, 
+            extra="ignore",
+            env_prefix="FEDS_"
+        )
+
+    # Settings resolution order (in ascending order of priority): 
+    # 1. Starts with default field values provided in FireConsts.py
+    # 2. Overrides with settings from run_config.yaml if available
+    # 3. Overrides with environment variables from .env file if available
+    # 4. Overrides with environment variables from the system env if set
+    # 5. Overrides with settings passed to the Settings class initializer if passed
+    # Result: init > system env vars > .env file > yaml file > default values
+    @classmethod
+    def settings_customise_sources(
+        cls, 
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource, 
+        env_settings: PydanticBaseSettingsSource, 
+        dotenv_settings: PydanticBaseSettingsSource, 
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        return (
+            init_settings, 
+            env_settings, 
+            dotenv_settings,
+            YamlConfigSettingsSource(settings_cls), 
+            )
+
 
     # ------------------------------------------------------------------------------
     # where data is stored
@@ -48,14 +88,25 @@ class Settings(BaseSettings):
     OUTPUT_DIR: str = Field(
         "FEDSoutput-v3", description="directory where output data is stored"
     )
+    REGIONS_DIR: str = Field(
+        "run_definitions",
+        description="dirctory where region definitions are stored."
+    )
 
     READ_LOCATION: Location = Field(
         "s3",
         description="Final storage place for written files. This is where everything reads from",
     )
 
-    LOG_FILENAME: str = Field("running.log", description="Where to write logs to.")
+    LOG_FILEPATH: str = Field(
+        os.path.join(root_dir, "running.log"),
+        description="Absolute path to the log file."
+    )
 
+    ENV_META_FILEPATH: str = Field(
+        os.path.join(root_dir, "env_metadata.txt"),
+        description="Absolute path to the environment metadata file."
+    )
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
     # ------------------------------------------------------------------------------
@@ -121,6 +172,46 @@ class Settings(BaseSettings):
     )
 
     # ------------------------------------------------------------------------------
+    # OPTIONAL: run parameters 
+    # Can be passed from run_config.yaml if using FireRunArchiveCoordinator.py
+    # or passed from the command line for all other scripts
+    # ------------------------------------------------------------------------------
+
+    TST: Optional[Tuple[int, int, int, Literal["AM", "PM"]]] = Field(
+        default=None, 
+        description="start time as [year, month, day, 'AM'/'PM']"
+    )
+
+    TED: Optional[Tuple[int, int, int, Literal["AM", "PM"]]] = Field(
+        default=None, 
+        description="end time as [year, month, day, 'AM'/'PM']"
+    )
+
+    @field_validator("TST", "TED", mode="after")
+    @classmethod
+    def _tuple_to_list(cls, v):
+        # v is already validated as a tuple of (int, int, int, str)
+        if v is None:
+            return None
+        return list(v)
+   
+    RUN_NAME: Optional[str] = Field(
+        default=None,
+        description="Run name, e.g. 'ArchiveCONUS' or 'ArchiveCONUS_test'."
+    )
+
+    REGION_SHAPEFILE: Optional[str] = Field(
+        default=None, 
+        description="Name of the file that holds a shapefile that defiens this region. " 
+        "Assumes that this file is in the FEDSinput/run_definitions/RUN_NAME/ directory."
+    )
+
+    REGION_BBOX: Optional[list[float]] = Field(
+        default=None,
+        description="Bounding box of the region, e.g. [-126,24,-61,49]."
+    )
+
+    # ------------------------------------------------------------------------------
     # shape parameters
     # ------------------------------------------------------------------------------
     valpha: int = Field(1000, description="alpha parameter, m")
@@ -143,7 +234,9 @@ class Settings(BaseSettings):
     # MODIS pixel size
     MCD64buf: float = Field(231.7, description="MODIS fire perimeter buffer, m")
 
-    # fire source data
+    # ------------------------------------------------------------------------------
+    # fire data source parameters
+    # ------------------------------------------------------------------------------
 
     FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
         "VIIRS", description="fire source data"
@@ -184,8 +277,15 @@ class Settings(BaseSettings):
     export_to_veda: bool = Field(
         False, description="whether to export data from MAAP to VEDA s3"
     )
-    N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
 
+    # compute settings
+
+    N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
+    ARCHIVE_RUN_JOB_SIZE: int = Field(
+        10, 
+        description="How many days to run in each archive job chunk.")
+    
+    # NIFC matching options
     DO_NIFC_MATCHING: bool = Field(
         False, 
         description="If True, reads from the NIFC incident database for current "
@@ -208,6 +308,8 @@ class Settings(BaseSettings):
     CONT_OPT: Literal["preset", "CA", "global"] = Field(
         "CA", description="continuity threshold option"
     )
+    # ------------------------------------------------------------------------------
+
 
     @validator("LOCAL_PATH")
     def local_path_must_not_end_with_slash(cls, v: str) -> str:

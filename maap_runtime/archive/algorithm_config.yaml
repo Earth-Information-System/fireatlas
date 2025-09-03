@@ -1,0 +1,15 @@
+algorithm_name: eis-feds-archive
+algorithm_description: "Run FEDS for large regions/time periods retrospectively"
+algorithm_version: staging
+environment: ubuntu
+repository_url: https://github.com/Earth-Information-System/fireatlas.git
+docker_container_url: "mas.maap-project.org/root/maap-workspaces/custom_images/maap_base:v4.1.0"
+queue: "maap-dps-eis-worker-128gb"
+run_command: "fireatlas/maap_runtime/run_archive_cli.sh"
+build_command: "fireatlas/maap_runtime/run_dps_build.sh"
+disk_space: "250GB"
+inputs:
+  config: [ ]
+  positional:
+  - name: run_id # trigger this run; FEDSinput/run_definitions/run_id/config.yaml must exist on s3
+    download: False
