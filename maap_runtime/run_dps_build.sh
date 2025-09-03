@@ -11,7 +11,7 @@ python --version
 pushd "$basedir"
 
 conda env create -f ../env.yml
-conda activate fire_env
+source activate fire_env
 
 echo "Installing maap-py..." 
 /opt/conda/envs/fire_env/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@master"
