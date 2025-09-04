@@ -334,7 +334,7 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
             df = FireIO.read_FIRMS_VIIRS_NRT(f)
         elif "FIRMS_VIIRS_NOAA20_SP" in f: 
             sat = "NOAA20" 
-            df = FireIO.read_FIRMS_VIIRS_SP
+            df = FireIO.read_FIRMS_VIIRS_SP(f)
             df = df.loc[df["Type"] == 0]
             # Type filter: inferred hot spot type == presumed vegetation fire
         elif "FIRMS_VIIRS_NOAA21_NRT" in f: 
@@ -466,7 +466,7 @@ def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", 
     day_next = t_nd(t, "next")
 
     if settings.FIRE_NRT == True:
-        filepath_prev = FIRMS_NRT_filepath(day_prev, sat) 
+        filepath_prev = FIRMS_NRT_filepath(day_prev, sat=sat) 
         filepath_next = FIRMS_NRT_filepath(day_next, sat=sat) 
 
     else: 
