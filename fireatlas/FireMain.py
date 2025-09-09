@@ -176,7 +176,97 @@ def maybe_remove_static_sources(region: Region) -> Region:
     
     region = (diff.name[0], diff.geometry[0])
     return region
+
+def flag_duplicate_pixels(allpixels):
+        
+    logger.info('Searching for duplicated points...')
+    coord_counts = allpixels.groupby(["y", "x"]).size() # count each lat/lon instance
+    duplicated_coords = coord_counts[coord_counts > 1] 
+
+    if len(duplicated_coords)==0:
+        logger.info('None detected. Proceeding to next step...')
+        return allpixels
     
+    elif len(duplicated_coords)>0:
+        logger.warning(f'There are {len(duplicated_coords)} potentially duplicated coordinate pairs')
+        pre_drop_length = len(allpixels)
+
+        # make temporary helper columns to assist with sorting and dropping duplicates
+        allpixels[['version_number', 'version_category']] = allpixels['version'].str.extract(r'([0-9.]+)([A-Za-z]+)')
+        allpixels = allpixels.sort_values(['version_category','version_number'],ascending=[True,False]) # rule: NRT is before URT, 2.1 is before 2.0, 
+        allpixels = allpixels.drop_duplicates(subset=['y','x','Sat','datetime'],keep='first') # handle cases where only version differs
+        logger.info(f'Removed {(pre_drop_length - len(allpixels))} duplicated points for the same sensor and time after inspection.')
+
+        # remove helper columns when done
+        allpixels = allpixels.drop(['version_number', 'version_category'],axis=1)
+        
+        coord_counts_recheck = allpixels.groupby(["y", "x"]).size() # count each lat/lon instance again
+        duplicated_coords_after_recheck = coord_counts_recheck[coord_counts_recheck > 1] 
+        
+        if len(duplicated_coords_after_recheck)>0:
+            logger.warning(f'There are still {len(duplicated_coords_after_recheck)} potentially duplicated coordinate pairs')
+            
+        return allpixels
+
+def adjust_coincident_pixels(allpixels):
+
+    coord_counts = allpixels.groupby(["y", "x"]).size() # count each lat/lon instance again
+    duplicated_coords = coord_counts[coord_counts > 1] 
+    
+    if len(duplicated_coords)==0:
+        logger.info('No coincident points detected. Proceeding to next step...')
+        return allpixels
+    
+    if len(duplicated_coords)>0:
+        logger.warning(f'There are {len(duplicated_coords)} potentially coincident coordinate pairs')
+        
+        # Display detailed information about remaining duplicates
+        logger.info("Details of duplicate coordinate pairs:")
+        for (y, x), count in duplicated_coords.items():
+            logger.info(f"  Coordinate ({y:.8f}, {x:.8f}) appears {count} times:")
+
+            # Get all records for this coordinate pair and display specific columns
+            duplicate_records = allpixels[(allpixels["y"] == y) & (allpixels["x"] == x)]
+
+            for idx, row in duplicate_records.iterrows():
+                logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
+            
+            # Apply jitter to all records with this duplicate coordinate pair
+            mask = (allpixels["y"] == y) & (allpixels["x"] == x)
+            duplicate_indices = allpixels[mask].index
+
+            # Store original coordinates before applying jitter
+            original_coords = allpixels.loc[duplicate_indices, ["y", "x"]].values
+
+            # Generate jitter for each duplicate record - THIS ASSUMES YOUR LINEAR COORD IS IN METERS
+            jitter = np.random.normal(0, 1e-6, (len(duplicate_indices), 2))
+
+            # Apply jitter to y and x columns
+            allpixels.loc[duplicate_indices, "y"] = allpixels.loc[duplicate_indices, "y"] + jitter[:, 0]
+            allpixels.loc[duplicate_indices, "x"] = allpixels.loc[duplicate_indices, "x"] + jitter[:, 1]
+
+            # Log the before/after differences
+            logger.info(f"    Applied jitter to {len(duplicate_indices)} records:")
+            for i, idx in enumerate(duplicate_indices):
+                orig_y, orig_x = original_coords[i]
+                new_y = allpixels.loc[idx, "y"]
+                new_x = allpixels.loc[idx, "x"]
+                diff_y = new_y - orig_y
+                diff_x = new_x - orig_x
+
+                logger.info(f"      ({orig_y:.8f}, {orig_x:.8f}) -> ({new_y:.8f}, {new_x:.8f}) | Diff: ({diff_y:.2e}, {diff_x:.2e})")
+
+        # Verify that duplicates are resolved
+        final_coord_counts = allpixels.groupby(["y", "x"]).size()
+        final_duplicated_coords = final_coord_counts[final_coord_counts > 1]
+
+        if len(final_duplicated_coords) == 0:
+            logger.info("Successfully resolved coincident coordinates with jittering")
+        else:
+            logger.warning(f"Still have {len(final_duplicated_coords)} duplicate coordinates after jittering - this should not happen!")
+            
+        return allpixels
+
 
 @timed
 def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea, landcover):
@@ -581,80 +671,11 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
     else:
         allpixels = pd.concat(non_empty_dfs)
 
-    ###########################################################################
-    ######## HANDLE CASES WHERE NRT DATA HAS DUPLICATE LAT/LON ENTRIES ########
-    ###########################################################################
-        
-    if settings.FIRE_NRT == True: 
-        logger.info('Searching for duplicated points...')
-        coord_counts = allpixels.groupby(["y", "x"]).size() # count each lat/lon instance
-        duplicated_coords = coord_counts[coord_counts > 1] 
-        
-        if len(duplicated_coords)>0: # check to see there are any duplicates
-            logger.warning(f'There are {len(duplicated_coords)} potentially duplicated coordinate pairs')
-            pre_drop_length = len(allpixels)
+    if settings.FIRE_NRT == True:
+        allpixels = flag_duplicate_pixels(allpixels)
 
-            # make temporary helper columns to help with sorting and dropping duplicates
-            allpixels[['version_number', 'version_category']] = allpixels['version'].str.extract(r'([0-9.]+)([A-Za-z]+)')
-            allpixels = allpixels.sort_values(['version_category','version_number'],ascending=[True,False]) # rule: NRT is before URT, 2.1 is before 2.0, 
-            allpixels = allpixels.drop_duplicates(subset=['y','x','Sat','datetime'],keep='first') # handle cases where only version differs
-            logger.info(f'Removed {(pre_drop_length - len(allpixels))} duplicated points for the same sensor and time after inspection.')
-
-            # remove helper columns when done
-            allpixels = allpixels.drop(['version_number', 'version_category'],axis=1)
-            
-            coord_counts_recheck = allpixels.groupby(["y", "x"]).size() # count each lat/lon instance again
-            duplicated_coords_after_recheck = coord_counts_recheck[coord_counts_recheck > 1] 
-            if len(duplicated_coords_after_recheck)>0:
-                logger.warning(f'There are still {len(duplicated_coords_after_recheck)} potentially duplicated coordinate pairs')
-                
-                # Display detailed information about remaining duplicates
-                logger.info("Details of remaining duplicate coordinate pairs:")
-                for (y, x), count in duplicated_coords_after_recheck.items():
-                    logger.info(f"  Coordinate ({y:.8f}, {x:.8f}) appears {count} times:")
-                    
-                    # Get all records for this coordinate pair and display specific columns
-                    duplicate_records = allpixels[(allpixels["y"] == y) & (allpixels["x"] == x)]
-                    
-                    for idx, row in duplicate_records.iterrows():
-                        logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
-                    # Apply jitter to all records with this duplicate coordinate pair
-                    mask = (allpixels["y"] == y) & (allpixels["x"] == x)
-                    duplicate_indices = allpixels[mask].index
-
-                    # Store original coordinates before jittering
-                    original_coords = allpixels.loc[duplicate_indices, ["y", "x"]].values
-                    
-                    # Generate jitter for each duplicate record
-                    jitter = np.random.normal(0, 1e-6, (len(duplicate_indices), 2))
-                    
-                    # Apply jitter to y and x columns
-                    allpixels.loc[duplicate_indices, "y"] = allpixels.loc[duplicate_indices, "y"] + jitter[:, 0]
-                    allpixels.loc[duplicate_indices, "x"] = allpixels.loc[duplicate_indices, "x"] + jitter[:, 1]
-
-                    # Log the before/after differences
-                    logger.info(f"    Applied jitter to {len(duplicate_indices)} records:")
-                    for i, idx in enumerate(duplicate_indices):
-                        orig_y, orig_x = original_coords[i]
-                        new_y = allpixels.loc[idx, "y"]
-                        new_x = allpixels.loc[idx, "x"]
-                        diff_y = new_y - orig_y
-                        diff_x = new_x - orig_x
-                        
-                        logger.info(f"      ({orig_y:.8f}, {orig_x:.8f}) -> ({new_y:.8f}, {new_x:.8f}) | Diff: ({diff_y:.2e}, {diff_x:.2e})")
-                
-                # Verify that duplicates are resolved
-                final_coord_counts = allpixels.groupby(["y", "x"]).size()
-                final_duplicated_coords = final_coord_counts[final_coord_counts > 1]
-                
-                if len(final_duplicated_coords) == 0:
-                    logger.info("Successfully resolved all remaining duplicate coordinates with jittering")
-                else:
-                    logger.warning(f"Still have {len(final_duplicated_coords)} duplicate coordinates after jittering - this should not happen!")
-
-    ###########################################################################
-    ############################## END ########################################
-    ###########################################################################
+    # look for coincident pixels where two satellites have the exact lat/lon pair
+    all_pixels = adjust_coincident_pixels(allpixels)
 
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
