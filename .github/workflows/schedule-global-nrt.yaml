@@ -1,119 +1,33 @@
-name: global nrt
+name: global nrt 
 
-on:
+on: 
   workflow_dispatch:
-    inputs:
-      region:
-        description: "Region to run (or 'all' to run everything)"
-        required: true
-        default: all
-        type: choice
-        options:
-          - all
-          - Australia
-          - Caribbean
-          - Central_Africa
-          - Central_America
-          - Central_Asia
-          - Europe_W_Siberia
-          - India
-          - Japan_Far_East
-          - New_Zealand
-          - SE_Africa
-          - SE_Asia
-          - Seven_Seas
-          - Siberia
-          - South_America
-          - South_SAM
-          - Western_Africa
+  schedule: 
+    - cron: '4 2,14 * * *' # Australia
+    - cron: '44 5,17 * * *' # Caribbean
+    - cron: '27 4,16 * * *' # Central Africa 
+    - cron: '28 5,17 * * *' # Central America
+    - cron: '21 7,19 * * *' # Central Asia 
+    - cron: '50 6,18 * * *' # Europe W Siberia
+    - cron: '23 5,17 * * *' # India 
+    - cron: '27 6,18 * * *' # Japan Far East
+    - cron: '47 1,13 * * *' # New Zealand
+    - cron: '15 6,18 * * *' # SE Africa 
+    - cron: '57 4,16 * * *' # SE Asia
+    - cron: '29 3,15 * * *' # Seven Seas
+    - cron: '17 7,19 * * *' # Siberia
+    - cron: '44 2,14 * * *' # South America 
+    - cron: '16 1,13 * * *' # South SAM 
+    - cron: '17 5,17 * * *' # Western Africa
 
-  schedule:
-    - cron: '4 2,14 * * *'   # Australia
-    - cron: '44 5,17 * * *'  # Caribbean
-    - cron: '27 4,16 * * *'  # Central Africa
-    - cron: '28 5,17 * * *'  # Central America
-    - cron: '21 7,19 * * *'  # Central Asia
-    - cron: '50 6,18 * * *'  # Europe W Siberia
-    - cron: '23 5,17 * * *'  # India
-    - cron: '27 6,18 * * *'  # Japan Far East
-    - cron: '47 1,13 * * *'  # New Zealand
-    - cron: '15 6,18 * * *'  # SE Africa
-    - cron: '57 4,16 * * *'  # SE Asia
-    - cron: '29 3,15 * * *'  # Seven Seas
-    - cron: '17 7,19 * * *'  # Siberia
-    - cron: '44 2,14 * * *'  # South America
-    - cron: '16 1,13 * * *'  # South SAM
-    - cron: '17 5,17 * * *'  # Western Africa
-
-jobs:
-  submit_dps_jobs:
-    # Allowlist actors + only run the matrix row that matches schedule or requested region
-    if: |
-      contains(fromJSON('["mccabete","zebbecker","eorland"]'), github.actor) &&
-      (
-        github.event_name == 'schedule' && matrix.cron == github.event.schedule ||
-        github.event_name == 'workflow_dispatch' &&
-          (github.event.inputs.region == 'all' || github.event.inputs.region == matrix.region)
-      )
-    runs-on: ubuntu-latest
-    environment: production
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - region: Australia
-            cron: '4 2,14 * * *'
-            run_id: NRT_Australia
-          - region: Caribbean
-            cron: '44 5,17 * * *'
-            run_id: NRT_Caribbean
-          - region: Central_Africa
-            cron: '27 4,16 * * *'
-            run_id: NRT_Central_Africa
-          - region: Central_America
-            cron: '28 5,17 * * *'
-            run_id: NRT_Central_America
-          - region: Central_Asia
-            cron: '21 7,19 * * *'
-            run_id: NRT_Central_Asia
-          - region: Europe_W_Siberia
-            cron: '50 6,18 * * *'
-            run_id: NRT_Europe_W_Siberia
-          - region: India
-            cron: '23 5,17 * * *'
-            run_id: NRT_India
-          - region: Japan_Far_East
-            cron: '27 6,18 * * *'
-            run_id: NRT_Japan_Far_East
-          - region: New_Zealand
-            cron: '47 1,13 * * *'
-            run_id: NRT_New_Zealand
-          - region: SE_Africa
-            cron: '15 6,18 * * *'
-            run_id: NRT_SE_Africa
-          - region: SE_Asia
-            cron: '57 4,16 * * *'
-            run_id: NRT_SE_Asia
-          - region: Seven_Seas
-            cron: '29 3,15 * * *'
-            run_id: NRT_Seven_Seas
-          - region: Siberia
-            cron: '17 7,19 * * *'
-            run_id: NRT_Siberia
-          - region: South_America
-            cron: '44 2,14 * * *'
-            run_id: NRT_South_America
-          - region: South_SAM
-            cron: '16 1,13 * * *'
-            run_id: NRT_South_SAM
-          - region: Western_Africa
-            cron: '17 5,17 * * *'
-            run_id: NRT_Western_Africa
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+  jobs:
+    submit_dps_jobs:
+      if: contains('["mccabete", "zebbecker", "eorland"]', github.actor))
+      runs_on: ubuntu-latest
+      environment: production
+      steps:
+      - name: checkout repository
+        uses: actions/checkout@v2
 
       - name: pip install fireatlas
         run: |
@@ -131,25 +45,32 @@ jobs:
         run: |
           echo "Docker GID: $DOCKER_GID"
           echo "User UID: $UID"
+      
+      # Kick off DPS jobs based on the schedule that triggered the workflow
 
-      - name: Submit ${{ matrix.region }} job
-        uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
-        with:
-          algo_name: eis-feds-archive
+      - name: Submit Australia job
+        if: github.event.schedule == '4 2,14 * * *'
+        uses: new action
+        with: 
+          algo_name: eis-feds-archive 
           github_ref: staging
-          username: zbecker
-          queue: maap-dps-eis-worker-128gb
-          maap_image_env: ubuntu
-          maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-          json_params: ${{ format('{{"run_id":"{0}"}}', matrix.run_id) }}
+          run_id: "NRT_Australia"
+
+      - name: Submit Caribbean job
+        if: github.event.schedule == '44 5,17 * * *'
+        uses: new action 
+        with: 
+          algo_name: eis-feds-archive 
+          github_ref: staging
+          run_id: "NRT_Caribbean"
 
       - name: send alert on Slack if failure
         if: always()
         uses: ravsamhq/notify-slack-action@2.5.0
-        with:
+        with: 
           status: ${{ job.status }}
           notify_when: failure
           notification_title: "GH Action Failed - <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|View Failed Run>"
           footer: "<${{github.server_url}}/${{github.repository}}/issues/|Open GitHub Issues>"
-        env:
+        env: 
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK_WEBHOOK_URL }}
