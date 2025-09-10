@@ -79,7 +79,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -93,7 +93,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps 
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -107,7 +107,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -121,7 +121,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -135,7 +135,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -149,7 +149,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -163,7 +163,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -177,7 +177,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -191,7 +191,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -205,7 +205,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -219,7 +219,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -233,7 +233,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -247,7 +247,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -261,7 +261,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -275,7 +275,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
@@ -289,7 +289,7 @@ jobs:
       uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
       with: 
         algo_name: eis-feds-archive 
-        github_ref: staging
+        github_ref: checkpoints
         username: zbecker
         queue: maap-dps-eis-worker-128gb
         maap_image_env: ubuntu
