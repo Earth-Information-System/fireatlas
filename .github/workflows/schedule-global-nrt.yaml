@@ -2,6 +2,29 @@ name: global nrt
 
 on: 
   workflow_dispatch:
+    inputs: 
+      region:
+        description: 'Defined run_id to run (or "all" to run all)'
+        required: true
+        type: choice
+        options: 
+          - all 
+          - NRT_Australia
+          - NRT_Caribbean
+          - NRT_Central_Africa
+          - NRT_Central_America
+          - NRT_Central_Asia
+          - NRT_Europe_W_Siberia
+          - NRT_India
+          - NRT_Japan_Far_East
+          - NRT_New_Zealand
+          - NRT_SE_Africa
+          - NRT_SE_Asia
+          - NRT_Seven_Seas
+          - NRT_Siberia
+          - NRT_South_America
+          - NRT_South_SAM
+          - NRT_Western_Africa
   schedule: 
     - cron: '4 2,14 * * *' # Australia
     - cron: '44 5,17 * * *' # Caribbean
@@ -20,57 +43,266 @@ on:
     - cron: '16 1,13 * * *' # South SAM 
     - cron: '17 5,17 * * *' # Western Africa
 
-  jobs:
-    submit_dps_jobs:
-      if: contains('["mccabete", "zebbecker", "eorland"]', github.actor))
-      runs_on: ubuntu-latest
-      environment: production
-      steps:
-      - name: checkout repository
-        uses: actions/checkout@v2
+jobs:
+  submit_dps_jobs:
+    if: contains(fromJSON('["mccabete", "zebbecker", "eorland"]'), github.actor)
+    runs-on: ubuntu-latest
+    environment: production
 
-      - name: pip install fireatlas
-        run: |
-          pip install .
+    steps:
+    - name: checkout repository
+      uses: actions/checkout@v5
 
-      - name: get docker GID and set DOCKER_GID environment variable
-        run: |
-          echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> $GITHUB_ENV
+    - name: pip install fireatlas
+      run: |
+        pip install .
 
-      - name: get current user UID and set UID environment variable
-        run: |
-          echo "UID=$(id -u)" >> $GITHUB_ENV
+    - name: get docker GID and set DOCKER_GID environment variable
+      run: |
+        echo "DOCKER_GID=$(getent group docker | cut -d: -f3)" >> $GITHUB_ENV
 
-      - name: print DOCKER_GID and UID
-        run: |
-          echo "Docker GID: $DOCKER_GID"
-          echo "User UID: $UID"
+    - name: get current user UID and set UID environment variable
+      run: |
+        echo "UID=$(id -u)" >> $GITHUB_ENV
+
+    - name: print DOCKER_GID and UID
+      run: |
+        echo "Docker GID: $DOCKER_GID"
+        echo "User UID: $UID"
+    
+    # Kick off DPS jobs based on the schedule that triggered the workflow
+
+    - name: Submit Australia job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '4 2,14 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Australia' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Australia"}'
+
+    - name: Submit Caribbean job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '44 5,17 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Caribbean' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps 
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Caribbean"}'
+
+    - name: Submit Central Africa job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '27 4,16 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Central_Africa' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Central_Africa"}'
+
+    - name: Submit Central America job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '28 5,17 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Central_America' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Central_America"}'
+    
+    - name: Submit Central Asia job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '21 7,19 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Central_Asia' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Central_Asia"}'
       
-      # Kick off DPS jobs based on the schedule that triggered the workflow
+    - name: Submit Europe W Siberia job 
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '50 6,18 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Europe_W_Siberia' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Europe_W_Siberia"}'
+    
+    - name: Submit India job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '23 5,17 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_India' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_India"}'
 
-      - name: Submit Australia job
-        if: github.event.schedule == '4 2,14 * * *'
-        uses: new action
-        with: 
-          algo_name: eis-feds-archive 
-          github_ref: staging
-          run_id: "NRT_Australia"
+    - name: Submit Japan Far East job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '27 6,18 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Japan_Far_East' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Japan_Far_East"}'
+    
+    - name: Submit New Zealand job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '47 1,13 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_New_Zealand' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_New_Zealand"}'
 
-      - name: Submit Caribbean job
-        if: github.event.schedule == '44 5,17 * * *'
-        uses: new action 
-        with: 
-          algo_name: eis-feds-archive 
-          github_ref: staging
-          run_id: "NRT_Caribbean"
+    - name: Submit SE Africa job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '15 6,18 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Africa' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_SE_Africa"}'
 
-      - name: send alert on Slack if failure
-        if: always()
-        uses: ravsamhq/notify-slack-action@2.5.0
-        with: 
-          status: ${{ job.status }}
-          notify_when: failure
-          notification_title: "GH Action Failed - <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|View Failed Run>"
-          footer: "<${{github.server_url}}/${{github.repository}}/issues/|Open GitHub Issues>"
-        env: 
-          SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK_WEBHOOK_URL }}
+    - name: Submit SE Asia job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '57 4,16 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Asia' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_SE_Asia"}'
+
+    - name: Submit Seven Seas job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '29 3,15 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Seven_Seas' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Seven_Seas"}'
+
+    - name: Submit Siberia job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '17 7,19 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Siberia' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Siberia"}'
+
+    - name: Submit South America job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '44 2,14 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_South_America' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_South_America"}'
+
+    - name: Submit South SAM job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '16 1,13 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_South_SAM' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_South_SAM"}'
+
+    - name: Submit Western Africa job
+      if: |
+        (github.event_name == 'schedule' && github.event.schedule == '17 5,17 * * *') ||
+        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Western_Africa' || inputs.region == 'all'))
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      with: 
+        algo_name: eis-feds-archive 
+        github_ref: staging
+        username: zbecker
+        queue: maap-dps-eis-worker-128gb
+        maap_image_env: ubuntu
+        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+        json_params: '{"run_id": "NRT_Western_Africa"}'
+
+    - name: send alert on Slack if failure
+      if: always()
+      uses: ravsamhq/notify-slack-action@2.5.0
+      with: 
+        status: ${{ job.status }}
+        notify_when: failure
+        notification_title: "GH Action Failed - <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|View Failed Run>"
+        footer: "<${{github.server_url}}/${{github.repository}}/issues/|Open GitHub Issues>"
+      env: 
+        SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK_WEBHOOK_URL }}
