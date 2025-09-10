@@ -58,14 +58,26 @@ def main(run_name, copy_to_veda=False):
     
     logger.info(settings.model_dump())
 
-    if settings.RUN_NAME is None or settings.TST is None or settings.TED is None:
+    if settings.RUN_NAME is None or settings.TST is None:
         raise ValueError("Run parameters are not defined in run_config.yaml. "
         "To use this script, you must define the full run parameters and settings in " 
         " FEDSinput/run_definitions/{run_name}/run_config.yaml.")
     else: 
         # parse TST and TED 
         tst = settings.TST
-        ted = settings.TED
+
+        if settings.TED is not None: 
+            ted = settings.TED
+        else: 
+            # if no end time set, use current time (for NRT runs) 
+            ctime = dt.datetime.now(tz=dt.timezone.utc)
+            if ctime.hour >= 18: 
+                ampm = 'PM' 
+            else: 
+                ampm = 'AM'
+            ted = [ctime.year, ctime.month, ctime.day, ampm]
+        
+        
         regnm = settings.RUN_NAME 
         if settings.REGION_SHAPEFILE is not None: 
             region = [regnm, settings.REGION_SHAPEFILE]
