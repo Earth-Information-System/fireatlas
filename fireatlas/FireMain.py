@@ -708,7 +708,7 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
 
     # Look for also rare case where two satellites have the exact lat/lon pair at different times.
     # This is for both NRT and archival runs
-    all_pixels = adjust_coincident_pixels(allpixels)
+    allpixels = adjust_coincident_pixels(allpixels)
 
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
