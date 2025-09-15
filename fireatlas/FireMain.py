@@ -703,10 +703,11 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
     else:
         allpixels = pd.concat(non_empty_dfs)
 
-    if settings.FIRE_NRT == True:
+    if settings.FIRE_NRT == True: # Check for rare case with dupliated NRT pixels exist. Flag and remove them if detected. 
         allpixels = flag_and_remove_duplicate_pixels(allpixels)
 
-    # look for coincident pixels where two satellites have the exact lat/lon pair
+    # Look for also rare case where two satellites have the exact lat/lon pair at different times.
+    # This is for both NRT and archival runs
     all_pixels = adjust_coincident_pixels(allpixels)
 
     allpixels["fid"] = -1
