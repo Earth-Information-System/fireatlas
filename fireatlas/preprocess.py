@@ -18,6 +18,7 @@ from fireatlas.FireClustering import do_clustering
 from fireatlas.FireTime import t_generator, t2dt, t_nb, t_nd, t_nm
 from fireatlas import FireIO, FireMain, settings, FireTime
 
+
 def preprocessed_region_filename(region: Region, location: Location = None):
     return os.path.join(
         settings.get_path(location), settings.PREPROCESSED_DIR, region[0], f"{region[0]}.json"
@@ -334,7 +335,7 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
             df = FireIO.read_FIRMS_VIIRS_NRT(f)
         elif "FIRMS_VIIRS_NOAA20_SP" in f: 
             sat = "NOAA20" 
-            df = FireIO.read_FIRMS_VIIRS_SP
+            df = FireIO.read_FIRMS_VIIRS_SP(f)
             df = df.loc[df["Type"] == 0]
             # Type filter: inferred hot spot type == presumed vegetation fire
         elif "FIRMS_VIIRS_NOAA21_NRT" in f: 
@@ -366,14 +367,19 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
         
     df = FireIO.AFP_setampm(df)
     df["Sat"] = sat 
-
     # groupby days and if there are more than 1 days, include a progress bar
     gb = df.groupby(df["local_datetime"].dt.date)
-
+    
     # return selected columns
-    df = df[
-        ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
-    ]
+    
+    if settings.FIRE_NRT == True: # preserve version code if working with NRT data
+        df = df[
+            ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm", "version"]
+        ]
+    else: 
+        df = df[
+            ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
+        ]
 
     output_paths = []
 
@@ -383,15 +389,13 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
     for day, data in gb:
         for ampm in ["AM", "PM"]:
             time_filtered_df = data.loc[data["ampm"] == ampm]
-            
             if len(time_filtered_df)>0: # if there's data for this ampm condition, write it out
                 output_filepath = preprocessed_filename(
                     (day.year, day.month, day.day, ampm), sat=sat, location="local"
                 )
-    
+                
                 # make nested path if necessary
                 os.makedirs(os.path.dirname(output_filepath), exist_ok=True)
-    
                 # save active pixels at this time step (day and ampm filter)
                 time_filtered_df.to_csv(output_filepath, index=False)
     
@@ -484,7 +488,6 @@ def read_preprocessed_input(
     
     filename = preprocessed_filename(t, sat=sat, location=location)
     df = pd.read_csv(filename)
-
     return df
 
 
@@ -556,6 +559,9 @@ def preprocess_region_t(
         "x",
         "y",
     ]
+
+    if settings.FIRE_NRT == True:
+        columns.append("version") # preserve version type with NRT data
 
     if not df.empty:
         # return selected columns
