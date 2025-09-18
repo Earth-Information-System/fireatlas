@@ -10,13 +10,13 @@ import warnings
 import fsspec
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, validator, field_validator
-
+from dotenv import find_dotenv
 
 from fireatlas.FireTypes import Location
 
 root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
-DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
+DOTENV_ABS_PATH = find_dotenv(usecwd=True)
 
 
 class Settings(BaseSettings):
