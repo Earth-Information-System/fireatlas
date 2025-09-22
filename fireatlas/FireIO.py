@@ -710,7 +710,8 @@ def read_FIRMS_VIIRS_SP(filepath: str):
         "confidence",
         "frp", 
         "daynight",
-        "type"
+        "type",
+        "version"
     ]
 
     df = pd.read_csv(
@@ -767,7 +768,8 @@ def read_FIRMS_VIIRS_NRT(filepath: str):
         "acq_time", 
         "confidence",
         "frp", 
-        "daynight"
+        "daynight",
+        "version"
     ]
 
     df = pd.read_csv(

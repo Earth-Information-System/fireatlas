@@ -97,14 +97,13 @@ def doConvH(locs):
         calculated hull shape
     """
     # calculate the convex hull using scipy.spatial.ConvexHull
-    qhull = ConvexHull(locs, qhull_options="QJ")
 
+    qhull = ConvexHull(locs)
     # derive qhull object vertices
     verts = locs[qhull.vertices]
-
     # convert vertices to polygon
     hull = Polygon(verts)
-        
+            
     return hull
 
 
@@ -125,7 +124,7 @@ def cal_hull(locs):
         buf = settings.VIIRSbuf
     elif settings.FIRE_SENSOR == "mcd64":
         buf = settings.MCD64buf
-
+    
     # number of pixels
     nfp = len(locs)
     hull = None
