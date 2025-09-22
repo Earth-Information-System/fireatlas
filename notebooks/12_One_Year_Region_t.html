@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,14 +67,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-878517576f1d26f620a04c34514a32c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-ccb09d2c802c71ded68f49e9866762b5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -114,6 +115,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="index.qmd" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="index.qmd">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
@@ -143,7 +146,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
       <a href="index.qmd" class="sidebar-logo-link">
-      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
     <a href="https://fire.eis.smce.nasa.gov/" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-globe"></i></a>
@@ -277,11 +281,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <p>Generate all the <code>preprocess_region_t</code> files for a particular region for a particular year. And move all those files to s3.</p>
 <div id="0b7808ca-e858-4392-a878-c98bb7abc1e2" class="cell" data-tags="[]" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you haven't installed the fireatlas code yet, uncomment the following line and run this cell.</span></span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># If you haven't installed the fireatlas code yet, uncomment the following line and run this cell.</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co"># !pip install -e .. -q</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># After this runs, restart the notebook kernel.</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co"># After this runs, restart the notebook kernel.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <div class="ansi-escaped-output">
 <pre><span class="ansi-yellow-fg">WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv</span><span class="ansi-yellow-fg">
@@ -291,21 +295,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 <div id="87a90174-7d52-478d-a80a-2f9733f08c67" class="cell" data-tags="[]" data-execution_count="1">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas <span class="im">import</span> preprocess, postprocess, FireIO, FireTime, FireMain, settings</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas <span class="im">import</span> preprocess, postprocess, FireIO, FireTime, FireMain, settings</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="st">'AM'</span>]</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ted <span class="op">=</span> [<span class="dv">2024</span>, <span class="dv">1</span>, <span class="dv">1</span>, <span class="st">'AM'</span>]</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> (<span class="st">'WesternUS'</span>,[<span class="op">-</span><span class="fl">125.698046875</span>,<span class="fl">31.676476158707615</span>,</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>                       <span class="op">-</span><span class="fl">101.00078125</span>,<span class="fl">49.51429477264348</span>])</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>list_of_ts <span class="op">=</span> FireTime.t_generator(tst, ted)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>list_of_ts <span class="op">=</span> FireTime.t_generator(tst, ted)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>2024-04-03 07:56:46,860 - fireatlas.FireLog - INFO - logger initialized!</code></pre>
 </div>
 </div>
 <div id="0b1e30f5-5505-4786-adcc-501e09a3c053" class="cell" data-tags="[]" data-execution_count="2">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>output_filename <span class="op">=</span> preprocess.preprocess_region(region)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>FireIO.copy_from_local_to_s3(output_filename)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>FireIO.copy_from_local_to_s3(output_filename)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>2024-04-03 07:56:47,506 - fireatlas.FireLog - INFO - Preprocessing has already occurred for this region.
 2024-04-03 07:56:47,506 - fireatlas.FireLog - INFO - func:preprocess_region took: 9.05 ms</code></pre>
@@ -316,17 +320,17 @@ Wall time: 9.64 ms</code></pre>
 </div>
 </div>
 <div id="f99fbaa3-9407-4ff2-8ff3-6a0334112088" class="cell" data-tags="[]" data-execution_count="3">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>settings.fs.glob(<span class="ss">f"</span><span class="sc">{</span>settings<span class="sc">.</span>get_path()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>settings<span class="sc">.</span>PREPROCESSED_DIR<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>region[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">/*"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>settings.fs.glob(<span class="ss">f"</span><span class="sc">{</span>settings<span class="sc">.</span>get_path()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>settings<span class="sc">.</span>PREPROCESSED_DIR<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>region[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">/*"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <pre><code>['maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/VIIRS',
  'maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/WesternUS/WesternUS.json']</code></pre>
 </div>
 </div>
 <div id="dc07b848-18c4-4eea-8129-bd449dea11be" class="cell" data-quarto-private-1="{&quot;key&quot;:&quot;jupyter&quot;,&quot;value&quot;:{&quot;outputs_hidden&quot;:true}}" data-tags="[]">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> list_of_ts:</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    local_filename <span class="op">=</span> preprocess.preprocess_region_t(t, region<span class="op">=</span>region)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    FireIO.copy_from_local_to_s3(local_filename)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    FireIO.copy_from_local_to_s3(local_filename)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>2024-03-26 14:27:21,575 - FireLog - INFO - func:read_region took: 434.71 ms
 2024-03-26 14:27:21,576 - FireLog - INFO - filtering and clustering 2023-1-24 AM, VIIRS, WesternUS
@@ -1519,7 +1523,7 @@ Wall time: 9.64 ms</code></pre>
 </div>
 <p>Once that process completes we can take a look at how long it took to generate each file. Keep in mind that all this happened purely in serial.</p>
 <div id="a0761c42-8190-4d2d-8b4b-506d1fb07d7e" class="cell" data-tags="[]" data-execution_count="4">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>s3_files <span class="op">=</span> settings.fs.glob(<span class="ss">f"</span><span class="sc">{</span>settings<span class="sc">.</span>get_path()<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>settings<span class="sc">.</span>PREPROCESSED_DIR<span class="sc">}</span><span class="ss">/</span><span class="sc">{</span>region[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">/VIIRS/2023*"</span>, detail<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>s3_files_df <span class="op">=</span> pd.json_normalize(s3_files.values())</span>
@@ -1528,7 +1532,7 @@ Wall time: 9.64 ms</code></pre>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>s3_files_df[<span class="st">"took"</span>] <span class="op">=</span> s3_files_df.iloc[<span class="dv">24</span><span class="op">*</span><span class="dv">2</span>:][<span class="st">"LastModified"</span>].diff().dt.seconds</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>s3_files_df[<span class="st">"datetime"</span>] <span class="op">=</span> pd.to_datetime(s3_files_df.name.<span class="bu">apply</span>(<span class="kw">lambda</span> path: path.split(<span class="st">'/'</span>)[<span class="op">-</span><span class="dv">1</span>].split(<span class="st">'_'</span>)[<span class="dv">0</span>]))</span>
 <span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>s3_files_df.plot(x<span class="op">=</span><span class="st">"datetime"</span>, y<span class="op">=</span><span class="st">"took"</span>, ylabel<span class="op">=</span><span class="st">"seconds"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>s3_files_df.plot(x<span class="op">=</span><span class="st">"datetime"</span>, y<span class="op">=</span><span class="st">"took"</span>, ylabel<span class="op">=</span><span class="st">"seconds"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
@@ -1592,13 +1596,14 @@ Wall time: 9.64 ms</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

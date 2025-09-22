@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,14 +67,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-878517576f1d26f620a04c34514a32c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-ccb09d2c802c71ded68f49e9866762b5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -114,6 +115,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="index.qmd" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="index.qmd">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
@@ -143,7 +146,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
       <a href="index.qmd" class="sidebar-logo-link">
-      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
     <a href="https://fire.eis.smce.nasa.gov/" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-globe"></i></a>
@@ -260,31 +264,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <div id="c6ec38e0-8204-46aa-b675-b08414cd08cb" class="cell" data-tags="[]" data-execution_count="75">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> maap.maap <span class="im">import</span> MAAP</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>maap <span class="op">=</span> MAAP(maap_host<span class="op">=</span><span class="st">'api.maap-project.org'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> maap.maap <span class="im">import</span> MAAP</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>maap <span class="op">=</span> MAAP(maap_host<span class="op">=</span><span class="st">'api.maap-project.org'</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="525c6d64-832a-4b4b-9762-dd3f58642c82" class="cell" data-tags="[]" data-execution_count="76">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> glob, os</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> glob, os</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>current_dir <span class="op">=</span> os.getcwd()</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> glob.glob(<span class="ss">f'</span><span class="sc">{</span>current_dir<span class="sc">}</span><span class="ss">/*/algorithm_config.yaml'</span>)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>current_scheduled_algos <span class="op">=</span> [<span class="st">'coordinator'</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>current_scheduled_algos <span class="op">=</span> [<span class="st">'coordinator'</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="3ce71f70-20b0-4ebd-9732-9255c0d2bc61" class="cell" data-tags="[]" data-execution_count="77">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>targets <span class="op">=</span> []</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>targets <span class="op">=</span> []</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> algo_to_register <span class="kw">in</span> current_scheduled_algos:</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> config <span class="kw">in</span> configs:</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> algo_to_register <span class="kw">in</span> config:</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>            targets.append(config)</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target <span class="kw">in</span> <span class="bu">list</span>(<span class="bu">set</span>(targets)):</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(target)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(target)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>/projects/fireatlas_nrt/maap_runtime/coordinator/algorithm_config.yaml</code></pre>
 </div>
 </div>
 <div id="f33978d4-5af2-4f44-b8fa-d269a9e745d5" class="cell" data-tags="[]" data-execution_count="78">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target_path <span class="kw">in</span> targets:</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> target_path <span class="kw">in</span> targets:</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    response <span class="op">=</span> maap.register_algorithm_from_yaml_file(target_path)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(response.text)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(response.text)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{"code": 200, "message": {"id": "c24236eee2dd20ab37949f307f550b14f1ea7261", "short_id": "c24236ee", "created_at": "2024-03-30T14:09:05.000+00:00", "parent_ids": ["0c92a509126d20e15a8d1c6328b103ed26f8dc16"], "title": "Registering algorithm: eis-feds-dask-coordinator-v3", "message": "Registering algorithm: eis-feds-dask-coordinator-v3", "author_name": "root", "author_email": "root@156a1941fa17", "authored_date": "2024-03-30T14:09:05.000+00:00", "committer_name": "root", "committer_email": "root@156a1941fa17", "committed_date": "2024-03-30T14:09:05.000+00:00", "trailers": {}, "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/commit/c24236eee2dd20ab37949f307f550b14f1ea7261", "stats": {"additions": 2, "deletions": 2, "total": 4}, "status": "pending", "project_id": 3, "last_pipeline": {"id": 13289, "iid": 1000, "project_id": 3, "sha": "c24236eee2dd20ab37949f307f550b14f1ea7261", "ref": "main", "status": "pending", "source": "push", "created_at": "2024-03-30T14:09:06.607Z", "updated_at": "2024-03-30T14:09:07.125Z", "web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/pipelines/13289"}, "job_web_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/13560", "job_log_url": "https://repo.maap-project.org/root/register-job-hysds-v4/-/jobs/13560/raw"}}
 </code></pre>
@@ -345,13 +349,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy

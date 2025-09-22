@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.7.34">
+<meta name="generator" content="quarto-1.8.24">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -67,14 +67,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <meta name="quarto:offset" content="../">
 <script src="../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
 <script src="../site_libs/quarto-html/popper.min.js"></script>
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-c8ad9e5dbd60b7b70b38521ab19b7da4.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dc55a5b9e770e841cd82e46aadbfb9b0.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-878517576f1d26f620a04c34514a32c1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-ccb09d2c802c71ded68f49e9866762b5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -114,6 +115,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
+    <a href="index.qmd" class="navbar-brand navbar-brand-logo">
+    </a>
     <a class="navbar-brand" href="index.qmd">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
@@ -143,7 +146,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
       <a href="index.qmd" class="sidebar-logo-link">
-      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
+      <img src="../docs/images/nasa.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
     <a href="https://fire.eis.smce.nasa.gov/" title="" class="quarto-navigation-tool px-1" aria-label=""><i class="bi bi-globe"></i></a>
@@ -285,10 +289,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This notebook interacts with the MAAP API. It submits and runs all DPS jobs in the same order they run inside <code>fireatlas.FireRunDaskCoordinator.py</code>. Each step runs separately and blocks for successful output.</p>
 <p>The <code>poll_on_job_status</code> and <code>wait_for_job</code> allow us to block and get DPS job status for muliptle jobs before we continue on</p>
 <div id="22c7fa4c-505e-4302-a7b9-ce298fc3b1d4" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!pip install -e ..</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!pip install -e ..</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="ef5b0200-485d-4c4e-adf6-e54124b8b8f2" class="cell" data-tags="[]" data-execution_count="55">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> functools</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> functools</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> argparse</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
@@ -359,18 +363,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> track_submitted_jobs(submitted_jobs: Tuple[DPSJob]) <span class="op">-&gt;</span> Tuple[DPSJob]:</span>
 <span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>    queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span>
 <span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>    failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> failed_jobs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> failed_jobs</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="49361f6a-216a-4f03-bd13-8c16e956d8de" class="cell" data-tags="[]" data-execution_count="56">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="st">'AM'</span>]</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="st">'AM'</span>]</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ted <span class="op">=</span> [<span class="dv">2023</span>,<span class="dv">3</span>,<span class="dv">1</span>,<span class="st">'PM'</span>]</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> [<span class="st">"ShastaTrinity"</span>, [<span class="op">-</span><span class="fl">124.354248</span>,<span class="fl">40.624376</span>,<span class="op">-</span><span class="fl">122.250366</span>,<span class="fl">42.045213</span>]]</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>list_of_time_steps <span class="op">=</span> <span class="bu">list</span>(FireTime.t_generator(tst, ted))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>list_of_time_steps <span class="op">=</span> <span class="bu">list</span>(FireTime.t_generator(tst, ted))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="data-update-checker" class="level4">
 <h4 class="anchored" data-anchor-id="data-update-checker">Data Update Checker</h4>
 <div id="a58bdcdf-dbda-4ae3-94c7-52a767d6aa65" class="cell" data-tags="[]" data-execution_count="58">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'coordinator'</span>,])</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'coordinator'</span>,])</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>maap_api <span class="op">=</span> MAAP(maap_host<span class="op">=</span><span class="st">'api.maap-project.org'</span>)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>algo_config <span class="op">=</span> algorithm_utils.read_yaml_file(configs[<span class="dv">0</span>])</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>algo_config.pop(<span class="st">'inputs'</span>)</span>
@@ -389,7 +393,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>                <span class="st">"bbox"</span>: region[<span class="dv">1</span>], <span class="st">"ted"</span>: json.dumps(ted), <span class="st">"operation"</span>: <span class="st">"--data-update"</span>}</span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> maap_api.submitJob(<span class="op">**</span>submit_job_kwargs, <span class="op">**</span>param_kwargs)</span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>submitted_jobs.append(result)</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{'algorithm_name': 'eis-feds-dask-coordinator-v3', 'algorithm_description': 'coordinator for all regional jobs, preprocess and FireForward steps', 'algorithm_version': '1.0.0', 'environment': 'ubuntu', 'repository_url': 'https://repo.maap-project.org/gcorradini/fireatlas_nrt.git', 'docker_container_url': 'mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4', 'queue': 'maap-dps-eis-worker-64gb', 'run_command': 'fireatlas_nrt/maap_runtime/run_dps_cli.sh', 'build_command': 'fireatlas_nrt/maap_runtime/run_dps_build.sh', 'disk_space': '100GB'}</code></pre>
 </div>
@@ -398,14 +402,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="job-monitoring" class="level4">
 <h4 class="anchored" data-anchor-id="job-monitoring">Job Monitoring</h4>
 <div id="a6cfceb2-df63-4e29-8a97-6618d525318d" class="cell" data-tags="[]" data-execution_count="59">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>[maap_api.getJobStatus(job.<span class="bu">id</span>) <span class="cf">for</span> job <span class="kw">in</span> queued_jobs]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>[maap_api.getJobStatus(job.<span class="bu">id</span>) <span class="cf">for</span> job <span class="kw">in</span> queued_jobs]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="59">
 <pre><code>['Accepted']</code></pre>
 </div>
 </div>
 <div id="e2ad9e12-14a4-4ea3-bdfe-829a91aa6fb4" class="cell" data-tags="[]" data-execution_count="60">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>INFO:backoff:Backing off wait_for_completion(...) for 0.2s (RuntimeError)
 INFO:backoff:Backing off wait_for_completion(...) for 0.2s (RuntimeError)
@@ -439,7 +443,7 @@ Wall time: 8min 41s</code></pre>
 <section id="preprocess-region" class="level3">
 <h3 class="anchored" data-anchor-id="preprocess-region">Preprocess Region</h3>
 <div id="d8631fa4-05b3-420b-b44b-bd8622662ef4" class="cell" data-tags="[]" data-execution_count="61">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'coordinator'</span>,])</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'coordinator'</span>,])</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>maap_api <span class="op">=</span> MAAP(maap_host<span class="op">=</span><span class="st">'api.maap-project.org'</span>)</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>algo_config <span class="op">=</span> algorithm_utils.read_yaml_file(configs[<span class="dv">0</span>])</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>algo_config.pop(<span class="st">'inputs'</span>)</span>
@@ -457,7 +461,7 @@ Wall time: 8min 41s</code></pre>
 <span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>                <span class="st">"bbox"</span>: region[<span class="dv">1</span>], <span class="st">"ted"</span>: json.dumps(ted), <span class="st">"operation"</span>: <span class="st">"--preprocess-region"</span>}</span>
 <span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> maap_api.submitJob(<span class="op">**</span>submit_job_kwargs, <span class="op">**</span>param_kwargs)</span>
 <span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>submitted_jobs.append(result)</span>
-<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>{'algorithm_name': 'eis-feds-dask-coordinator-v3', 'algorithm_description': 'coordinator for all regional jobs, preprocess and FireForward steps', 'algorithm_version': '1.0.0', 'environment': 'ubuntu', 'repository_url': 'https://repo.maap-project.org/gcorradini/fireatlas_nrt.git', 'docker_container_url': 'mas.maap-project.org/root/maap-workspaces/base_images/vanilla:v3.1.4', 'queue': 'maap-dps-eis-worker-64gb', 'run_command': 'fireatlas_nrt/maap_runtime/run_dps_cli.sh', 'build_command': 'fireatlas_nrt/maap_runtime/run_dps_build.sh', 'disk_space': '100GB'}</code></pre>
 </div>
@@ -465,14 +469,14 @@ Wall time: 8min 41s</code></pre>
 <section id="job-monitoring-1" class="level4">
 <h4 class="anchored" data-anchor-id="job-monitoring-1">Job Monitoring</h4>
 <div id="108242a8-a73e-4fee-8c4f-04256790f73d" class="cell" data-tags="[]" data-execution_count="62">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>[maap_api.getJobStatus(job.<span class="bu">id</span>) <span class="cf">for</span> job <span class="kw">in</span> queued_jobs]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>[maap_api.getJobStatus(job.<span class="bu">id</span>) <span class="cf">for</span> job <span class="kw">in</span> queued_jobs]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="62">
 <pre><code>['Running']</code></pre>
 </div>
 </div>
 <div id="9b4536d7-ed9f-4599-a711-6dfdafad6205" class="cell" data-tags="[]" data-execution_count="63">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>INFO:backoff:Backing off wait_for_completion(...) for 0.3s (RuntimeError)
 INFO:backoff:Backing off wait_for_completion(...) for 1.3s (RuntimeError)
@@ -491,7 +495,7 @@ Wall time: 24.2 s</code></pre>
 <section id="preprocess-region-t" class="level3">
 <h3 class="anchored" data-anchor-id="preprocess-region-t">Preprocess Region T</h3>
 <div id="48b14b4b-cc0f-488b-bf31-a8c8b6bc080e" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'operation'</span>,])</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'operation'</span>,])</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>maap_api <span class="op">=</span> MAAP(maap_host<span class="op">=</span><span class="st">'api.maap-project.org'</span>)</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>algo_config <span class="op">=</span> algorithm_utils.read_yaml_file(configs[<span class="dv">0</span>])</span>
 <span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>algo_config.pop(<span class="st">'inputs'</span>)</span>
@@ -517,25 +521,25 @@ Wall time: 24.2 s</code></pre>
 <span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> maap_api.submitJob(<span class="op">**</span>submit_job_kwargs, <span class="op">**</span>param_kwargs)</span>
 <span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>    submitted_jobs.append(result)</span>
-<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="job-monitoring-2" class="level4">
 <h4 class="anchored" data-anchor-id="job-monitoring-2">Job Monitoring</h4>
 <div id="7af92d79-6960-4ded-ba7e-e5ff92e56762" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#[maap_api.getJobStatus(job.id) for job in queued_jobs]</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co">#[maap_api.getJobStatus(job.id) for job in queued_jobs]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="f146007e-3110-4204-876e-d347aade5fd8" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="7005e381-b12e-41c4-ae7b-ecb6e72543e5" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(failed_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(failed_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="fireforward" class="level4">
 <h4 class="anchored" data-anchor-id="fireforward">FireForward</h4>
 <div id="9684e956-9e80-4632-bdf8-a752ceacc27d" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'coordinator'</span>,])</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'coordinator'</span>,])</span>
 <span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>maap_api <span class="op">=</span> MAAP(maap_host<span class="op">=</span><span class="st">'api.maap-project.org'</span>)</span>
 <span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>algo_config <span class="op">=</span> algorithm_utils.read_yaml_file(configs[<span class="dv">0</span>])</span>
 <span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>algo_config.pop(<span class="st">'inputs'</span>)</span>
@@ -554,23 +558,23 @@ Wall time: 24.2 s</code></pre>
 <span id="cb22-17"><a href="#cb22-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb22-18"><a href="#cb22-18" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> maap_api.submitJob(<span class="op">**</span>submit_job_kwargs, <span class="op">**</span>param_kwargs)</span>
 <span id="cb22-19"><a href="#cb22-19" aria-hidden="true" tabindex="-1"></a>submitted_jobs.append(result)</span>
-<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb22-20"><a href="#cb22-20" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="job-monitoring-3" class="level4">
 <h4 class="anchored" data-anchor-id="job-monitoring-3">Job Monitoring</h4>
 <div id="3e2314a3-2e67-410f-8e4d-284187e27407" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>[maap_api.getJobStatus(job.<span class="bu">id</span>) <span class="cf">for</span> job <span class="kw">in</span> queued_jobs]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>[maap_api.getJobStatus(job.<span class="bu">id</span>) <span class="cf">for</span> job <span class="kw">in</span> queued_jobs]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="48c6fa1f-975c-4f00-ad60-61cad297305a" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="634f7378-9207-4eb4-98af-783aacd0de92" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(failed_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="bu">len</span>(failed_jobs)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="ae0c2152-3a63-4305-a2e4-cb57549c7f5e" class="cell" data-tags="[]">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#failed_jobs[0].result().retrieve_result()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co">#failed_jobs[0].result().retrieve_result()</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 
 
@@ -629,13 +633,14 @@ Wall time: 24.2 s</code></pre>
       e.clearSelection();
     }
     const getTextToCopy = function(trigger) {
-        const codeEl = trigger.previousElementSibling.cloneNode(true);
-        for (const childEl of codeEl.children) {
-          if (isCodeAnnotation(childEl)) {
-            childEl.remove();
-          }
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
         }
-        return codeEl.innerText;
+      }
+      return codeEl.innerText;
     }
     const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
       text: getTextToCopy
