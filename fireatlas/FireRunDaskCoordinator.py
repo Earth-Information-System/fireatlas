@@ -259,7 +259,6 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             sp_start, sp_end, nrt_start, nrt_end = get_FIRMS_data_availability(sat)
 
             # use these to ensure all downloads are done before any preprocessing starts
-            download_futures = {} # (t, sat) -> dask future 
             preprocess_tasks = {} # (t, sat) -> filepath
 
             for t in timesteps: 
@@ -275,14 +274,16 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                         preprocess_tasks[(t, sat)] = fp 
                     # if we don't already have this input file, try to download from FIRMS 
                     else: 
-                        download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
+                        downloaded_fp = update_FIRMS(d, sat, "NRT")
+                        preprocess_tasks[(t, sat)] = downloaded_fp
                 elif sp_start and d >= sp_start: # check if sp_start because NOAA21 does not have yet
                     # in standard product availability range 
                     fp = sp_filepath_func(t)
                     if fs.exists(fp): 
                         preprocess_tasks[(t, sat)] = fp 
                     else: 
-                        download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "SP")
+                        downloaded_fp = update_FIRMS(d, sat, "SP")
+                        preprocess_tasks[(t, sat)] = downloaded_fp
                 else: 
                     # either before sp_start, or this is NOAA21 (so, no sp_start) and it is before 
                     # nrt start. either way, warn but allow
@@ -310,10 +311,6 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                     logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
                                    "Date may be out of range.")
 
-            if len(download_futures) > 0: 
-                # block to finish downloads before starting any preprocessing
-                downloaded_paths = client.gather(download_futures)
-                preprocess_tasks.update(downloaded_paths)
 
             # schedule preprocessing 
             for (tk, satk), fp in preprocess_tasks.items(): 
