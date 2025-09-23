@@ -45,7 +45,7 @@ def doConcH(points, alpha):
         edge_points.append(coords[[i, j]])
 
     coords = points
-    tri = Delaunay(coords, qhull_options="QJ")
+    tri = Delaunay(coords)
     edges = set()
     edge_points = []
 
