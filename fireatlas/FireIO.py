@@ -25,7 +25,7 @@ from datetime import datetime, date
 
 from fireatlas.FireLog import logger
 from fireatlas.FireTypes import TimeStep
-# from fireatlas.FireConsts import YAML_FILENAME
+from fireatlas.FireConsts import YAML_FILENAME
 from fireatlas import FireTime, settings
 
 
