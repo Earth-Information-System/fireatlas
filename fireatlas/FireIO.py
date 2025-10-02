@@ -409,48 +409,7 @@ def read_VJ114IMGML(filepath: str):
     df : pandas.DataFrame
         monthly DataFrame containing standardized columns of VIIRS active fires
     """
-    usecols = [
-        "year",
-        "month",
-        "day",
-        "hh",
-        "mm",
-        "lon",
-        "lat",
-        "mask",
-        "line",
-        "sample",
-        "frp",
-    ]
-
-    df = pd.read_csv(
-        filepath,
-        dtype={col: "string" for col in ["year", "month", "day", "hh", "mm"]},
-        usecols=usecols,
-        skipinitialspace=True,
-    )
-    df["datetime"] = pd.to_datetime(
-        df["year"]
-        + "-"
-        + df["month"]
-        + "-"
-        + df["day"]
-        + " "
-        + df["hh"]
-        + ":"
-        + df["mm"],
-        format="%Y-%m-%d %H:%M",
-    )
-    df = df.rename(
-        columns={
-            "lat": "Lat",
-            "lon": "Lon",
-            "frp": "FRP",
-            "line": "Line",
-            "sample": "Sample",
-        }
-    )
-    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    df = read_VNP14IMGML(filepath) # fields are the same for the latest version (C2.04)
     return df
 
 
