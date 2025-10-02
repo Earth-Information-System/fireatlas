@@ -221,7 +221,7 @@ def VNP14IMGML_filepath(t: TimeStep):
     Parameters
     ----------
     t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the initialization
+        the year, month, day and 'AM'|'PM' 
 
     Returns
     -------
@@ -235,17 +235,23 @@ def VNP14IMGML_filepath(t: TimeStep):
         "VIIRS",
         "VNP14IMGML",
     )
-    # prefers collection 2 version 3 (latest as of July 2025)
-    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.03.csv")
-    if not settings.fs.exists(filepath):
-        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
-    if not settings.fs.exists(filepath):
-        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
-    if not settings.fs.exists(filepath):
-        logger.warning(f"No VNP14IMGML file found for {year}-{month:02}")
-        return
 
-    return filepath
+    # filename patterns in order of preference
+    versions = [
+        f"VNP14IMGML.{year}{month:02}.C2.04.csv",
+        f"VNP14IMGML.{year}{month:02}.C2.03.csv",
+        f"VNP14IMGML.{year}{month:02}.C2.02.csv",
+        f"VNP14IMGML.{year}{month:02}.C2.01.txt",
+        f"VNP14IMGML.{year}{month:02}.C1.05.txt",
+    ]
+
+    for filename in versions:
+        filepath = os.path.join(file_dir, filename)
+        if settings.fs.exists(filepath):
+            return filepath
+
+    logger.warning(f"No monthly data available for SNPP for {year}-{month:02}")
+    return None
 
 
 def read_VNP14IMGML(filepath: str):
@@ -375,15 +381,16 @@ def VJ114IMGML_filepath(t: TimeStep):
     filepath : str
         Path to input data or None if file does not exist
     """
-    year, month = t[0], t[1]
 
-    file_dir = os.path.join(
+    year, month = t[0], t[1] 
+    
+    filepath = os.path.join(
         settings.dirextdata,
         "VIIRS",
         "VJ114IMGML",
+        f"VJ114IMGML.{year}{month:02}.C2.04.csv",
     )
-    # looks for collection 2 version 3 (latest as of July 2025)
-    filepath = os.path.join(file_dir, f"VJ114IMGML.{year}{month:02}.C2.03.txt")
+
     if not settings.fs.exists(filepath):
         logger.warning(f"No VJ114IMGML file found for {year}-{month:02}")
         return
