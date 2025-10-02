@@ -263,7 +263,7 @@ class Settings(BaseSettings):
 
     ARCHIVE_RUN_JOB_SIZE: int = Field(
         10, 
-        description="How many days to run in each archive job chunk.") 
+        description="How many days to run in each archive job chunk."
     )
 
     # NIFC matching options
