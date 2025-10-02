@@ -245,7 +245,7 @@ def preprocess_input_file(filepath: str):
     elif "VJ114IMGML" in filepath:
         sat = "NOAA20"
         df = FireIO.read_VJ114IMGML(filepath)
-        df = df.loc[df["mask"] >= 7]
+        df = df.loc[df["Type"] == 0]  # type filtering
     else:
         raise ValueError("please set SNPP or NOAA20 for sat")
 
