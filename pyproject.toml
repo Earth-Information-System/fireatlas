@@ -11,7 +11,6 @@ readme = "README.md"
 authors = []
 classifiers = [
     "Development Status :: 1 - Planning",
-    "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python",
@@ -21,18 +20,17 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Topic :: NASA/EIS/Scientific/Engineering",
 ]
-license = { text = "Apache-2.0" }
 keywords = ["eis", "fireatlas"]
 dependencies = [
   "xarray",
   "pandas",
   "dask",
   "distributed",
-  "geopandas==0.14.4",
+  "geopandas<1",
   "fiona",
   "shapely",
   "fsspec",
-  "s3fs==2024.6.0",
+  "s3fs>=2024.6",
   "rtree",
   "scikit-learn",
   "pyarrow",
@@ -40,16 +38,17 @@ dependencies = [
   "rasterio",
   "pyproj",
   "tqdm",
-  "scalene",
-  "awscli", 
-  "numpy<2.0.0", 
-  "pyogrio"
+  "scalene", 
+  "numpy<2", 
+  "pyogrio", 
+  "requests",
+  "aiobotocore[boto3]==2.24.1"
 ]
 
 # [project.urls]
-# Homepage = ""
-# Tracker = ""
-# Documentation = ""
+# Homepage = "https://earth-information-system.github.io/fireatlas/docs/"
+# Repository = "https://github.com/Earth-Information-System/fireatlas"
+# Issues = "https://github.com/Earth-Information-System/fireatlas/issues"
 
 [tool.setuptools.packages.find]
 exclude = ["notebooks"]
@@ -69,6 +68,11 @@ write_to_template = "__version__ = '{version}'"
 test = [
     "pytest",
     "pytest-cov",
+]
+dev = [
+    "pytest", 
+    "pytest-cov", 
+    "ipykernel"
 ]
 
 [tool.coverage.run]

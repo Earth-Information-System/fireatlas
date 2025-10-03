@@ -25,6 +25,7 @@ from datetime import datetime, date
 
 from fireatlas.FireLog import logger
 from fireatlas.FireTypes import TimeStep
+from fireatlas.FireConsts import YAML_FILENAME
 from fireatlas import FireTime, settings
 
 
@@ -218,7 +219,7 @@ def VNP14IMGML_filepath(t: TimeStep):
     Parameters
     ----------
     t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' during the initialization
+        the year, month, day and 'AM'|'PM' 
 
     Returns
     -------
@@ -233,14 +234,22 @@ def VNP14IMGML_filepath(t: TimeStep):
         "VNP14IMGML",
     )
 
-    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
-    if not settings.fs.exists(filepath):
-        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
-    if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
-        return
+    # filename patterns in order of preference
+    versions = [
+        f"VNP14IMGML.{year}{month:02}.C2.04.csv",
+        f"VNP14IMGML.{year}{month:02}.C2.03.csv",
+        f"VNP14IMGML.{year}{month:02}.C2.02.csv",
+        f"VNP14IMGML.{year}{month:02}.C2.01.txt",
+        f"VNP14IMGML.{year}{month:02}.C1.05.txt",
+    ]
 
-    return filepath
+    for filename in versions:
+        filepath = os.path.join(file_dir, filename)
+        if settings.fs.exists(filepath):
+            return filepath
+
+    logger.warning(f"No monthly data available for SNPP for {year}-{month:02}")
+    return None
 
 
 def read_VNP14IMGML(filepath: str):
@@ -370,13 +379,16 @@ def VJ114IMGML_filepath(t: TimeStep):
     filepath : str
         Path to input data or None if file does not exist
     """
+
+    year, month = t[0], t[1] 
+    
     filepath = os.path.join(
         settings.dirextdata,
         "VIIRS",
         "VJ114IMGML",
-        str(t[0]),
-        f"VJ114IMGML_{t[0]}{t[1]:02}.txt",
+        f"VJ114IMGML.{year}{month:02}.C2.04.csv",
     )
+    
     if not settings.fs.exists(filepath):
         print("No data available for file", filepath)
         return
@@ -397,48 +409,7 @@ def read_VJ114IMGML(filepath: str):
     df : pandas.DataFrame
         monthly DataFrame containing standardized columns of VIIRS active fires
     """
-    usecols = [
-        "year",
-        "month",
-        "day",
-        "hh",
-        "mm",
-        "lon",
-        "lat",
-        "mask",
-        "line",
-        "sample",
-        "frp",
-    ]
-
-    df = pd.read_csv(
-        filepath,
-        dtype={col: "string" for col in ["year", "month", "day", "hh", "mm"]},
-        usecols=usecols,
-        skipinitialspace=True,
-    )
-    df["datetime"] = pd.to_datetime(
-        df["year"]
-        + "-"
-        + df["month"]
-        + "-"
-        + df["day"]
-        + " "
-        + df["hh"]
-        + ":"
-        + df["mm"],
-        format="%Y-%m-%d %H:%M",
-    )
-    df = df.rename(
-        columns={
-            "lat": "Lat",
-            "lon": "Lon",
-            "frp": "FRP",
-            "line": "Line",
-            "sample": "Sample",
-        }
-    )
-    df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    df = read_VNP14IMGML(filepath) # fields are the same for the latest version (C2.04)
     return df
 
 
@@ -2219,3 +2190,60 @@ def convert_v2_pkl_to_csv(files, output_dir, sat):
                     output_paths.append(output_filepath)
 
     return output_paths
+
+def s3_log_destination_path(run_id: str, ted: TimeStep):
+    """Provide destination path to copy logs from local to s3 output directory for this region. 
+    
+    Parameters 
+    ----------
+    run_id : str 
+        name of run definition 
+    ted : Timestep 
+        last timestep of the current run
+    Returns 
+    -------
+    path : str 
+        destination path 
+    """
+
+    ted_str = "ted_" + "".join(str(d) for d in ted) + "_"
+
+    return os.path.join(
+        settings.get_path(location="s3"), 
+        settings.OUTPUT_DIR, 
+        run_id, 
+        "logs", 
+        ted_str + os.path.basename(settings.LOG_FILEPATH)
+    )
+
+def s3_metadata_destination_path(run_name: str):
+    """Provide destination path to copy environment metadata from local to s3 output directory for this region. 
+    
+    Parameters 
+    ----------
+    run_name : str 
+        name of run definition 
+    Returns 
+    -------
+    path : str 
+        destination path 
+    """
+
+    return os.path.join(
+        settings.get_path(location="s3"), 
+        settings.OUTPUT_DIR, 
+        run_name, 
+        "logs", 
+        os.path.basename(settings.ENV_META_FILEPATH)
+    )
+
+def s3_config_path(run_name: str):
+    """Provide path where the config file for run_name is expected on s3. 
+    Example: 
+    s3://maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSinput/run_definitions/{run_name}/run_config.yaml"""
+    return os.path.join(
+        settings.get_path(location="s3"), 
+        settings.INPUT_DIR,
+        settings.REGIONS_DIR, 
+        run_name, 
+        YAML_FILENAME)
