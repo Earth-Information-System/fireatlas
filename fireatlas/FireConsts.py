@@ -137,7 +137,7 @@ class Settings(BaseSettings):
         description="File where static sources are stored",
     )
     remove_static_sources_buffer: float = Field(
-        0.01, description="Buffer around static source points. Units defined by epsg"
+        1000, description="1000m buffer around static source points."
     )
 
     remove_static_small_fires: bool = Field(

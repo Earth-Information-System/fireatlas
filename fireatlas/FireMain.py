@@ -153,17 +153,27 @@ def maybe_remove_static_sources(region: Region) -> Region:
     global_flaring = global_flaring.drop_duplicates()
     global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
 
-    global_flaring = gpd.GeoDataFrame(global_flaring, geometry=gpd.points_from_xy(global_flaring.Longitude, global_flaring.Latitude)) # Convert to point geometries
+    global_flaring = gpd.GeoDataFrame(
+        global_flaring, 
+        geometry=gpd.points_from_xy(global_flaring.Longitude, global_flaring.Latitude),
+        crs="EPSG:4326"
+    ) # Convert to point geometries
+
+    # Must buffer in projected CRS
+    global_flaring = global_flaring.to_crs(settings.EPSG_CODE)
     global_flaring["buffer_geometry"] = global_flaring.buffer(settings.remove_static_sources_buffer)
     global_flaring = global_flaring.set_geometry(col = "buffer_geometry")
+    # We expect this to be in geographic CRS, so project it back after done with geometric ops
+    global_flaring = global_flaring.to_crs("EPSG:4326") 
     
     # get region geometry
     reg = FireIO.get_reg_shp(region[1])
-    reg_df = gpd.GeoDataFrame.from_dict({"name":[region[0]], "geometry":[reg]}) # Put geometry into dataframe for join
-    
-    # ensure everything is in the same projection
-    global_flaring = global_flaring.set_crs("EPSG:" + str(settings.EPSG_CODE)) ## Translate to the user-input coordinate system
-    reg_df = reg_df.set_crs("EPSG:" + str(settings.EPSG_CODE))
+    reg_df = gpd.GeoDataFrame.from_dict(
+        {"name":[region[0]], "geometry":[reg]}, 
+        crs="EPSG:4326"
+    ) # Put geometry into dataframe for join
+
+    assert reg_df.crs == global_flaring.crs
     
     # Take the difference of points and region
     diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
