@@ -28,7 +28,7 @@ def filter_jobs_last_hour(jobs, status):
 
 
 def list_jobs():
-    jobs = maap.listJobs(username='zbecker')
+    jobs = maap.listJobs() # No longer takes username- now gives jobs for current user per MAAP_PGT env token
     return jobs.json()
 
 
