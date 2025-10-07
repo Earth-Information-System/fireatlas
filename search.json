@@ -299,6 +299,17 @@
     ]
   },
   {
+    "objectID": "docs/contributing.html#juptyer-notebooks",
+    "href": "docs/contributing.html#juptyer-notebooks",
+    "title": "Contributing",
+    "section": "Juptyer Notebooks",
+    "text": "Juptyer Notebooks\nTo use a Jupyter Notebook with the development environment:\n# First, create conda environment following directions in Step 1 above \n# Then, from the fireatlasroot dir: \n$ pip install .[dev]\n$ python -m ipykernel install --user --name fire_env --display-name \"Python - FEDS development environment\"\n# wait 30 seconds or so, then launch a new notebook. You should see this environment as an option to choose from in the launcher. \n \nThis assumes you are using a JupyterLab interface such as the MAAP ADE.",
+    "crumbs": [
+      "Developer Documentation",
+      "Contributing"
+    ]
+  },
+  {
     "objectID": "docs/contributing.html#editing-docs",
     "href": "docs/contributing.html#editing-docs",
     "title": "Contributing",
