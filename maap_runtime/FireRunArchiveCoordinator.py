@@ -70,6 +70,7 @@ def main(run_name, copy_to_veda=False):
             ted = settings.TED
         else: 
             # if no end time set, use current time (for NRT runs) 
+            # @TODO add time offset to convert from UTC time to local TimeStep
             ctime = dt.datetime.now(tz=dt.timezone.utc)
             if ctime.hour >= 18: 
                 ampm = 'PM' 
@@ -119,7 +120,7 @@ def main(run_name, copy_to_veda=False):
 
     # then run all region-plus-t in parallel that need it
     timesteps_needing_processing = get_timesteps_needing_region_t_processing(
-        tst, ted, region, force=True
+        tst, ted, region, force=True # @TODO is force needed? Might not want for NRT runs 
     )
     region_and_t_futures = client.map(
         partial(job_preprocess_region_t, region=region),

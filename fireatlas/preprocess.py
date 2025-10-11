@@ -449,6 +449,9 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     filepath = NRT_filepath(t, sat=sat)
     return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
+# @TODO - update line 2 of docstring, it is wrong
+# @TODO - maybe should look for FIRMS SP if settings.FIRE_NRT but there is no NRT file, because that can happen I think. 
+# depending on the status of the backfill perhaps 
 def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     """Find previous and next daily input files, then preprocess this timestep. 
     Prefers FIRMS standard product (SP) over FIRMS NRT if we have both. 
@@ -498,6 +501,7 @@ def read_preprocessed(
     location: Location = None,
 ):
     filename = preprocessed_filename(t, region=region, location=location)
+    # change to t_utc @TODO
     df = pd.read_csv(filename).set_index("uuid").assign(t=t2dt(t))
     df["datetime"] = pd.to_datetime(df["datetime"], format='ISO8601')
     return df
@@ -536,6 +540,7 @@ def preprocess_region_t(
             except (FileNotFoundError, pd.errors.EmptyDataError) as e:
                 logger.info(f"{sat} file or data not available at {t=}: '{str(e)}'")
         if len(dfs) == 0:
+            # @TODO maybe change to warning and allow? Could unblock NRT runs 
             raise ValueError(f"NOAA20, NOAA21, and SNPP files are not available for {t=}")
         else:
             df = pd.concat(dfs, ignore_index=True)

@@ -35,6 +35,7 @@ from fireatlas.FireLog import logger
 def getdd(layer):
     ''' Get attributes names and formats for different gpkg layers
     '''
+    # @TODO may need to make changes here to rename time cols. But, Yang said earlier prefer not to change- check why?
     # # attributes name and data  types (in addition to geometries)
     if layer == "all":
         dd = {

@@ -78,7 +78,10 @@ def get_timesteps_needing_region_t_processing(
     force = False,
 ):
     needs_processing = []
-    for t in t_generator(tst, ted):
+    # Update 10/11 I think this is fine actually as long as we assume that tst and ted are local TimeSteps throughout
+    # but, what about the case where there isn't yet an input file for this UTC date? Well, that would actually be a valid error, no? 
+    # no, it wouldn't- what if the preprocessed file for 2026-10-10 AM would draw from the current UTC input file 2026-10-09?
+    for t in t_generator(tst, ted): # @TODO this might be where assumptions break down- I think this maps UTC to local timesteps directly, which does not always hold
         filepath = preprocessed_filename(t, sat=sat, region=region)
         if not settings.fs.exists(filepath):
             needs_processing.append(t)
@@ -238,7 +241,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             futures.extend(client.map(partial(preprocess_monthly_file, sat=sat), existing_timesteps))
 
         elif settings.FIRE_NRT: 
-
+            # @TODO handle edge case of local ted is current UTC date + 1 
             if sat == "SNPP": 
                 nrt_filepath_func = FIRMS_VIIRS_SNPP_NRT_filepath
                 sp_filepath_func = FIRMS_VIIRS_SNPP_SP_filepath
@@ -265,6 +268,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                 d = dt.datetime(t[0], t[1], t[2])
 
                 if d > nrt_end: 
+                    # maybe just add something to make clear this is UTC date @TODO
                     logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}: date out of range.")
                     continue 
                 elif d >= nrt_start: # in NRT availability range
@@ -407,6 +411,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
 
+    # @TODO should maybe abstract this to a helper function to reuse 
     if ted in (None, "", []):  # if no end time is given, set it as the most recent time
         if ctime.hour >= 18:
             ampm = 'PM'

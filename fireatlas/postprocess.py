@@ -84,6 +84,7 @@ def read_allpixels(
     filepath = allpixels_filepath(tst, ted, region, location=location)
     df = pd.read_csv(filepath, index_col="uuid")
     for col in ["t", "datetime", "ext_until"]:
+        # @TODO change to t_utc
         df[col] = pd.to_datetime(df[col], format='ISO8601')
 
     return df
@@ -216,7 +217,7 @@ def save_snapshots(allfires_gdf, region, tst, ted, client=None):
     futures = []
     for t in t_generator(tst, ted):
         dt = t2dt(t)
-        data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last")
+        data = gdf[gdf.t <= dt].drop_duplicates("fireID", keep="last") #@TODO - is t in local time or UTC here? will be filtering wrong if dates are off.
         if client:
             futures.append(client.submit(save_snapshot_layers, data, region, tst, t))
         else:

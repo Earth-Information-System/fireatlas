@@ -37,7 +37,7 @@ class Allfires:
             the year, month, day and 'AM'|'PM'
         """
         # self.t = FireTime.t_nb(t,nb='previous') # initialize the object at the previous time step
-        self.t = t
+        self.t = t #@TODO TimeStep -> UTC 
 
         # Allfires object contains a dict of Fire objects with fireID as the key (will be added after reading active fire data)
         self.fires = {}
@@ -75,7 +75,7 @@ class Allfires:
             columns=[
                 *singlefire_getdd("all").keys(),
                 "fireID",
-                "t",
+                "t", #@TODO TimeStep -> UTC 
             ],
             crs=str(settings.EPSG_CODE),
             geometry="hull",

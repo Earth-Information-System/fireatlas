@@ -878,6 +878,7 @@ def AFP_setampm(df):
     df_withampm : pandas DataFrame
         the DataFrame with 'ampm' column
     """
+    # @TODO duplicated code- abstract to helper in FireTime and call that from here 
     # calculate local hour using the longitude and datetime column
     localhour = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"]).dt.hour
 

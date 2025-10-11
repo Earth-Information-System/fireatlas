@@ -379,7 +379,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea, landcover):
 
                 # use the fire id and new fire pixels to create a new Fire object
                 newfire = Fire(id_newfire, allfires.t, allpixels)
-                newfire.t_st = newfire.t
+                newfire.t_st = newfire.t # @TODO this should be TimeStep, not t_utc
                 newfire.pixels = pixels
                 newfire.extpixels = pixels
                 newfire.hull = hull
@@ -401,7 +401,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea, landcover):
             f = allfires.fires[fmid]
 
             # update current time, end time
-            f.t = allfires.t
+            f.t = allfires.t # @TODO TimeStep, not t_utc
 
             # extend pixels with newpixels
             f.pixels = pd.concat([f.pixels, newpixels])
@@ -413,7 +413,7 @@ def Fire_expand_rtree(allfires, allpixels, tpixels, fids_ea, landcover):
             f.updateftype(landcover)
 
             # update the end time after everything else
-            f.t_ed = allfires.t
+            f.t_ed = allfires.t #@TODO TimeStep -> UTC 
 
 
     # remove duplicates and sort the fid_expanded
@@ -602,7 +602,9 @@ def Fire_Forward_one_step(allfires, allpixels, tst, t, region, landcover):
     # 2. update t of allfires, clean up allfires and fire object
     allfires.cleanup(t)
 
-    tpixels = allpixels[allpixels["t"] == FireTime.t2dt(t)]
+    #@TODO if local timestep is different from UTC timestep, and allpixels["t"] is in UTC, this will give us the wrong pixels
+    # change to filter based on timestep #@TODO TimeStep -> UTC 
+    tpixels = allpixels[allpixels["t"] == FireTime.t2dt(t)] 
 
     # 4.5. if active fire pixels are detected, do fire expansion/merging
     if len(tpixels) > 0:
