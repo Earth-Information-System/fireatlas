@@ -49,7 +49,7 @@ from fireatlas.FireIO import (
     FIRMS_VIIRS_NOAA20_NRT_filepath, 
     FIRMS_VIIRS_NOAA21_NRT_filepath
 )
-from fireatlas.FireTime import t_generator, d2t, t_nm, t_nd
+from fireatlas.FireTime import t_generator, d2t, t_nm, t_nd, get_current_timestep
 from fireatlas.FireLog import logger
 from fireatlas import settings
 import geopandas as gpd
@@ -407,12 +407,9 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
 
-    if ted in (None, "", []):  # if no end time is given, set it as the most recent time
-        if ctime.hour >= 18:
-            ampm = 'PM'
-        else:
-            ampm = 'AM'
-        ted = [ctime.year, ctime.month, ctime.day, ampm]
+    if ted in (None, "", []):
+        # if no end time is given, set it as the most recent timestep for this region 
+        ted = FireTime.get_current_timestep(region)
     
     logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 

@@ -22,7 +22,7 @@ from fireatlas.FireIO import (
     s3_log_destination_path, s3_config_path, 
     s3_metadata_destination_path
 )
-from fireatlas.FireTime import dt2t, t2dt, t_nb
+from fireatlas.FireTime import dt2t, t2dt, t_nb, get_current_timestep
 from fireatlas.postprocess import (
     all_dir, 
     allfires_filepath, 
@@ -63,19 +63,6 @@ def main(run_name, copy_to_veda=False):
         "To use this script, you must define the full run parameters and settings in " 
         " FEDSinput/run_definitions/{run_name}/run_config.yaml.")
     else: 
-        # parse TST and TED 
-        tst = settings.TST
-
-        if settings.TED is not None: 
-            ted = settings.TED
-        else: 
-            # if no end time set, use current time (for NRT runs) 
-            ctime = dt.datetime.now(tz=dt.timezone.utc)
-            if ctime.hour >= 18: 
-                ampm = 'PM' 
-            else: 
-                ampm = 'AM'
-            ted = [ctime.year, ctime.month, ctime.day, ampm]
         
         
         regnm = settings.RUN_NAME 
@@ -86,6 +73,14 @@ def main(run_name, copy_to_veda=False):
         else:
             raise ValueError("No region shape found. Did you set settings.REGION_SHAPEFILE or"
                              "settings.REGION_BBOX in run_config.yaml?")
+
+        # parse TST and TED 
+        tst = settings.TST
+        if settings.TED is not None: 
+            ted = settings.TED
+        else: 
+            # if no end time set, use current time (for NRT runs) 
+            ted = get_current_timestep(region)
     
     gpd.show_versions() # for debugging 
 

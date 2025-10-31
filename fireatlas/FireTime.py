@@ -13,8 +13,9 @@ The following functions are used to convert times between different formats.
 
 """
 
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, timezone
 import pandas as pd
+from fireatlas.FireIO import get_reg_shp
 
 
 def t_nb(t, nb="next"):
@@ -353,3 +354,23 @@ def aprox_local_datetime(datetime_utc, lon):
             )
         
     return pd.to_timedelta(lon / 15, unit="hours") + datetime_utc
+
+def get_current_timestep(region):
+    """
+    Returns the most recent Timestep for a given region based on the current time, based on 
+    aprox local solar time at the centroid of the region geometry. 
+
+    Parameters:
+    -----------
+        region : FireTypes.region
+
+    Returns:
+    --------
+        local_timestep : FireTypes.TimeStep 
+
+    """
+    ctime = datetime.now(tz=timezone.utc)
+    reg_shp = get_reg_shp(region)
+    reg_lon = reg_shp.centroid.x
+    local_timestep = dt2t(aprox_local_datetime(ctime, reg_lon))
+    return local_timestep
