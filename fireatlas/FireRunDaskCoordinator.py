@@ -47,7 +47,8 @@ from fireatlas.FireIO import (
     FIRMS_VIIRS_SNPP_NRT_filepath, 
     FIRMS_VIIRS_NOAA20_SP_filepath, 
     FIRMS_VIIRS_NOAA20_NRT_filepath, 
-    FIRMS_VIIRS_NOAA21_NRT_filepath
+    FIRMS_VIIRS_NOAA21_NRT_filepath,
+    get_reg_shp
 )
 from fireatlas.FireTime import t_generator, d2t, t_nm, t_nd, get_current_timestep
 from fireatlas.FireLog import logger
@@ -409,7 +410,8 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
 
     if ted in (None, "", []):
         # if no end time is given, set it as the most recent timestep for this region 
-        ted = FireTime.get_current_timestep(region)
+        reg_shp = get_reg_shp(region)
+        ted = FireTime.get_current_timestep(reg_shp)
     
     logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 

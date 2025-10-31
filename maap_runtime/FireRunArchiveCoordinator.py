@@ -20,7 +20,8 @@ from fireatlas.FireIO import (
     copy_from_local_to_s3, 
     copy_from_local_to_veda_s3, 
     s3_log_destination_path, s3_config_path, 
-    s3_metadata_destination_path
+    s3_metadata_destination_path, 
+    get_reg_shp
 )
 from fireatlas.FireTime import dt2t, t2dt, t_nb, get_current_timestep
 from fireatlas.postprocess import (
@@ -80,7 +81,8 @@ def main(run_name, copy_to_veda=False):
             ted = settings.TED
         else: 
             # if no end time set, use current time (for NRT runs) 
-            ted = get_current_timestep(region)
+            reg_shp = get_reg_shp(region)
+            ted = get_current_timestep(reg_shp)
     
     gpd.show_versions() # for debugging 
 
