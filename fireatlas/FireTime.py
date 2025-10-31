@@ -319,3 +319,37 @@ def update_tst_ted(polygon_series, tst=None, ted=None):
         )
 
     return tst, ted
+
+def aprox_local_datetime(datetime_utc, lon):
+    """
+    Calculate aproximate local solar datetime from UTC datetime and longitude.
+    
+    Parameters
+    ----------
+    datetime_utc : datetime object or pd.Series
+        Datetime in UTC 
+    lon : float or pd.Series 
+        Longtitude (assumed to be in decimal degrees)
+    
+    Returns 
+    -------
+    datetime or pd.Series
+        Local datetime(s)
+    """
+
+    # Validate longitude range
+    if isinstance(lon, pd.Series):
+        if (lon < -180).any() or (lon > 180).any():
+            invalid_values = lon[(lon < -180) | (lon > 180)]
+            raise ValueError(
+                f"Longitude values must be in range [-180, 180]. Input expected in decimal degrees."
+                f"Found {len(invalid_values)} invalid value(s): "
+                f"{invalid_values.values[:5]}{'...' if len(invalid_values) > 5 else ''}"
+            )
+    else:
+        if lon < -180 or lon > 180:
+            raise ValueError(
+                f"Longitude must be in range [-180, 180]. Input expected in decimal degrees. Got: {lon}"
+            )
+        
+    return pd.to_timedelta(lon / 15, unit="hours") + datetime_utc

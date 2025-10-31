@@ -15,7 +15,7 @@ from fireatlas.FireLog import logger
 from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
 from fireatlas.FireClustering import do_clustering
-from fireatlas.FireTime import t_generator, t2dt, t_nb, t_nd, t_nm
+from fireatlas.FireTime import t_generator, t2dt, t_nb, t_nd, t_nm, aprox_local_datetime
 from fireatlas import FireIO, FireMain, settings, FireTime
 
 
@@ -352,8 +352,7 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
     df = pd.concat(dfs)
 
     # Convert from UTC to aprox local time
-    df["local_datetime"]  = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
-
+    df["local_datetime"] = aprox_local_datetime(df["datetime"], df["Lon"])
     # get the date of the main input file 
     query_year, query_month, query_day = get_date_from_input_filename(filepath)
     # Select only observations that are on the date of the main input file in the local timezone
