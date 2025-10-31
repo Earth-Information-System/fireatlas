@@ -1,0 +1,33 @@
+---
+title: "Timesteps and Timezones in FEDS internals" 
+author: 
+    - Zeb Becker 
+---
+
+The fundamental unit of time in FEDS is the "timestep." This corresponds to one set of overpasses by the 3 polar orbiting satellites bearing VIIRS sensors. At the equator, each satellite overpasses twice in each 24 hour period, at aproximately 01:30 and 13:30 local time. These times can shift depending on the orbit, and at higher latitudes there will be more than two overpasses a day. However, in general, observations from all 3 satellites can be sorted into two groups per day- one coming in the middle of the night/early morning, around 01:30 local time, and another coming in the mid-afternoon, around 13:30. Note that these times are defined in local time. 
+
+The abstraction for this in FEDS is `FireTypes.TimeStep`, which is defined as `[int year, int month, int day, string "AM"|"PM"]`. Every VIIRS observation can be assigned to a single TimeStep, and fire perimeters expand at most twice per day, once at each TimeStep. TimeSteps are not timezone aware, but they are implicitly based on aproximate local time. 
+
+So that we can use datetime comparison, TimeSteps are sometimes converted to a datetime.datetime representation, where for example `[2020, 1, 1, "AM"]` becomes `2020-01-01 00:00:00` and `[2020, 1, 1, "PM"]` becomes `2020-01-01 12:00:00`. 
+
+The `datetime` field in the `allpixels` object records the timestamp of the original VIIRS observation for a fire pixel or associated perimeter expansion. In some regions, this will NOT correspond to the TimeStep. 
+
+TimeSteps are assigned to input VIIRS active fire detections during the preprocessing step based on the aproximate local solar time like so: ` df["local_datetime"]  = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])`. This aproximate local solar time may not line up perfectly with actual timezones as established by administrative boundaries- however, it is sufficient to establish which 12 hour period an observation should be assigned to. 
+
+When running FireForward (or FireRunDaskCoordinator, or FireRunArchiveCoordinator), tst and ted are defined as TimeSteps in local time. 
+
+File Naming:
+- All output files are named based on TimeStep. 
+- All region_t preprocessed files are named based on TimeStep. 
+- All global preprocessed files (e.g. FEDSpreprocessed/SNPP/*) are named based on TimeStep. This means that there may be rows with different dates on their `t_utc` fields. 
+- BUT, daily input files that have not yet been preprocessed are named based on UTC date. 
+
+----------------
+
+Timestep example (using LOCAL time)
+
+1/1 06:00 to 1/1 17:59 -> 1/1 PM
+1/1 18:00 to 1/2 05:59 -> 1/2 AM 
+1/2 06:00 to 1/2 17:59 -> 1/2 PM 
+1/2 18:00 to 1/3 05:59 -> 1/2 AM 
+
