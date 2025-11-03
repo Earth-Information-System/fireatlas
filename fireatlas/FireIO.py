@@ -879,7 +879,7 @@ def AFP_setampm(df):
         the DataFrame with 'ampm' column
     """
     # calculate local hour using the longitude and datetime column
-    localhour = FireTime.aprox_local_solar_time(df["datetime"], df["Lon"]).dt.hour
+    localhour = FireTime.aprox_local_datetime(df["datetime"], df["Lon"]).dt.hour
 
     # set am/pm flag based on local hour
     df_withampm = df.assign(
