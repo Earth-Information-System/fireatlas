@@ -62,7 +62,7 @@ dask.config.set({'logging.distributed': 'error'})
 # via boto3/botocore common resolution paths
 fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
-logger.info(settings.model_dump())
+# logger.info(settings.model_dump())
 
 def validate_json(s):
     try:
@@ -274,7 +274,9 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
                 nrt_filepath_func = FIRMS_VIIRS_NOAA21_NRT_filepath
                 sp_filepath_func = None
 
-            
+            # use these to ensure all downloads are done before any preprocessing starts
+            preprocess_tasks = {} # (t, sat) -> filepath
+
             if force and t2dt(ted) >= dt.datetime.now() - dt.timedelta(hours=48):
                 # if ted is within 48 hours of current time, force re-download 
                 # and re-process latest files
@@ -282,25 +284,17 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
                 ctime = dt.datetime.now() # Current UTC time 
                 
                 datetimes = [ctime - dt.timedelta(days=n) for n in [0,1,2]]
-                preprocess_tasks = {} # (t, sat) -> filepath
-                # timesteps = [dt2t(t) for t in datetimes] 
-                # downloaded_filepaths = []
 
                 for d in datetimes: 
                     fp = update_FIRMS(d, sat=sat, product="NRT")
-                    preprocess_tasks[(dt2t(d), sat)] = fp 
-                
-                # after all downloads complete, do preprocessing 
-                for (tk, satk), fp in preprocess_tasks.items():
-                    tk = list(tk)   
-                    preprocess_daily_file(fp, tk, sat)
+                    preprocess_tasks[(tuple(dt2t(d)), sat)] = fp # tuple conversion makes hashable
 
                 if t2dt(ted) > t2dt(dt2t(ctime)):
                     # for some timezones, local ted timestep can be after the current UTC day
                     # in thise case, mock the filepath for that input file and preprocess.
                     # preprocess_input_file will use filepath_prev only
                     fp = nrt_filepath_func(ted)
-                    preprocess_daily_file(fp, ted, sat=sat)
+                    preprocess_tasks[(tuple(ted), sat)] = fp
 
             # for timesteps in tst to ted, download and preprocess any missing files 
         
@@ -312,9 +306,6 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
 
             # check FIRMS data availability 
             sp_start, sp_end, nrt_start, nrt_end = get_FIRMS_data_availability(sat)
-
-            # use these to ensure all downloads are done before any preprocessing starts
-            preprocess_tasks = {} # (t, sat) -> filepath
 
             for t in timesteps:
                 d = dt.datetime(t[0], t[1], t[2])
@@ -330,7 +321,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
                     # if we don't already have this input file, try to download from FIRMS 
                     else: 
                         downloaded_fp = update_FIRMS(d, sat, "NRT")
-                        preprocess_tasks[(t, sat, downloaded_fp)]
+                        preprocess_tasks[(t, sat)] =  downloaded_fp
                 elif sp_start and d >= sp_start: # check if sp_start because NOAA21 does not yet have
                     # in standard product availability range
                     fp = sp_filepath_func(t)
