@@ -249,7 +249,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
             # the previous and next months to preprocess the first and last days 
             prev_month, next_month = t_nm(tst, "previous"), t_nm(ted, "next")
             for m in [prev_month, next_month]:
-                if not monthly_filepath_func(t): 
+                if not monthly_filepath_func(m): 
                     logger.warning(f"No monthly input file found for {m} for {sat}")
             
             indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
