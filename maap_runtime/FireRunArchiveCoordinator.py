@@ -82,7 +82,7 @@ def main(run_name, copy_to_veda=False):
         else: 
             # if no end time set, use current time (for NRT runs) 
             reg_shp = get_reg_shp(region[1])
-            ted = get_current_timestep(reg_shp)
+            ted = t_nb(get_current_timestep(reg_shp), "previous") # most recent completed timestep
     
     gpd.show_versions() # for debugging 
 

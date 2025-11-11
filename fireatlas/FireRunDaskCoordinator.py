@@ -50,7 +50,7 @@ from fireatlas.FireIO import (
     FIRMS_VIIRS_NOAA21_NRT_filepath,
     get_reg_shp
 )
-from fireatlas.FireTime import dt2t, t2dt, t_generator, d2t, t_nm, t_nd, get_current_timestep
+from fireatlas.FireTime import dt2t, t2dt, t_generator, d2t, t_nm, t_nd, t_nb, get_current_timestep
 from fireatlas.FireLog import logger
 from fireatlas import settings
 import geopandas as gpd
@@ -455,7 +455,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
     if ted in (None, "", []):
         # if no end time is given, set it as the most recent timestep for this region 
         reg_shp = get_reg_shp(region)
-        ted = FireTime.get_current_timestep(reg_shp)
+        ted = t_nb(FireTime.get_current_timestep(reg_shp), "previous") # most recent completed timestep
     
     logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 
