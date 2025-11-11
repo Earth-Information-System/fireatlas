@@ -454,7 +454,7 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
 
 def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     """Find previous and next daily input files, then preprocess this timestep. 
-    Prefers FIRMS standard product (SP) over FIRMS NRT if we have both. 
+    Prefers FIRMS standard product (SP) over FIRMS NRT if we have it. 
     Parameters
     ----------
     filepath : str 
@@ -472,13 +472,17 @@ def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", 
     day_prev = t_nd(t, "previous")
     day_next = t_nd(t, "next")
 
-    if settings.FIRE_NRT == True:
-        filepath_prev = FIRMS_NRT_filepath(day_prev, sat=sat) 
-        filepath_next = FIRMS_NRT_filepath(day_next, sat=sat) 
+    filepath_prev = FIRMS_SP_filepath(day_prev, sat=sat)
+    filepath_next = FIRMS_SP_filepath(day_next, sat=sat)
 
-    else: 
-        filepath_prev = FIRMS_SP_filepath(day_prev, sat=sat) 
-        filepath_next = FIRMS_SP_filepath(day_next, sat=sat)
+    fs = fsspec.filesystem(settings.READ_LOCATION, use_listings_cache=False)
+
+    if not fs.exists(filepath_prev):
+        filepath_prev = FIRMS_NRT_filepath(day_prev, sat=sat)
+    
+    if not fs.exists(filepath_next):
+        filepath_next = FIRMS_NRT_filepath(day_next, sat=sat)
+
 
     return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
