@@ -156,7 +156,7 @@ def FIRMS_NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     Returns
     -------
     filepath : str
-        Path to input data or None if file does not exist
+        Path to input data, even if there is no file there at present
     """
     if sat == "SNPP": 
         filepath = FireIO.FIRMS_VIIRS_SNPP_NRT_filepath(t) 
@@ -167,10 +167,7 @@ def FIRMS_NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     else: 
         raise ValueError("Please set SNPP, NOAA20, or NOAA21 for sat")
         
-    if not settings.fs.exists(filepath): 
-        return None 
-    else: 
-        return filepath
+    return filepath
     
 def FIRMS_SP_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     """Filepath for daily SP VIIRS data from FIRMS 
@@ -185,7 +182,7 @@ def FIRMS_SP_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     Returns
     -------
     filepath : str
-        Path to input data or None if file does not exist
+        Path to input data even if there is no file currently present
     """
     if sat == "SNPP": 
         filepath = FireIO.FIRMS_VIIRS_SNPP_SP_filepath(t) 
@@ -194,10 +191,7 @@ def FIRMS_SP_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     else: 
         raise ValueError("Please set SNPP or NOAA20 for sat")
     
-    if not settings.fs.exists(filepath): 
-        return None 
-    else: 
-        return filepath
+    return filepath
 
 def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     """Filepath for monthly VIIRS data
@@ -269,7 +263,7 @@ def check_preprocessed_file(
 @timed
 def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_next: str | None):
     """
-    Preprocess monthly or daily NRT file of fire location data.
+    Preprocess monthly or daily NRT file of fire location data for the date inferred from in the input filepath.
 
     NOTE: Input files are named by UTC date or month. Output files are named   
     with the aprox local solar date/time for each observation. Pixels in the 
@@ -277,12 +271,15 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
     by aprox local solar time. This means that they may come from the previous
     or next UTC date. 
 
-    NOTE: Satellite is deduced from the filepath.
+    NOTE: Satellite and date are deduced from the filepath.
+
+    NOTE: If None is passed for an input filename or no input file exists for a passed filename, 
+    this function will log a warning but continue with the other input files. 
 
     Parameters
     ----------
     filepath : str
-        Path to input data. Can be local or s3.
+        Path to input data for the input file being preprocessed. Can be local or s3.
     filepath_prev : str | None 
         Path to input data for previous timestep. If None, this function will simply not 
         check the input file for the previous UTC timestep. This can lead to 
@@ -302,11 +299,18 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
     logger.info(f"preprocessing {filepath.split('/')[-1]}")
     dfs = []
     sat = None 
+
+    location = settings.READ_LOCATION
+    fs = fsspec.filesystem(location, use_listings_cache=False)
+
+    t = get_date_from_input_filename(filepath)
+
     for f in [filepath_prev, filepath, filepath_next]:
-        if not f: 
-            # it can be valid to have no prev or next file
-            # move on to next file
-            continue 
+
+        if not f or not fs.exists(f):
+            # it can be valid to have an empty filepath on data availability boundaries- warn but continue
+            logger.warning(f"No input file found for {f} while preprocessing {sat} on {t[0]}-{t[1]}-{t[2]}.")
+            continue
 
         # read file 
         if "VNP14IMGTDL" in f: 
