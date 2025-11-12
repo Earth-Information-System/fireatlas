@@ -137,6 +137,7 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         logger.warning(
             f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
         )
+        tst = d
     else:   
         daterange = pd.to_datetime(df['acq_date'])
         tst, ted = daterange.min(), daterange.max() 
