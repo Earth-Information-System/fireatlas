@@ -294,6 +294,9 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
         List of filepaths that this function has written to.
     """
     if filepath is None:
+        logger.error(f"Null filepath. Args: filepath = {filepath}, "
+                     f"filepath_prev = {filepath_prev}, filepath_next = {filepath_next}")
+        
         raise ValueError("Please provide a valid filepath")
     
     logger.info(f"preprocessing {filepath.split('/')[-1]}")
