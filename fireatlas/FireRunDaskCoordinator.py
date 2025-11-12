@@ -356,7 +356,8 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
                 else: 
                     logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
                                    "Date may be out of range.")
-            
+
+            logger.info('Preprocess tasks: %s', preprocess_tasks)
             # schedule preprocessing 
             for (tk, satk), fp in preprocess_tasks.items():
                 tk = list(tk)
