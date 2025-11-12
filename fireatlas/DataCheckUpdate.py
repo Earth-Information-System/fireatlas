@@ -137,13 +137,12 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         logger.warning(
             f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
         )
-        return 
+    else:   
+        daterange = pd.to_datetime(df['acq_date'])
+        tst, ted = daterange.min(), daterange.max() 
 
-    daterange = pd.to_datetime(df['acq_date'])
-    tst, ted = daterange.min(), daterange.max() 
-
-    if tst.date() != ted.date():
-        raise ValueError(f"Unexpected date range for single day file: {tst} to {ted}")
+        if tst.date() != ted.date():
+            raise ValueError(f"Unexpected date range for single day file: {tst} to {ted}")
 
     filename_out = f"FIRMS_VIIRS_{sat}_{product}_{tst.strftime('%Y%m%d')}.csv" 
     downloaded_filepath = os.path.join(data_dir, filename_out)  
