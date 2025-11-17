@@ -214,33 +214,33 @@ jobs:
         maap_pgt_secret: ${{ secrets.MAAP_PGT }}
         json_params: '{"run_id": "NRT_North_America"}'
 
-    - name: Submit SE Africa job
-      if: |
-        (github.event_name == 'schedule' && github.event.schedule == '14 2,14 * * *') ||
-        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Africa' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
-      with: 
-        algo_name: eis-feds-archive 
-        github_ref: checkpoints
-        username: zbecker
-        queue: maap-dps-eis-worker-128gb
-        maap_image_env: ubuntu
-        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"run_id": "NRT_SE_Africa"}'
+    # - name: Submit SE Africa job
+    #   if: |
+    #     (github.event_name == 'schedule' && github.event.schedule == '14 2,14 * * *') ||
+    #     (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Africa' || inputs.region == 'all'))
+    #   uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+    #   with: 
+    #     algo_name: eis-feds-archive 
+    #     github_ref: checkpoints
+    #     username: zbecker
+    #     queue: maap-dps-eis-worker-128gb
+    #     maap_image_env: ubuntu
+    #     maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+    #     json_params: '{"run_id": "NRT_SE_Africa"}'
 
-    - name: Submit SE Asia job
-      if: |
-        (github.event_name == 'schedule' && github.event.schedule == '57 4,16 * * *') ||
-        (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Asia' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
-      with: 
-        algo_name: eis-feds-archive 
-        github_ref: checkpoints
-        username: zbecker
-        queue: maap-dps-eis-worker-128gb
-        maap_image_env: ubuntu
-        maap_pgt_secret: ${{ secrets.MAAP_PGT }}
-        json_params: '{"run_id": "NRT_SE_Asia"}'
+    # - name: Submit SE Asia job
+    #   if: |
+    #     (github.event_name == 'schedule' && github.event.schedule == '57 4,16 * * *') ||
+    #     (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Asia' || inputs.region == 'all'))
+    #   uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+    #   with: 
+    #     algo_name: eis-feds-archive 
+    #     github_ref: checkpoints
+    #     username: zbecker
+    #     queue: maap-dps-eis-worker-128gb
+    #     maap_image_env: ubuntu
+    #     maap_pgt_secret: ${{ secrets.MAAP_PGT }}
+    #     json_params: '{"run_id": "NRT_SE_Asia"}'
 
     - name: Submit Seven Seas job
       if: |
