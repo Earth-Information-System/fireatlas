@@ -165,7 +165,7 @@ class Allfires:
             gdf_updates = gpd.GeoDataFrame(
                 new_rows,
                 geometry="hull", 
-                crs=settings.EPSG_CODE
+                crs=self.gdf.crs
             ).set_index(["fireID", "t"])
 
             # ensure/cast types once 
