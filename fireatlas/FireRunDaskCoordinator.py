@@ -260,7 +260,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
             
             existing_timesteps = [timesteps[i] for i in indices]
 
-            futures.extend(client.map(partial(preprocess_monthly_file, sast=sat), existing_timesteps))
+            futures.extend(client.map(partial(preprocess_monthly_file, sat=sat), existing_timesteps))
 
         elif settings.FIRE_NRT:
             
