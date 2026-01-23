@@ -261,7 +261,10 @@ def adjust_coincident_pixels(allpixels):
             duplicate_records = allpixels[(allpixels["y"] == y) & (allpixels["x"] == x)]
 
             for idx, row in duplicate_records.iterrows():
-                logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
+                if 'version' in duplicate_records.columns: 
+                    logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
+                else: 
+                    logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']}")
             
             # Apply jitter to all records with this duplicate coordinate pair
             mask = (allpixels["y"] == y) & (allpixels["x"] == x)
