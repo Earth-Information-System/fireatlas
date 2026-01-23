@@ -23,7 +23,7 @@ classifiers = [
 keywords = ["eis", "fireatlas"]
 dependencies = [
   "xarray",
-  "pandas",
+  "pandas<3",
   "dask",
   "distributed",
   "geopandas<1",
