@@ -5,9 +5,14 @@ inputs:
   email_pw_secret:
     description: "email pw"
     required: true
+outputs:
+  latency_l:
+    description: 'Logging statement for a long latency. A string. '
+    value: ${{ steps.latency_check.outputs.latency_l }}
 runs:
   using: "composite"
   steps:
+    - id: latency_check
     - shell: bash
       run: |
         docker run \
