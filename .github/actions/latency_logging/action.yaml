@@ -1,10 +1,7 @@
 # .github/actions/latency_logging/action.yml
 name: "Alert on Long Data Latency"
-description: "Checks ~ four hours after data should be generated an sends an alert if data is not current."
+description: "Checks API for most current data and calculated latency. Sends an alert if data latency is long."
 inputs:
-  maap_pgt_secret:
-    description: "MAAP_PGT"
-    required: true
   email_pw_secret:
     description: "email pw"
     required: true
@@ -14,8 +11,6 @@ runs:
     - shell: bash
       run: |
         docker run \
-          --env MAAP_PGT=${{ inputs.maap_pgt_secret }} \
-          --env MAAP_CONF=/maap-py \
           --env EMAIL_PW=${{ inputs.email_pw_secret }} \
           --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
           --rm mas.maap-project.org/root/maap-workspaces/base_images/python:v4.3.0 \
