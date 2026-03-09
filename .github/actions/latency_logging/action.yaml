@@ -9,6 +9,9 @@ outputs:
   latency_l:
     description: 'Logging statement for a long latency. A string. '
     value: ${{ steps.latency_check.outputs.latency_l }}
+  alert_needed:
+    description: 'Whether an alert should be triggered'
+    value: ${{ steps.latency_check.outputs.alert_needed }}
 runs:
   using: "composite"
   steps:
