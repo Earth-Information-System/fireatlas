@@ -32,8 +32,13 @@ def get_time_difference_in_data(api_data, overpass_cadence = 12, baseline_latenc
   hour_diff = (time_diff.seconds/(60))/60
   if(hour_diff > (overpass_cadence + baseline_latency + some_time_buffer_thresh)):
     # Alert
+    alert_needed = True
     latency_l = f"At {now_utc.strftime("%Y-%m-%d %H:%M:%S")} UTC, the API displayed {api_raw}. There were {round(hour_diff, 2)} hours between check time in UTC and the last API data time, or {round(hour_diff - overpass_cadence, 2)} hours since last {eastern_timezone_region} satellite overpass. " ## What is retunred to workflow
-    print(f"latency_l={latency_l}", file = sys.stout) 
+  else:
+    alert_needed = False
+    latency_l = f"At {now_utc.strftime("%Y-%m-%d %H:%M:%S")} UTC, the API displayed {api_raw}. There were {round(hour_diff, 2)} hours between check time in UTC and the last API data time, or {round(hour_diff - overpass_cadence, 2)} hours since last {eastern_timezone_region} satellite overpass. "
+  print(f"latency_l={latency_l}", file = sys.stdout)
+  print(f"alert_needed={alert_needed}", file = sys.stdout)
 
 
 
