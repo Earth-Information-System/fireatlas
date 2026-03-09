@@ -31,18 +31,19 @@ jobs:
           echo "Docker GID: $DOCKER_GID"
           echo "User UID: $UID"
 
-      - name: filter DPS failed jobs and alert
+      - name: check the time between cirrent time and most recent api data
+        id: latency_action
         uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@conus-dps
         with:
           email_pw_secret: ${{ secrets.EMAIL_PW }}
         
       - name: send alert on Slack if failure
-        if: always() 
+        if: steps.latency_action.outputs.alert_needed == 'True'
         uses: ravsamhq/notify-slack-action@2.5.0
         with: 
-          status: ${{ job.status }}
+          status: 'failure'
           notify_when: 'failure'
-          notification_title: "DPS Job Failed - <${{github.server_url}}/${{github.repository}}/actions/runs/${{github.run_id}}|View Failed Run>"
+          notification_title: "Data Latency Alert for CONUS - ${{ steps.latency_action.outputs.latency_l }}"
           footer: "<${{github.server_url}}/${{github.repository}}/issues/|Open GitHub Issues>"
         env: 
           SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK_WEBHOOK_URL }}
