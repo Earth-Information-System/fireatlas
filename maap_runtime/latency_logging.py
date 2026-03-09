@@ -9,7 +9,7 @@ def fire_api_query(base = "https://openveda.cloud/api/features/collections/", co
   if(foo.status_code == 200):
     return(foo.json())
   else:
-    foo.raise_for_status()
+    print(f"ERROR API call status: {foo.status_code} and URL {foo.url}", file = sys.stderr)
 
 
 def get_time_difference_in_data(api_data, overpass_cadence = 12, baseline_latency = 12, some_time_buffer = 0.20, eastern_timezone_region = "US/Eastern"):
@@ -32,10 +32,8 @@ def get_time_difference_in_data(api_data, overpass_cadence = 12, baseline_latenc
   hour_diff = (time_diff.seconds/(60))/60
   if(hour_diff > (overpass_cadence + baseline_latency + some_time_buffer_thresh)):
     # Alert
-    print(f"At {now_utc.strftime("%Y-%m-%d %H:%M:%S")} UTC, the API displayed {api_raw}. There were {round(hour_diff, 2)} hours between check time in UTC and the last API data time, or {round(hour_diff - overpass_cadence, 2)} hours since last {eastern_timezone_region} satellite overpass. ")
-  
-    # make sure calling process gets an bad exit code so it bubbles as failure
-    sys.exit(1)
+    latency_l = f"At {now_utc.strftime("%Y-%m-%d %H:%M:%S")} UTC, the API displayed {api_raw}. There were {round(hour_diff, 2)} hours between check time in UTC and the last API data time, or {round(hour_diff - overpass_cadence, 2)} hours since last {eastern_timezone_region} satellite overpass. " ## What is retunred to workflow
+    print(f"latency_l={latency_l}", file = sys.stout) 
 
 
 
