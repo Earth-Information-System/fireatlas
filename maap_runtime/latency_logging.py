@@ -12,7 +12,7 @@ def fire_api_query(base = "https://openveda.cloud/api/features/collections/", co
     print(f"ERROR API call status: {foo.status_code} and URL {foo.url}", file = sys.stderr)
 
 
-def get_time_difference_in_data(api_data, overpass_cadence = 12, baseline_latency = 12, some_time_buffer = 0.20, eastern_timezone_region = "US/Eastern"):
+def get_time_difference_in_data(api_data, overpass_cadence = 12, baseline_latency = 12, some_time_buffer_thresh = 0.20, eastern_timezone_region = "US/Eastern"):
   '''
   api_data (dict): json output from an api call to the FEDS api.
   overpass_cadence (float): expected number hours between data collections
