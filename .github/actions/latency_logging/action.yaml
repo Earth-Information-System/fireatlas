@@ -16,7 +16,7 @@ runs:
   using: "composite"
   steps:
     - id: latency_check
-    - shell: bash
+      shell: bash
       run: |
         docker run \
           --env EMAIL_PW=${{ inputs.email_pw_secret }} \
