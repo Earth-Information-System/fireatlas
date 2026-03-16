@@ -1,4 +1,4 @@
-name: alert-failed-dps-jobs
+name: alert-latency_logging
 
 on:
   workflow_dispatch:
