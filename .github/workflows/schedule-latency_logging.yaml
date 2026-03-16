@@ -2,6 +2,7 @@ name: alert-latency_logging
 
 on:
   workflow_dispatch:
+  pull_request: 
   schedule:
     # every hour
     - cron:  '0 * * * *'
@@ -31,7 +32,7 @@ jobs:
           echo "Docker GID: $DOCKER_GID"
           echo "User UID: $UID"
 
-      - name: check the time between cirrent time and most recent api data
+      - name: check the time difference between current time and most recent api data
         id: latency_action
         uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@conus-dps
         with:
