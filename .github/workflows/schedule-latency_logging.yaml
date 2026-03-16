@@ -34,7 +34,7 @@ jobs:
 
       - name: check the time difference between current time and most recent api data
         id: latency_action
-        uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@conus-dps
+        uses: Earth-Information-System/fireatlas/.github/actions/latency_logging/action.yaml@conus-dps
         with:
           email_pw_secret: ${{ secrets.EMAIL_PW }}
         
