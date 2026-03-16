@@ -1,0 +1,25 @@
+# .github/actions/latency_logging/action.yml
+name: "Alert on Long Data Latency"
+description: "Checks API for most current data and calculated latency. Sends an alert if data latency is long."
+inputs:
+  email_pw_secret:
+    description: "email pw"
+    required: true
+outputs:
+  latency_l:
+    description: 'Logging statement for a long latency. A string. '
+    value: ${{ steps.latency_check.outputs.latency_l }}
+  alert_needed:
+    description: 'Whether an alert should be triggered'
+    value: ${{ steps.latency_check.outputs.alert_needed }}
+runs:
+  using: "composite"
+  steps:
+    - id: latency_check
+      shell: bash
+      run: |
+        docker run \
+          --env EMAIL_PW=${{ inputs.email_pw_secret }} \
+          --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
+          --rm mas.maap-project.org/root/maap-workspaces/base_images/python:v4.3.0 \
+          /opt/conda/envs/python/bin/python maap_runtime/latency_logging.py >> $GITHUB_OUTPUT
