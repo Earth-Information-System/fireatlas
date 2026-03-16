@@ -42,7 +42,8 @@ dependencies = [
   "numpy<2", 
   "pyogrio", 
   "requests",
-  "aiobotocore[boto3]==2.24.1"
+  "aiobotocore[boto3]==2.24.1", 
+  "pytz"
 ]
 
 # [project.urls]
