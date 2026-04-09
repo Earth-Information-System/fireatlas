@@ -86,7 +86,7 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
     sat: 
         satellite name e.g. "SNPP", "NOAA20", "NOAA21" 
     product: 
-        "NRT": near real time 
+        "NRT": near real time. NRT will automatically include both NRT and Ultra Real Time (URT) data.
         "SP": standard product 
 
     If approaching API download rate limits, will back off automatically. 
