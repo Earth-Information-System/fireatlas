@@ -96,8 +96,9 @@ class Settings(BaseSettings):
     COPY_TO_VEDA: bool = Field(False, description="CAUTION- exports .fgb outputs to VEDA for API ingest if True")
 
     READ_LOCATION: Location = Field(
-        "local",
-        description="Final storage place for written files. This is where everything reads from",
+        "s3",
+        description="Final storage place for written files. This is where everything reads from. "
+        "Set to 'local' to run entirely on your machine with no S3 credentials required",
     )
 
     LOG_FILEPATH: str = Field(
