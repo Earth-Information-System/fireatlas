@@ -96,13 +96,14 @@ def get_timesteps_needing_region_t_processing(
     return needs_processing
 
 
-def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeStep):
+def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeStep, use_s3: bool):
     logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
 
     try:
         allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
-        copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
-        copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
+        if use_s3: 
+            copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
+            copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
         allfires_gdf = allfires.gdf
         if t_saved is None:
             # NOTE: this happens if we're running a region full-on
@@ -129,7 +130,8 @@ def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeSte
 def job_preprocess_region_t(t: TimeStep, region: Region):
     logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
     filepath = preprocess_region_t(t, region=region)
-    copy_from_local_to_s3(filepath, fs)
+    if settings.READ_LOCATION == "s3":
+        copy_from_local_to_s3(filepath, fs)
 
 
 def job_preprocess_region(region: Region):
@@ -140,7 +142,8 @@ def job_preprocess_region(region: Region):
     
     logger.info(f"Running preprocess-region JSON for {region[0]}")
     filepath = preprocess_region(region)
-    copy_from_local_to_s3(filepath, fs)
+    if settings.READ_LOCATION == "s3": 
+        copy_from_local_to_s3(filepath, fs)
 
 
 def job_nrt_current_day_updates(client: Client):
@@ -366,87 +369,10 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep, force:
     return futures
 
 @timed
-def Run_local(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool=False):
-    """
-    Coordinates all parts of a run: region preprocessing, downloading and preprocessing
-    input fire detection data if needed, running FireForward, and saving snapshot layers.
-    Similar to Run, but does not attempt to read from or write to s3 at all. Like Run, 
-    uses a Dask client to parallelize some computations on the local machine, making 
-    use of multiple CPU cores when available. 
-    Remember to set settings.READ_LOCATION to "local"!
-    """
-
-    client = Client(n_workers=settings.N_DASK_WORKERS)
-    region_future = client.submit(preprocess_region, region)
-    logger.info(f"Running preprocess-region JSON for {region[0]}")
-    data_update_futures = job_data_update_checker(client, tst, ted)
-
-    client.gather(data_update_futures)
-    client.gather(region_future)
-
-    logger.info("------------- Done with preprocessing t -------------")
-
-    # then run all region-plus-t in parallel that need it
-    timesteps_needing_processing = get_timesteps_needing_region_t_processing(
-        tst, ted, region, force=True
-    )
-    region_and_t_futures = client.map(
-        partial(preprocess_region_t, region=region, force=True),
-        timesteps_needing_processing
-    )
-    # block until preprocessing is complete
-    client.gather(region_and_t_futures)
-
-    logger.info("------------- Done with preprocessing region + t -------------")
-
-    # run fire forward algorithm (which cannot be run in parallel)
-
-    logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
-
-    try:
-        allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
-        allfires_gdf = allfires.gdf
-        if t_saved is None:
-            # NOTE: this happens if we're running a region full-on
-            # from start to finish that has never been run before
-            # and therefore no existin allpixels/allfires save has been found
-            t_saved = tst
-    except KeyError as e:
-        logger.warning(f"Fire forward has already run. {e}")
-        allpixels = read_allpixels(tst, ted, region)
-        allfires_gdf = read_allfires_gdf(tst, ted, region)
-        # NOTE: this means we've already found an
-        # allfires and allpixels save for this ted timestep
-        t_saved = ted
-
-    snapshot_futures = save_snapshots(allfires_gdf, region, t_saved, ted, client=client)
-
-    large_fires = find_largefires(allfires_gdf)
-    save_large_fires_nplist(allpixels, region, large_fires, tst)
-    save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
-
-    client.gather(snapshot_futures)
-
-    # If flag matching flat set, add overlaps with this year's NIFC incidents to 
-    # CombinedLargefire/lf_perimeter.fgb for ted only. 
-    if settings.DO_NIFC_MATCHING:
-        logger.info("Started NIFC matching")
-        combined_lf_perims_nifc_join(
-            tst, 
-            ted, 
-            region, 
-            active_only=settings.NIFC_MATCHING_ACTIVE_ONLY, 
-            time_filter=None
-        )
-        logger.info("Finished NIFC matching")
-
-    logger.info("------------- Done -------------")
-
-    client.close()
-
-@timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
     
+    use_s3 = settings.READ_LOCATION == "s3"
+
     gpd.show_versions()
     
     ctime = datetime.now(tz=timezone.utc)
@@ -456,7 +382,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
     if ted in (None, "", []):
         # if no end time is given, set it as the most recent timestep for this region 
         reg_shp = get_reg_shp(region)
-        ted = t_nb(FireTime.get_current_timestep(reg_shp), "previous") # most recent completed timestep
+        ted = t_nb(get_current_timestep(reg_shp), "previous") # most recent completed timestep
     
     logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 
@@ -469,14 +395,15 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
     
     # block until data update is complete
     client.gather(data_update_futures)
-
-    # uploads raw satellite files from `job_data_update_checker` in parallel
-    data_upload_futures = client.map(
-        partial(copy_from_local_to_s3, fs=fs),
-        glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
-    )
-    # block until half-day timesteps and region are on s3
-    timed(client.gather, text=f"Dask upload of {len(data_upload_futures) + 1} files")([*data_upload_futures, region_future])
+    client.gather(region_future)
+    if use_s3: 
+        # uploads raw satellite files from `job_data_update_checker` in parallel
+        data_upload_futures = client.map(
+            partial(copy_from_local_to_s3, fs=fs),
+            glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
+        )
+        # block until half-day timesteps and region are on s3
+        timed(client.gather, text=f"Dask upload of {len(data_upload_futures) + 1} files")([*data_upload_futures])
 
     logger.info("------------- Done with preprocessing t -------------")
 
@@ -494,27 +421,28 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):\
     logger.info("------------- Done with preprocessing region + t -------------")
     
     # run fire forward algorithm (which cannot be run in parallel)
-    job_fire_forward(region=region, tst=tst, ted=ted, client=client)
+    job_fire_forward(region=region, tst=tst, ted=ted, client=client, use_s3=use_s3)
 
     # If flag matching flat set, add overlaps with this year's NIFC incidents to 
     # CombinedLargefire/lf_perimeter.fgb for ted only. 
     if settings.DO_NIFC_MATCHING:
         logger.info("Started NIFC matching")
-        combined_lf_perims_nifc_join(tst, ted, region, active_only=True, time_filter=None)
+        combined_lf_perims_nifc_join(tst, ted, region, active_only=settings.NIFC_MATCHING_ACTIVE_ONLY, time_filter=None)
         logger.info("Finished NIFC matching")
 
-
-    # take all fire forward output and upload all outputs in parallel
     data_dir = all_dir(tst, region, location="local")
-    fgb_s3_upload_futures = client.map(
-        partial(copy_from_local_to_s3, fs=fs),
-        glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
-    )
-    # block until everything is uploaded
-    timed(client.gather, text=f"Dask upload of {len(fgb_s3_upload_futures)} files")(fgb_s3_upload_futures)
+    if use_s3: 
+        # take all fire forward output and upload all outputs in parallel
+        fgb_s3_upload_futures = client.map(
+            partial(copy_from_local_to_s3, fs=fs),
+            glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
+        )
+        # block until everything is uploaded
+        timed(client.gather, text=f"Dask upload of {len(fgb_s3_upload_futures)} files")(fgb_s3_upload_futures)
 
     if copy_to_veda:
         # take latest fire forward output and upload to VEDA S3 in parallel
+        # this is where the OGC API ingest starts on the VEDA side
         fgb_veda_upload_futures = client.map(
             partial(copy_from_local_to_veda_s3, fs=fs, regnm=region[0]),
             glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
