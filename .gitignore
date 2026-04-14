@@ -10,11 +10,12 @@ import/
 .coverage
 _version.py
 ./data/
+data/
 fireatlas.egg-info/
 running.log
 .idea/
 .quarto/
 _site/
-
 /env/
 /.quarto/
+*run_config.yaml
