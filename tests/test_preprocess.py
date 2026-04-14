@@ -99,6 +99,7 @@ def test_preprocess_region(tmpdir, monkeypatch):
 def test_read_region(tmpdir, monkeypatch):
     # arrange
     monkeypatch.setattr(settings, "S3_PATH", str(tmpdir))
+    monkeypatch.setattr(settings, "READ_LOCATION", "s3")
     expected_region = ("Test123", Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)]))
 
     data_dir = tmpdir / settings.PREPROCESSED_DIR
