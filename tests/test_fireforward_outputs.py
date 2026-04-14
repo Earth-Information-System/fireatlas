@@ -2,6 +2,7 @@ import pytest
 import fireatlas
 import geopandas as gpd
 import os
+import shutil
 
 
 @pytest.fixture
@@ -66,7 +67,12 @@ def v3_run(tmp_settings_context_manager,
             settings.LOCAL_PATH, settings.OUTPUT_DIR,
             region[0], "2020"
         )
-        
+
+        outdir = os.path.join(
+            settings.LOCAL_PATH, settings.OUTPUT_DIR,
+            region[0]
+        )
+
         fireline = gpd.read_file(os.path.join(
             outpath, "Largefire", "1", "fireline.fgb"),
         engine='pyogrio')
@@ -117,10 +123,13 @@ def v3_run(tmp_settings_context_manager,
             os.path.join(outpath, "Snapshot", "20200908PM", "perimeter.fgb"), 
             engine='pyogrio')
         
-        return (
+        yield (
             allfires_gdf, fireline, newfirepix, nfplist, perimeter, lf_fireline, 
             lf_newfirepix, lf_perimeter, ss_fireline, ss_newfirepix, ss_perimeter
         )
+
+        # clean up test files; don't want to cache for subsequent runs
+        shutil.rmtree(outdir, ignore_errors=True)
 
 @pytest.fixture
 def v2_load(tmp_settings_context_manager, test_data_dir):
