@@ -93,10 +93,10 @@ class Settings(BaseSettings):
         description="dirctory where region definitions are stored."
     )
 
-    COPY_TO_VEDA: bool = Field(False, "CAUTION- setting true exports .fgb outputs to VEDA for API ingest")
+    COPY_TO_VEDA: bool = Field(False, description="CAUTION- exports .fgb outputs to VEDA for API ingest if True")
 
     READ_LOCATION: Location = Field(
-        "s3",
+        "local",
         description="Final storage place for written files. This is where everything reads from",
     )
 
