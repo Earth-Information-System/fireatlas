@@ -32,16 +32,16 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ git commit -m "Add NOAA21 inputs"
     ```
 
-3.  Run tests from fireatlas root dir (requires optional dependencies) 
+3.  Run tests from fireatlas root dir (requires optional dev dependencies from step 1) 
 
     ```         
-    $ pytest -v tests/ 
+    $ python -m pytest -v tests/ 
     ```
 
 4.  OPTIONAL: run long-running (\~15mins) integration tests
 
     ```         
-    $ pytest -v --runslow tests/ 
+    $ python -m pytest -v --runslow tests/ 
     ```
 
 5.  Push to your branch on GitHub.

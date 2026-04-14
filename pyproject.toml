@@ -83,4 +83,4 @@ omit = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--cov=."
+addopts = "--cov=fireatlas"
