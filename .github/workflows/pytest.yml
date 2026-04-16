@@ -3,9 +3,9 @@ name: pytest
 on:
   workflow_dispatch:
   push:
-    branches: [ "conus-dps" ]
+    branches: [ "conus-dps", "staging" ]
   pull_request:
-    branches: [ "conus-dps" ]
+    branches: [ "conus-dps", "staging" ]
 
 permissions:
   id-token: write   # This is required for requesting the JWT
