@@ -1,0 +1,74 @@
+# Running FEDS locally
+This doc provides quick instructions for setting up the required file structure and computational environment to run FEDS on your local machine, without any need for MAAP S3 credentials at runtime. 
+
+Start by cloning the fireatlas git repo and setting up the required conda environment by following the directions in `fireatlas/docs/contributing.qmd`. If you are trying to test changes you've made on a specific branch, make sure that branch is checked out. 
+
+Unless otherwise specified, all commands are intended to be run from the root fireatlas directory that you just cloned and all filepaths are relative to it. Note the `/data/` folder in this directory- this is both where we will need to download some input datasets to, and where your outputs will end up. 
+
+## 1. Creek fire using local test data 
+
+First, copy the following text into a file called `fireatlas/fireatlas/run_config.yaml`. FEDS is going to look for this file at the specified relative path, so make sure to put it in the right location. 
+
+```
+# fireatlas/fireatlas/run_config.yaml
+settings:  
+  READ_LOCATION: local
+  LOCAL_PATH: ../tests/data
+  FIRE_SOURCE: SNPP
+  FIRE_NRT: False
+  EPSG_CODE: 9311
+  FTYP_OPT: CA
+  CONT_OPT: CA
+```
+This will override the default settings in FireConsts.py for the specified values. In this example, we are going to read our input data from `fireatlas/tests/data`, which includes a small subset of input data for the Creek fire. This data is included in the tests/ folder because it is used in the automated test suite, so this is a nice way to test small changes without needing to download any additional data. 
+
+Next, we are going to run FEDS from the command line. Make sure you have installed and activated the conda environment (again, see `docs/contributing.qmd` for directions if you haven't). 
+```
+python fireatlas/FireRunDaskCoordinator.py --regnm=v3_test_data_for_Creek_SNPP \
+    --bbox="[-119.5,36.8,-118.9,37.7]" \
+    --tst="[2020,9,5,\"AM\"]" \
+    --ted="[2020,11,5,\"PM\"]" \
+    --no-veda-copy
+```
+
+## 2. CONUS for 2025 
+
+If the Creek fire example worked, you may want to move on to other regions and time periods. However, we don't have all possible input data checked into the repository. In order to access this data without being connected to MAAP S3 storage, we will have to download the required input data ourselves. For this example, we will run FEDS for CONUS for all of 2025, using NOAA20 monthly files. Following this model, you can use any date range, bbox, or satellite. Please reach out if you have issues accessing the required data. 
+
+### Required Downloads: 
+1. VIIRS active fire detections (standard product)- download from the UMD FTP server following the instructions in the notebook `fireatlas/notebooks/20_Download_VIIRS_SP_SFTP.ipynb`
+2. Landcover from MAAP: Download landcover from `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif` to our local data folder `fireatlas/data/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif`. You can use the ADE or MAAP Hub interfaces to do this manually. 
+3. Static flaring sources: Download the static source filter from `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv` to our local data folder at `fireatlas/data/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv`
+
+Once those are all downloaded, lets change a few of the settings in run_config.yaml. Paste this text into the existing file and don't forget to hit save. You can also override any other settings from FireConsts.py that you would like. This yaml file will then serve as a neat encapsulation of the settings you use for a particular run. 
+
+```
+settings:  
+  READ_LOCATION: local
+  # notice that we deleted the local path override from above! 
+  # it is now set to fireatlas/data by default, not fireatlas/tests/data
+  FIRE_SOURCE: NOAA20
+  FIRE_NRT: False # still using the standard product and monthly files
+  EPSG_CODE: 9311
+  FTYP_OPT: CA
+  CONT_OPT: CA
+```
+
+Finally, run this command to give it a try! Check `fireatlas/data/FEDSoutputs-v3` for results when you are finished. 
+
+```
+python fireatlas/FireRunDaskCoordinator.py --regnm="example_CONUS2025" \
+    --bbox="[-126,24,-61,49]" \
+    --tst="[2025,1,1,\"AM\"]" \
+    --ted="[2025,12,31,\"PM\"]" \
+    --no-veda-copy
+```
+
+## 3. CONUS NRT 
+Ok, last example. Let's try doing just a few days of NRT outputs for CONUS. If you want them to match the latest official outputs, you'd have to start the annual run on January 1st. However, it would take a while to download all of that data one day at a time from the FIRMS API. If you need a longer range of NRT data, use their [bulk download tool](https://firms.modaps.eosdis.nasa.gov/download/). For this example, we are going to just grab the past few days. 
+
+Your turn to edit run_config.yaml- change FIRE_NRT to True, making sure to save when you are done. This will tell FEDS to use NRT data. With FIRE_NRT=True, FEDS will automatically try to download any missing input data, one day at a time, from the FIRMS API. 
+
+Then, use the same command as above to run FireRunDaskCoordinator.py, but change the dates so that TST is a few days ago, and TED is today. The `fireatlas` package does not currently support time travel, so be sure not to set TED to "PM" if it is still currently "AM" in the region you are looking at. 
+
+Once again, outputs for your run can be found at `fireatlas/data/FEDSoutputs-v3`. Good job! 
