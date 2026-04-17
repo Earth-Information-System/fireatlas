@@ -3,6 +3,7 @@ import argparse
 import os
 import glob
 from functools import partial
+# (partial is now used for FIRMS sat/product binding)
 
 import s3fs
 
@@ -32,10 +33,12 @@ from fireatlas.preprocess import (
     preprocess_region_t,
     preprocess_region,
     preprocessed_region_filename,
+    FIRMS_NRT_filepath,
+    FIRMS_SP_filepath,
 )
 
-from fireatlas.DataCheckUpdate import update_VNP14IMGTDL, update_VJ114IMGTDL
-from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3, VNP14IMGML_filepath, VJ114IMGML_filepath, VJ114IMGTDL_filepath, VNP14IMGTDL_filepath
+from fireatlas.DataCheckUpdate import update_FIRMS
+from fireatlas.FireIO import copy_from_local_to_s3, copy_from_local_to_veda_s3
 from fireatlas.FireTime import t_generator, t_nb, t2dt, dt2t, d2t
 from fireatlas.FireLog import logger
 from fireatlas import settings
@@ -139,11 +142,8 @@ def job_nrt_current_day_updates(client: Client):
         sats = [source]
 
     for sat in sats:
-        if sat == "SNPP":
-            NRT_update_func = update_VNP14IMGTDL
-        if sat == "NOAA20":
-            NRT_update_func = update_VJ114IMGTDL
-        futures.extend(client.map(NRT_update_func, [now, now-timedelta(days=1)]))
+        NRT_update_func = partial(update_FIRMS, sat=sat, product="NRT")
+        futures.extend(client.map(NRT_update_func, [now.date(), (now-timedelta(days=1)).date()]))
     return futures
 
 
@@ -157,14 +157,9 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         sats = [source]
     
     for sat in sats:
-        if sat == "SNPP":
-            monthly_filepath_func = VNP14IMGML_filepath
-            NRT_filepath_func = VNP14IMGTDL_filepath
-            NRT_update_func = update_VNP14IMGTDL
-        if sat == "NOAA20":
-            monthly_filepath_func = VJ114IMGML_filepath
-            NRT_filepath_func = VJ114IMGTDL_filepath
-            NRT_update_func = update_VJ114IMGTDL
+        monthly_filepath_func = FIRMS_SP_filepath
+        NRT_filepath_func = FIRMS_NRT_filepath
+        NRT_update_func = partial(update_FIRMS, sat=sat, product="NRT")
 
         # first check if there are any monthly files that need preprocessing
         timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
@@ -191,13 +186,13 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         # set up NRT jobs
         futures.extend(client.map(preprocess_input_file, NRT_filepaths))
 
-        # if there are any dates that are still missing, try to wget the files
-        missing_dates = [date(*t) for t in missing_timesteps if t not in NRT_timesteps]
+        # if there are any dates that are still missing, try to download from FIRMS API
+        missing_dates = [date(*t[:3]) for t in missing_timesteps if t not in NRT_timesteps]
 
         # don't actually worry about dates that are more than 30 days ago
         dates = [d for d in missing_dates if d >= (date.today() - timedelta(days=30))]
 
-        # set up NRT jobs
+        # set up FIRMS API download jobs
         futures.extend(client.map(NRT_update_func, dates))
 
     return futures
