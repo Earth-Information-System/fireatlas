@@ -486,7 +486,7 @@ def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", 
 @timed
 def read_preprocessed_input(
     t: TimeStep,
-    sat: Literal["NOAA20", "SNPP"],
+    sat: Literal["NOAA20", "NOAA21", "SNPP"],
     location: Location = None,
 ):
     filename = preprocessed_filename(t, sat=sat, location=location)
@@ -533,13 +533,13 @@ def preprocess_region_t(
     )
     if source == "VIIRS":
         dfs = []
-        for sat in ["SNPP", "NOAA20"]:
+        for sat in ["SNPP", "NOAA20", "NOAA21"]:
             try:
                 dfs.append(read_preprocessed_input(t, sat=sat, location=read_location))
-            except FileNotFoundError as e:
-                logger.info(f"{sat} file not available at {t=}: '{str(e)}'")
+            except (FileNotFoundError, pd.errors.EmptyDataError) as e:
+                logger.info(f"{sat} file or data not available at {t=}: '{str(e)}'")
         if len(dfs) == 0:
-            raise ValueError(f"Both NOAA20 and SNPP files are not available for {t=}")
+            raise ValueError(f"NOAA20, NOAA21, and SNPP files are not available for {t=}")
         else:
             df = pd.concat(dfs, ignore_index=True)
     else:
@@ -562,6 +562,9 @@ def preprocess_region_t(
         "x",
         "y",
     ]
+
+    if settings.FIRE_NRT == True:
+        columns.append("version") # preserve version type with NRT data
 
     if not df.empty:
         # return selected columns
