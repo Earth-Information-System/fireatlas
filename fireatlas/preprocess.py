@@ -2,6 +2,7 @@ import os
 import uuid
 import fsspec
 import pandas as pd
+import datetime as dt
 from typing import Literal, Optional
 from shapely import to_geojson, from_geojson
 import sys
@@ -14,8 +15,8 @@ from fireatlas.FireLog import logger
 from fireatlas.FireTypes import Region, TimeStep, Location
 from fireatlas.utils import timed
 from fireatlas.FireClustering import do_clustering
-from fireatlas.FireTime import t_generator, t2dt
-from fireatlas import FireIO, FireMain, settings
+from fireatlas.FireTime import t_generator, t2dt, t_nb, t_nd, t_nm
+from fireatlas import FireIO, FireMain, settings, FireTime
 
 
 def preprocessed_region_filename(region: Region, location: Location = None):
@@ -102,7 +103,7 @@ def preprocess_landcover(filename="nlcd_export_510m_simplified", force=False):
 
 def preprocessed_filename(
     t: TimeStep,
-    sat: Optional[Literal["NOAA20", "SNPP"]] = None,
+    sat: Optional[Literal["NOAA20", "NOAA21", "SNPP"]] = None,
     region: Optional[Region] = None,
     suffix="",
     location: Location = None
@@ -119,7 +120,7 @@ def preprocessed_filename(
     )
 
 
-def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
+def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     """Filepath for NRT VIIRS data
 
     Parameters
@@ -142,6 +143,62 @@ def NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20"]):
         raise ValueError("Please set SNPP or NOAA20 for sat")
     return filepath
 
+def FIRMS_NRT_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
+    """Filepath for daily NRT VIIRS data from FIRMS
+
+    Parameters
+    ----------
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
+    sat: Literal["SNPP", "NOAA20", "NOAA21"]
+        which satellite to use
+
+    Returns
+    -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    if sat == "SNPP":
+        filepath = FireIO.FIRMS_VIIRS_SNPP_NRT_filepath(t)
+    elif sat == "NOAA20":
+        filepath = FireIO.FIRMS_VIIRS_NOAA20_NRT_filepath(t)
+    elif sat == "NOAA21":
+        filepath = FireIO.FIRMS_VIIRS_NOAA21_NRT_filepath(t)
+    else:
+        raise ValueError("Please set SNPP, NOAA20, or NOAA21 for sat")
+
+    if not settings.fs.exists(filepath):
+        return None
+    else:
+        return filepath
+
+def FIRMS_SP_filepath(t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
+    """Filepath for daily SP VIIRS data from FIRMS
+
+    Parameters
+    ----------
+    t : tuple, (int,int,int,str)
+        the year, month, day and 'AM'|'PM' during the initialization
+    sat: Literal["SNPP", "NOAA20", "NOAA21"]
+        which satellite to use
+
+    Returns
+    -------
+    filepath : str
+        Path to input data or None if file does not exist
+    """
+    if sat == "SNPP":
+        filepath = FireIO.FIRMS_VIIRS_SNPP_SP_filepath(t)
+    elif sat == "NOAA20":
+        filepath = FireIO.FIRMS_VIIRS_NOAA20_SP_filepath(t)
+    else:
+        raise ValueError("Please set SNPP or NOAA20 for sat")
+
+    if not settings.fs.exists(filepath):
+        return None
+    else:
+        return filepath
+
 
 def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     """Filepath for monthly VIIRS data
@@ -163,14 +220,14 @@ def monthly_filepath(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     elif sat == "NOAA20":
         filepath = FireIO.VJ114IMGML_filepath(t)
     else:
-        raise ValueError("please set SNPP or NOAA20 for sat")
+        raise ValueError(f"sat={sat} not recognized: please set SNPP or NOAA20 for sat")
     return filepath
 
 
 def check_preprocessed_file(
     tst: TimeStep,
     ted: TimeStep,
-    sat: Literal["SNPP", "NOAA20"],
+    sat: Literal["SNPP", "NOAA20", "NOAA21"],
     freq: Literal["monthly", "NRT"] = "monthly",
     location: Location = None,
 ):
@@ -183,7 +240,7 @@ def check_preprocessed_file(
         the year, month, day and 'AM'|'PM' to start checking for files
     ted : tuple, (int,int,int,str)
         the year, month, day and 'AM'|'PM' to end checking for files
-    sat: Literal["SNPP", "NOAA20"]
+    sat: Literal["SNPP", "NOAA20", "NOAA21"]
         which satellite to use
     freq: Literal["monthly", "NRT"]
         which files to use - monthly or daily (NRT)
@@ -207,13 +264,54 @@ def check_preprocessed_file(
     if freq == "monthly":
         return list(set([(t[0], t[1]) for t in needs_processing]))
     else:
-        return list(set([(t[0], t[1], t[2]) for t in needs_processing]))
+        return list(set([(t[0], t[1], t[2], t[3]) for t in needs_processing]))
+
+
+def get_date_from_input_filename(filepath: str):
+    """Extract year, month, and optionally day from input filename.
+    
+    Supports MODAPS (monthly and daily) and FIRMS formats.
+    
+    Returns: (year, month, day) where day is None for monthly files
+    """
+    filename = os.path.basename(filepath)
+    day = None
+    if "14IMGML" in filename:
+        # monthly file e.g. VNP14IMGML.201201.C2.05.csv
+        datestring = filename.split(".")[1]
+        year = datestring[:4]
+        month = datestring[-2:]
+    elif "IMGTDL" in filename:
+        # daily file e.g. SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_2012360.txt
+        datestring = filename.split("_")[6]
+        year = datestring[:4]
+        julian_day = datestring[4:7]
+        d = dt.date(int(year), 1, 1) + dt.timedelta(days=int(julian_day) - 1)
+        year = d.year
+        month = d.month
+        day = d.day
+    elif "FIRMS_VIIRS" in filename:
+        # FIRMS downloaded daily file, e.g. FIRMS_VIIRS_SNPP_SP_20120101.csv
+        datestring = filename.split("_")[4]
+        year = datestring[:4]
+        month = datestring[4:6]
+        day = datestring[6:8]
+    else:
+        raise ValueError(f"Could not infer date from input filename {filename}")
+    
+    return (int(year), int(month), day)
 
 
 @timed
-def preprocess_input_file(filepath: str):
+def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_next: str | None):
     """
     Preprocess monthly or daily NRT file of fire location data.
+
+    NOTE: Input files are named by UTC date or month. Output files are named
+    with the aprox local solar date/time for each observation. Pixels in the
+    output file YYYYMMDD_AM.txt are for the AM overpass for that date as defined
+    by aprox local solar time. This means that they may come from the previous
+    or next UTC date.
 
     NOTE: Satellite is deduced from the filepath.
 
@@ -221,6 +319,13 @@ def preprocess_input_file(filepath: str):
     ----------
     filepath : str
         Path to input data. Can be local or s3.
+    filepath_prev : str | None
+        Path to input data for previous timestep. If None, this function will simply not
+        check the input file for the previous UTC timestep. This can lead to
+        missing values that are within the current timestep in local time but not
+        UTC time.
+    filepath_next : str | None
+        Path to input data for next timestep.
 
     Returns
     -------
@@ -231,40 +336,89 @@ def preprocess_input_file(filepath: str):
         raise ValueError("Please provide a valid filepath")
 
     logger.info(f"preprocessing {filepath.split('/')[-1]}")
+    dfs = []
+    sat = None
+    for f in [filepath_prev, filepath, filepath_next]:
+        if not f:
+            # it can be valid to have no prev or next file
+            # move on to next file
+            continue
 
-    if "VNP14IMGTDL" in filepath:
-        sat = "SNPP"
-        df = FireIO.read_VNP14IMGTDL(filepath)
-    elif "VJ114IMGTDL" in filepath:
-        sat = "NOAA20"
-        df = FireIO.read_VJ114IMGTDL(filepath)
-    elif "VNP14IMGML" in filepath:
-        sat = "SNPP"
-        df = FireIO.read_VNP14IMGML(filepath)
-        df = df.loc[df["Type"] == 0]  # type filtering
-    elif "VJ114IMGML" in filepath:
-        sat = "NOAA20"
-        df = FireIO.read_VJ114IMGML(filepath)
-        df = df.loc[df["Type"] == 0]  # type filtering
+        # read file
+        if "VNP14IMGTDL" in f:
+            sat = "SNPP"
+            df = FireIO.read_VNP14IMGTDL(f)
+        elif "VJ114IMGTDL" in f:
+            sat = "NOAA20"
+            df = FireIO.read_VJ114IMGTDL(f)
+        elif "VNP14IMGML" in f:
+            sat = "SNPP"
+            df = FireIO.read_VNP14IMGML(f)
+            df = df.loc[df["Type"] == 0]
+        elif "VJ114IMGML" in f:
+            sat = "NOAA20"
+            df = FireIO.read_VJ114IMGML(f)
+        elif "FIRMS_VIIRS_SNPP_NRT" in f:
+            sat = "SNPP"
+            df = FireIO.read_FIRMS_VIIRS_NRT(f)
+        elif "FIRMS_VIIRS_SNPP_SP" in f:
+            sat = "SNPP"
+            df = FireIO.read_FIRMS_VIIRS_SP(f)
+            df = df.loc[df["Type"] == 0]
+            # Type filter: inferred hot spot type == presumed vegetation fire
+        elif "FIRMS_VIIRS_NOAA20_NRT" in f:
+            sat = "NOAA20"
+            df = FireIO.read_FIRMS_VIIRS_NRT(f)
+        elif "FIRMS_VIIRS_NOAA20_SP" in f:
+            sat = "NOAA20"
+            df = FireIO.read_FIRMS_VIIRS_SP(f)
+            df = df.loc[df["Type"] == 0]
+            # Type filter: inferred hot spot type == presumed vegetation fire
+        elif "FIRMS_VIIRS_NOAA21_NRT" in f:
+            sat = "NOAA21"
+            df = FireIO.read_FIRMS_VIIRS_NRT(f)
+        else:
+            raise ValueError(f"Filepath {f} not recognized during preprocessing.")
+
+        # add file retrieval information
+        df["input_filename"] = f.split("/")[-1]
+
+        dfs.append(df)
+
+    df = pd.concat(dfs)
+
+    # Convert from UTC to aprox local time
+    df["local_datetime"] = (pd.to_timedelta(df.Lon / 15, unit="hours") + df["datetime"])
+
+    # get the date of the main input file
+    query_year, query_month, query_day = get_date_from_input_filename(filepath)
+    # Select only observations that are on the date of the main input file in the local timezone
+    if ("VJ114IMGML" in filepath) or ("VNP14IMGML" in filepath):
+        df = df[(df.local_datetime.dt.year == query_year) & (df.local_datetime.dt.month == query_month)]
     else:
-        raise ValueError("please set SNPP or NOAA20 for sat")
+        df = df[(df.local_datetime.dt.day == query_day) &
+                (df.local_datetime.dt.month == query_month) &
+                (df.local_datetime.dt.year == query_year)
+            ]
 
-    # set ampm
     df = FireIO.AFP_setampm(df)
-
-    # add the satellite information
     df["Sat"] = sat
-    df["input_filename"] = filepath.split("/")[-1]
+    # groupby days and if there are more than 1 days, include a progress bar
+    gb = df.groupby(df["local_datetime"].dt.date)
 
     # return selected columns
-    df = df[
-        ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
-    ]
+
+    if settings.FIRE_NRT == True: # preserve version code if working with NRT data
+        df = df[
+            ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm", "version"]
+        ]
+    else:
+        df = df[
+            ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
+        ]
 
     output_paths = []
 
-    # groupby days and if there are more than 1 days, include a progress bar
-    gb = df.groupby(df["datetime"].dt.date)
     if gb.ngroups > 1:
         gb = tqdm(gb, "Processing days", file=sys.stdout)
 
@@ -289,12 +443,12 @@ def preprocess_input_file(filepath: str):
 
 def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     filepath = monthly_filepath(t, sat=sat)
-    return preprocess_input_file(filepath)
+    return preprocess_input_file(filepath, None, None)
 
 
 def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     filepath = NRT_filepath(t, sat=sat)
-    return preprocess_input_file(filepath)
+    return preprocess_input_file(filepath, None, None)
 
 
 @timed

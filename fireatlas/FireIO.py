@@ -20,12 +20,13 @@ import fsspec
 import pickle
 import xarray as xr
 import warnings
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, box
 from datetime import datetime, date
+from pyproj import Transformer
+from shapely.ops import transform
 
 from fireatlas.FireLog import logger
 from fireatlas.FireTypes import TimeStep
-from fireatlas.FireConsts import YAML_FILENAME
 from fireatlas import FireTime, settings
 
 
@@ -219,7 +220,7 @@ def VNP14IMGML_filepath(t: TimeStep):
     Parameters
     ----------
     t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM' 
+        the year, month, day and 'AM'|'PM' during the initialization
 
     Returns
     -------
@@ -233,23 +234,17 @@ def VNP14IMGML_filepath(t: TimeStep):
         "VIIRS",
         "VNP14IMGML",
     )
+    # prefers collection 2 version 3 (latest as of July 2025)
+    filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.03.csv")
+    if not settings.fs.exists(filepath):
+        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C2.01.txt")
+    if not settings.fs.exists(filepath):
+        filepath = os.path.join(file_dir, f"VNP14IMGML.{year}{month:02}.C1.05.txt")
+    if not settings.fs.exists(filepath):
+        logger.warning(f"No VNP14IMGML file found for {year}-{month:02}")
+        return
 
-    # filename patterns in order of preference
-    versions = [
-        f"VNP14IMGML.{year}{month:02}.C2.04.csv",
-        f"VNP14IMGML.{year}{month:02}.C2.03.csv",
-        f"VNP14IMGML.{year}{month:02}.C2.02.csv",
-        f"VNP14IMGML.{year}{month:02}.C2.01.txt",
-        f"VNP14IMGML.{year}{month:02}.C1.05.txt",
-    ]
-
-    for filename in versions:
-        filepath = os.path.join(file_dir, filename)
-        if settings.fs.exists(filepath):
-            return filepath
-
-    logger.warning(f"No monthly data available for SNPP for {year}-{month:02}")
-    return None
+    return filepath
 
 
 def read_VNP14IMGML(filepath: str):
@@ -315,7 +310,7 @@ def VNP14IMGTDL_filepath(t: TimeStep):
         f"SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{d.strftime('%Y%j')}.txt",
     )
     if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
+        logger.warning(f"No VNP14IMGTDL file found for {d.strftime('%Y%j')}")
         return
 
     return filepath
@@ -380,17 +375,17 @@ def VJ114IMGML_filepath(t: TimeStep):
         Path to input data or None if file does not exist
     """
 
-    year, month = t[0], t[1] 
-    
-    filepath = os.path.join(
+    year, month = t[0], t[1]
+
+    file_dir = os.path.join(
         settings.dirextdata,
         "VIIRS",
         "VJ114IMGML",
-        f"VJ114IMGML.{year}{month:02}.C2.04.csv",
     )
-    
+    # looks for collection 2 version 3 (latest as of July 2025)
+    filepath = os.path.join(file_dir, f"VJ114IMGML.{year}{month:02}.C2.03.txt")
     if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
+        logger.warning(f"No VJ114IMGML file found for {year}-{month:02}")
         return
 
     return filepath
@@ -409,8 +404,53 @@ def read_VJ114IMGML(filepath: str):
     df : pandas.DataFrame
         monthly DataFrame containing standardized columns of VIIRS active fires
     """
-    df = read_VNP14IMGML(filepath) # fields are the same for the latest version (C2.04)
-    return df
+
+    # collection 2 data now uses the same format as for SNPP
+    return read_VNP14IMGML(filepath)
+
+    # usecols = [
+    #     "year",
+    #     "month",
+    #     "day",
+    #     "hh",
+    #     "mm",
+    #     "lon",
+    #     "lat",
+    #     "mask",
+    #     "line",
+    #     "sample",
+    #     "frp",
+    # ]
+
+    # df = pd.read_csv(
+    #     filepath,
+    #     dtype={col: "string" for col in ["year", "month", "day", "hh", "mm"]},
+    #     usecols=usecols,
+    #     skipinitialspace=True,
+    # )
+    # df["datetime"] = pd.to_datetime(
+    #     df["year"]
+    #     + "-"
+    #     + df["month"]
+    #     + "-"
+    #     + df["day"]
+    #     + " "
+    #     + df["hh"]
+    #     + ":"
+    #     + df["mm"],
+    #     format="%Y-%m-%d %H:%M",
+    # )
+    # df = df.rename(
+    #     columns={
+    #         "lat": "Lat",
+    #         "lon": "Lon",
+    #         "frp": "FRP",
+    #         "line": "Line",
+    #         "sample": "Sample",
+    #     }
+    # )
+    # df["DT"], df["DS"] = viirs_pixel_size(df["Sample"].values)
+    # return df
 
 
 def VJ114IMGTDL_filepath(t: TimeStep):
@@ -435,7 +475,7 @@ def VJ114IMGTDL_filepath(t: TimeStep):
         f"J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_{d.strftime('%Y%j')}.txt",
     )
     if not settings.fs.exists(filepath):
-        print("No data available for file", filepath)
+        logger.warning(f"No VJ114IMGTDL file found for {d.strftime('%Y%j')}")
         return
 
     return filepath
@@ -476,6 +516,286 @@ def read_VJ114IMGTDL(filepath: str):
             "track": "DT",
         }
     )
+    return df
+
+
+def FIRMS_VIIRS_SNPP_NRT_filepath(t: TimeStep):
+    """Filepath for SNPP NRT data downloaded from FIRMS API.
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day
+    even if that file doesn't yet exist.
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_SNPP_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_SNPP_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+def FIRMS_VIIRS_SNPP_SP_filepath(t: TimeStep):
+    """Filepath for SNPP SP data downloaded from FIRMS API.
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day
+    even if that file doesn't yet exist.
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_SNPP_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_SNPP_SP_{datestring}.csv"
+    )
+
+    return filepath
+
+def FIRMS_VIIRS_NOAA20_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA20 NRT data downloaded from FIRMS API.
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day
+    even if that file doesn't yet exist.
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_NOAA20_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_NOAA20_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+def FIRMS_VIIRS_NOAA20_SP_filepath(t: TimeStep):
+    """Filepath for NOAA20 SP data downloaded from FIRMS API.
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day
+    even if that file doesn't yet exist.
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_NOAA20_SP"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_NOAA20_SP_{datestring}.csv"
+    )
+
+    return filepath
+
+def FIRMS_VIIRS_NOAA21_NRT_filepath(t: TimeStep):
+    """Filepath for NOAA21 NRT data downloaded from FIRMS API.
+    Looks for source files for individual days (UTC).
+
+    Returns the filepath where data would be for this day
+    even if that file doesn't yet exist.
+
+    Parameters
+    ----------
+    t : tuple, (int, int, int, str)
+        the year, month, day and 'AM' | 'PM' during the initialization
+
+    Returns
+    -------
+    filepath : str
+        path to input data
+
+    """
+    datestring = datetime(t[0], t[1], t[2]).date().strftime("%Y%m%d")
+
+    file_dir = os.path.join(
+        settings.dirextdata,
+        "VIIRS",
+        "FIRMS_VIIRS_NOAA21_NRT"
+    )
+
+    filepath = os.path.join(
+        file_dir,
+        f"FIRMS_VIIRS_NOAA21_NRT_{datestring}.csv"
+    )
+
+    return filepath
+
+def read_FIRMS_VIIRS_SP(filepath: str):
+    """Read VIIRS standard product fire location data.
+    Input data from the FIRMS API is formatted in the same way for all satellites.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires
+
+    """
+
+    usecols = [
+        "latitude",
+        "longitude",
+        "scan",
+        "track",
+        "acq_date",
+        "acq_time",
+        "confidence",
+        "frp",
+        "daynight",
+        "type",
+        "version"
+    ]
+
+    df = pd.read_csv(
+        filepath,
+        usecols=usecols,
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+
+    df["acq_time"] = df["acq_time"].str.zfill(4)
+    # convert 700 to 0700 or 110 to 0110
+
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS",
+            "track": "DT",
+            "frp": "FRP",
+            "daynight": "DNFlag",
+            "type": "Type",
+            "confidence": "Confidence"
+        }
+    )
+
+    return df
+
+def read_FIRMS_VIIRS_NRT(filepath: str):
+    """Read VIIRS NRT product fire location data.
+
+    Input data from the FIRMS API is formatted in the same way for all satellites.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to input data. Can be local or s3.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        DataFrame containing standardized columns of VIIRS active fires
+
+    """
+
+    usecols = [
+        "latitude",
+        "longitude",
+        "scan",
+        "track",
+        "acq_date",
+        "acq_time",
+        "confidence",
+        "frp",
+        "daynight",
+        "version"
+    ]
+
+    df = pd.read_csv(
+        filepath,
+        usecols=usecols,
+        dtype={"acq_date": "string", "acq_time": "string"}
+    )
+
+    df["acq_time"] = df["acq_time"].str.zfill(4)
+    # convert 700 to 0700 or 110 to 0110
+    df["datetime"] = pd.to_datetime(
+        df["acq_date"] + " " + df["acq_time"], format="%Y-%m-%d %H%M"
+    )
+
+    df = df.rename(
+        columns={
+            "latitude": "Lat",
+            "longitude": "Lon",
+            "scan": "DS",
+            "track": "DT",
+            "frp": "FRP",
+            "daynight": "DNFlag",
+            "confidence": "Confidence"
+        }
+    )
+
     return df
 
 
