@@ -97,14 +97,19 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         Location of downloaded data file
     """
 
+    logger.info(f"[update_FIRMS] ENTRY: date={d}, sat={sat}, product={product}")
+    logger.info(f"[update_FIRMS] Settings: FIRE_NRT={settings.FIRE_NRT}, READ_LOCATION={settings.READ_LOCATION}, LOCAL_PATH={settings.LOCAL_PATH}")
+
     if (sat == "NOAA21") and (product == "SP"):
         raise ValueError("NOAA21 standard product is not available. Use NOAA21 NRT.")
 
     data_dir = os.path.join(settings.dirextdata, "VIIRS", f"FIRMS_VIIRS_{sat}_{product}/")
+    logger.info(f"[update_FIRMS] Constructed data_dir: {data_dir}")
     status_url = 'https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY=' + MAP_KEY
     firms_api = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/"
     query = f"/VIIRS_{sat}_{product}/world/1/" + d.strftime("%Y-%m-%d")
     url = firms_api + MAP_KEY + query
+    logger.info(f"[update_FIRMS] FIRMS API URL: {url}")
 
     retries = 0
     while retries < N_MAX_RETRIES:
@@ -118,11 +123,13 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         resp = pd.read_json(status_url, typ='series')
         count = resp['current_transactions']
         limit = resp['transaction_limit']
+        logger.info(f"[update_FIRMS] API status - retry {retries}/{N_MAX_RETRIES}: {count}/{limit} transactions")
 
         if (limit - count > limit * .1):
             try:
                 logger.info(f"Downloading {sat} {product} for {d}")
                 df = pd.read_csv(url)
+                logger.info(f"[update_FIRMS] Download successful: {len(df)} detections")
                 break
             except Exception as e:
                 logger.warning(f"Error while downloading {sat} {product} for {d}: {e}. Retrying download.")
@@ -137,19 +144,36 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         logger.warning(
             f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
         )
+        logger.info(f"[update_FIRMS] Returning None due to empty data")
         return
 
     daterange = pd.to_datetime(df['acq_date'])
     tst, ted = daterange.min(), daterange.max()
+    logger.info(f"[update_FIRMS] Downloaded data spans {tst.date()} to {ted.date()} ({len(df)} detections)")
 
     if tst.date() != ted.date():
         raise ValueError(f"Unexpected date range for single day file: {tst} to {ted}")
 
     filename_out = f"FIRMS_VIIRS_{sat}_{product}_{tst.strftime('%Y%m%d')}.csv"
     downloaded_filepath = os.path.join(data_dir, filename_out)
-    os.makedirs(os.path.dirname(downloaded_filepath), exist_ok=True)
-    df.to_csv(downloaded_filepath)
+    logger.info(f"[update_FIRMS] Attempting to save to: {downloaded_filepath}")
+    logger.info(f"[update_FIRMS] Directory to create: {os.path.dirname(downloaded_filepath)}")
+    
+    try:
+        os.makedirs(os.path.dirname(downloaded_filepath), exist_ok=True)
+        logger.info(f"[update_FIRMS] Successfully created/verified directory")
+    except Exception as e:
+        logger.error(f"[update_FIRMS] ERROR creating directory: {type(e).__name__}: {e}")
+        raise
+    
+    try:
+        df.to_csv(downloaded_filepath)
+        logger.info(f"[update_FIRMS] Successfully wrote CSV file with {len(df)} rows")
+    except Exception as e:
+        logger.error(f"[update_FIRMS] ERROR writing CSV: {type(e).__name__}: {e}")
+        raise
 
+    logger.info(f"[update_FIRMS] SUCCESS: returning {downloaded_filepath}")
     return downloaded_filepath
 
 def update_GridMET_fm1000():

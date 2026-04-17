@@ -186,6 +186,9 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     source = settings.FIRE_SOURCE
     location = settings.READ_LOCATION
 
+    logger.info(f"[job_data_update_checker] ENTRY: FIRE_NRT={settings.FIRE_NRT}, FIRE_SOURCE={source}, READ_LOCATION={location}")
+    logger.info(f"[job_data_update_checker] Date range: {tst} to {ted}")
+
     fs = fsspec.filesystem(location, use_listings_cache=False)
 
     futures = []
@@ -194,7 +197,10 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     else:
         sats = [source]
 
+    logger.info(f"[job_data_update_checker] Processing satellites: {sats}")
+
     for sat in sats:
+        logger.info(f"[job_data_update_checker] Processing sat={sat}, FIRE_NRT={settings.FIRE_NRT}")
         if not settings.FIRE_NRT:
 
             # look for already-downloaded monthly files
@@ -253,6 +259,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
             # check FIRMS data availability
             sp_start, sp_end, nrt_start, nrt_end = get_FIRMS_data_availability(sat)
+            logger.info(f"[job_data_update_checker] {sat} data availability: NRT {nrt_start} to {nrt_end}, SP {sp_start} to {sp_end}")
 
             # use these to ensure all downloads are done before any preprocessing starts
             download_futures = {} # (t, sat) -> dask future
@@ -260,24 +267,31 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
             for t in timesteps:
                 d = dt.datetime(t[0], t[1], t[2])
+                logger.debug(f"[job_data_update_checker] Checking {sat} for {d.date()}")
 
                 if d > nrt_end:
                     logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}: date out of range.")
                     continue
                 elif d >= nrt_start: # in NRT availability range
                     fp = nrt_filepath_func(t)
+                    logger.debug(f"[job_data_update_checker] Checking NRT path: {fp}")
 
                     if fs.exists(fp):
+                        logger.info(f"[job_data_update_checker] NRT file exists for {sat} {d.date()}: {fp}")
                         preprocess_tasks[(t, sat)] = fp
                     # if we don't already have this input file, try to download from FIRMS
                     else:
+                        logger.info(f"[job_data_update_checker] Submitting FIRMS NRT download for {sat} {d.date()}")
                         download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
                 elif sp_start and d >= sp_start: # check if sp_start because NOAA21 does not have yet
                     # in standard product availability range
                     fp = sp_filepath_func(t)
+                    logger.debug(f"[job_data_update_checker] Checking SP path: {fp}")
                     if fs.exists(fp):
+                        logger.info(f"[job_data_update_checker] SP file exists for {sat} {d.date()}: {fp}")
                         preprocess_tasks[(t, sat)] = fp
                     else:
+                        logger.info(f"[job_data_update_checker] Submitting FIRMS SP download for {sat} {d.date()}")
                         download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "SP")
                 else:
                     # either before sp_start, or this is NOAA21 (so, no sp_start) and it is before
@@ -308,8 +322,12 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
             if len(download_futures) > 0:
                 # block to finish downloads before starting any preprocessing
+                logger.info(f"[job_data_update_checker] Gathering {len(download_futures)} download futures for {sat}")
                 downloaded_paths = client.gather(download_futures)
+                logger.info(f"[job_data_update_checker] Downloaded paths: {downloaded_paths}")
                 preprocess_tasks.update(downloaded_paths)
+            else:
+                logger.info(f"[job_data_update_checker] No downloads needed for {sat} (all files exist)")
 
         # schedule preprocessing
         for (tk, satk), fp in preprocess_tasks.items():
