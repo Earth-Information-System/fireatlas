@@ -215,8 +215,10 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
             # gives list of timesteps for which there is no preprocessed file available
             timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="monthly")
+            logger.info(f"[job_data_update_checker] check_preprocessed_file returned {len(timesteps)} timesteps: {timesteps}")
 
             if len(timesteps) < 1: # no processing needed for this sat
+                logger.info(f"[job_data_update_checker] No unpreprocessed timesteps for {sat}, skipping")
                 continue
 
             monthly_filepaths = [monthly_filepath_func(t) for t in timesteps]
@@ -253,8 +255,10 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
             # gives list of timesteps for which there is no preprocessed file available
             timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
+            logger.info(f"[job_data_update_checker] check_preprocessed_file returned {len(timesteps)} timesteps: {timesteps}")
 
             if len(timesteps) < 1: # no processing needed for this sat
+                logger.info(f"[job_data_update_checker] No unpreprocessed timesteps for {sat}, skipping")
                 continue
 
             # check FIRMS data availability
@@ -333,6 +337,8 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         for (tk, satk), fp in preprocess_tasks.items():
             tk = list(tk)
             futures.append(client.submit(preprocess_daily_file, fp, tk, satk))
+    
+    logger.info(f"[job_data_update_checker] RETURNING {len(futures)} preprocessing futures")
     return futures
 
 @timed
