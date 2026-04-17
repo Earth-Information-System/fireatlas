@@ -148,7 +148,7 @@ def job_nrt_current_day_updates(client: Client):
     futures, source, now = [], settings.FIRE_SOURCE, datetime.now()
 
     if source == "VIIRS":
-        sats = ["SNPP", "NOAA20"]
+        sats = ["SNPP", "NOAA20", "NOAA21"]
     else:
         sats = [source]
 
@@ -296,7 +296,7 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
                     fp = nrt_filepath_func(t)
                     if not fs.exists(fp):
                         update_FIRMS(d, sat, "NRT")
-                elif sp_start and d >= sp_start:
+                elif d >= sp_start:
                     fp = sp_filepath_func(t)
                     if not fs.exists(fp):
                         update_FIRMS(d, sat, "SP")
@@ -396,7 +396,7 @@ def Run_local(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool=F
 
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
-
+    gpd.show_versions()
     ctime = datetime.now(tz=timezone.utc)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
         tst = [ctime.year, 1, 1, 'AM']
