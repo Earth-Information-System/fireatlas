@@ -5,6 +5,7 @@ import glob
 import fsspec
 import datetime as dt
 from functools import partial
+import geopandas as gpd
 
 import s3fs
 
