@@ -563,7 +563,7 @@ def preprocess_region_t(
         "y",
     ]
 
-    if settings.FIRE_NRT == True:
+    if settings.FIRE_NRT == True and "version" in df.columns:
         columns.append("version") # preserve version type with NRT data
 
     if not df.empty:
