@@ -451,6 +451,38 @@ def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     return preprocess_input_file(filepath, None, None)
 
 
+def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
+    """Find previous and next daily input files, then preprocess this timestep.
+    Prefers FIRMS standard product (SP) over FIRMS NRT if we have both.
+
+    Parameters
+    ----------
+    filepath : str
+        path to the daily input file to be preprocessed
+    t : TimeStep
+        time of the input daily file
+    sat : Literal["SNPP", "NOAA20", "NOAA21"]
+        which satellite the input file is from
+
+    Returns
+    -------
+    output_paths : list[str]
+        List of filepaths that preprocess_input_file function has written to.
+    """
+    day_prev = t_nd(t, "previous")
+    day_next = t_nd(t, "next")
+
+    if settings.FIRE_NRT == True:
+        filepath_prev = FIRMS_NRT_filepath(day_prev, sat)
+        filepath_next = FIRMS_NRT_filepath(day_next, sat=sat)
+
+    else:
+        filepath_prev = FIRMS_SP_filepath(day_prev, sat=sat)
+        filepath_next = FIRMS_SP_filepath(day_next, sat=sat)
+
+    return preprocess_input_file(filepath, filepath_prev, filepath_next)
+
+
 @timed
 def read_preprocessed_input(
     t: TimeStep,
