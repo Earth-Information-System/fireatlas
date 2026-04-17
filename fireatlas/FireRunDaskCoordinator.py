@@ -144,6 +144,7 @@ def job_preprocess_region(region: Region):
 
 def job_nrt_current_day_updates(client: Client):
     """hourly update the NRT files and prep
+    Updates files for today and the two previous days.
     """
     futures, source, now = [], settings.FIRE_SOURCE, datetime.now()
 
@@ -154,7 +155,7 @@ def job_nrt_current_day_updates(client: Client):
 
     for sat in sats:
         NRT_update_func = partial(update_FIRMS, sat=sat, product="NRT")
-        futures.extend(client.map(NRT_update_func, [now.date(), (now-timedelta(days=1)).date()]))
+        futures.extend(client.map(NRT_update_func, [now.date(), (now-timedelta(days=1)).date(), (now-timedelta(days=2)).date()]))
     return futures
 
 
