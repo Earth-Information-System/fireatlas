@@ -34,12 +34,16 @@ from fireatlas.preprocess import (
     preprocess_region_t,
     preprocess_region,
     preprocessed_region_filename,
+    preprocess_monthly_file,
+    preprocess_daily_file
 )
 
 from fireatlas.DataCheckUpdate import update_FIRMS, get_FIRMS_data_availability
 from fireatlas.FireIO import (
     copy_from_local_to_s3,
     copy_from_local_to_veda_s3,
+    VNP14IMGML_filepath,
+    VJ114IMGML_filepath,
     FIRMS_VIIRS_SNPP_NRT_filepath,
     FIRMS_VIIRS_SNPP_SP_filepath,
     FIRMS_VIIRS_NOAA20_NRT_filepath,
@@ -156,15 +160,21 @@ def job_nrt_current_day_updates(client: Client):
 
 def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     """
-    Checks to see if any FIRMS input data within the time range needs to be preprocessed.
-    Tries to download any missing NRT/SP input data from FIRMS, then preprocess any 
-    unprocessed data (FIRMS_VIIRS_SNPP_NRT, FIRMS_VIIRS_SNPP_SP, etc.).
+    Checks to see if any input data within the time range needs to be preprocessed.
 
-    NOTE: Blocks for downloads inside this function and returns only preprocessing futures.
+    If settings.FIRE_NRT == False, only tries to preprocess already existing monthly
+    input files (VNP14IMGML and VJ114IMGML).
+    If settings.FIRE_NRT == True, tries to download any missing NRT/SP input data from FIRMS,
+    then preprocess any unprocessed FIRMS data (FIRMS_VIIRS_SNPP_NRT, FIRMS_VIIRS_SNPP_SP, etc.).
 
-    NOTE: Intelligently selects between SP (standard product) and NRT based on data 
-    availability dates. Does not automatically reprocess timesteps previously preprocessed 
-    from NRT when the SP becomes available.
+    NOTE: If settings.FIRE_NRT and any input files are needed,
+    blocks for downloads inside this function and returns only preprocessing futures.
+
+    NOTE: Does not automatically reprocess a timestep that was previously preprocessed
+    from NRT data when the standard data product becomes available.
+
+    Generally, assumes that if a preprocessed file for a date already exists, it does
+    not need to be reprocessed unless it is from the most recent two days of the NRT record.
 
     Returns:
     --------
@@ -183,87 +193,126 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
         sats = [source]
 
     for sat in sats:
-        # Map satellite to FIRMS filepath functions
-        if sat == "SNPP":
-            nrt_filepath_func = FIRMS_VIIRS_SNPP_NRT_filepath
-            sp_filepath_func = FIRMS_VIIRS_SNPP_SP_filepath
-        elif sat == "NOAA20":
-            nrt_filepath_func = FIRMS_VIIRS_NOAA20_NRT_filepath
-            sp_filepath_func = FIRMS_VIIRS_NOAA20_SP_filepath
-        elif sat == "NOAA21":
-            nrt_filepath_func = FIRMS_VIIRS_NOAA21_NRT_filepath
-            sp_filepath_func = None
+        if not settings.FIRE_NRT:
 
-        # gives list of timesteps for which there is no preprocessed file available
-        timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
-
-        if len(timesteps) < 1: # no processing needed for this sat
-            continue
-
-        # check FIRMS data availability
-        sp_start, sp_end, nrt_start, nrt_end = get_FIRMS_data_availability(sat)
-
-        # use these to ensure all downloads are done before any preprocessing starts
-        download_futures = {} # (t, sat) -> dask future
-        preprocess_tasks = {} # (t, sat) -> filepath
-
-        for t in timesteps:
-            d = dt.datetime(t[0], t[1], t[2])
-
-            if d > nrt_end:
-                logger.warning(f"No FIRMS data available for {sat} on {t[0]}-{t[1]}-{t[2]}: date out of range.")
+            # look for already-downloaded monthly files
+            if sat == "SNPP":
+                monthly_filepath_func = VNP14IMGML_filepath
+            elif sat == "NOAA20":
+                monthly_filepath_func = VJ114IMGML_filepath
+            elif sat == "NOAA21":
+                logger.warning("No standard products available for NOAA21. "
+                               "Did you mean to set FireConsts.FIRE_NRT = True?")
                 continue
-            elif d >= nrt_start: # in NRT availability range
-                fp = nrt_filepath_func(t)
 
-                if fp and fs.exists(fp):
-                    preprocess_tasks[(t, sat)] = fp
-                # if we don't already have this input file, try to download from FIRMS
+            # gives list of timesteps for which there is no preprocessed file available
+            timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="monthly")
+
+            if len(timesteps) < 1: # no processing needed for this sat
+                continue
+
+            monthly_filepaths = [monthly_filepath_func(t) for t in timesteps]
+
+            # we don't need to preprocess outside of time range, but we do need
+            # the previous and next months to preprocess the first and last days
+
+            prev_month, next_month = t_nm(tst, "previous"), t_nm(ted, "next")
+            for m in [prev_month, next_month]:
+                if not monthly_filepath_func(m):
+                    logger.warning(f"No monthly input file found for {m} for {sat}")
+
+            indices = [i for i, f in enumerate(monthly_filepaths) if f is not None]
+            missing_indices = [i for i, f in enumerate(monthly_filepaths) if f is None]
+
+            for i in missing_indices:
+                logger.warning(f"No monthly input file found for {timesteps[i]} for {sat}")
+
+            existing_timesteps = [timesteps[i] for i in indices]
+
+            futures.extend(client.map(partial(preprocess_monthly_file, sat=sat), existing_timesteps))
+
+        elif settings.FIRE_NRT:
+
+            if sat == "SNPP":
+                nrt_filepath_func = FIRMS_VIIRS_SNPP_NRT_filepath
+                sp_filepath_func = FIRMS_VIIRS_SNPP_SP_filepath
+            elif sat == "NOAA20":
+                nrt_filepath_func = FIRMS_VIIRS_NOAA20_NRT_filepath
+                sp_filepath_func = FIRMS_VIIRS_NOAA20_SP_filepath
+            elif sat == "NOAA21":
+                nrt_filepath_func = FIRMS_VIIRS_NOAA21_NRT_filepath
+                sp_filepath_func = None
+
+            # gives list of timesteps for which there is no preprocessed file available
+            timesteps = check_preprocessed_file(tst, ted, sat=sat, freq="NRT")
+
+            if len(timesteps) < 1: # no processing needed for this sat
+                continue
+
+            # check FIRMS data availability
+            sp_start, sp_end, nrt_start, nrt_end = get_FIRMS_data_availability(sat)
+
+            # use these to ensure all downloads are done before any preprocessing starts
+            download_futures = {} # (t, sat) -> dask future
+            preprocess_tasks = {} # (t, sat) -> filepath
+
+            for t in timesteps:
+                d = dt.datetime(t[0], t[1], t[2])
+
+                if d > nrt_end:
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}: date out of range.")
+                    continue
+                elif d >= nrt_start: # in NRT availability range
+                    fp = nrt_filepath_func(t)
+
+                    if fs.exists(fp):
+                        preprocess_tasks[(t, sat)] = fp
+                    # if we don't already have this input file, try to download from FIRMS
+                    else:
+                        download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
+                elif sp_start and d >= sp_start: # check if sp_start because NOAA21 does not have yet
+                    # in standard product availability range
+                    fp = sp_filepath_func(t)
+                    if fs.exists(fp):
+                        preprocess_tasks[(t, sat)] = fp
+                    else:
+                        download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "SP")
                 else:
-                    download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
-            elif sp_start and d >= sp_start: # check if sp_start because NOAA21 does not have yet
-                # in standard product availability range
-                fp = sp_filepath_func(t) if sp_filepath_func else None
-                if fp and fs.exists(fp):
-                    preprocess_tasks[(t, sat)] = fp
+                    # either before sp_start, or this is NOAA21 (so, no sp_start) and it is before
+                    # nrt start. either way, warn but allow
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
+                                   "Date may be out of range.")
+
+            # need to have these available to preprocess tst and ted, if possible
+            prev_day = t_nd(tst, "previous")
+            next_day = t_nd(ted, "next")
+
+            for t in [prev_day, next_day]:
+                d = dt.datetime(t[0], t[1], t[2])
+
+                if d > nrt_end:
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. Date out of range.")
+                elif d >= nrt_start:
+                    fp = nrt_filepath_func(t)
+                    if not fs.exists(fp):
+                        update_FIRMS(d, sat, "NRT")
+                elif sp_start and d >= sp_start:
+                    fp = sp_filepath_func(t)
+                    if not fs.exists(fp):
+                        update_FIRMS(d, sat, "SP")
                 else:
-                    download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "SP")
-            else:
-                # either before sp_start, or this is NOAA21 (so, no sp_start) and it is before
-                # nrt start. either way, warn but allow
-                logger.warning(f"No FIRMS data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
-                               "Date may be out of range.")
+                    logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
+                                   "Date may be out of range.")
 
-        # need to have these available to preprocess tst and ted, if possible
-        prev_day = t_nd(tst, "previous")
-        next_day = t_nd(ted, "next")
-
-        for t in [prev_day, next_day]:
-            d = dt.datetime(t[0], t[1], t[2])
-
-            if d > nrt_end:
-                logger.warning(f"No FIRMS data available for {sat} on {t[0]}-{t[1]}-{t[2]}. Date out of range.")
-            elif d >= nrt_start:
-                fp = nrt_filepath_func(t)
-                if fp and not fs.exists(fp):
-                    update_FIRMS(d, sat, "NRT")
-            elif sp_start and d >= sp_start:
-                fp = sp_filepath_func(t) if sp_filepath_func else None
-                if fp and not fs.exists(fp):
-                    update_FIRMS(d, sat, "SP")
-            else:
-                logger.warning(f"No FIRMS data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
-                               "Date may be out of range.")
-
-        if len(download_futures) > 0:
-            # block to finish downloads before starting any preprocessing
-            downloaded_paths = client.gather(download_futures)
-            preprocess_tasks.update(downloaded_paths)
+            if len(download_futures) > 0:
+                # block to finish downloads before starting any preprocessing
+                downloaded_paths = client.gather(download_futures)
+                preprocess_tasks.update(downloaded_paths)
 
         # schedule preprocessing
         for (tk, satk), fp in preprocess_tasks.items():
             tk = list(tk)
-            futures.append(client.submit(preprocess_input_file, fp))
+            futures.append(client.submit(preprocess_daily_file, fp, tk, satk))
     return futures
 
 @timed
