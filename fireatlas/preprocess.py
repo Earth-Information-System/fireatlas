@@ -380,15 +380,9 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
     # groupby days and if there are more than 1 days, include a progress bar
     gb = df.groupby(df["local_datetime"].dt.date)
 
-    # return selected columns
+    output_cols = ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
     if settings.FIRE_NRT:
-        df = df[
-            ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm", "version"]
-        ]
-    else:
-        df = df[
-            ["Lat", "Lon", "FRP", "Sat", "DT", "DS", "input_filename", "datetime", "ampm"]
-        ]
+        output_cols.append("version")
 
     output_paths = []
 
@@ -399,6 +393,7 @@ def preprocess_input_file(filepath: str, filepath_prev: str | None, filepath_nex
         for ampm in ["AM", "PM"]:
             time_filtered_df = data.loc[data["ampm"] == ampm]
             if len(time_filtered_df) > 0:
+                time_filtered_df = time_filtered_df[output_cols]
                 output_filepath = preprocessed_filename(
                     (day.year, day.month, day.day, ampm), sat=sat, location="local"
                 )
@@ -574,8 +569,8 @@ def preprocess_region_t(
 
     print(output_filepath)
     print(read_location)
-    if settings.FIRE_NRT:
-        columns.append("version")  # preserve version type with NRT data
+    if settings.FIRE_NRT and "version" in df.columns:
+        columns.append("version")
 
     if not df.empty:
         # return selected columns
