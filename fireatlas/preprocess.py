@@ -572,6 +572,8 @@ def preprocess_region_t(
         "y",
     ]
 
+    print(output_filepath)
+    print(read_location)
     if settings.FIRE_NRT:
         columns.append("version")  # preserve version type with NRT data
 
