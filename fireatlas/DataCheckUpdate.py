@@ -102,6 +102,7 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
         raise ValueError("NOAA21 standard product is not available. Use NOAA21 NRT.")
 
     data_dir = os.path.join(settings.dirextdata, "VIIRS", f"FIRMS_VIIRS_{sat}_{product}/")
+    logger.info(f"Running update_FIRMS an saving to {data_dir}")
     status_url = 'https://firms.modaps.eosdis.nasa.gov/mapserver/mapkey_status/?MAP_KEY=' + MAP_KEY
     firms_api = "https://firms.modaps.eosdis.nasa.gov/api/area/csv/"
     query = f"/VIIRS_{sat}_{product}/world/1/" + d.strftime("%Y-%m-%d")
@@ -150,6 +151,7 @@ def update_FIRMS(d:date, sat: Literal["SNPP", "NOAA20", "NOAA21"], product: Lite
     downloaded_filepath = os.path.join(data_dir, filename_out)
     os.makedirs(os.path.dirname(downloaded_filepath), exist_ok=True)
     df.to_csv(downloaded_filepath)
+    logger.info(f"Saved df to {downloaded_filepath}")
 
     return downloaded_filepath
 
