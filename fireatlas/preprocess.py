@@ -495,6 +495,7 @@ def read_preprocessed_input(
 ):
     filename = preprocessed_filename(t, sat=sat, location=location)
     df = pd.read_csv(filename)
+    logger.info(f'Read preprocessed filename {filename}')
     return df
 
 
