@@ -83,12 +83,12 @@ echo ""
 # Extract the default FIRE_SOURCE value from conus-dps's FireConsts.py so the
 # NRT runs automatically track whatever production defaults to.
 NRT_FIRE_SOURCE=$(git -C "$REPO_ROOT" show conus-dps:fireatlas/FireConsts.py \
-    | python3 -c "
+    | python3 -c $'
 import sys, re
 content = sys.stdin.read()
-m = re.search(r'FIRE_SOURCE\s*:.*?=\s*Field\(\s*[\"'\''](SNPP|NOAA20|NOAA21|VIIRS|BAMOD)[\"'\'']', content)
-print(m.group(1) if m else 'NOAA20')
-")
+m = re.search(r\'FIRE_SOURCE\\s*:.*?=\\s*Field\\(\\s*["\\\']+(SNPP|NOAA20|NOAA21|VIIRS|BAMOD)\', content)
+print(m.group(1) if m else "NOAA20")
+')
 echo "NRT FIRE_SOURCE (from conus-dps): $NRT_FIRE_SOURCE"
 echo ""
 
