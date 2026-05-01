@@ -75,7 +75,7 @@ class Settings(BaseSettings):
         description="absolute path to where local data are stored",
     )
     S3_PATH: str = Field(
-        "s3://maap-ops-workspace/shared/gsfc_landslides",
+        "s3://maap-ops-workspace/shared/gsfc_landslides/FEDS-staging",
         description="s3 path where remote data are stored",
     )
 
