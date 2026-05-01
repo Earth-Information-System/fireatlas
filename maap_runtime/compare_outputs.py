@@ -30,7 +30,7 @@ import s3fs
 BRANCH_BASES = {
     "prod":    "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-v3",
     "staging": "s3://maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSoutput-v3",
-    "dev":     "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-v3/FEDS-staging",
+    "dev":     "s3://maap-ops-workspace/shared/gsfc_landslides/FEDS-staging/FEDSoutput-v3",
 }
 
 OUTPUT_BASE = "s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-v3/E2E_test_outputs"

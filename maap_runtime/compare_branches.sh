@@ -193,7 +193,7 @@ s3 = s3fs.S3FileSystem()
 
 prod_base    = 'maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-v3'
 staging_base = 'maap-ops-workspace/shared/zbecker/FEDSstaging/FEDSoutput-v3'
-dev_base     = 'maap-ops-workspace/shared/gsfc_landslides/FEDSoutput-v3/FEDS-staging'
+dev_base     = 'maap-ops-workspace/shared/gsfc_landslides/FEDS-staging/FEDSoutput-v3'
 
 runs = [
     ('$NRT_PROD_REGNM',    prod_base),
