@@ -177,9 +177,9 @@ ARCH_PROD_REGNM="CONUS_TEST_${TIMESTAMP}_PROD_ARCHIVE"
 ARCH_STAGING_REGNM="CONUS_TEST_${TIMESTAMP}_STAGING_ARCHIVE"
 ARCH_DEV_REGNM="CONUS_TEST_${TIMESTAMP}_DEV_ARCHIVE"
 
-run_branch "conus-dps" "PROD"    "$ARCH_PROD_REGNM"    "$ARCH_TST" "$ARCH_TED" "false" "VIIRS"
-run_branch "staging"   "STAGING" "$ARCH_STAGING_REGNM" "$ARCH_TST" "$ARCH_TED" "false" "VIIRS"
-run_branch "$DEV_BRANCH" "DEV"   "$ARCH_DEV_REGNM"     "$ARCH_TST" "$ARCH_TED" "false" "VIIRS"
+run_branch "conus-dps" "PROD"    "$ARCH_PROD_REGNM"    "$ARCH_TST" "$ARCH_TED" "false" "SNPP"
+run_branch "staging"   "STAGING" "$ARCH_STAGING_REGNM" "$ARCH_TST" "$ARCH_TED" "false" "SNPP"
+run_branch "$DEV_BRANCH" "DEV"   "$ARCH_DEV_REGNM"     "$ARCH_TST" "$ARCH_TED" "false" "SNPP"
 
 # Restore original branch before verification steps
 git -C "$REPO_ROOT" checkout "$ORIGINAL_BRANCH"
