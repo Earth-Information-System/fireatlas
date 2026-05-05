@@ -132,7 +132,7 @@ def compare_mode(
             if df.empty:
                 continue
             if m is None:
-                m = df[map_cols].explore(name=name, color=color)
+                m = df[map_cols].explore(name=name, color=color, tiles="CartoDB voyager",)
             else:
                 df[map_cols].explore(m=m, name=name, color=color)
         if m is not None:
