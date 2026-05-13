@@ -1,17 +1,26 @@
 ---
 title: Near Real Time Data
 ---
+***Disclaimer:*** *The FEDS (aka VIIRS Modeled Fire Perimeters) product is intended to provide situational awareness for ongoing fire events in the US and Canada, not as a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.*
 
-## Visualize Near Real Time Data
-Two platforms provide mapping capabilities for NRT FEDS fire tracking data. 
 
-[**NASA FIRMS US/Canada**](https://firms.modaps.eosdis.nasa.gov/usfs/map/#m:experimental;d:24hrs,24hrs;l:fires_viirs_noaa20,fires_viirs_noaa21,fires_viirs_snpp,eis_fire_lf_perimeter_nrt,countries,earth;@-102.8,37.6,5.1z) - FEDS output for North America (continental US, Alaska, Canada, and Northern Mexico) are viewable on the Experimental tab within NASA's Fire Information for Resource Management System (FIRMS) US/Canada map application under the name "VIIRS Modeled Fire Perimeters." Using FIRMS, you can view FEDS perimeter information from the current calendar year. 
 
-***Disclaimer:*** *The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.*
+## Visualize NRT Data
+Three platforms provide browser-based mapping and visualization capabilities for NRT FEDS fire tracking data. 
 
-[**Fire Events Explorer**](https://earthdata.nasa.gov/dashboard/tools/fire-event-explorer) - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites. 
+[**Fire Events Explorer**](https://earthdata.nasa.gov/dashboard/tools/fire-event-explorer) - Visualize FEDS fire tracking data from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites. The Fire Event Explorer can also produce GIF visualizations to rapidly communicate fire progression to stakeholders. Used to prototype novel visualization and data delivery methods, this stand-alone application is under active development. 
 
-## Access Near Real Time Data 
+[**ArcGIS Online**](https://gis.earthdata.nasa.gov/portal/home/item.html?id=e2e14a2a640b404c903976b2fb4467f8) - NRT FEDS outputs are also available as map image layers for users working in the Esri ecosystem. There are separate layers for perimeters, active fire perimeter segments, and associated VIIRS active fire detections, all available for the current calendar year to date. 
+
+- [Perimeters](https://gis.earthdata.nasa.gov/portal/home/item.html?id=e2e14a2a640b404c903976b2fb4467f8)
+
+- [Active fire perimeter segments](https://gis.earthdata.nasa.gov/portal/home/item.html?id=a283fe9d8cc345979e6e7f54b17f2d9d)
+
+- [Associated VIIRS detections](https://gis.earthdata.nasa.gov/portal/home/item.html?id=5a89fe9825be48c9810b7f53ffb4160f)
+
+[**NASA FIRMS US/Canada**](https://firms.modaps.eosdis.nasa.gov/usfs/map/#m:experimental;d:24hrs,24hrs;l:fires_viirs_noaa20,fires_viirs_noaa21,fires_viirs_snpp,eis_fire_lf_perimeter_nrt,countries,earth;@-102.8,37.6,5.1z) - FEDS perimeters for North America (continental US, Alaska, Canada, and Northern Mexico) are also viewable on the Experimental tab within NASA's Fire Information for Resource Management System (FIRMS) US/Canada map application under the name "VIIRS Modeled Fire Perimeters." FIRMS is a mature system that also provides a wealth of additional fire information. 
+
+## Programmatic Access To Near Real Time Data 
 
 NRT data are available via [OGC API](https://openveda.cloud/api/features/). An [example notebook](https://docs.openveda.cloud/user-guide/notebooks/tutorials/mapping-fires.html) that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.
 

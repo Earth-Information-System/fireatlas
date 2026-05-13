@@ -9,7 +9,7 @@ To contact the science team by email, please use [this form](https://forms.gle/v
 | Name | Affiliation | 
 | ---- | ----------- | 
 | Zeb Becker | NASA GSFC / University of Maryland ESSIC | 
-| Jon Case | | 
+| Jonathan Case | NASA MSFC / University of Alabama, Huntsville| 
 | Yang Chen | University of California, Irvine | 
 | Shane Coffield | NASA GSFC / University of Maryland ESSIC | 
 | Robert Field | NASA GISS / Columbia University | 
@@ -21,7 +21,6 @@ To contact the science team by email, please use [this form](https://forms.gle/v
 | Rebecca Scholten | University of California, Irvine | 
 | Chris Schultz | NASA MSFC | 
 | Alexey Shiklomanov | NASA GSFC | 
-| Liz Wiggens | NASA LARC | 
 
 ## External Collaborators 
 | Name | Affiliation | 
@@ -46,6 +45,7 @@ To contact the science team by email, please use [this form](https://forms.gle/v
 | Katrina Sharonin | 
 | Julia Signell | 
 | Pam Wales | 
+| Liz Wiggins | 
 
 
 
