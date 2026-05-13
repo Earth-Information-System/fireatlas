@@ -459,7 +459,7 @@
     "href": "docs/team.html#current-team",
     "title": "Our Team",
     "section": "Current Team",
-    "text": "Current Team\n\n\n\n\n\n\n\nName\nAffiliation\n\n\n\n\nZeb Becker\nNASA GSFC / University of Maryland ESSIC\n\n\nJon Case\n\n\n\nYang Chen\nUniversity of California, Irvine\n\n\nShane Coffield\nNASA GSFC / University of Maryland ESSIC\n\n\nRobert Field\nNASA GISS / Columbia University\n\n\nMelanie Follette-Cook\nNASA GSFC\n\n\nTempest (Tess) McCabe\nNASA GSFC / University of Maryland ESSIC\n\n\nDoug Morton\nNASA GSFC\n\n\nEli Orland\nNASA GSFC / University of Maryland, Baltimore County GESTAR II\n\n\nJim Randerson\nUniversity of California, Irvine\n\n\nRebecca Scholten\nUniversity of California, Irvine\n\n\nChris Schultz\nNASA MSFC\n\n\nAlexey Shiklomanov\nNASA GSFC\n\n\nLiz Wiggens\nNASA LARC",
+    "text": "Current Team\n\n\n\n\n\n\n\nName\nAffiliation\n\n\n\n\nZeb Becker\nNASA GSFC / University of Maryland ESSIC\n\n\nJonathan Case\nNASA MSFC / University of Alabama, Huntsville\n\n\nYang Chen\nUniversity of California, Irvine\n\n\nShane Coffield\nNASA GSFC / University of Maryland ESSIC\n\n\nRobert Field\nNASA GISS / Columbia University\n\n\nMelanie Follette-Cook\nNASA GSFC\n\n\nTempest (Tess) McCabe\nNASA GSFC / University of Maryland ESSIC\n\n\nDoug Morton\nNASA GSFC\n\n\nEli Orland\nNASA GSFC / University of Maryland, Baltimore County GESTAR II\n\n\nJim Randerson\nUniversity of California, Irvine\n\n\nRebecca Scholten\nUniversity of California, Irvine\n\n\nChris Schultz\nNASA MSFC\n\n\nAlexey Shiklomanov\nNASA GSFC",
     "crumbs": [
       "Our Team"
     ]
@@ -479,7 +479,7 @@
     "href": "docs/team.html#previous-contributors",
     "title": "Our Team",
     "section": "Previous Contributors",
-    "text": "Previous Contributors\n\n\n\nName\n\n\n\n\nTejas Chandakkar\n\n\nGreg Corradini\n\n\nAvery Fratto\n\n\nJaskaran Gill\n\n\nTina Liu\n\n\nGianna Martinez\n\n\nNelofar Qulizada\n\n\nKatrina Sharonin\n\n\nJulia Signell\n\n\nPam Wales",
+    "text": "Previous Contributors\n\n\n\nName\n\n\n\n\nTejas Chandakkar\n\n\nGreg Corradini\n\n\nAvery Fratto\n\n\nJaskaran Gill\n\n\nTina Liu\n\n\nGianna Martinez\n\n\nNelofar Qulizada\n\n\nKatrina Sharonin\n\n\nJulia Signell\n\n\nPam Wales\n\n\nLiz Wiggins",
     "crumbs": [
       "Our Team"
     ]
@@ -562,29 +562,29 @@
     "href": "docs/nrt.html",
     "title": "Near Real Time Data",
     "section": "",
-    "text": "Two platforms provide mapping capabilities for NRT FEDS fire tracking data.\nNASA FIRMS US/Canada - FEDS output for North America (continental US, Alaska, Canada, and Northern Mexico) are viewable on the Experimental tab within NASA’s Fire Information for Resource Management System (FIRMS) US/Canada map application under the name “VIIRS Modeled Fire Perimeters.” Using FIRMS, you can view FEDS perimeter information from the current calendar year.\nDisclaimer: The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.\nFire Events Explorer - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites.",
+    "text": "Disclaimer: The FEDS (aka VIIRS Modeled Fire Perimeters) product is intended to provide situational awareness for ongoing fire events in the US and Canada, not as a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.",
     "crumbs": [
       "Data",
       "Near Real Time Data"
     ]
   },
   {
-    "objectID": "docs/nrt.html#visualize-near-real-time-data",
-    "href": "docs/nrt.html#visualize-near-real-time-data",
+    "objectID": "docs/nrt.html#visualize-nrt-data",
+    "href": "docs/nrt.html#visualize-nrt-data",
     "title": "Near Real Time Data",
-    "section": "",
-    "text": "Two platforms provide mapping capabilities for NRT FEDS fire tracking data.\nNASA FIRMS US/Canada - FEDS output for North America (continental US, Alaska, Canada, and Northern Mexico) are viewable on the Experimental tab within NASA’s Fire Information for Resource Management System (FIRMS) US/Canada map application under the name “VIIRS Modeled Fire Perimeters.” Using FIRMS, you can view FEDS perimeter information from the current calendar year.\nDisclaimer: The VIIRS Modeled Fire Perimeters product is intended to provide situational awareness for ongoing fire events in the US and Canada, not a precise estimate of the fire perimeter for emergency response. This research product estimates individual fire event perimeters and properties every 12 hours; the spatial and temporal resolution of each modeled fire perimeter reflects the characteristics and availability of VIIRS 375 m active fire detections from FIRMS.\nFire Events Explorer - Visualize FEDS fire tracking from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites.",
+    "section": "Visualize NRT Data",
+    "text": "Visualize NRT Data\nThree platforms provide browser-based mapping and visualization capabilities for NRT FEDS fire tracking data.\nFire Events Explorer - Visualize FEDS fire tracking data from the beginning of this year to the present, including fire perimeters, the active portion of the fire perimeter, and VIIRS active fire detections from the Suomi-NPP and NOAA-20 satellites. The Fire Event Explorer can also produce GIF visualizations to rapidly communicate fire progression to stakeholders. Used to prototype novel visualization and data delivery methods, this stand-alone application is under active development.\nArcGIS Online - NRT FEDS outputs are also available as map image layers for users working in the Esri ecosystem. There are separate layers for perimeters, active fire perimeter segments, and associated VIIRS active fire detections, all available for the current calendar year to date.\n\nPerimeters\nActive fire perimeter segments\nAssociated VIIRS detections\n\nNASA FIRMS US/Canada - FEDS perimeters for North America (continental US, Alaska, Canada, and Northern Mexico) are also viewable on the Experimental tab within NASA’s Fire Information for Resource Management System (FIRMS) US/Canada map application under the name “VIIRS Modeled Fire Perimeters.” FIRMS is a mature system that also provides a wealth of additional fire information.",
     "crumbs": [
       "Data",
       "Near Real Time Data"
     ]
   },
   {
-    "objectID": "docs/nrt.html#access-near-real-time-data",
-    "href": "docs/nrt.html#access-near-real-time-data",
+    "objectID": "docs/nrt.html#programmatic-access-to-near-real-time-data",
+    "href": "docs/nrt.html#programmatic-access-to-near-real-time-data",
     "title": "Near Real Time Data",
-    "section": "Access Near Real Time Data",
-    "text": "Access Near Real Time Data\nNRT data are available via OGC API. An example notebook that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.\nThe API status Binder notebook also provides a quick way to visualize recent NRT outputs from the OGC API in your browser, without the need for any environment setup or downloads.",
+    "section": "Programmatic Access To Near Real Time Data",
+    "text": "Programmatic Access To Near Real Time Data\nNRT data are available via OGC API. An example notebook that demonstrates how to subset, analyze, and visualize the data outside of FIRMS is available on NASA’s VEDA platform.\nThe API status Binder notebook also provides a quick way to visualize recent NRT outputs from the OGC API in your browser, without the need for any environment setup or downloads.",
     "crumbs": [
       "Data",
       "Near Real Time Data"
