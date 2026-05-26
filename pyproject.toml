@@ -73,7 +73,10 @@ test = [
 dev = [
     "pytest", 
     "pytest-cov", 
-    "ipykernel"
+    "ipykernel", 
+    "folium", 
+    "matplotlib", 
+    "mapclassify"
 ]
 
 [tool.coverage.run]
