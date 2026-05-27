@@ -73,6 +73,10 @@ test = [
 dev = [
     "pytest", 
     "pytest-cov", 
+    "ipykernel", 
+    "folium", 
+    "matplotlib", 
+    "mapclassify", 
     "ipykernel"
 ]
 

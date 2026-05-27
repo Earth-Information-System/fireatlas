@@ -149,27 +149,6 @@ def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
     # TODO: we need a fixture that creates a TIFF
     # mock_rasterio.warp.reproject.assert_called()
 
-
-@pytest.mark.parametrize(
-    "timestep, sat",
-    [
-        ((2023, 11, 9, "AM"), "NOAA20"),
-        ((2023, 11, 9, "AM"), "SNPP"),
-    ],
-)
-def test_preprocess_NRT_file(timestep: TimeStep, sat: str, monkeypatch, test_data_dir):
-    monkeypatch.setattr(settings, "READ_LOCATION", "local")
-    monkeypatch.setattr(settings, "LOCAL_PATH", test_data_dir)
-
-    if sat == "SNPP":
-        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat=sat)
-    else:
-        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat=sat)
-    assert len(df_filtered_paths) == 2
-
-    # TODO: more assertions on the filtered CSVs
-
-
 @pytest.mark.parametrize(
     "region, region_shape_to_filter, output_should_already_exist",
     [
@@ -233,3 +212,66 @@ def test_preprocess_region_t(
         os.remove(outfile_df_path)
 
 
+@pytest.mark.parametrize(
+    "filepath, filepath_prev, filepath_next, should_raise",
+    [
+        (None, None, None, True),
+        (None, "valid", "valid", True),
+        ("valid", None, None, False),
+        ("valid", "valid", None, False),
+        ("valid", None, "valid", False),
+    ],
+)
+def test_preprocess_input_file_raises_on_none_filepath(
+    monkeypatch, test_data_dir, nrt_snpp_tmpfile, filepath, filepath_prev, filepath_next, should_raise
+):
+    monkeypatch.setattr(settings, "READ_LOCATION", "local")
+    monkeypatch.setattr(settings, "LOCAL_PATH", test_data_dir)
+
+    def resolve(key):
+        return nrt_snpp_tmpfile if key == "valid" else None
+
+    filepath = resolve(filepath)
+    filepath_prev = resolve(filepath_prev)
+    filepath_next = resolve(filepath_next)
+
+    if should_raise:
+        with pytest.raises(ValueError):
+            preprocess.preprocess_input_file(filepath, filepath_prev, filepath_next)
+    else:
+        output = preprocess.preprocess_input_file(filepath, filepath_prev, filepath_next)
+        assert isinstance(output, list)
+
+
+@pytest.mark.parametrize(
+    "path,expected",
+    [
+        # SNPP monthly (day should be None)
+        (
+            "whatever/dir/VNP14IMGML.201201.C2.03.csv",
+            (2012, 1, None),
+        ),
+        # NOAA20, old format
+        (
+            "FEDSinput/VIIRS/NOAA20/VJ114IMGML.202011.C1.05.txt",
+            (2020, 11, None),
+        ),
+        # Old daily files (julian day)
+        (
+            "whatever/dir/SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_2025002.txt",
+            (2025, 1, 2),
+        ),
+        # FIRMS daily
+        (
+            "FEDSinput/VIIRS/FIRMS_VIIRS_NOAA21_NRT/FIRMS_VIIRS_NOAA21_NRT_20250304.csv",
+            (2025, 3, 4),
+        ),
+    ],
+)
+def test_get_date_from_input_filename_valid(path, expected):
+    assert preprocess.get_date_from_input_filename(path) == expected
+
+
+def test_get_date_from_input_filename_invalid():
+    with pytest.raises(ValueError):
+        preprocess.get_date_from_input_filename("invalid_file.csv")
