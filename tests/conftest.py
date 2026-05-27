@@ -187,33 +187,30 @@ def test_data_dir(request):
     return str(abs_path)
 
 
-#### VNP14IMGTDL
+#### SNPP
 
 
 @pytest.fixture
 def nrt_snpp_tmpfile(request):
-    """read_VNP14IMGTDL"""
     abs_path = pathlib.Path(os.path.abspath(f"{request.fspath.dirname}/data/"))
-    subpath = abs_path / "FEDSinput" / "VIIRS" / "VNP14IMGTDL"
-    dt = datetime(2023, 11, 9)
+    subpath = abs_path / "FEDSinput" / "VIIRS" / "FIRMS_VIIRS_SNPP_NRT"
+    dt = datetime(2026, 4, 27)
     return str(
-        subpath / f"SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_{dt.strftime('%Y%j')}.txt"
+        subpath / f"FIRMS_VIIRS_SNPP_NRT_{dt.strftime('%Y%m%d')}.csv"
     )
 
 
-#### VJ114IMGTDL
-
+#### NOAA20
 
 @pytest.fixture
-def nrt_noaa20_tmpfile(request):
-    """read_VJ114IMGTDL"""
+def nrt_noaa20_tmpfile(request): 
     abs_path = pathlib.Path(os.path.abspath(f"{request.fspath.dirname}/data/"))
-    subpath = abs_path / "VIIRS" / "VJ114IMGTDL"
-    dt = datetime(2023, 11, 9)
+    subpath = abs_path / "VIIRS" / "FIRMS_VIIRS_NOAA20_NRT"
+    dt = datetime(2026, 4, 1)
     return str(
-        subpath / f"J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_{dt.strftime('%Y%j')}.txt"
+        subpath / f"FIRMS_VIIRS_NOAA20_NRT_{dt.strftime('%Y%m%d')}.csv"
     )
-
+    
 
 #### VNP14IMGML
 
