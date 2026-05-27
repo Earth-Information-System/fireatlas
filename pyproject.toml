@@ -76,7 +76,8 @@ dev = [
     "ipykernel", 
     "folium", 
     "matplotlib", 
-    "mapclassify"
+    "mapclassify", 
+    "ipykernel"
 ]
 
 [tool.coverage.run]
