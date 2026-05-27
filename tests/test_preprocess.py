@@ -149,27 +149,6 @@ def test_preprocess_landcover(tmpdir, mock_rasterio, monkeypatch):
     # TODO: we need a fixture that creates a TIFF
     # mock_rasterio.warp.reproject.assert_called()
 
-
-@pytest.mark.parametrize(
-    "timestep, sat",
-    [
-        ((2023, 11, 9, "AM"), "NOAA20"),
-        ((2023, 11, 9, "AM"), "SNPP"),
-    ],
-)
-def test_preprocess_NRT_file(timestep: TimeStep, sat: str, monkeypatch, test_data_dir):
-    monkeypatch.setattr(settings, "READ_LOCATION", "local")
-    monkeypatch.setattr(settings, "LOCAL_PATH", test_data_dir)
-
-    if sat == "SNPP":
-        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat=sat)
-    else:
-        df_filtered_paths = preprocess.preprocess_NRT_file(timestep, sat=sat)
-    assert len(df_filtered_paths) == 2
-
-    # TODO: more assertions on the filtered CSVs
-
-
 @pytest.mark.parametrize(
     "region, region_shape_to_filter, output_should_already_exist",
     [

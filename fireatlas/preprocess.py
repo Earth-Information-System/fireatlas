@@ -445,17 +445,6 @@ def preprocess_monthly_file(t: TimeStep, sat: Literal["NOAA20", "SNPP"]):
     return preprocess_input_file(filepath, filepath_prev, filepath_next)
 
 
-def preprocess_NRT_file(t: TimeStep, sat: Literal["NOAA20", "NOAA21", "SNPP"]):
-    t_prev = t_nb(t, "previous")
-    day_prev = t_nb(t_prev, "previous")
-    filepath_prev = NRT_filepath(day_prev, sat=sat)
-    t_next = t_nb(t, "next")
-    day_next = t_nb(t_next, "next")
-    filepath_next = NRT_filepath(day_next, sat=sat)
-    filepath = NRT_filepath(t, sat=sat)
-    return preprocess_input_file(filepath, filepath_prev, filepath_next)
-
-
 def preprocess_daily_file(filepath, t: TimeStep, sat: Literal["SNPP", "NOAA20", "NOAA21"]):
     """Find previous and next daily input files, then preprocess this timestep.
     Prefers FIRMS standard product (SP) over FIRMS NRT if we have both.
