@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="Zeb Becker">
 
-<title>FEDS Algorithm – Wildfire Tracking Lab</title>
+<title>FIRMS backfill – Wildfire Tracking Lab</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -23,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -83,7 +117,7 @@ ul.task-list li input[type="checkbox"] {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../docs/index.html">
+    <a class="navbar-brand" href="index.qmd">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
   </div>
@@ -97,7 +131,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">FEDS Algorithm</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">FIRMS backfill</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -111,7 +145,7 @@ ul.task-list li input[type="checkbox"] {
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-      <a href="../docs/index.html" class="sidebar-logo-link">
+      <a href="index.qmd" class="sidebar-logo-link">
       <img src="../docs/images/nasa.png" alt="" class="sidebar-logo light-content py-0 d-lg-inline d-none">
       <img src="../docs/images/nasa.png" alt="" class="sidebar-logo dark-content py-0 d-lg-inline d-none">
       </a>
@@ -173,7 +207,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link active">
+  <a href="../docs/fireatlas_core.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">FEDS Algorithm</span></a>
   </div>
 </li>
@@ -220,34 +254,21 @@ ul.task-list li input[type="checkbox"] {
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#feds-implementation" id="toc-feds-implementation" class="nav-link active" data-scroll-target="#feds-implementation">FEDS Implementation</a></li>
-  <li><a href="#running-feds-on-the-maap-ade" id="toc-running-feds-on-the-maap-ade" class="nav-link" data-scroll-target="#running-feds-on-the-maap-ade">Running FEDS on the MAAP ADE</a></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/fireatlas_core.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">FEDS Algorithm</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">FEDS Algorithm</h1>
+<h1 class="title">FIRMS backfill</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>Zeb Becker </p>
-          </div>
-  </div>
     
   
     
@@ -258,37 +279,33 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="feds-implementation" class="level3">
-<h3 class="anchored" data-anchor-id="feds-implementation">FEDS Implementation</h3>
-<p>A technical overview of the core FEDS algorithm can be found in <a href="https://doi.org/10.1038/s41597-022-01343-0">Chen et al., 2022.</a> The FEDS logic is implemented in the <a href="https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/fireatlas">fireatlas module</a>. In particular, <code>FireMain.py</code> would be a good place to start building understanding.</p>
-</section>
-<section id="running-feds-on-the-maap-ade" class="level3">
-<h3 class="anchored" data-anchor-id="running-feds-on-the-maap-ade">Running FEDS on the MAAP ADE</h3>
-<p>The codebase is currently set up to read from and write to shared AWS S3 buckets accessed through NASA’s MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented <a href="../docs/custom_regions.html">here</a>.) There are two ways to do this.</p>
-<p>First, you can run through <a href="https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/notebooks">notebooks</a> 01-04 on the ADE to walk through each step of the process. Set up your environment according to the instructions in <a href="../docs/contributing.html">Contributing</a>, then simply start working through the notebooks.</p>
-<p>Second, to coordinate every step from the command line with one command, you can use <code>FireRunDaskCoordinator.py</code>. This uses Dask to parallelize as many steps of the process as possible (e.g.&nbsp;preproccessing input files, generating output files). This script fetches any missing input data you might need for your region and date range, automatically preprocesses it, copies the preprocessed data to S3, runs FEDS, saves the files locally in a <code>data/</code> folder inside the root <code>fireatlas</code> directory, and copies outputs to S3 (in this case, <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutputs-v3/{region name}</code>).</p>
-<pre><code># example run for CONUS June-Sept 2023
-python3 FireRunDaskCoordinator.py --regnm="CONUS" --bbox="[-126,24,-61,49]" --tst="[2023,6,1,\"AM\"]" --ted="[2023,9,1,\"AM\"]" --no-veda-copy</code></pre>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
+<p>This notebook shows how to re-download VIIRS active fire detections from FIRMS if we ever need to reset the data in FEDSinput. Rather than requesting one day at a time via the API, which is very inefficient and unlikely to work in one shot, we do one bulk download using the FIRMS bulk download tool, then split that into daily files ourselves.</p>
+<ul>
+<li><p>1: download the required bulk FIRMS download. <a href="https://firms.modaps.eosdis.nasa.gov/download/">https://firms.modaps.eosdis.nasa.gov/download/</a> -&gt; log in with Earthdata Login -&gt; Create New Request -&gt; World (important- don’t select CONUS, as we expect all detections globally to be present in raw input files) -&gt; your desired sensor source (FEDS currently supports only VIIRS) and date range -&gt; .csv -&gt; send email confirmation: yes -&gt; Submit.</p></li>
+<li><p>2: when this download is ready, you will recieve an email to the account associated with your Earthdata login. This may take an hour or two. Download the resulting zip file to your local machine.</p></li>
+<li><p>3: Upload the zip file to your home directory (~) on MAAP Hub, then unzip it as shown below. Swap in the name of your zip file here.</p></li>
+</ul>
+<div id="64770610-bd7e-4085-ba66-52a0c5303448" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>unzip <span class="op">~/</span>DL_FIRE_J1V<span class="op">-</span>C2_755412.<span class="bu">zip</span> <span class="op">-</span>d <span class="op">~/</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout-title-container flex-fill">
-Warning
+<div id="7cef1801-7c14-47ff-a108-17c341806948" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># here are the filepaths we will need </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>ls <span class="op">~/*</span>_J1V<span class="op">-</span>C2_755412.csv</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<p>Note that there are two files for each sensor- fire_archive and fire_nrt. For date ranges that overlap the availability of both the NRT and SP product, FIRMS will give us back the SP (fire_archive) where available, and then fall back to the NRT product when that is not yet available.</p>
+<div id="481935e6-f20a-456c-a48b-45f6d15f7344" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># double check output path</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas <span class="im">import</span> settings </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>settings.dirextdata</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="callout-body-container callout-body">
-<p>Please be sure to include the <code>--no-veda-copy</code> flag unless you are actively trying to add data to the public API collections!</p>
+<div id="6bec9cca-2bce-4280-9134-446e9f309489" class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas.preprocess <span class="im">import</span> backfill_inputs_from_FIRMS_bulk_dl</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>backfill_inputs_from_FIRMS_bulk_dl(<span class="st">"/home/jovyan/fire_archive_J1V-C2_755412.csv"</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>backfill_inputs_from_FIRMS_bulk_dl(<span class="st">"/home/jovyan/fire_nrt_J1V-C2_755412.csv"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-</div>
-<section id="custom-settings" class="level4">
-<h4 class="anchored" data-anchor-id="custom-settings">Custom settings</h4>
-<p>There are several important runtime settings in <code>FireConsts.py</code> that will change your outputs- for example, which satellite(s) to use as input, or the CRS you want to generate ouputs in. You could change these directly in <code>FireConsts.py</code>, making sure to reinstall the fireatlas package as needed, or you could <a href="../docs/custom_regions.html#how-dps-jobs-pick-up-custom-settings-for-your-region">use a .env file</a> to explicitly define your settings for better replicability.</p>
 
 
-</section>
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -699,7 +716,7 @@ Warning
     </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/fireatlas_core.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/20_FIRMS_input_backfill.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
