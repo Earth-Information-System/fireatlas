@@ -169,9 +169,9 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
     If settings.FIRE_NRT == False, only tries to preprocess already existing monthly
     input files (VNP14IMGML and VJ114IMGML).
-    If settings.FIRE_NRT == True, tries to download any missing NRT input data from FIRMS,
-    then preprocess any unprocessed NRT data (FIRMS_VIIRS_SNPP_NRT, FIRMS_VIIRS_NOAA20_NRT,
-    FIRMS_VIIRS_NOAA21_NRT). Does not try to use monthly files.
+    If settings.FIRE_NRT == True, tries to download any missing input data from FIRMS,
+    then preprocess any unprocessed input files. Does not try to use monthly files,
+    but WILL use SP where available.
 
     NOTE: If settings.FIRE_NRT and any input files are needed,
     blocks for downloads inside this function and returns only preprocessing futures.
