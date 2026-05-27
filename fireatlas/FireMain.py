@@ -196,6 +196,10 @@ def flag_and_remove_duplicate_pixels(allpixels):
         The same allpixels object as before, either unmodified if no 
         duplicated points are detected or with duplicates dropped.  
     """
+
+    if not settings.FIRE_NRT:
+        raise ValueError(f"flag_and_remove_duplicate_pixels() is only intended for NRT data, but settings.FIRE_NRT = {settings.FIRE_NRT}")
+        
     logger.info('Searching for duplicated points...')
     coord_counts = allpixels.groupby(["y", "x"]).size() # count each lat/lon instance
     duplicated_coords = coord_counts[coord_counts > 1] 
@@ -265,7 +269,10 @@ def adjust_coincident_pixels(allpixels):
             duplicate_records = allpixels[(allpixels["y"] == y) & (allpixels["x"] == x)]
 
             for idx, row in duplicate_records.iterrows():
-                logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
+                if "version" in row.columns:
+                    logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
+                else: 
+                    logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']}")
             
             # Apply jitter to all records with this duplicate coordinate pair
             mask = (allpixels["y"] == y) & (allpixels["x"] == x)
