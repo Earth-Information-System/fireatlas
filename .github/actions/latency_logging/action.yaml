@@ -21,5 +21,5 @@ runs:
         docker run \
           --env EMAIL_PW=${{ inputs.email_pw_secret }} \
           --pull=always -u ${UID}:${DOCKER_GID} -v ${PWD}:${PWD} -w ${PWD} \
-          --rm mas.maap-project.org/root/maap-workspaces/base_images/python:v5.0.0 \
+          --rm mas.maap-project.org/root/maap-workspaces/base_images/python:v4.3git.0 \
           /opt/conda/envs/python/bin/python maap_runtime/latency_logging.py >> $GITHUB_OUTPUT
