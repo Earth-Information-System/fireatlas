@@ -7,6 +7,9 @@
 #   bash maap_runtime/compare_branches.sh [DEV_BRANCH]
 #
 # If DEV_BRANCH is not provided, defaults to the currently checked-out branch.
+# 
+# Requires optional dev dependency group to be installed in working python environment 
+# (cd fireatlas; pip install -e .) 
 
 set -eo pipefail
 export TZ="Etc/UTC"
