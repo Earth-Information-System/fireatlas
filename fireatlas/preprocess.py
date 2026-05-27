@@ -593,3 +593,57 @@ def preprocess_region_t(
     df.to_csv(output_filepath, index=False)
 
     return output_filepath
+
+def backfill_inputs_from_FIRMS_bulk_dl(file: str):
+    """Divide bulk download files from FIRMS into daily input files. 
+    
+    Infers SP/NRT and satellitefrom name of input file.   
+
+    Bulk download link: https://firms.modaps.eosdis.nasa.gov/download/
+    
+    Parameters 
+    ----------
+    file : str
+        path to input file from FIRMS bulk download
+    
+    Returns 
+    -------
+    None (saves daily files to FEDSinput) 
+    """
+    filename = os.path.basename(file)
+
+    if "SV" in filename: 
+        sat = "SNPP"
+    elif "J1V" in filename:
+        sat = "NOAA20" 
+    elif "J2V" in filename: 
+        sat = "NOAA21"
+    else: 
+        raise ValueError(f"Unable to infer satellite from FIRMS bulk download filename {file}. "
+                         "Expected SV, J1V or J2V in filename.")
+
+    if "fire_archive" in filename: 
+        product = "SP" 
+    elif "fire_nrt" in filename: 
+        product= "NRT" 
+    else:
+        raise ValueError(f"Unexpected filename {file} for FIRMS bulk download. "
+                         "Expected fire_archive_* or fire_nrt_*")
+        
+    df = pd.read_csv(file)
+    df["dt"] = pd.to_datetime(df.acq_date) 
+
+
+    outfolder = os.path.join(
+        settings.dirextdata, 
+        "VIIRS", 
+        f"FIRMS_VIIRS_{sat}_{product}",
+    )
+
+    os.makedirs(outfolder, exist_ok=True) 
+    
+    for d, data in tqdm(df.groupby("dt"), total=df["dt"].nunique(), desc=f"Processing {filename} into daily files"):
+        data = data.drop(columns="dt") 
+        data.to_csv(os.path.join(outfolder, f"FIRMS_VIIRS_{sat}_{product}_{d.strftime('%Y%m%d')}.csv"), index=False)
+    
+    
