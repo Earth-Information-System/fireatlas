@@ -244,22 +244,33 @@ def d2t(year, month, day, ampm):
     return t
 
 
-def dt2t(dt):
+def dt2t(indt):
     """convert datetime to a t tuple
     Parameters
     ----------
-    dt : datetime datetime
-        datetime
-    Returns
-    -------
-    t : tuple, (int,int,int,str)
-        the year, month, day and 'AM'|'PM'
-    """
-    dlh = {"AM": 0, "PM": 12}
-    dhl = {0: "AM", 12: "PM"}
+        dt : datetime object in local time 
 
-    t = [dt.year, dt.month, dt.day, dhl[dt.hour]]
-    return t
+    
+    Expected behavior: 
+    1/1 07:00 to 1/1 17:59 -> 1/1 PM
+    1/1 18:00 to 1/2 06:59 -> 1/2 AM 
+    1/2 07:00 to 1/2 17:59 -> 1/2 PM 
+    1/2 18:00 to 1/3 06:59 -> 1/3 AM 
+
+    This is based on the existing logic in FireIO.AFP_setampm
+
+    Returns 
+    -------
+        t : TimeStep ([int year, int month, int day, "AM" or "PM"])
+    """
+
+    if indt.hour <= 6: 
+        return [indt.year, indt.month, indt.day, "AM"]
+    elif indt.hour < 18: 
+        return [indt.year, indt.month, indt.day, "PM"]
+    else: # belongs to AM overpass for following day
+        nextday = indt + timedelta(days=1)
+        return [nextday.year, nextday.month, nextday.day, "AM"]
 
 
 def ftrange(firstday, lastday):
