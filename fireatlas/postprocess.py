@@ -335,7 +335,7 @@ def fill_activefire_rows(allfires_gdf, ted):
         new_rows = ffilled[~ffilled.index.isin(d.index)]
 
         # set values that should not be forward filled.
-        new_rows.loc[:,["n_newpixels", "meanFRP", "nfp"]] = 0, None, None
+        new_rows.loc[:,["n_newpixels", "meanFRP", "nfp"]] = 0, np.nan, None
         
         all_new_rows.append(new_rows.reset_index())
             
