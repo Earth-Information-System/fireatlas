@@ -61,7 +61,7 @@ def geojson_file(tmpdir):
             "geometry": [Point(0, 0), Point(1, 1)],
         }
     )
-    gdf.to_file(filename, driver="GeoJSON")
+    gdf.to_file(str(filename), driver="GeoJSON")
     return str(filename)
 
 
