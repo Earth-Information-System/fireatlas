@@ -329,7 +329,7 @@ def fill_activefire_rows(allfires_gdf, ted):
                 last_t = min(last_t + datetime.timedelta(days=settings.maxoffdays), dt)
                 d.loc[last_t] = None
 
-        ffilled = d.resample("12H").ffill(limit=settings.limoffdays*2).dropna(how="all")
+        ffilled = d.resample("12h").ffill(limit=settings.limoffdays*2).dropna(how="all")
 
         # get all the rows that are new
         new_rows = ffilled[~ffilled.index.isin(d.index)]
