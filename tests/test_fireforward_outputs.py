@@ -137,8 +137,9 @@ def v2_load(tmp_settings_context_manager, test_data_dir):
             os.path.join(
                 settings.LOCAL_PATH, "v2_outputs", "Generate_Test_data_for_Creek_CLEANER_SNPP", 
                 "2020", "Largefire", "1", "perimeter.fgb" 
-            )
-        ).set_crs(epsg=9311, allow_override=True)
+            ), 
+            engine='fiona'
+        )
 
         return largefire_perim
 
