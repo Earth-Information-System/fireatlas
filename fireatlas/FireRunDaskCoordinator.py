@@ -49,7 +49,7 @@ from fireatlas.FireIO import (
     FIRMS_VIIRS_NOAA20_NRT_filepath,
     FIRMS_VIIRS_NOAA21_NRT_filepath
 )
-from fireatlas.FireTime import t_generator, d2t, t_nm, t_nd
+from fireatlas.FireTime import t_generator, d2t, t_nm, t_nd, dt2t
 from fireatlas.FireLog import logger
 from fireatlas import settings
 import geopandas as gpd
@@ -144,7 +144,9 @@ def job_preprocess_region(region: Region):
 
 def job_nrt_current_day_updates(client: Client):
     """hourly update the NRT files and prep
-    Updates files for today and the two previous days.
+    Updates files for today and the two previous days. Forces preprocessing regardless 
+    of if preprocessed files are already present for these days so that a partially
+    empty preprocessed file will not be cached as such. 
     """
     futures, source, now = [], settings.FIRE_SOURCE, datetime.now()
 
@@ -152,13 +154,24 @@ def job_nrt_current_day_updates(client: Client):
         sats = ["SNPP", "NOAA20", "NOAA21"]
     else:
         sats = [source]
-
+        
+    download_futures = {} # (t, sat) -> dask future 
+    preprocess_tasks = {} # (t, sat) -> filepath 
+    
     for sat in sats:
-        futures.extend(client.map(update_FIRMS, *[
-            (now.date(), (now-timedelta(days=1)).date(), (now-timedelta(days=2)).date()),
-            (sat, sat, sat),
-            ("NRT", "NRT", "NRT")
-        ]))
+        for d in [now, now-timedelta(days=1), now-timedelta(days=2)]:
+            t = tuple(dt2t(d))
+            d = d.date()
+            download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
+
+    # finish all downloads before starting preprocessing 
+    downloaded_paths = client.gather(download_futures)
+    preprocess_tasks.update(downloaded_paths) 
+
+    # always force preprocessing for new downloads 
+    for (tk, satk), fp in preprocess_tasks.items(): 
+        tk = list(tk) 
+        futures.append(client.submit(preprocess_daily_file, fp, tk, satk))
 
     return futures
 
