@@ -5,55 +5,59 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fireatlas"
 dynamic = ["version"]
-requires-python = ">=3.10,<3.13"
-description = "EIS Fire NRT DPS"
+requires-python = ">=3.10"
 readme = "README.md"
-authors = []
-classifiers = [
-    "Development Status :: 1 - Planning",
-    "Operating System :: OS Independent",
-    "Intended Audience :: Science/Research",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Topic :: NASA/EIS/Scientific/Engineering",
-]
-keywords = ["eis", "fireatlas"]
+
+# core runtime deps needed to use fireatlas as library
 dependencies = [
-  "xarray",
-  "pandas<3",
-  "dask",
-  "distributed",
-  "geopandas<1",
-  "fiona",
-  "shapely",
-  "fsspec",
-  "s3fs>=2024.6",
-  "rtree",
-  "scikit-learn",
-  "pyarrow",
-  "pydantic-settings",
-  "rasterio",
-  "pyproj",
-  "tqdm",
-  "scalene", 
-  "numpy<2", 
-  "pyogrio", 
-  "requests",
-  "aiobotocore[boto3]==2.24.1", 
-  "pytz"
+    # compiled- installed w conda in env.yml
+    "geopandas<1", 
+    "numpy", 
+    "pandas<3", 
+    "pyarrow", 
+    "pyogrio", 
+    "pyproj", 
+    "scikit-learn", 
+    "scipy", 
+    "shapely", 
+    "rasterio", 
+    "rtree", 
+    "xarray",
+    # pure python 
+    "dask", 
+    "distributed", 
+    "fsspec", 
+    # aiobotocore is imported like this due to a complex dependency issue with s3fs: 
+    # https://github.com/fsspec/s3fs/issues/357
+    "aiobotocore[awscli,boto3]",
+    "s3fs", # should resolve to a recent version now and not get stuck at 0.4
+    "pydantic", 
+    "pydantic-settings", 
+    "requests", 
+    "tqdm", 
 ]
 
-# [project.urls]
-# Homepage = "https://earth-information-system.github.io/fireatlas/docs/"
-# Repository = "https://github.com/Earth-Information-System/fireatlas"
-# Issues = "https://github.com/Earth-Information-System/fireatlas/issues"
+[project.optional-dependencies] 
+prod = [
+    "maap-py" # needed to submit jobs to MAAP
+]
+
+test = [
+    "pytest", 
+    "pytest-cov", 
+]
+
+dev = [
+    "fireatlas[test,prod]",
+    "ipykernel", 
+    "folium", 
+    "matplotlib", 
+    "mapclassify"
+]
+
 
 [tool.setuptools.packages.find]
-exclude = ["notebooks"]
-include = ["fireatlas", "maap_runtime", "tests"]
+include = ["fireatlas*"]
 
 [tool.setuptools.package-data]
 fireatlas = ["py.typed"]
@@ -64,21 +68,6 @@ version = {attr = "setuptools_scm.get_version"}
 [tool.setuptools_scm]
 write_to = "fireatlas/_version.py"
 write_to_template = "__version__ = '{version}'"
-
-[project.optional-dependencies]
-test = [
-    "pytest",
-    "pytest-cov",
-]
-dev = [
-    "pytest", 
-    "pytest-cov", 
-    "ipykernel", 
-    "folium", 
-    "matplotlib", 
-    "mapclassify", 
-    "ipykernel"
-]
 
 [tool.coverage.run]
 omit = [
