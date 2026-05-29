@@ -87,6 +87,7 @@ Regenerate and commit to git `env.lock.yml` whenever you change the dependencies
 ```
 # should run in a conda env setup with:
 conda env create -f env.yml 
+conda activate fire_env
 pip install -e .[prod] # to get runtime deps, e.g. maap-py
 
 # platform specific, only run on Linux (e.g. the MAAP Hub)
