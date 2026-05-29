@@ -48,25 +48,26 @@ See our page on [Contributing](contributing.qmd) for information on how to run t
 
 ### Test conda environment resolution on MAAP Hub 
 
-(Optional) If you have made changes to project dependencies, test the conda environment resolution. When a new image is built on DPS, the script `fireatlas/maap_runtime/run_dps_build.sh` is used. 
+(Optional) If you have changed project dependencies, confirm the environment still resolves and passes tests *before* you regenerate the lock. The DPS image is built by `fireatlas/maap_runtime/run_dps_build.sh`, which installs from the pinned `env.lock.yml` — so the goal here is to verify that the loose `env.yml` still solves and works, then regenerate `env.lock.yml` from that known-good environment.
 
-Below shows how to test this process on the MAAP Hub JupyterHub environment, which has slightly different paths. You can also adapt these steps to run on your local machine. 
-
+Run this on the MAAP Hub (Linux): `env.lock.yml` is platform specific and must be generated there. Note the Hub uses slightly different paths than the DPS image (`/srv/conda` rather than `/opt/conda`). 
 ```
 git clone https://github.com/Earth-Information-System/fireatlas.git
 cd fireatlas
 git switch branch-to-test
 
-# if you have a previous environment, remove it and start clean  
+# if you have a previous environment, remove it and start clean
 conda env remove -n fire_env -y
 
-# build and activate conda env 
-conda env create -f env.yml 
+# build from the loose spec to test that it still resolves
+conda env create -f env.yml
 conda activate fire_env
 
-pip install "git+https://github.com/MAAP-Project/maap-py.git@master"
-# get optional test dependencies 
+# install fireatlas plus dev/test extras
 pip install -e '.[dev]'
+
+# make sure no conflicts
+pip check
 
 # run unit tests
 # Specify abs path to pytest executable in this conda env if needed,
@@ -74,6 +75,8 @@ pip install -e '.[dev]'
 /srv/conda/envs/fire_env/bin/pytest
 /srv/conda/envs/fire_env/bin/pytest --runslow
 ```
+
+If everything passes, regenerate `env.lock.yml` from this working environment and commit it alongside your dependency change (see the lock-regeneration command in [Contributing](contributing.qmd)). DPS and CI build from that lock, so it must reflect the environment you just validated. Again, this must be done on a Linux platform such as MAAP Hub. 
 
 ### Run end-to-end tests 
 
