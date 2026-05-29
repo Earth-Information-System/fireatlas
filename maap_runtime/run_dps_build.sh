@@ -10,11 +10,16 @@ python --version
 # where mamba should be default resolver
 pushd "$basedir"
 
-conda env create -f ../env.yml
+# Build from the pinned lock, NOT the loose env.yml
+conda env create -f ../env.lock.yml
 source activate fire_env
 
-echo "Installing maap-py..." 
-/opt/conda/envs/fire_env/bin/pip install "git+https://github.com/MAAP-Project/maap-py.git@master"
+# The lock pins every dependency but deliberately omits fireatlas itself, so
+# install the package from the repo checked out in this image. --no-deps
+# because the lock already provides dependencies
+echo "Installing fireatlas..."
+pip install --no-deps "$basedir/.."
 
-
-
+# Fail loudly rather than discovering an inconsistent environment at
+# runtime on DPS.
+pip check
