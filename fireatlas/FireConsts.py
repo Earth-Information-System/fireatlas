@@ -186,6 +186,10 @@ class Settings(BaseSettings):
     )
     N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
 
+    DEPARALLELIZE_POSTPROCESS: bool = Field(
+        False, description="whether to avoid dask for postprocessing in case of worker memory errors"
+    )
+
     DO_NIFC_MATCHING: bool = Field(
         False, 
         description="If True, reads from the NIFC incident database for current "
