@@ -85,6 +85,11 @@ We have two: `env.yml` and `env.lock.yml`. `env.yml` is the loose, human edited 
 Regenerate and commit to git `env.lock.yml` whenever you change the dependencies in `env.yml` or `pyproject.toml` (after making sure the environment still works, of course). 
 
 ```
+# should run in a conda env setup with:
+conda env create -f env.yml 
+conda activate fire_env
+pip install -e .[prod] # to get runtime deps, e.g. maap-py
+
 # platform specific, only run on Linux (e.g. the MAAP Hub)
 # the grep drops fireatlas's own install line (see note below)
 conda env export --no-builds | grep -v "fireatlas" > env.lock.yml
