@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Zeb Becker">
+<meta name="dcterms.date" content="2026-06-23">
 
 <title>Contributing – Wildfire Tracking Lab</title>
 <style>
@@ -43,7 +44,7 @@ ul.task-list li input[type="checkbox"] {
 <link href="../site_libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-0cf266eaaf543dbaf9bb38495cb7ebf1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-5e646b644e8194ba2d4c6b3ff90ef157.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -225,8 +226,13 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#example-workflow" id="toc-example-workflow" class="nav-link active" data-scroll-target="#example-workflow">Example workflow</a></li>
-  <li><a href="#juptyer-notebooks" id="toc-juptyer-notebooks" class="nav-link" data-scroll-target="#juptyer-notebooks">Juptyer Notebooks</a></li>
+  <li><a href="#example-development-workflow" id="toc-example-development-workflow" class="nav-link active" data-scroll-target="#example-development-workflow">Example development workflow</a></li>
+  <li><a href="#developing-with-jupyter-notebooks" id="toc-developing-with-jupyter-notebooks" class="nav-link" data-scroll-target="#developing-with-jupyter-notebooks">Developing with Jupyter notebooks</a></li>
+  <li><a href="#environment-and-dependency-management-in-depth" id="toc-environment-and-dependency-management-in-depth" class="nav-link" data-scroll-target="#environment-and-dependency-management-in-depth">Environment and dependency management in depth</a>
+  <ul class="collapse">
+  <li><a href="#conda-environment-files" id="toc-conda-environment-files" class="nav-link" data-scroll-target="#conda-environment-files">Conda environment files</a></li>
+  <li><a href="#environment-contexts" id="toc-environment-contexts" class="nav-link" data-scroll-target="#environment-contexts">Environment contexts</a></li>
+  </ul></li>
   <li><a href="#editing-docs" id="toc-editing-docs" class="nav-link" data-scroll-target="#editing-docs">Editing Docs</a></li>
   </ul>
 <div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/contributing.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
@@ -250,6 +256,12 @@ ul.task-list li input[type="checkbox"] {
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 23, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -260,8 +272,8 @@ ul.task-list li input[type="checkbox"] {
 
 
 <p>We follow a standard feature branch workflow, as described <a href="https://docs.github.com/en/get-started/using-github/github-flow">here.</a></p>
-<section id="example-workflow" class="level3">
-<h3 class="anchored" data-anchor-id="example-workflow">Example workflow</h3>
+<section id="example-development-workflow" class="level2">
+<h2 class="anchored" data-anchor-id="example-development-workflow">Example development workflow</h2>
 <ol type="1">
 <li><p>Setup:</p>
 <pre><code># clone repository 
@@ -272,14 +284,14 @@ $ cd fireatlas
 $ conda env create -f env.yml
 $ conda activate fire_env
 
-# install optional dev dependencies if needed 
-$ pip install -e .[dev]</code></pre></li>
-<li><p>Create a new branch and make your changes as needed. Name the branch {your initials}/{descriptive feature name}:</p>
+# install dev dependencies and editable install of fireatlas 
+$ pip install -e '.[dev]'</code></pre></li>
+<li><p>Create a new branch and make your changes as needed. Name the branch {your initials}/{descriptive feature name}. Keep commits small and focused- one commit should contain only one logical set of related changes.</p>
 <pre><code>$ git switch -c zb/add-noaa21 
 
 # make changes 
 $ git add fireatlas/my_changed_file.py
-$ git commit -m "Add NOAA21 inputs"</code></pre></li>
+$ git commit -m "Add NOAA21 inputs" </code></pre></li>
 <li><p>Run tests from fireatlas root dir (requires optional dependencies)</p>
 <pre><code>$ pytest -v tests/ </code></pre></li>
 <li><p>OPTIONAL: run long-running (~15mins) integration tests</p>
@@ -293,16 +305,51 @@ $ git push </code></pre></li>
 <li><p>When you are ready, <a href="https://docs.github.com/en/get-started/using-github/github-flow#create-a-pull-request">create a pull request</a> to merge your branch into the main branch, <code>conus-dps</code>. Most substantive changes should be reviewed by another team member, and all changes must wait to be merged until the automated tests have passed.</p></li>
 </ol>
 </section>
-<section id="juptyer-notebooks" class="level2">
-<h2 class="anchored" data-anchor-id="juptyer-notebooks">Juptyer Notebooks</h2>
+<section id="developing-with-jupyter-notebooks" class="level2">
+<h2 class="anchored" data-anchor-id="developing-with-jupyter-notebooks">Developing with Jupyter notebooks</h2>
 <p>To use a Jupyter Notebook with the development environment:</p>
 <pre><code># First, create conda environment following directions in Step 1 above 
 # Then, from the fireatlasroot dir: 
-$ pip install .[dev]
+$ pip install '.[dev]'
 $ python -m ipykernel install --user --name fire_env --display-name "Python - FEDS development environment"
 # wait 30 seconds or so, then launch a new notebook. You should see this environment as an option to choose from in the launcher. 
  </code></pre>
-<p>This assumes you are using a JupyterLab interface such as the MAAP ADE.</p>
+<p>This assumes you are using a JupyterLab interface such as the MAAP ADE or MAAP Hub.</p>
+</section>
+<section id="environment-and-dependency-management-in-depth" class="level2">
+<h2 class="anchored" data-anchor-id="environment-and-dependency-management-in-depth">Environment and dependency management in depth</h2>
+<p>The FEDS codebase is used in a few different contexts- for development locally or on the MAAP Hub, within the MAAP DPS production pipeline for NRT data processing, in the CI infrastructure for testing, and occasionally as a library (e.g.&nbsp;if an analysis notebook needs to pull in a function from postprocessing). This creates a little additional complexity for environment management.</p>
+<p>You may notice that some dependencies are listed in both <code>pyproject.toml</code> and <code>env.yml</code>. This is intentional. <code>pyproject.toml</code> defines <code>fireatlas</code>’s runtime dependencies, which is important if it is being used as a library. But, we actually use conda (<code>env.yml</code>) to install geospatial (e.g.&nbsp;geopandas) and numerical (e.g.&nbsp;numpy) libraries that have compiled dependencies such as GDAL from conda-forge binaries. In practice, this means that for environments we manage, conda installs the binary first, then pip sees that requirement is already satisfied and skips it.</p>
+<p>As a rule of thumb- if you find that you need to pin a dependency (e.g., a new major version of pandas creates a breaking change), make sure to reflect that pin in both files. If you add a dependency with compiled components, add it to both. If you add a pure python dependency, only add it to <code>pyproject.toml</code>.</p>
+<section id="conda-environment-files" class="level3">
+<h3 class="anchored" data-anchor-id="conda-environment-files">Conda environment files</h3>
+<p>We have two: <code>env.yml</code> and <code>env.lock.yml</code>. <code>env.yml</code> is the loose, human edited spec that is only version pinned when we have identified a real, breaking requirement. <code>env.lock.yml</code> is machine generated, with fully pinned exact versions for each package. Never edit this by hand- it defines the exact reproducible environment that DPS builds new production images from. It is platform specific, so only modify it on MAAP Hub or another Linux machine. Also, make sure that when you do this, the only dependencies present in your conda environment are those from <code>env.yml</code> and that you don’t accidentally add packages that you installed manually for different reasons or that were inherited from a base conda env.</p>
+<p>Regenerate and commit to git <code>env.lock.yml</code> whenever you change the dependencies in <code>env.yml</code> or <code>pyproject.toml</code> (after making sure the environment still works, of course).</p>
+<pre><code># should run in a conda env setup with:
+conda remove -n fire_env -y # start clean
+conda env create -f env.yml 
+conda activate fire_env
+pip install -e '.[prod]' 
+
+# platform specific, only run on Linux (e.g. the MAAP Hub)
+# the grep drops fireatlas's own install line (see note below)
+conda env export --no-builds | grep -v "fireatlas" &gt; env.lock.yml</code></pre>
+<p>Note that <code>fireatlas</code> itself is deliberately <em>not</em> pinned in the lock. The lockfile captures just dependencies; then, <code>fireatlas</code> is installed using the version of the codebase available locally (<code>pip install -e '.[dev]'</code> for development, <code>pip install --no-deps .</code> in the DPS build).</p>
+</section>
+<section id="environment-contexts" class="level3">
+<h3 class="anchored" data-anchor-id="environment-contexts">Environment contexts</h3>
+<ol type="1">
+<li><strong>Local development / MAAP Hub</strong>: A looser/lightweight environment resolution is fine for development work and, unlike the lockfile, works across different platforms (e.g.&nbsp;Mac, Linux).</li>
+</ol>
+<pre><code>conda env create -f env.yml # set up env
+conda activate fire_env 
+pip install -e '.[dev]' </code></pre>
+<ol start="2" type="1">
+<li><p><strong>MAAP DPS images and GH Actions CI</strong>: DPS production environments are built by <code>maap_runtime/run_dps_build.sh</code> inside the MAAP base image whenever we register an algorithm with DPS. This uses the pinned <code>env.lock.yml</code>, as does the GH Actions CI testing, so that DPS resolves exactly the same environment as was tested. This way, we can always have a reproducible build and won’t get silently bitten if an upstream library introduces a breaking dependency conflict with another of our dependencies.</p></li>
+<li><p><strong>Installing <code>fireatlas</code> as a library in another project</strong>: <code>pyproject.toml</code> does provide a complete dependency contract for importing <code>fireatlas</code> as a library in other projects/environments, for example for a paper analysis. In this case, you can install it directly with pip and let it resolve everything with the existing environment, not using conda at all. This is good for playing nicely with version requirements that the other project may have and allowing the user to manage their environment more freely without causing conflicts via strict pinned requirements in our library.</p></li>
+</ol>
+<pre><code>pip install "fireatlas @ git+https://github.com/Earth-Information-System/fireatlas.git"</code></pre>
+</section>
 </section>
 <section id="editing-docs" class="level2">
 <h2 class="anchored" data-anchor-id="editing-docs">Editing Docs</h2>
