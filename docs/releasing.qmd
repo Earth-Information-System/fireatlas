@@ -8,7 +8,7 @@ date: last-modified
 # Overview
 To improve reproducibility and reliability, we use tagged releases in our GitHub repo to determine which version of the FEDS codebase our [NRT data processing system](nrt.qmd) uses. The NRT system does ***not*** automatically incorporate changes pushed to the main branch of the GitHub repository. For your changes to be reflected in the production system, you need to release a new tagged version as described on this page, then edit the variable `feds_algo_version` on the Prefect orchestrator that submits NRT jobs to DPS for data processing. 
 
-What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in [release.yaml](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/.github/workflows/release.yaml), which submits a job to DPS asking it to build a new image ("register an algorithm," in MAAP parlance) with in the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, `eis-feds-dask-coordinator-v3:1.5.1`. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job. 
+What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in [release.yaml](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/.github/workflows/release.yaml), which submits a job to DPS asking it to build a new image ("register an algorithm," in MAAP parlance) within the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, `eis-feds-dask-coordinator-v3:1.5.1`. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job. 
 
 Importantly, just making the new version of the algorithm ***available*** on DPS is not enough- we also need to make it so that our orchestrator requests that DPS use that version for new NRT jobs going forward. We do this by changing the Prefect variable `feds_algo_version` in our production job orchestrator (refer to the internal [orchestration runbook](https://docs.google.com/document/d/1pdzz0KCEEME6ZIg-LTfIUQlqDexS5FWvrbN5j0GITkU/edit?usp=sharing) for more info). Conversely, this makes it easy to roll back to a previous version- if your release 1.5.1 has a bug, just change `feds_algo_version` back to 1.5.0 to go back to the previous version in production.  
 
@@ -23,7 +23,7 @@ The rest of this document describes acceptance testing and release procedures in
 - [ ] Manual DPS test run with candidate image succeeds 
 
 #### Release 
-- [ ] Version number chosen (semvar) 
+- [ ] Version number chosen (semver) 
 - [ ] `algorithm_version` updated 
 - [ ] PR merged to main 
 - [ ] Release published on GitHub 
@@ -48,25 +48,26 @@ See our page on [Contributing](contributing.qmd) for information on how to run t
 
 ### Test conda environment resolution on MAAP Hub 
 
-(Optional) If you have made changes to project dependencies, test the conda environment resolution. When a new image is built on DPS, the script `fireatlas/maap_runtime/run_dps_build.sh` is used. 
+(Optional) If you have changed project dependencies, confirm the environment still resolves and passes tests *before* you regenerate the lock. The DPS image is built by `fireatlas/maap_runtime/run_dps_build.sh`, which installs from the pinned `env.lock.yml` — so the goal here is to verify that the loose `env.yml` still solves and works, then regenerate `env.lock.yml` from that known-good environment.
 
-Below shows how to test this process on the MAAP Hub JupyterHub environment, which has slightly different paths. You can also adapt these steps to run on your local machine. 
-
+Run this on the MAAP Hub (Linux): `env.lock.yml` is platform specific and must be generated there. Note the Hub uses slightly different paths than the DPS image (`/srv/conda` rather than `/opt/conda`). 
 ```
 git clone https://github.com/Earth-Information-System/fireatlas.git
 cd fireatlas
 git switch branch-to-test
 
-# if you have a previous environment, remove it and start clean  
+# if you have a previous environment, remove it and start clean
 conda env remove -n fire_env -y
 
-# build and activate conda env 
-conda env create -f env.yml 
+# build from the loose spec to test that it still resolves
+conda env create -f env.yml
 conda activate fire_env
 
-pip install "git+https://github.com/MAAP-Project/maap-py.git@master"
-# get optional test dependencies 
+# install fireatlas plus dev/test extras
 pip install -e '.[dev]'
+
+# make sure no conflicts
+pip check
 
 # run unit tests
 # Specify abs path to pytest executable in this conda env if needed,
@@ -74,6 +75,8 @@ pip install -e '.[dev]'
 /srv/conda/envs/fire_env/bin/pytest
 /srv/conda/envs/fire_env/bin/pytest --runslow
 ```
+
+If everything passes, regenerate `env.lock.yml` from this working environment and commit it alongside your dependency change (see the lock-regeneration command in [Contributing](contributing.qmd)). DPS and CI build from that lock, so it must reflect the environment you just validated. Again, this must be done on a Linux platform such as MAAP Hub. 
 
 ### Run end-to-end tests 
 
@@ -147,7 +150,7 @@ and decide if the minor or patch version should be incremented:
 
 ## Create a new PR for DPS Jobs
 
-Once the releaser has a version number, then will need to create a PR that modifies version in a couple places:
+Once the releaser has a version number, they will need to create a PR that modifies version in a couple places:
 
 * the algorithm config `algorithm_version` in `./maap_runtime/coordinator/algorithm_config.yaml`:
 
@@ -185,7 +188,7 @@ You can then merge the above PR and then kick off a new release by doing the fol
 5. click the "Publish release"
 
 ## Verify DPS Image Build 
-The biggest thing that can wrong with this workflow is that the DPS image builder fails to build our image. 
+The biggest thing that can go wrong with this workflow is that the DPS image builder fails to build our image. 
 
 In the GitHub Actions release job you should be able to see something like this: 
 
@@ -242,6 +245,6 @@ Refer to the internal [orchestration runbook](https://docs.google.com/document/d
 
 # Rollbacks and Troubleshooting 
 
-As mentioned above, the fastest way to roll back to a previous algorithm verison in production is to change `feds_algo_version` back to the latest stable version. All new NRT jobs submitted after this point will use that version. 
+As mentioned above, the fastest way to roll back to a previous algorithm version in production is to change `feds_algo_version` back to the latest stable version. All new NRT jobs submitted after this point will use that version. 
 
 If input, intermediate or output data become corrupted, you can delete it and either restore from backups made earlier, or re-download the input data from FIRMS (see [`fireatlas/notebooks/20_FIRMS_input_backfill`](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/notebooks/20_FIRMS_input_backfill.ipynb)) and re-generate the outputs for the current year to date by simply triggering a new NRT run. If doing this, be sure to delete all relevant preprocessed files as well, as these can cache stale data. 

@@ -329,13 +329,13 @@ def fill_activefire_rows(allfires_gdf, ted):
                 last_t = min(last_t + datetime.timedelta(days=settings.maxoffdays), dt)
                 d.loc[last_t] = None
 
-        ffilled = d.resample("12H").ffill(limit=settings.limoffdays*2).dropna(how="all")
+        ffilled = d.resample("12h").ffill(limit=settings.limoffdays*2).dropna(how="all")
 
         # get all the rows that are new
         new_rows = ffilled[~ffilled.index.isin(d.index)]
 
         # set values that should not be forward filled.
-        new_rows.loc[:,["n_newpixels", "meanFRP", "nfp"]] = 0, None, None
+        new_rows.loc[:,["n_newpixels", "meanFRP", "nfp"]] = 0, np.nan, None
         
         all_new_rows.append(new_rows.reset_index())
             

@@ -1,11 +1,12 @@
 ---
 title: Contributing 
 author: Zeb Becker
+date: last-modified
 ---
 
 We follow a standard feature branch workflow, as described [here.](https://docs.github.com/en/get-started/using-github/github-flow)
 
-### Example workflow
+## Example development workflow
 
 1.  Setup:
 
@@ -18,18 +19,18 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ conda env create -f env.yml
     $ conda activate fire_env
 
-    # install optional dev dependencies if needed 
-    $ pip install -e .[dev]
+    # install dev dependencies and editable install of fireatlas 
+    $ pip install -e '.[dev]'
     ```
 
-2.  Create a new branch and make your changes as needed. Name the branch {your initials}/{descriptive feature name}:
+2.  Create a new branch and make your changes as needed. Name the branch {your initials}/{descriptive feature name}. Keep commits small and focused- one commit should contain only one logical set of related changes.
 
     ```         
     $ git switch -c zb/add-noaa21 
 
     # make changes 
     $ git add fireatlas/my_changed_file.py
-    $ git commit -m "Add NOAA21 inputs"
+    $ git commit -m "Add NOAA21 inputs" 
     ```
 
 3.  Run tests from fireatlas root dir (requires optional dependencies) 
@@ -56,20 +57,65 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
 
 6.  When you are ready, [create a pull request](https://docs.github.com/en/get-started/using-github/github-flow#create-a-pull-request) to merge your branch into the main branch, `conus-dps`. Most substantive changes should be reviewed by another team member, and all changes must wait to be merged until the automated tests have passed.
 
-## Juptyer Notebooks 
+## Developing with Jupyter notebooks 
 
 To use a Jupyter Notebook with the development environment: 
 
 ```
 # First, create conda environment following directions in Step 1 above 
 # Then, from the fireatlasroot dir: 
-$ pip install .[dev]
+$ pip install '.[dev]'
 $ python -m ipykernel install --user --name fire_env --display-name "Python - FEDS development environment"
 # wait 30 seconds or so, then launch a new notebook. You should see this environment as an option to choose from in the launcher. 
  
 ```
 
-This assumes you are using a JupyterLab interface such as the MAAP ADE. 
+This assumes you are using a JupyterLab interface such as the MAAP ADE or MAAP Hub. 
+
+## Environment and dependency management in depth
+
+The FEDS codebase is used in a few different contexts- for development locally or on the MAAP Hub, within the MAAP DPS production pipeline for NRT data processing, in the CI infrastructure for testing, and occasionally as a library (e.g. if an analysis notebook needs to pull in a function from postprocessing). This creates a little additional complexity for environment management. 
+
+You may notice that some dependencies are listed in both `pyproject.toml` and `env.yml`. This is intentional. `pyproject.toml` defines `fireatlas`'s runtime dependencies, which is important if it is being used as a library. But, we actually use conda (`env.yml`) to install geospatial (e.g. geopandas) and numerical (e.g. numpy) libraries that have compiled dependencies such as GDAL from conda-forge binaries. In practice, this means that for environments we manage, conda installs the binary first, then pip sees that requirement is already satisfied and skips it. 
+
+As a rule of thumb- if you find that you need to pin a dependency (e.g., a new major version of pandas creates a breaking change), make sure to reflect that pin in both files. If you add a dependency with compiled components, add it to both. If you add a pure python dependency, only add it to `pyproject.toml`.
+
+### Conda environment files 
+We have two: `env.yml` and `env.lock.yml`. `env.yml` is the loose, human edited spec that is only version pinned when we have identified a real, breaking requirement. `env.lock.yml` is machine generated, with fully pinned exact versions for each package. Never edit this by hand- it defines the exact reproducible environment that DPS builds new production images from. It is platform specific, so only modify it on MAAP Hub or another Linux machine. Also, make sure that when you do this, the only dependencies present in your conda environment are those from `env.yml` and that you don't accidentally add packages that you installed manually for different reasons or that were inherited from a base conda env. 
+
+Regenerate and commit to git `env.lock.yml` whenever you change the dependencies in `env.yml` or `pyproject.toml` (after making sure the environment still works, of course). 
+
+```
+# should run in a conda env setup with:
+conda remove -n fire_env -y # start clean
+conda env create -f env.yml 
+conda activate fire_env
+pip install -e '.[prod]' 
+
+# platform specific, only run on Linux (e.g. the MAAP Hub)
+# the grep drops fireatlas's own install line (see note below)
+conda env export --no-builds | grep -v "fireatlas" > env.lock.yml
+```
+
+Note that `fireatlas` itself is deliberately *not* pinned in the lock. The lockfile captures just dependencies; then, `fireatlas` is installed using the version of the codebase available locally (`pip install -e '.[dev]'` for development, `pip install --no-deps .` in the DPS build). 
+
+### Environment contexts
+
+1. **Local development / MAAP Hub**: 
+A looser/lightweight environment resolution is fine for development work and, unlike the lockfile, works across different platforms (e.g. Mac, Linux). 
+```
+conda env create -f env.yml # set up env
+conda activate fire_env 
+pip install -e '.[dev]' 
+```
+
+
+2. **MAAP DPS images and GH Actions CI**: DPS production environments are built by `maap_runtime/run_dps_build.sh` inside the MAAP base image whenever we register an algorithm with DPS. This uses the pinned `env.lock.yml`, as does the GH Actions CI testing, so that DPS resolves exactly the same environment as was tested. This way, we can always have a reproducible build and won't get silently bitten if an upstream library introduces a breaking dependency conflict with another of our dependencies. 
+
+3. **Installing `fireatlas` as a library in another project**: `pyproject.toml` does provide a complete dependency contract for importing `fireatlas` as a library in other projects/environments, for example for a paper analysis. In this case, you can install it directly with pip and let it resolve everything with the existing environment, not using conda at all. This is good for playing nicely with version requirements that the other project may have and allowing the user to manage their environment more freely without causing conflicts via strict pinned requirements in our library. 
+```
+pip install "fireatlas @ git+https://github.com/Earth-Information-System/fireatlas.git"
+```
 
 ## Editing Docs
 

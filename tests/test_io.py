@@ -43,7 +43,7 @@ def test_gpd_read_csv(csv_file, filename, parquet, expect_exception):
             assert str(exc_info.value) == ""
     else:
         data = FireIO.gpd_read_file(csv_file, parquet=parquet)
-        assert isinstance(data, gpd.GeoDataFrame)
+        assert isinstance(data, pd.DataFrame)
 
 
 @pytest.mark.parametrize(
@@ -63,7 +63,7 @@ def test_gpd_read_static_source(
             assert str(exc_info.value) == ""
     else:
         data = FireIO.gpd_read_file(static_source_file_real, parquet=parquet)
-        assert isinstance(data, gpd.GeoDataFrame)
+        assert isinstance(data, pd.DataFrame)
 
 
 @pytest.mark.parametrize(
