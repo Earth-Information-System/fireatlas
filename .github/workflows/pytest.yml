@@ -1,4 +1,4 @@
-name: pytest 
+name: pytest
 
 on:
   workflow_dispatch:
@@ -15,19 +15,26 @@ jobs:
   unit-test:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4 
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v3
+    - uses: actions/checkout@v4
+    # Build from the pinned lock so CI tests the exact environment DPS deploys.
+    # env.lock.yml is linux-64 and pins python + all runtime dependencies
+    - name: Create conda environment from lock
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        python-version: "3.11"
+        init-shell: bash
+        environment-file: env.lock.yml
+        cache-environment: true
+        activate-environment: fire_env
+        post-cleanup: 'all'
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
-      with: 
+      with:
         aws-region: us-east-1
         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-    - name: Install fireatlas and dependencies 
-      run: |
-          pwd
-          python -m pip install '.[test]'
+    # The lockfile omits fireatlas itself and test deps (lock was generated with .[prod]).
+    - name: Install fireatlas
+      run: pip install -e '.[test]'
+      shell: bash -el {0}
     - name: Run all tests with pytest
-      run: python -m pytest -v --runslow tests/
+      run: pytest -v --runslow tests/
+      shell: bash -el {0}
