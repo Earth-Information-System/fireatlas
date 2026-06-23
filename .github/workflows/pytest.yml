@@ -14,6 +14,9 @@ permissions:
 jobs:
   unit-test:
     runs-on: ubuntu-latest
+    defaults: 
+      run: 
+        shell: bash -el {0}
     steps:
     - uses: actions/checkout@v4
     # Build from the pinned lock so CI tests the exact environment DPS deploys.
@@ -21,11 +24,10 @@ jobs:
     - name: Create conda environment from lock
       uses: conda-incubator/setup-miniconda@v3
       with:
-        init-shell: bash
-        environment-file: env.lock.yml
-        cache-environment: true
         activate-environment: fire_env
-        post-cleanup: 'all'
+        channels: conda-forge
+        conda-remove-defaults: "true"
+        environment-file: env.lock.yml
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
@@ -34,7 +36,5 @@ jobs:
     # The lockfile omits fireatlas itself and test deps (lock was generated with .[prod]).
     - name: Install fireatlas
       run: pip install -e '.[test]'
-      shell: bash -el {0}
     - name: Run all tests with pytest
       run: pytest -v --runslow tests/
-      shell: bash -el {0}
