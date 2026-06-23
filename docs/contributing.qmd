@@ -57,7 +57,7 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
 
 6.  When you are ready, [create a pull request](https://docs.github.com/en/get-started/using-github/github-flow#create-a-pull-request) to merge your branch into the main branch, `conus-dps`. Most substantive changes should be reviewed by another team member, and all changes must wait to be merged until the automated tests have passed.
 
-## Juptyer Notebooks 
+## Jupyter Notebooks 
 
 To use a Jupyter Notebook with the development environment: 
 
@@ -71,6 +71,7 @@ $ python -m ipykernel install --user --name fire_env --display-name "Python - FE
 ```
 
 This assumes you are using a JupyterLab interface such as the MAAP ADE. 
+
 ## Environment and dependency management 
 
 The FEDS codebase is used in a few different contexts- for development locally or on the MAAP Hub, within the MAAP DPS production pipeline for NRT data processing, in the CI infrastructure for testing, and occasionally as a library (e.g. if an analysis notebook needs to pull in a function from postprocessing). This creates a little additional complexity for environment management. 
@@ -86,9 +87,10 @@ Regenerate and commit to git `env.lock.yml` whenever you change the dependencies
 
 ```
 # should run in a conda env setup with:
+conda remove -n fire_env -y # start clean
 conda env create -f env.yml 
 conda activate fire_env
-pip install -e .[prod] # to get runtime deps, e.g. maap-py
+pip install -e '.[prod]' 
 
 # platform specific, only run on Linux (e.g. the MAAP Hub)
 # the grep drops fireatlas's own install line (see note below)
