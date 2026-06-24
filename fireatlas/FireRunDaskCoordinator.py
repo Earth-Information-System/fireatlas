@@ -47,7 +47,8 @@ from fireatlas.FireIO import (
     FIRMS_VIIRS_SNPP_NRT_filepath,
     FIRMS_VIIRS_NOAA20_SP_filepath,
     FIRMS_VIIRS_NOAA20_NRT_filepath,
-    FIRMS_VIIRS_NOAA21_NRT_filepath
+    FIRMS_VIIRS_NOAA21_NRT_filepath,
+    get_reg_shp
 )
 from fireatlas.FireTime import t_generator, d2t, t_nm, t_nd, dt2t
 from fireatlas.FireLog import logger
@@ -473,7 +474,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
     # CombinedLargefire/lf_perimeter.fgb for ted only. 
     if settings.DO_NIFC_MATCHING:
         logger.info("Started NIFC matching")
-        combined_lf_perims_nifc_join(tst, ted, region, active_only=True, time_filter=None)
+        combined_lf_perims_nifc_join(tst, ted, region, active_only=settings.NIFC_MATCHING_ACTIVE_ONLY, time_filter=None)
         logger.info("Finished NIFC matching")
 
 
