@@ -985,7 +985,7 @@ def get_reg_shp(reg):
         region definition, one of the following
          - a geometry
          - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
-         - a country name
+          - the name of a file containing a region geometry in settings.direxdata/Shapefiles/
 
     Returns
     -------
@@ -996,6 +996,11 @@ def get_reg_shp(reg):
     # read or form shape used for filtering active fires
     if isinstance(reg, shapely.geometry.base.BaseGeometry):
         shp_Reg = reg
+    elif isinstance(reg, str): 
+        logger.info(f'Running get_any_shp for {reg}')
+        shp_Reg = get_any_shp(reg)
+        if not shp_Reg: 
+            raise Exception('Specified input did not produce valid geometry.')
     elif isinstance(reg, list):
         shp_Reg = Polygon(
             [
@@ -1008,7 +1013,7 @@ def get_reg_shp(reg):
         )
     else:
         print(
-            "Please use geometry or [lonmin,latmin,lonmax,latmax] list for the parameter region"
+            "Please use geometry, region shapefile filename (as string), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
         )
         return None
 
