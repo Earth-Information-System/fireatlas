@@ -44,7 +44,7 @@ python fireatlas/FireRunDaskCoordinator.py --regnm=v3_test_data_for_Creek_SNPP \
 If the Creek fire example worked, you may want to move on to other regions and time periods. However, we don't have all possible input data checked into the repository. In order to access this data without being connected to MAAP S3 storage, we will have to download the required input data ourselves. For this example, we will run FEDS for CONUS for all of 2025, using NOAA20 monthly files. Following this model, you can use any date range, bbox, or satellite. Please reach out if you have issues accessing the required data. 
 
 ### Required Downloads: 
-1. VIIRS active fire detections (standard product)- download from the UMD FTP server following the instructions in the notebook `fireatlas/notebooks/20_Download_VIIRS_SP_SFTP.ipynb`
+1. VIIRS active fire detections (standard product)- download from the UMD FTP server following the instructions in the notebook `fireatlas/notebooks/21_Download_VIIRS_SP_SFTP.ipynb`
 2. Landcover from MAAP: Download landcover from `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif` to our local data folder `fireatlas/data/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif`. You can use the ADE or MAAP Hub interfaces to do this manually. 
 3. Static flaring sources: Download the static source filter from `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv` to our local data folder at `fireatlas/data/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv`
 
