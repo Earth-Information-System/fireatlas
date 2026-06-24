@@ -96,7 +96,8 @@ class Settings(BaseSettings):
 
     READ_LOCATION: Location = Field(
         "s3",
-        description="Final storage place for written files. This is where everything reads from",
+        description="Final storage place for written files. This is where everything reads from. "
+        "Set to 'local' to run entirely on your machine with no s3 credentials required.",
     )
 
     LOG_FILEPATH: str = Field(
