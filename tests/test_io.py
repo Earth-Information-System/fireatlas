@@ -85,6 +85,23 @@ def test_get_reg_shp(input_value, expected_geometry, monkeypatch):
     result = FireIO.get_reg_shp(input_value)
     assert result == expected_geometry
 
+def test_get_reg_shp_from_valid_file(monkeypatch):
+    fake_gdf = gpd.GeoDataFrame(
+        geometry=[Polygon([(0, 0), (1, 0), (1, 1), (0, 1)])],
+        crs="EPSG:4326")
+    
+    # pretend that read_file actually reads a file and returns fake_gdf
+    monkeypatch.setattr(gpd, "read_file", lambda filename: fake_gdf)
+
+    res = FireIO.get_reg_shp("test_file.geojson")
+    assert isinstance(res, Polygon)
+    assert res.equals(Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]))
+
+
+def test_get_reg_shp_from_file_invalid():
+    # we want to get an error here because there is no such file
+    with pytest.raises(Exception):
+        FireIO.get_reg_shp("missing_file.geojson")
 
 @pytest.mark.parametrize(
     "region_shape_to_filter, all_pixels_inside",
