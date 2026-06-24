@@ -976,26 +976,6 @@ def get_Cal_shp():
 
     return shp_Cal
 
-
-def get_Cty_shp(ctr):
-    """get shapefile of a country
-
-    Parameters
-    ----------
-    ctr : str
-        country name
-    """
-    ctyfnm = os.path.join(settings.dirextdata, "World", "country.shp")
-
-    gdf_cty = gpd_read_file(ctyfnm)
-
-    if ctr in gdf_cty["CNTRY_NAME"].values:
-        g = gdf_cty[gdf_cty.CNTRY_NAME == ctr].iloc[0].geometry
-        return g
-    else:
-        return None
-
-
 def get_reg_shp(reg):
     """return the shape of a region, given an optional reg input
 
@@ -1016,11 +996,6 @@ def get_reg_shp(reg):
     # read or form shape used for filtering active fires
     if isinstance(reg, shapely.geometry.base.BaseGeometry):
         shp_Reg = reg
-    elif isinstance(reg, str):
-        shp_Reg = get_Cty_shp(reg)
-        if shp_Reg is None:
-            print("Please input a valid Country name")
-            return None
     elif isinstance(reg, list):
         shp_Reg = Polygon(
             [
@@ -1033,7 +1008,7 @@ def get_reg_shp(reg):
         )
     else:
         print(
-            "Please use geometry, country name (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
+            "Please use geometry or [lonmin,latmin,lonmax,latmax] list for the parameter region"
         )
         return None
 

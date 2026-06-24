@@ -74,7 +74,6 @@ def test_gpd_read_static_source(
             Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
             Polygon([(0, 0), (1, 0), (1, 1), (0, 1)]),
         ),  # Test with a Shapely Polygon geometry
-        ("United Flakes", None),  # Test with an invalid country name
         (
             [0, 0, 1, 1],
             Polygon([(0, 0), (0, 1), (1, 1), (1, 0), (0, 0)]),
@@ -83,7 +82,6 @@ def test_gpd_read_static_source(
     ],
 )
 def test_get_reg_shp(input_value, expected_geometry, monkeypatch):
-    monkeypatch.setattr(FireIO, "get_Cty_shp", lambda reg: None)
     result = FireIO.get_reg_shp(input_value)
     assert result == expected_geometry
 
