@@ -17,24 +17,25 @@ copy_s3_object() {
 
 # check if the number of arguments is less than 5 (minimum required)
 if [ $# -lt 5 ]; then
-    echo "Usage: $0 regnm bbox tst ted --flag"
+    echo "Usage: $0 regnm bbox reg_shp tst ted --flag"
     echo ""
     echo "Usage: all arguments are passed positionally..."
     echo ""
     echo "Flags: --data-update, --preprocess-region, --preprocess-region-t, --fire-forward, --coordinate-all, --coordinate-all-no-veda-copy"
     echo ""
-    echo 'Example: bash run_dps_cli.sh ShastaTrinity [-126,57,-116,37] [2023,1,1,"AM"] [2023,12,31,"PM"] --data-update'
+    echo 'Example: bash run_dps_cli.sh ShastaTrinity [-126,57,-116,37] "" [2023,1,1,"AM"] [2023,12,31,"PM"] --data-update'
     exit 1
 fi
 
 # required arguments
 regnm=$1
 bbox=$2
-tst=$3
-ted=$4
+reg_shp=$3
+tst=$4
+ted=$5
 
 # shift the first four arguments to access the flags
-shift 4
+shift 5
 
 selected_flag=""
 
@@ -101,6 +102,7 @@ fi
 echo "Running script with:"
 echo "regnm: $regnm"
 echo "bbox: $bbox"
+echo "reg_shp: $reg_shp"
 echo "tst: $tst"
 echo "ted: $ted"
 echo "flag: $selected_flag"
