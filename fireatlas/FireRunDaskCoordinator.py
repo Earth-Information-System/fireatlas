@@ -523,6 +523,15 @@ if __name__ == "__main__":
         If the region has already been run before and has an existing geometry
         in FEDSpreprocessed/REGION/REGION.json, that will override the bbox.
 
+    --reg_shp : str
+        Optional. Should be the name of a file containing a single 
+        geometry to use to delimit the run region instead of a bounding box.
+        Must be an empty string ("") if not used. Will override bbox otherwise. 
+        Only active fire detections within this region will be used.  
+        Expects that there will be a file with this input name in 
+        settings.dirextdata/Shapefiles/
+        Example: "Africa.geojson" 
+            Assumes that "data/FEDSinput/Shapefiles/Africa.geojson" exists. 
 
     --tst : str (JSON list)
         Time start. FEDS will start running at this timestep.
@@ -541,22 +550,44 @@ if __name__ == "__main__":
         and served via OGC API. Use for all testing and local runs.
 
 
-    Usage example:
-    python3 FireRunDaskCoordinator.py --regnm="example_CONUS" \\
-        --bbox="[-126,24,-61,49]" \\
-        --reg_shp="" \\
-        --tst="[2023,6,1,\\"AM\\"]" \\
-        --ted="[2023,9,1,\\"AM\\"]" \\
+    Usage examples:
+    python3 FireRunDaskCoordinator.py --regnm="example_CONUS" \
+        --bbox="[-126,24,-61,49]" \
+        --reg_shp="" \
+        --tst="[2023,6,1,\"AM\"]" \
+        --ted="[2023,9,1,\"AM\"]" \
+        --no-veda-copy
+
+    # Use shapefile to define bounds
+    python3 FireRunDaskCoordinator.py --regnm="example_Africa" \
+        --bbox="[]" \
+        --reg_shp="Africa.geojson" \
+        --tst="[2024,1,1,\"AM\"]" \
+        --ted="[2024,2,1,\"PM\"]" \
+        --no-veda-copy
+
+    # NRT run for SE Asia- uses latest timestep as ted
+    python3 FireRunDaskCoordinator.py --regnm="example_SE_Asia" \
+        --bbox="[]" \
+        --reg_shp="SE_Asia.geojson" \
+        --tst="[2024,1,1,\"AM\"]" \
+        --ted="" \
         --no-veda-copy
     """
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--regnm", type=str)
     parser.add_argument("--bbox", type=validate_json)
+    parser.add_argument("--reg_shp", type=str, default="", 
+                        help="Optional shapefile in FEDSinput/Shapefiles to define run region. "
+                        "Overrides --bbox. Leave empty to use bounding box defined in --bbox.")
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
     parser.add_argument('--no-veda-copy', dest='copy_to_veda', action='store_false', default=True,
                         help="defaults to True but if passed will stop a copy to VEDA s3 bucket")
     args = parser.parse_args()
 
-    Run([args.regnm, args.bbox], args.tst, args.ted, args.copy_to_veda)
+    if args.reg_shp:
+        Run([args.regnm, args.reg_shp], args.tst, args.ted, args.copy_to_veda)
+    else:
+        Run([args.regnm, args.bbox], args.tst, args.ted, args.copy_to_veda)
