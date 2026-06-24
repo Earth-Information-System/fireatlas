@@ -936,19 +936,31 @@ def load_mcd64(year, xoff=0, yoff=0, xsize=None, ysize=None):
 def get_any_shp(filename):
     """get shapefile of any region given the input file name
 
+    Reprojects to geographic coordinate system (EPSG:4326) from input CRS.
+
     Parameters
     ----------
     filename : str
         the shapefile names saved in the directory dirextdata/shapefiles/
     """
-    # find the california shapefile
-    dirshape = os.path.join(settings.dirextdata, "shapefiles")
-    statefnm = os.path.join(dirshape, filename)
 
+    dirshape = os.path.join(settings.dirextdata, "Shapefiles")
+    filepath = os.path.join(dirshape, filename)
     # read the geometry
-    shp = gpd_read_file(statefnm).iloc[0].geometry
+    shp = gpd_read_file(filepath)
+    logger.info(f"Read region bounding shape from {filepath}")
+    logger.info(f"shp.crs = {shp.crs}")
+    
+    geo_dissolved = shp.dissolve()
+    logger.info(f"Dissolved shp bounds: {geo_dissolved.geometry.total_bounds}")
 
-    return shp
+    # convert to lat lon for df filtering in next step
+    logger.info("Converting to EPSG 4326")
+    geo_dissolved = geo_dissolved.to_crs("EPSG:4326") 
+    logger.info(f"After conversion, total bounds = {geo_dissolved.geometry.total_bounds}")
+    logger.info(f"CRS reads as: {geo_dissolved.crs}")
+    
+    return geo_dissolved.iloc[0].geometry
 
 
 def get_Cal_shp():
