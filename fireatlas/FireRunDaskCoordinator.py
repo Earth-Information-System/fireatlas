@@ -395,7 +395,7 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
     logger.info("------------- Done with preprocessing region + t -------------")
     
     # run fire forward algorithm (which cannot be run in parallel)
-    job_fire_forward(region=region, tst=tst, ted=ted, client=client)
+    job_fire_forward(region=region, tst=tst, ted=ted, client=client, use_s3=use_s3)
 
     # If flag matching flat set, add overlaps with this year's NIFC incidents to 
     # CombinedLargefire/lf_perimeter.fgb for ted only. 
