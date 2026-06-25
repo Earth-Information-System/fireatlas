@@ -356,13 +356,3 @@ CONT = {
         6: 1,
     },  # fire type dependent CONNECTIVITY_THRESHOLD_KM
 }
-
-FTYPCLR_CA = {
-    0: "grey",
-    1: "rosybrown",
-    2: "darkolivegreen",
-    3: "olive",
-    4: "saddlebrown",
-    5: "sandybrown",
-    6: "darkviolet",
-}  # colors used for each fire type
