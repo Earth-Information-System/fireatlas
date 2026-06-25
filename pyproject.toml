@@ -52,7 +52,8 @@ dev = [
     "ipykernel", 
     "folium", 
     "matplotlib", 
-    "mapclassify"
+    "mapclassify", 
+    "ruff" 
 ]
 
 
