@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Zeb Becker">
-<meta name="dcterms.date" content="2026-06-24">
+<meta name="dcterms.date" content="2026-05-28">
 
 <title>Releasing – Wildfire Tracking Lab</title>
 <style>
@@ -128,7 +128,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/releasing.html">Releasing</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Releasing</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -209,12 +209,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/run_local.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">How to run FEDS locally</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../docs/custom_regions.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">How To Run FEDS on DPS</span></a>
   </div>
@@ -233,7 +227,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/releasing.html" class="sidebar-item-text sidebar-link active">
+  <a href="../docs/releasing.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Releasing</span></a>
   </div>
 </li>
@@ -284,12 +278,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#deploy-new-version-to-production" id="toc-deploy-new-version-to-production" class="nav-link" data-scroll-target="#deploy-new-version-to-production">Deploy New Version to Production</a></li>
   <li><a href="#rollbacks-and-troubleshooting" id="toc-rollbacks-and-troubleshooting" class="nav-link" data-scroll-target="#rollbacks-and-troubleshooting">Rollbacks and Troubleshooting</a></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/releasing.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/releasing2.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/releasing.html">Releasing</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Releasing</h1>
 </div>
@@ -308,7 +302,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 24, 2026</p>
+      <p class="date">May 28, 2026</p>
     </div>
   </div>
   
@@ -323,7 +317,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="overview" class="level1">
 <h1>Overview</h1>
 <p>To improve reproducibility and reliability, we use tagged releases in our GitHub repo to determine which version of the FEDS codebase our <a href="../docs/nrt.html">NRT data processing system</a> uses. The NRT system does <strong><em>not</em></strong> automatically incorporate changes pushed to the main branch of the GitHub repository. For your changes to be reflected in the production system, you need to release a new tagged version as described on this page, then edit the variable <code>feds_algo_version</code> on the Prefect orchestrator that submits NRT jobs to DPS for data processing.</p>
-<p>What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in <a href="https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/.github/workflows/release.yaml">release.yaml</a>, which submits a job to DPS asking it to build a new image (“register an algorithm,” in MAAP parlance) within the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, <code>eis-feds-dask-coordinator-v3:1.5.1</code>. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job.</p>
+<p>What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in <a href="https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/.github/workflows/release.yaml">release.yaml</a>, which submits a job to DPS asking it to build a new image (“register an algorithm,” in MAAP parlance) with in the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, <code>eis-feds-dask-coordinator-v3:1.5.1</code>. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job.</p>
 <p>Importantly, just making the new version of the algorithm <strong><em>available</em></strong> on DPS is not enough- we also need to make it so that our orchestrator requests that DPS use that version for new NRT jobs going forward. We do this by changing the Prefect variable <code>feds_algo_version</code> in our production job orchestrator (refer to the internal <a href="https://docs.google.com/document/d/1pdzz0KCEEME6ZIg-LTfIUQlqDexS5FWvrbN5j0GITkU/edit?usp=sharing">orchestration runbook</a> for more info). Conversely, this makes it easy to roll back to a previous version- if your release 1.5.1 has a bug, just change <code>feds_algo_version</code> back to 1.5.0 to go back to the previous version in production.</p>
 <p>The rest of this document describes acceptance testing and release procedures in more detail.</p>
 <section id="summaryrelease-checklist" class="level3">
@@ -340,7 +334,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="release" class="level4">
 <h4 class="anchored" data-anchor-id="release">Release</h4>
 <ul class="task-list">
-<li><label><input type="checkbox">Version number chosen (semver)</label></li>
+<li><label><input type="checkbox">Version number chosen (semvar)</label></li>
 <li><label><input type="checkbox"><code>algorithm_version</code> updated</label></li>
 <li><label><input type="checkbox">PR merged to main</label></li>
 <li><label><input type="checkbox">Release published on GitHub</label></li>
@@ -372,31 +366,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="test-conda-environment-resolution-on-maap-hub" class="level3">
 <h3 class="anchored" data-anchor-id="test-conda-environment-resolution-on-maap-hub">Test conda environment resolution on MAAP Hub</h3>
-<p>(Optional) If you have changed project dependencies, confirm the environment still resolves and passes tests <em>before</em> you regenerate the lock. The DPS image is built by <code>fireatlas/maap_runtime/run_dps_build.sh</code>, which installs from the pinned <code>env.lock.yml</code> — so the goal here is to verify that the loose <code>env.yml</code> still solves and works, then regenerate <code>env.lock.yml</code> from that known-good environment.</p>
-<p>Run this on the MAAP Hub (Linux): <code>env.lock.yml</code> is platform specific and must be generated there. Note the Hub uses slightly different paths than the DPS image (<code>/srv/conda</code> rather than <code>/opt/conda</code>).</p>
+<p>(Optional) If you have made changes to project dependencies, test the conda environment resolution. When a new image is built on DPS, the script <code>fireatlas/maap_runtime/run_dps_build.sh</code> is used.</p>
+<p>Below shows how to test this process on the MAAP Hub JupyterHub environment, which has slightly different paths. You can also adapt these steps to run on your local machine.</p>
 <pre><code>git clone https://github.com/Earth-Information-System/fireatlas.git
 cd fireatlas
 git switch branch-to-test
 
-# if you have a previous environment, remove it and start clean
+# if you have a previous environment, remove it and start clean  
 conda env remove -n fire_env -y
 
-# build from the loose spec to test that it still resolves
-conda env create -f env.yml
+# build and activate conda env 
+conda env create -f env.yml 
 conda activate fire_env
 
-# install fireatlas plus dev/test extras
-python -m pip install -e '.[dev]'
-
-# make sure no conflicts
-python -m pip check
+pip install "git+https://github.com/MAAP-Project/maap-py.git@master"
+# get optional test dependencies 
+pip install -e '.[dev]'
 
 # run unit tests
 # Specify abs path to pytest executable in this conda env if needed,
 # e.g. /srv/conda/envs/fire_env/bin/pytest for MAAP Hub
 /srv/conda/envs/fire_env/bin/pytest
 /srv/conda/envs/fire_env/bin/pytest --runslow</code></pre>
-<p>If everything passes, regenerate <code>env.lock.yml</code> from this working environment and commit it alongside your dependency change (see the lock-regeneration command in <a href="../docs/contributing.html">Contributing</a>). DPS and CI build from that lock, so it must reflect the environment you just validated. Again, this must be done on a Linux platform such as MAAP Hub.</p>
 </section>
 <section id="run-end-to-end-tests" class="level3">
 <h3 class="anchored" data-anchor-id="run-end-to-end-tests">Run end-to-end tests</h3>
@@ -443,6 +434,7 @@ aws s3 cp s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/VIIRS/VNP14IM
 <li><p>building an image off that tag that will be used in some async task runner (currently only DPS) to run the regional algorithm jobs asynchronously.</p></li>
 </ul>
 <p>Most of this can be automated but since <a href="https://semver.org/">semver</a> is often about considering if the newest set of changes we are packaging up under a version is backward compatible it does require a human to choose the version.</p>
+<hr>
 <section id="choose-a-version-number" class="level2">
 <h2 class="anchored" data-anchor-id="choose-a-version-number">Choose a Version Number</h2>
 <p>Look at the <a href="https://github.com/Earth-Information-System/fireatlas/tags">current release tags and versions</a> and decide if the minor or patch version should be incremented:</p>
@@ -453,7 +445,7 @@ aws s3 cp s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/VIIRS/VNP14IM
 </section>
 <section id="create-a-new-pr-for-dps-jobs" class="level2">
 <h2 class="anchored" data-anchor-id="create-a-new-pr-for-dps-jobs">Create a new PR for DPS Jobs</h2>
-<p>Once the releaser has a version number, they will need to create a PR that modifies version in a couple places:</p>
+<p>Once the releaser has a version number, then will need to create a PR that modifies version in a couple places:</p>
 <ul>
 <li>the algorithm config <code>algorithm_version</code> in <code>./maap_runtime/coordinator/algorithm_config.yaml</code>:</li>
 </ul>
@@ -484,7 +476,7 @@ aws s3 cp s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/VIIRS/VNP14IM
 </section>
 <section id="verify-dps-image-build" class="level2">
 <h2 class="anchored" data-anchor-id="verify-dps-image-build">Verify DPS Image Build</h2>
-<p>The biggest thing that can go wrong with this workflow is that the DPS image builder fails to build our image.</p>
+<p>The biggest thing that can wrong with this workflow is that the DPS image builder fails to build our image.</p>
 <p>In the GitHub Actions release job you should be able to see something like this:</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode json code-with-copy"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">"code"</span><span class="fu">:</span> <span class="dv">200</span><span class="fu">,</span></span>
@@ -536,7 +528,7 @@ aws s3 cp s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/VIIRS/VNP14IM
 </section>
 <section id="rollbacks-and-troubleshooting" class="level1">
 <h1>Rollbacks and Troubleshooting</h1>
-<p>As mentioned above, the fastest way to roll back to a previous algorithm version in production is to change <code>feds_algo_version</code> back to the latest stable version. All new NRT jobs submitted after this point will use that version.</p>
+<p>As mentioned above, the fastest way to roll back to a previous algorithm verison in production is to change <code>feds_algo_version</code> back to the latest stable version. All new NRT jobs submitted after this point will use that version.</p>
 <p>If input, intermediate or output data become corrupted, you can delete it and either restore from backups made earlier, or re-download the input data from FIRMS (see <a href="https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/notebooks/20_FIRMS_input_backfill.ipynb"><code>fireatlas/notebooks/20_FIRMS_input_backfill</code></a>) and re-generate the outputs for the current year to date by simply triggering a new NRT run. If doing this, be sure to delete all relevant preprocessed files as well, as these can cache stale data.</p>
 
 
@@ -635,7 +627,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   }
     var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
     var mailtoRegex = new RegExp(/^mailto:/);
-      var filterRegex = new RegExp("https:\/\/Earth-Information-System\.github\.io\/fireatlas\/");
+      var filterRegex = new RegExp('/' + window.location.host + '/');
     var isInternal = (href) => {
         return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
     }
@@ -971,7 +963,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/releasing.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/releasing2.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

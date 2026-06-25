@@ -6,8 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Zeb Becker">
+<meta name="dcterms.date" content="2026-06-24">
 
-<title>DPS Coordinator – Wildfire Tracking Lab</title>
+<title>How to run FEDS locally – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,40 +21,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -112,7 +80,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="index.qmd">
+    <a class="navbar-brand" href="../docs/index.html">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
   </div>
@@ -126,7 +94,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">DPS Coordinator</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/run_local.html">How to run FEDS locally</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -140,7 +108,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-      <a href="index.qmd" class="sidebar-logo-link">
+      <a href="../docs/index.html" class="sidebar-logo-link">
       <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
@@ -207,7 +175,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/run_local.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/run_local.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">How to run FEDS locally</span></a>
   </div>
 </li>
@@ -254,22 +222,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#running-feds-locally" id="toc-running-feds-locally" class="nav-link active" data-scroll-target="#running-feds-locally">Running FEDS locally</a>
+  <ul class="collapse">
+  <li><a href="#creek-fire-using-local-test-data" id="toc-creek-fire-using-local-test-data" class="nav-link" data-scroll-target="#creek-fire-using-local-test-data">1. Creek fire using local test data</a></li>
+  <li><a href="#conus-for-2025" id="toc-conus-for-2025" class="nav-link" data-scroll-target="#conus-for-2025">2. CONUS for 2025</a>
+  <ul class="collapse">
+  <li><a href="#required-downloads" id="toc-required-downloads" class="nav-link" data-scroll-target="#required-downloads">Required Downloads:</a></li>
+  </ul></li>
+  <li><a href="#conus-nrt" id="toc-conus-nrt" class="nav-link" data-scroll-target="#conus-nrt">3. CONUS NRT</a></li>
+  </ul></li>
+  </ul>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/run_local.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/run_local.html">How to run FEDS locally</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">DPS Coordinator</h1>
+<h1 class="title">How to run FEDS locally</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Zeb Becker </p>
+          </div>
+  </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 24, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -279,116 +273,69 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>This notebook interacts with the MAAP API. It submits and runs a single coordinating DPS dask job that manages jobs (see <code>fireatlas.FireRunDaskCoordinator.py</code>).</p>
-<p>The <code>poll_on_job_status</code> and <code>wait_for_job</code> allow us to block and get DPS job status for muliptle jobs before we continue on</p>
-<div id="cell-2" class="cell" data-pycharm="{&quot;name&quot;:&quot;#%%\n&quot;}">
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!pip install -e ..</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="cell-3" class="cell" data-pycharm="{&quot;name&quot;:&quot;#%%\n&quot;}">
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> json</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Tuple</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> concurrent</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> concurrent.futures <span class="im">import</span> ThreadPoolExecutor</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> fireatlas.FireLog <span class="im">import</span> logger</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> maap.maap <span class="im">import</span> MAAP</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> maap.dps.dps_job <span class="im">import</span> DPSJob</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> maap.utils <span class="im">import</span> algorithm_utils</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> JobSubmissionException(<span class="pp">Exception</span>):</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">pass</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> get_algorithm_config_filepath(dir_names):</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    current_file_dir <span class="op">=</span> os.path.dirname(os.path.abspath(<span class="va">__name__</span>))</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>        os.path.join(current_file_dir, <span class="ss">f'</span><span class="sc">{</span>dir_name<span class="sc">}</span><span class="ss">'</span>, <span class="st">'algorithm_config.yaml'</span>)</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> dir_name <span class="kw">in</span> dir_names</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> validate_job_submission(submitted_jobs: Tuple[DPSJob]) <span class="op">-&gt;</span> Tuple[DPSJob]:</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""we don't retry job submissions, they should ideally always work</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co">    validate status of job submission results and return result 'job_id'</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    failed_statuses <span class="op">=</span> [result <span class="cf">for</span> result <span class="kw">in</span> submitted_jobs <span class="cf">if</span> result.status <span class="op">==</span> <span class="st">'failed'</span>]</span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">any</span>(failed_statuses):</span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>        <span class="cf">raise</span> JobSubmissionException(<span class="ss">f"[ SUBMISSION FAILED ]: the following jobs failed to submit </span><span class="sc">{</span>failed_statuses<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> submitted_jobs</span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> wait_for_job(dps_job: DPSJob) <span class="op">-&gt;</span> DPSJob:</span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""this internal DPSJob function will block until job completes and use exponential backoff</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co">    https://github.com/MAAP-Project/maap-py/blob/master/maap/dps/dps_job.py#L80C9-L80C28</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co">    it seems the statuses.lower() are: ['failed', 'succeeded', 'accepted', 'running']</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="co">    https://github.com/MAAP-Project/maap-py/blob/master/maap/dps/dps_job.py</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> dps_job.wait_for_completion()</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> poll_on_job_status(jobs: Tuple[DPSJob]) <span class="op">-&gt;</span> Tuple[DPSJob]:</span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>    failed_jobs <span class="op">=</span> []</span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>    <span class="co"># don't want to overwhelm the MAAP api so keeping max_workers relatively small</span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> ThreadPoolExecutor(max_workers<span class="op">=</span><span class="dv">5</span>) <span class="im">as</span> executor:</span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>        dps_job_futures <span class="op">=</span> [executor.submit(wait_for_job, dps_job) <span class="cf">for</span> dps_job <span class="kw">in</span> jobs]</span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> dps_job <span class="kw">in</span> concurrent.futures.as_completed(dps_job_futures):</span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>            <span class="cf">try</span>:</span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>                <span class="cf">if</span> dps_job.result().retrieve_status().lower() <span class="op">!=</span> <span class="st">'succeeded'</span>:</span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>                    failed_jobs.append(dps_job)</span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>            <span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>                logger.exception(<span class="ss">f"'poll_on_jobs_status' failed with </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> failed_jobs</span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> track_submitted_jobs(submitted_jobs: Tuple[DPSJob]) <span class="op">-&gt;</span> Tuple[DPSJob]:</span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>    queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>    failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> failed_jobs</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<section id="dask-coodinator" class="level4">
-<h4 class="anchored" data-anchor-id="dask-coodinator">Dask Coodinator</h4>
-<div id="cell-5" class="cell" data-pycharm="{&quot;name&quot;:&quot;#%%\n&quot;}">
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tst <span class="op">=</span> [<span class="dv">2023</span>,<span class="dv">1</span>,<span class="dv">1</span>,<span class="st">'AM'</span>]</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ted <span class="op">=</span> [<span class="dv">2023</span>,<span class="dv">7</span>,<span class="dv">1</span>,<span class="st">'PM'</span>]</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>region <span class="op">=</span> [<span class="st">"Oregon"</span>, [<span class="op">-</span><span class="fl">124.925537</span>,<span class="fl">41.672912</span>,<span class="op">-</span><span class="fl">115.565186</span>,<span class="fl">46.513516</span>]]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="cell-6" class="cell" data-pycharm="{&quot;name&quot;:&quot;#%%\n&quot;}">
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>configs <span class="op">=</span> get_algorithm_config_filepath([<span class="st">'coordinator'</span>,])</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>maap_api <span class="op">=</span> MAAP(maap_host<span class="op">=</span><span class="st">'api.maap-project.org'</span>)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>algo_config <span class="op">=</span> algorithm_utils.read_yaml_file(configs[<span class="dv">0</span>])</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>algo_config.pop(<span class="st">'inputs'</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(algo_config)</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>submitted_jobs <span class="op">=</span> []</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>submit_job_kwargs <span class="op">=</span> {</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"identifier"</span>: <span class="ss">f"job-</span><span class="sc">{</span>algo_config[<span class="st">'algorithm_name'</span>]<span class="sc">}</span><span class="ss">:</span><span class="sc">{</span>algo_config[<span class="st">'algorithm_version'</span>]<span class="sc">}</span><span class="ss">"</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"algo_id"</span>: algo_config[<span class="st">"algorithm_name"</span>],</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">"version"</span>: algo_config[<span class="st">"algorithm_version"</span>],</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">"username"</span>: <span class="st">"gcorradini"</span>,</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">"queue"</span>: algo_config[<span class="st">"queue"</span>],</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>param_kwargs <span class="op">=</span> {<span class="st">"regnm"</span>: region[<span class="dv">0</span>], <span class="st">"tst"</span>:  json.dumps(tst), </span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>                <span class="st">"bbox"</span>: region[<span class="dv">1</span>], <span class="st">"ted"</span>: json.dumps(ted), <span class="st">"operation"</span>: <span class="st">"--coordinate-all"</span>}</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> maap_api.submitJob(<span class="op">**</span>submit_job_kwargs, <span class="op">**</span>param_kwargs)</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>submitted_jobs.append(result)</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>queued_jobs <span class="op">=</span> validate_job_submission(submitted_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="cell-7" class="cell" data-pycharm="{&quot;name&quot;:&quot;#%%\n&quot;}">
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="op">%%</span>time</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>failed_jobs <span class="op">=</span> poll_on_job_status(queued_jobs)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div id="cell-8" class="cell" data-pycharm="{&quot;name&quot;:&quot;#%%\n&quot;}">
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>failed_jobs[<span class="dv">0</span>].result().retrieve_result()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+<section id="running-feds-locally" class="level1">
+<h1>Running FEDS locally</h1>
+<p>This doc provides quick instructions for setting up the required file structure and computational environment to run FEDS on your local machine, without any need for MAAP S3 credentials at runtime.</p>
+<p>Start by cloning the fireatlas git repo and setting up the required conda environment by following the directions in <code>fireatlas/docs/contributing.qmd</code>. If you are trying to test changes you’ve made on a specific branch, make sure that branch is checked out.</p>
+<p>Unless otherwise specified, all commands are intended to be run from the root fireatlas directory that you just cloned and all filepaths are relative to it. Note the <code>/data/</code> folder in this directory- this is both where we will need to download some input datasets to, and where your outputs will end up.</p>
+<section id="creek-fire-using-local-test-data" class="level2">
+<h2 class="anchored" data-anchor-id="creek-fire-using-local-test-data">1. Creek fire using local test data</h2>
+<p>First, copy the following text into a file called <code>fireatlas/fireatlas/run_config.yaml</code>. FEDS is going to look for this file at the specified relative path, so make sure to put it in the right location. Note that it needs to go in the <em>inner</em> fireatlas folder, at the same level as FireConsts.py and the other library code, not the <em>outer</em> fireatlas directory we are otherwise working in.</p>
+<pre><code># fireatlas/fireatlas/run_config.yaml
+settings:  
+  READ_LOCATION: local
+  LOCAL_PATH: tests/data
+  FIRE_SOURCE: SNPP
+  FIRE_NRT: False
+  EPSG_CODE: 9311
+  FTYP_OPT: CA
+  CONT_OPT: CA
+  remove_static_sources: False</code></pre>
+<p>This will override the default settings in FireConsts.py for the specified values. In this example, we are going to read our input data from <code>fireatlas/tests/data</code>, which includes a small subset of input data for the Creek fire. This data is included in the tests/ folder because it is used in the automated test suite, so this is a nice way to test small changes without needing to download any additional data.</p>
+<p>Next, we are going to run FEDS from the command line. Make sure you have installed and activated the conda environment (again, see <code>docs/contributing.qmd</code> for directions if you haven’t).</p>
+<pre><code>python fireatlas/FireRunDaskCoordinator.py --regnm=v3_test_data_for_Creek_SNPP \
+    --bbox="[-119.5,36.8,-118.9,37.7]" \
+    --tst="[2020,9,5,\"AM\"]" \
+    --ted="[2020,11,5,\"PM\"]" \
+    --no-veda-copy</code></pre>
+</section>
+<section id="conus-for-2025" class="level2">
+<h2 class="anchored" data-anchor-id="conus-for-2025">2. CONUS for 2025</h2>
+<p>If the Creek fire example worked, you may want to move on to other regions and time periods. However, we don’t have all possible input data checked into the repository. In order to access this data without being connected to MAAP S3 storage, we will have to download the required input data ourselves. For this example, we will run FEDS for CONUS for all of 2025, using NOAA20 monthly files. Following this model, you can use any date range, bbox, or satellite. Please reach out if you have issues accessing the required data.</p>
+<section id="required-downloads" class="level3">
+<h3 class="anchored" data-anchor-id="required-downloads">Required Downloads:</h3>
+<ol type="1">
+<li>VIIRS active fire detections (standard product)- download from the UMD FTP server following the instructions in the notebook <code>fireatlas/notebooks/21_Download_VIIRS_SP_SFTP.ipynb</code></li>
+<li>Landcover from MAAP: Download landcover from <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif</code> to our local data folder <code>fireatlas/data/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif</code>. You can use the ADE or MAAP Hub interfaces to do this manually.</li>
+<li>Static flaring sources: Download the static source filter from <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv</code> to our local data folder at <code>fireatlas/data/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv</code></li>
+</ol>
+<p>Once those are all downloaded, lets change a few of the settings in run_config.yaml. Paste this text into the existing file and don’t forget to hit save. You can also override any other settings from FireConsts.py that you would like. This yaml file will then serve as a neat encapsulation of the settings you use for a particular run.</p>
+<pre><code>settings:  
+  READ_LOCATION: local
+  # notice that we deleted the local path override from above! 
+  # it is now set to fireatlas/data by default, not fireatlas/tests/data
+  FIRE_SOURCE: NOAA20
+  FIRE_NRT: False # still using the standard product and monthly files
+  EPSG_CODE: 9311
+  FTYP_OPT: CA
+  CONT_OPT: CA</code></pre>
+<p>Finally, run this command to give it a try! Check <code>fireatlas/data/FEDSoutputs-v3</code> for results when you are finished.</p>
+<pre><code>python fireatlas/FireRunDaskCoordinator.py --regnm="example_CONUS2025" \
+    --bbox="[-126,24,-61,49]" \
+    --tst="[2025,1,1,\"AM\"]" \
+    --ted="[2025,12,31,\"PM\"]" \
+    --no-veda-copy</code></pre>
+</section>
+</section>
+<section id="conus-nrt" class="level2">
+<h2 class="anchored" data-anchor-id="conus-nrt">3. CONUS NRT</h2>
+<p>Ok, last example. Let’s try doing just a few days of NRT outputs for CONUS. If you want them to match the latest official outputs, you’d have to start the annual run on January 1st. However, it would take a while to download all of that data one day at a time from the FIRMS API. If you need a longer range of NRT data, use their <a href="https://firms.modaps.eosdis.nasa.gov/download/">bulk download tool</a>. For this example, we are going to just grab the past few days.</p>
+<p>Your turn to edit run_config.yaml- change FIRE_NRT to True, making sure to save when you are done. This will tell FEDS to use NRT data. With FIRE_NRT=True, FEDS will automatically try to download any missing input data, one day at a time, from the FIRMS API.</p>
+<p>Then, use the same command as above to run FireRunDaskCoordinator.py, but change the dates so that TST is a few days ago, and TED is today. The <code>fireatlas</code> package does not currently support time travel, so be sure not to set TED to “PM” if it is still currently “AM” in the region you are looking at.</p>
+<p>Once again, outputs for your run can be found at <code>fireatlas/data/FEDSoutputs-v3</code>. Good job!</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -820,7 +767,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/maap_runtime/dps-coordinator.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/run_local.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
