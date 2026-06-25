@@ -1,0 +1,23 @@
+# run_config.example.yaml
+#
+# Template for run_config.yaml. To use, just remove "example" from the name: 
+#
+#     cp run_config.example.yaml run_config.yaml
+#
+# FEDS will read run_config.yaml from the repo root at import time. The real file is
+# gitignored so your local settings and run parameters stay out of version control.
+#
+# Every key here overrides a field of the Settings class in fireatlas/FireConsts.py.
+# Anything you leave out falls back to the default defined there. 
+#
+# The example below is set up for the local Creek-fire walkthrough in docs/run_local.qmd.
+
+settings:
+  READ_LOCATION: local      
+  LOCAL_PATH: tests/data
+  FIRE_SOURCE: SNPP         
+  FIRE_NRT: False           
+  EPSG_CODE: 9311            
+  FTYP_OPT: CA             
+  CONT_OPT: CA                
+  remove_static_sources: False

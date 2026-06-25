@@ -18,3 +18,6 @@ _site/
 
 /env/
 /.quarto/
+
+/run_config.yaml
+.env

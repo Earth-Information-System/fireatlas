@@ -23,7 +23,9 @@ root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
 YAML_FILENAME = "run_config.yaml"
-YAML_ABS_PATH = os.path.join(os.path.dirname(__file__), YAML_FILENAME)
+# run_config.yaml lives at the repo root (the outer fireatlas/ directory),
+# alongside this README and pyproject.toml - not inside the package.
+YAML_ABS_PATH = os.path.join(root_dir, YAML_FILENAME)
 
 class Settings(BaseSettings):
 

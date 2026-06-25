@@ -14,11 +14,17 @@ Unless otherwise specified, all commands are intended to be run from the root fi
 
 ## 1. Creek fire using local test data 
 
-First, copy the following text into a file called `fireatlas/fireatlas/run_config.yaml`. FEDS is going to look for this file at the specified relative path, so make sure to put it in the right location. Note that it needs to go in the *inner* fireatlas folder, at the same level as FireConsts.py and the other library code, not the *outer* fireatlas directory we are otherwise working in. 
+First, create a file called `run_config.yaml`. FEDS looks for this file at the repo root. The quickest way to start is to copy the example config:
 
 ```
-# fireatlas/fireatlas/run_config.yaml
-settings:  
+cp run_config.example.yaml run_config.yaml
+```
+
+The example file is already set up for this small example run of the Creek fire. 
+
+```
+# run_config.yaml  (in the repo root)
+settings:
   READ_LOCATION: local
   LOCAL_PATH: tests/data
   FIRE_SOURCE: SNPP
@@ -30,7 +36,7 @@ settings:
 ```
 This will override the default settings in FireConsts.py for the specified values. In this example, we are going to read our input data from `fireatlas/tests/data`, which includes a small subset of input data for the Creek fire. This data is included in the tests/ folder because it is used in the automated test suite, so this is a nice way to test small changes without needing to download any additional data. 
 
-Next, we are going to run FEDS from the command line. Make sure you have installed and activated the conda environment (again, see `docs/contributing.qmd` for directions if you haven't). 
+Next, we are going to run FEDS from the command line. Make sure you have installed and activated the conda environment (again, see [Contributing](contributing.qmd) for directions if you haven't). 
 ```
 python fireatlas/FireRunDaskCoordinator.py --regnm=v3_test_data_for_Creek_SNPP \
     --bbox="[-119.5,36.8,-118.9,37.7]" \
@@ -73,7 +79,7 @@ python fireatlas/FireRunDaskCoordinator.py --regnm="example_CONUS2025" \
 ```
 
 ## 3. CONUS NRT 
-Ok, last example. Let's try doing just a few days of NRT outputs for CONUS. If you want them to match the latest official outputs, you'd have to start the annual run on January 1st. However, it would take a while to download all of that data one day at a time from the FIRMS API. If you need a longer range of NRT data, use their [bulk download tool](https://firms.modaps.eosdis.nasa.gov/download/). For this example, we are going to just grab the past few days. 
+Ok, last example. Let's try doing just a few days of NRT outputs for CONUS. If you want them to match the latest production FEDS NRT outputs, you'd have to start the annual run on January 1st. However, it would take a while to download all of that data one day at a time from the FIRMS API. If you need a longer range of NRT data, use their [bulk download tool](https://firms.modaps.eosdis.nasa.gov/download/) and `fireatlas/notebooks/20_FIRMS_input_backfill`. For this example, we are going to just grab the past few days, so we will skip that part. 
 
 Your turn to edit run_config.yaml- change FIRE_NRT to True, making sure to save when you are done. This will tell FEDS to use NRT data. With FIRE_NRT=True, FEDS will automatically try to download any missing input data, one day at a time, from the FIRMS API. 
 
