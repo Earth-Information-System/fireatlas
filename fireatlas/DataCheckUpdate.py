@@ -3,9 +3,7 @@ This module include functions used to check and update needed data files
 """
 
 import os
-import fsspec
 import time
-import requests
 import pandas as pd
 
 from datetime import date
@@ -13,89 +11,9 @@ from typing import Literal
 
 from fireatlas import settings
 from fireatlas.FireLog import logger
-from fireatlas.preprocess import preprocess_input_file
 
 MAP_KEY = "3cb8ce1d0094e20f07f8697df832da3a"
 N_MAX_RETRIES = 30
-
-
-# ------------------------------------------------------------------------------
-# update external dataset
-# ------------------------------------------------------------------------------
-def wget(url, **kwargs):
-    target_dir = "."
-    if "locdir" in kwargs:
-        target_dir = kwargs.pop("locdir")
-    target_file = os.path.join(target_dir, os.path.basename(url))
-    logger.info(f"Downloading {url} to {target_file}")
-
-    headers = {}
-    if "header" in kwargs:
-        header = kwargs.pop("header")
-        assert header == "NASA", f"Non-standard header is not implemented: {header}"
-        headers["Authorization"] = (
-            "Bearer eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InpiZWNrZXIiLCJleHAiOjE3ODQyNzQzNjMsImlhdCI6MTc3OTA5MDM2MywiaXNzIjoiaHR0cHM6Ly91cnMuZWFydGhkYXRhLm5hc2EuZ292IiwiaWRlbnRpdHlfcHJvdmlkZXIiOiJlZGxfb3BzIiwiYWNyIjoiZWRsIiwiYXNzdXJhbmNlX2xldmVsIjozfQ.GmLCVPb3329B6G6HiZEkth6ZkZtGY-JEbri7_Ud84VcNLSHJvDaVEKPop0jhnQh152rhg2lgsvIWrN4ezwrK5IXNzj-vPV-nhYX8S1CMj8cEcD6nQReuIxGy28WMnYyDFDdU8WfSeOskuB3Etq6sWugDRv9hTaDOhweqHT-OuCXmAOx0ScBQssEgnohaC5DddNrCXwprfoVvX7N5e71JUhV_YfYEuBny2SmIBtiE58lGmGioraPvXmgVROgetKbKU2kfCyjw4KlaJ32jl6Jd2K6PngLiTv8s5UIbe0oWMuxTJfOAhQITcjMw-WGs9UqzGZT-j0CSdUiiHcHAeFo82Q"
-        )
-
-    if len(kwargs) > 0:
-        logger.debug(f"WARNING: Ignoring unused wget arguments: {list(kwargs.keys())}")
-
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()  # This will raise an HTTPError for bad requests (4XX or 5XX)
-
-    with fsspec.open(target_file, "wb") as f:
-        f.write(response.content)
-    return target_file
-
-
-def update_VNP14IMGTDL(d: date):
-    """Batch read and extract update_S-NPP data"""
-    # The directory to save VNP14IMGTDL data
-    data_dir = os.path.join(settings.dirextdata, "VIIRS", "VNP14IMGTDL/")
-
-    # Do the download process
-    urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/suomi-npp-viirs-c2/Global/"
-    urlfnm = (
-        urldir + "SUOMI_VIIRS_C2_Global_VNP14IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
-    )
-    try:
-        downloaded_filepath = wget(
-            url=urlfnm,
-            locdir=data_dir,
-            robots_off=True,
-            no_wget=False,
-            timestamping=True,
-            header="NASA",
-        )
-        preprocess_input_file(downloaded_filepath)
-    except Exception as e:
-        logger.warning(f"Could not download VNP14IMGTDL data for {d}")
-        logger.warning(f"Error message: {str(e)}")
-
-
-def update_VJ114IMGTDL(d: date):
-    """Batch read and extract update_NOAA20 data"""
-    # The directory to save VJ114IMGTDL data
-    data_dir = os.path.join(settings.dirextdata, "VIIRS", "VJ114IMGTDL/")
-
-    # Do the download process
-    urldir = "https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/FIRMS/noaa-20-viirs-c2/Global/"
-    urlfnm = (
-        urldir + "J1_VIIRS_C2_Global_VJ114IMGTDL_NRT_" + d.strftime("%Y%j") + ".txt"
-    )
-    try:
-        downloaded_filepath = wget(
-            url=urlfnm,
-            locdir=data_dir,
-            robots_off=True,
-            no_wget=False,
-            timestamping=True,
-            header="NASA",
-        )
-        preprocess_input_file(downloaded_filepath)
-    except Exception as e:
-        logger.warning(f"Could not download VJ114IMGTDL data for {d}")
-        logger.warning(f"Error message: {str(e)}")
 
 
 def update_FIRMS(
