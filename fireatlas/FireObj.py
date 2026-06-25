@@ -441,12 +441,6 @@ class Fire:
         # always set valid at initialization
         self.invalid = False
 
-        if settings.FTYP_OPT == "CA":
-            # TODO: get and record fm1000 value at ignition
-            # lon, lat = self.ignition_center_geo
-            # self.stFM1000 = FireIO.get_stFM1000(FireTime.t2d(t), lon=lon, lat=lat)
-            self.stFM1000 = 0
-
     def __repr__(self):
         return f"<Fire {self.fireID} at={self.t} with n_pixels={self.n_pixels}"
 

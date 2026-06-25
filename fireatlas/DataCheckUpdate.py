@@ -5,8 +5,6 @@ This module include functions used to check and update needed data files
 import os
 import fsspec
 import time
-import xarray as xr
-import tempfile
 import requests
 import pandas as pd
 
@@ -231,27 +229,3 @@ def get_FIRMS_data_availability(sat: Literal["SNPP", "NOAA20", "NOAA21"]):
         nrt_end = pd.to_datetime(df.loc["VIIRS_NOAA21_NRT"].max_date)
 
     return sp_start, sp_end, nrt_start, nrt_end
-
-
-def update_GridMET_fm1000():
-    """Get updated GridMET data (including fm1000)"""
-    # The directory to save GridMET data
-    data_dir = os.path.join(settings.dirextdata, "GridMET/")
-
-    today = date.today()
-
-    # Do the download process
-    urldir = "http://www.northwestknowledge.net/metdata/data/"
-    # strvars = ['vpd','pr','tmmn','tmmx','vs','fm100','fm1000','bi','pdsi']
-    strvars = ["fm1000"]
-    for strvar in strvars:
-        target_file = strvar + "_" + str(today.year) + ".nc"
-        urlfnm = urldir + target_file
-        with tempfile.TemporaryDirectory() as tempdir:
-            wget(urlfnm, locdir=tempdir)
-            file_name = os.path.join(tempdir, target_file)
-            # Convert to Zarr
-            zarrfile = target_file.replace(".nc", ".zarr")
-            print(f"Converting {target_file} to {zarrfile}.")
-            dat = xr.open_dataset(file_name)
-            dat.to_zarr(os.path.join(data_dir, zarrfile), mode="w")

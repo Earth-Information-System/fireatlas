@@ -1148,41 +1148,6 @@ def get_LCT_Global(locs, landcover):
 #     return vLCT
 
 
-def get_FM1000(t, lon, lat):
-    """Get fm1000 for a point at t
-
-    Parameters
-    ----------
-    t : datetime date
-        date
-    lon : float
-        longitude value
-    lat : float
-        latitude value
-    Returns
-    -------
-    FM1000_loc : list of floats
-        fm1000 value for all input active fires
-    """
-    warnings.simplefilter("ignore")
-
-    # read annual fm1000 data
-    dirGridMET = os.path.join(settings.dirextdata, "GridMET") + "/"
-    fnm = dirGridMET + "fm1000_" + t.strftime("%Y") + ".zarr"
-    ds = xr.open_zarr(fnm)
-    FM1000_all = ds["dead_fuel_moisture_1000hr"]
-
-    # extract daily data at t
-    try:
-        FM1000_day = FM1000_all.sel(day=t.strftime("%Y-%m-%d"))
-    except:  # if data are not available, use the last available date
-        FM1000_day = FM1000_all.isel(day=-1)
-
-    # extract data near the given location
-    FM1000_loc = FM1000_day.sel(lon=lon, lat=lat, method="nearest").item()
-
-    return FM1000_loc
-
 
 # ------------------------------------------------------------------------------
 # %% read and load object, gdf and summary related files
