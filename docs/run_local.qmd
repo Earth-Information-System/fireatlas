@@ -1,5 +1,5 @@
 ---
-title: "How to run FEDS locally" 
+title: "How To Run FEDS Locally" 
 author: 
   - Zeb Becker 
 date: last-modified
@@ -8,7 +8,7 @@ date: last-modified
 # Running FEDS locally
 This doc provides quick instructions for setting up the required file structure and computational environment to run FEDS on your local machine, without any need for MAAP S3 credentials at runtime. 
 
-Start by cloning the fireatlas git repo and setting up the required conda environment by following the directions in `fireatlas/docs/contributing.qmd`. If you are trying to test changes you've made on a specific branch, make sure that branch is checked out. 
+Start by cloning the fireatlas git repo and setting up the required conda environment by following the directions on the [Contributing](contributing.qmd) page. If you are trying to test changes you've made on a specific branch, make sure that branch is checked out. 
 
 Unless otherwise specified, all commands are intended to be run from the root fireatlas directory that you just cloned and all filepaths are relative to it. Note the `/data/` folder in this directory- this is both where we will need to download some input datasets to, and where your outputs will end up. 
 
