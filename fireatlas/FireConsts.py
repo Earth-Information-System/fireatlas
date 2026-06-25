@@ -14,7 +14,7 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     YamlConfigSettingsSource,
 )
-from pydantic import Field, validator, field_validator
+from pydantic import Field, field_validator
 
 
 from fireatlas.FireTypes import Location
@@ -282,13 +282,15 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------------------------------
 
-    @validator("LOCAL_PATH")
+    @field_validator("LOCAL_PATH")
+    @classmethod
     def local_path_must_not_end_with_slash(cls, v: str) -> str:
         if v.endswith("/"):
             v = v[:-1]
         return v
 
-    @validator("S3_PATH")
+    @field_validator("S3_PATH")
+    @classmethod
     def s3_path_must_start_with_s3(cls, v: str) -> str:
         if not v.startswith("s3://"):
             raise ValueError("S3_PATH must start with s3://")
