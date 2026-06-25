@@ -34,7 +34,7 @@ jobs:
         echo "User UID: $UID"
 
     - name: kick off the production DPS job
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with:
         algo_name: eis-feds-dask-coordinator-v3
         github_ref: 1.5.1
@@ -45,7 +45,7 @@ jobs:
         json_params: '{"regnm": "CONUS", "bbox": "[-126.401171875,24.071240929282325,-61.36210937500001,49.40003415463647]", "tst": "[2026,1,1,\"AM\"]", "ted": "[]", "operation": "--coordinate-all"}'
 
     # - name: kick off the staging DPS job
-    #   uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+    #   uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
     #   with:
     #     algo_name: staging-eis-feds-dask-coordinator-v3
     #     github_ref: staging

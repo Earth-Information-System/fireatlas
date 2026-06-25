@@ -4,12 +4,12 @@ author: Zeb Becker
 ---
 
 ### FEDS Implementation 
-A technical overview of the core FEDS algorithm can be found in [Chen et al., 2022.](https://doi.org/10.1038/s41597-022-01343-0) The FEDS logic is implemented in the [fireatlas module](https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/fireatlas). In particular, `FireMain.py` would be a good place to start building understanding. 
+A technical overview of the core FEDS algorithm can be found in [Chen et al., 2022.](https://doi.org/10.1038/s41597-022-01343-0) The FEDS logic is implemented in the [fireatlas module](https://github.com/Earth-Information-System/fireatlas/tree/main/fireatlas). In particular, `FireMain.py` would be a good place to start building understanding. 
 
 ### Running FEDS on the MAAP ADE 
 The codebase is currently set up to read from and write to shared AWS S3 buckets accessed through NASA's MAAP platform. The easiest way to run FEDS interactively is via the MAAP ADE. (For large runs, it is recommended to use the batch compute capabilities of the MAAP DPS as documented [here](custom_regions.qmd).) There are two ways to do this. 
 
-First, you can run through [notebooks](https://github.com/Earth-Information-System/fireatlas/tree/conus-dps/notebooks) 01-04 on the ADE to walk through each step of the process. Set up your environment according to the instructions in [Contributing](contributing.qmd), then simply start working through the notebooks. 
+First, you can run through [notebooks](https://github.com/Earth-Information-System/fireatlas/tree/main/notebooks) 01-04 on the ADE to walk through each step of the process. Set up your environment according to the instructions in [Contributing](contributing.qmd), then simply start working through the notebooks. 
 
 Second, to coordinate every step from the command line with one command, you can use `FireRunDaskCoordinator.py`. This uses Dask to parallelize as many steps of the process as possible (e.g. preproccessing input files, generating output files). This script fetches any missing input data you might need for your region and date range, automatically preprocesses it, copies the preprocessed data to S3, runs FEDS, saves the files locally in a `data/` folder inside the root `fireatlas` directory, and copies outputs to S3 (in this case, `s3://maap-ops-workspace/shared/gsfc_landslides/FEDSoutputs-v3/{region name}`). 
 

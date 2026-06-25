@@ -32,7 +32,7 @@ We use GitHub Actions to drive the process of scheduling and submitting all comp
 
 ### run-dps-job-v3
 
-In a container based on the vanilla MAAP image (so that the `maap` Python package is available), run [`submit-dps-jobs.py`](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/maap_runtime/submit-dps-job.py). This calls the MAAP API and submits a job with the passed parameters.
+In a container based on the vanilla MAAP image (so that the `maap` Python package is available), run [`submit-dps-jobs.py`](https://github.com/Earth-Information-System/fireatlas/blob/main/maap_runtime/submit-dps-job.py). This calls the MAAP API and submits a job with the passed parameters.
 
 ::: callout-note
 Note that when we submit a job to DPS, we include an algorithm version tag (`github_ref`) in addition to the `algo_name` parameter. This tells DPS which specific prebuilt image to use for that job. The version of the fireatlas code that is used in a particular image will always be the version it was originally built with, even if more commits have been made to the repo in the meantime.
@@ -68,7 +68,7 @@ See [Releasing](releasing.qmd) for more information.
 
 ### schedule-alert-failed-dps-jobs
 
-Runs the [`alert-on-failed-dps-jobs`](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/.github/workflows/schedule-alert-failed-dps-jobs.yaml) action every hour. If a failure is detected, sends a notification to the `#fireatlas-alerts` channel in our Slack workspace. (This is neccessary because only the GitHub account that initiated the workflow will recieve an email notification if it fails.)
+Runs the [`alert-on-failed-dps-jobs`](https://github.com/Earth-Information-System/fireatlas/blob/main/.github/workflows/schedule-alert-failed-dps-jobs.yaml) action every hour. If a failure is detected, sends a notification to the `#fireatlas-alerts` channel in our Slack workspace. (This is neccessary because only the GitHub account that initiated the workflow will recieve an email notification if it fails.)
 
 ### manual-v3
 
@@ -76,7 +76,7 @@ Used to kick off a one-time run on the production system. Useful for archival da
 
 ### pytest
 
-Uses `pytest` to automatically run test suite on any PR or pull to the main `conus-dps` branch. These include several integration tests that only run with the `--runslow` flag. These tests are slower and can take \~15 minutes to run.
+Uses `pytest` to automatically run test suite on any PR or pull to the main `main` branch. These include several integration tests that only run with the `--runslow` flag. These tests are slower and can take \~15 minutes to run.
 
 ::: callout-note
 Note that one static landcover file for testing currently lives on the EIS-SMCE S3 public bucket `s3://eis-fire-public`, as the GitHub Actions runner does not have permission to read landcover data from our private MAAP S3 bucket.

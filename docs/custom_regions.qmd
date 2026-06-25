@@ -105,7 +105,7 @@ Once you have tested your job manually, you can schedule it to run at constant i
    name: <your region name> nrt v3
    ...
        - name: kick off the DPS job
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with:
         algo_name: eis-feds-dask-coordinator-v3
         github_ref: 1.2.3

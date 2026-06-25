@@ -55,7 +55,7 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ git push 
     ```
 
-6.  When you are ready, [create a pull request](https://docs.github.com/en/get-started/using-github/github-flow#create-a-pull-request) to merge your branch into the main branch, `conus-dps`. Most substantive changes should be reviewed by another team member, and all changes must wait to be merged until the automated tests have passed.
+6.  When you are ready, [create a pull request](https://docs.github.com/en/get-started/using-github/github-flow#create-a-pull-request) to merge your branch into the main branch, `main`. Most substantive changes should be reviewed by another team member, and all changes must wait to be merged until the automated tests have passed.
 
 ## Developing with Jupyter notebooks 
 
