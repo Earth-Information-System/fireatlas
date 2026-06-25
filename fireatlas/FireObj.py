@@ -8,6 +8,7 @@ FOUR LAYERS OF OBJECTS
     d. FirePixel: the class of an active fire pixel
 """
 
+import pandas as pd 
 import geopandas as gpd
 from datetime import date, timedelta
 from shapely.geometry import MultiLineString, MultiPoint
@@ -134,21 +135,45 @@ class Allfires:
 
     @timed
     def update_gdf(self):
+        """
+        The idea here is that we need to update self.gdf with the latest
+        attributes for each burning fire, as those may have changed 
+        as we progressed through the last timestep. 
+
+        But, instead of looping through those and writing each cell one at a 
+        time, like the original code did, here we are going to make a new dataframe 
+        with what each active row should be updated to, then drop the old versions 
+        of those rows and append the new versions so that we only mutate the dataframe once. 
+        """
         dd = singlefire_getdd("all")
         dt = t2dt(self.t)
 
+        new_rows = [] # collect row dicts for a batch update 
+
+        # all active fires need to be updated 
         for fid, f in self.burningfires.items():
             if (fid, dt) in self.gdf.index:
                 raise ValueError(f"Error writing gdf: {fid} already at {self.t}")
 
-            for k, tp in dd.items():
-                if tp == "datetime64[ns]":
-                    self.gdf.loc[(fid, dt), k] = t2dt(getattr(f, k))
-                else:
-                    self.gdf.loc[(fid, dt), k] = getattr(f, k)
+            row = {"fireID": fid, "t": dt} # get index levels  
+            for k, tp in dd.items(): 
+                val = getattr(f, k)
+                row[k] = t2dt(val) if tp == "datetime64[ns]" else val
+            new_rows.append(row)
+        if len(new_rows) > 0: 
+            # create a new gdf with updated rows 
+            gdf_updates = gpd.GeoDataFrame(
+                new_rows,
+                geometry="hull", 
+                crs=self.gdf.crs
+            ).set_index(["fireID", "t"])
 
-        for k, tp in dd.items():
-            self.gdf[k] = self.gdf[k].astype(tp)
+            # ensure/cast types once 
+            for k, tp in dd.items(): 
+                gdf_updates[k] = gdf_updates[k].astype(tp)
+
+            # append updated rows to existing dataframe in one batch- much faster than looping through 
+            self.gdf = pd.concat([self.gdf, gdf_updates], axis=0)
 
         for h0, h1 in self.heritages:
             if h0 in self.gdf.index:
