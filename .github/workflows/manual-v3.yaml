@@ -69,7 +69,7 @@ jobs:
         echo "json_params=$MERGED_JSON_STRING" >> $GITHUB_OUTPUT
 
     - name: kick off the DPS job
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with:
         algo_name: ${{ inputs.algo_name }}
         github_ref: ${{ inputs.github_ref }}

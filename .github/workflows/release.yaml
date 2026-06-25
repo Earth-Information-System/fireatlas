@@ -45,7 +45,7 @@ jobs:
 #          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
       - name: kick off the DPS job
-        uses: Earth-Information-System/fireatlas/.github/actions/release@conus-dps
+        uses: Earth-Information-System/fireatlas/.github/actions/release@main
         with:
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
 

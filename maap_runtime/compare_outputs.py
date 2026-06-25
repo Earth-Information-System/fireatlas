@@ -157,7 +157,7 @@ def compare_mode(
     dev_match = dev_df[dev_df["wkt"].isin(three_way)]
 
     matches_map = build_map([
-        (prod_match, "Prod (conus-dps)", "blue"),
+        (prod_match, "Prod (main)", "blue"),
         (staging_match, "Staging", "red"),
         (dev_match, "Dev", "purple"),
     ])
@@ -170,7 +170,7 @@ def compare_mode(
         return
 
     nm_map = build_map([
-        (prod_nm, "Prod (conus-dps)", "blue"),
+        (prod_nm, "Prod (main)", "blue"),
         (staging_nm, "Staging", "red"),
         (dev_nm, "Dev", "purple"),
     ])

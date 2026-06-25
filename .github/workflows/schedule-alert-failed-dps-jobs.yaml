@@ -32,7 +32,7 @@ jobs:
           echo "User UID: $UID"
 
       - name: filter DPS failed jobs and alert
-        uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@conus-dps
+        uses: Earth-Information-System/fireatlas/.github/actions/alert-on-failed-dps-jobs@main
         with:
           maap_pgt_secret: ${{ secrets.MAAP_PGT }}
           email_pw_secret: ${{ secrets.EMAIL_PW }}

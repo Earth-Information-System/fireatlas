@@ -1,6 +1,6 @@
 #!/bin/bash
 # End-to-end cross-branch comparison test.
-# Runs the FEDS pipeline on conus-dps, staging, and a dev branch (default: current branch)
+# Runs the FEDS pipeline on main, staging, and a dev branch (default: current branch)
 # under both NRT and archive modes, then compares perimeter outputs.
 #
 # Usage:
@@ -24,7 +24,7 @@ DEV_BRANCH="${1:-$ORIGINAL_BRANCH}"
 
 echo "=== Cross-Branch E2E Comparison Test ==="
 echo "Timestamp:   $TIMESTAMP"
-echo "Prod branch: conus-dps"
+echo "Prod branch: main"
 echo "Staging:     staging"
 echo "Dev branch:  $DEV_BRANCH"
 echo ""
@@ -83,16 +83,16 @@ echo "Archive window: $ARCH_TST → $ARCH_TED  (date string: $ARCH_DATE_STRING)"
 echo ""
 
 # ── Read prod FIRE_SOURCE default ─────────────────────────────────────────────
-# Extract the default FIRE_SOURCE value from conus-dps's FireConsts.py so the
+# Extract the default FIRE_SOURCE value from main's FireConsts.py so the
 # NRT runs automatically track whatever production defaults to.
-NRT_FIRE_SOURCE=$(git -C "$REPO_ROOT" show conus-dps:fireatlas/FireConsts.py \
+NRT_FIRE_SOURCE=$(git -C "$REPO_ROOT" show main:fireatlas/FireConsts.py \
     | python3 -c $'
 import sys, re
 content = sys.stdin.read()
 m = re.search(r\'FIRE_SOURCE\\s*:.*?=\\s*Field\\(\\s*["\\\']+(SNPP|NOAA20|NOAA21|VIIRS|BAMOD)\', content)
 print(m.group(1) if m else "NOAA20")
 ')
-echo "NRT FIRE_SOURCE (from conus-dps): $NRT_FIRE_SOURCE"
+echo "NRT FIRE_SOURCE (from main): $NRT_FIRE_SOURCE"
 echo ""
 
 # ── NRT pre-flight: ensure input data exists, download if missing ──────────────
@@ -169,7 +169,7 @@ NRT_PROD_REGNM="CONUS_TEST_${TIMESTAMP}_PROD_NRT"
 NRT_STAGING_REGNM="CONUS_TEST_${TIMESTAMP}_STAGING_NRT"
 NRT_DEV_REGNM="CONUS_TEST_${TIMESTAMP}_DEV_NRT"
 
-run_branch "conus-dps" "PROD"    "$NRT_PROD_REGNM"    "$NRT_TST" "$NRT_TED" "true" "$NRT_FIRE_SOURCE"
+run_branch "main" "PROD"    "$NRT_PROD_REGNM"    "$NRT_TST" "$NRT_TED" "true" "$NRT_FIRE_SOURCE"
 run_branch "staging"   "STAGING" "$NRT_STAGING_REGNM" "$NRT_TST" "$NRT_TED" "true" "$NRT_FIRE_SOURCE"
 run_branch "$DEV_BRANCH" "DEV"   "$NRT_DEV_REGNM"     "$NRT_TST" "$NRT_TED" "true" "$NRT_FIRE_SOURCE"
 
@@ -180,7 +180,7 @@ ARCH_PROD_REGNM="CONUS_TEST_${TIMESTAMP}_PROD_ARCHIVE"
 ARCH_STAGING_REGNM="CONUS_TEST_${TIMESTAMP}_STAGING_ARCHIVE"
 ARCH_DEV_REGNM="CONUS_TEST_${TIMESTAMP}_DEV_ARCHIVE"
 
-run_branch "conus-dps" "PROD"    "$ARCH_PROD_REGNM"    "$ARCH_TST" "$ARCH_TED" "false" "SNPP"
+run_branch "main" "PROD"    "$ARCH_PROD_REGNM"    "$ARCH_TST" "$ARCH_TED" "false" "SNPP"
 run_branch "staging"   "STAGING" "$ARCH_STAGING_REGNM" "$ARCH_TST" "$ARCH_TED" "false" "SNPP"
 run_branch "$DEV_BRANCH" "DEV"   "$ARCH_DEV_REGNM"     "$ARCH_TST" "$ARCH_TED" "false" "SNPP"
 

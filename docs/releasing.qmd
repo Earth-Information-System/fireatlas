@@ -8,7 +8,7 @@ date: last-modified
 # Overview
 To improve reproducibility and reliability, we use tagged releases in our GitHub repo to determine which version of the FEDS codebase our [NRT data processing system](nrt.qmd) uses. The NRT system does ***not*** automatically incorporate changes pushed to the main branch of the GitHub repository. For your changes to be reflected in the production system, you need to release a new tagged version as described on this page, then edit the variable `feds_algo_version` on the Prefect orchestrator that submits NRT jobs to DPS for data processing. 
 
-What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in [release.yaml](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/.github/workflows/release.yaml), which submits a job to DPS asking it to build a new image ("register an algorithm," in MAAP parlance) within the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, `eis-feds-dask-coordinator-v3:1.5.1`. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job. 
+What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in [release.yaml](https://github.com/Earth-Information-System/fireatlas/blob/main/.github/workflows/release.yaml), which submits a job to DPS asking it to build a new image ("register an algorithm," in MAAP parlance) within the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, `eis-feds-dask-coordinator-v3:1.5.1`. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job. 
 
 Importantly, just making the new version of the algorithm ***available*** on DPS is not enough- we also need to make it so that our orchestrator requests that DPS use that version for new NRT jobs going forward. We do this by changing the Prefect variable `feds_algo_version` in our production job orchestrator (refer to the internal [orchestration runbook](https://docs.google.com/document/d/1pdzz0KCEEME6ZIg-LTfIUQlqDexS5FWvrbN5j0GITkU/edit?usp=sharing) for more info). Conversely, this makes it easy to roll back to a previous version- if your release 1.5.1 has a bug, just change `feds_algo_version` back to 1.5.0 to go back to the previous version in production.  
 
@@ -115,7 +115,7 @@ Use the [MAAP console](https://console.maap-project.org/) to inspect the logs fr
 
 # Backups 
 
-The general recovery strategy is that we can re-download the input data from the UMD FTP server (for monthly VIIRS active fire detections standard product) or FIRMS (as shown in [`fireatlas/notebooks/20_FIRMS_input_backfill`](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/notebooks/20_FIRMS_input_backfill.ipynb)) and re-generate known-good FEDS outputs from this in just a few hours. 
+The general recovery strategy is that we can re-download the input data from the UMD FTP server (for monthly VIIRS active fire detections standard product) or FIRMS (as shown in [`fireatlas/notebooks/20_FIRMS_input_backfill`](https://github.com/Earth-Information-System/fireatlas/blob/main/notebooks/20_FIRMS_input_backfill.ipynb)) and re-generate known-good FEDS outputs from this in just a few hours. 
 
 In some cases, you may wish to make backup copies of key directories before releasing. For example: 
 
@@ -164,7 +164,7 @@ environment: ubuntu
 
 ```yaml
 - name: kick off the DPS job
-  uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+  uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
   with:
     algo_name: eis-feds-dask-coordinator-v3
     github_ref: <NEW VERSION NUMBER HERE>
@@ -247,4 +247,4 @@ Refer to the internal [orchestration runbook](https://docs.google.com/document/d
 
 As mentioned above, the fastest way to roll back to a previous algorithm version in production is to change `feds_algo_version` back to the latest stable version. All new NRT jobs submitted after this point will use that version. 
 
-If input, intermediate or output data become corrupted, you can delete it and either restore from backups made earlier, or re-download the input data from FIRMS (see [`fireatlas/notebooks/20_FIRMS_input_backfill`](https://github.com/Earth-Information-System/fireatlas/blob/conus-dps/notebooks/20_FIRMS_input_backfill.ipynb)) and re-generate the outputs for the current year to date by simply triggering a new NRT run. If doing this, be sure to delete all relevant preprocessed files as well, as these can cache stale data. 
+If input, intermediate or output data become corrupted, you can delete it and either restore from backups made earlier, or re-download the input data from FIRMS (see [`fireatlas/notebooks/20_FIRMS_input_backfill`](https://github.com/Earth-Information-System/fireatlas/blob/main/notebooks/20_FIRMS_input_backfill.ipynb)) and re-generate the outputs for the current year to date by simply triggering a new NRT run. If doing this, be sure to delete all relevant preprocessed files as well, as these can cache stale data. 

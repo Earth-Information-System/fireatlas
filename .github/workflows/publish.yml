@@ -1,7 +1,7 @@
 on:
   workflow_dispatch:
   push: 
-    branches: [ "conus-dps" ]
+    branches: [ "main" ]
 
 name: Quarto Render and Publish
 

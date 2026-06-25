@@ -78,7 +78,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '4 2,14 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Australia' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -92,7 +92,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '44 5,17 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Caribbean' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps 
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main 
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -106,7 +106,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '27 4,16 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Central_Africa' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -120,7 +120,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '28 5,17 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Central_America' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -134,7 +134,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '21 7,19 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Central_Asia' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -148,7 +148,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '50 6,18 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Europe_W_Siberia' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -162,7 +162,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '23 5,17 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_India' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -176,7 +176,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '27 6,18 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Japan_Far_East' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -190,7 +190,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '47 1,13 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_New_Zealand' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -204,7 +204,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '15 6,18 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_North_America' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -218,7 +218,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '14 2,14 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Africa' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -232,7 +232,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '57 4,16 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_SE_Asia' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -246,7 +246,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '29 3,15 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Seven_Seas' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -260,7 +260,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '17 7,19 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Siberia' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -274,7 +274,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '44 2,14 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_South_America' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -288,7 +288,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '16 1,13 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_South_SAM' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
@@ -302,7 +302,7 @@ jobs:
       if: |
         (github.event_name == 'schedule' && github.event.schedule == '17 5,17 * * *') ||
         (github.event_name == 'workflow_dispatch' && (inputs.region == 'NRT_Western_Africa' || inputs.region == 'all'))
-      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@conus-dps
+      uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
       with: 
         algo_name: eis-feds-archive 
         github_ref: checkpoints
