@@ -6,9 +6,10 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="GC">
+<meta name="author" content="Zeb Becker">
+<meta name="dcterms.date" content="2026-06-25">
 
-<title>DPS Debugging Playbook – Wildfire Tracking Lab</title>
+<title>How To Run FEDS Locally – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,40 +21,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -127,7 +94,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/playbook_dps_debug.html">DPS Debugging Playbook</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/run_local.html">How To Run FEDS Locally</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -208,7 +175,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/run_local.html" class="sidebar-item-text sidebar-link">
+  <a href="../docs/run_local.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">How To Run FEDS Locally</span></a>
   </div>
 </li>
@@ -238,7 +205,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/playbook_dps_debug.html" class="sidebar-item-text sidebar-link active">
+  <a href="../docs/playbook_dps_debug.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DPS Debugging Playbook</span></a>
   </div>
 </li>
@@ -260,20 +227,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#dps-job-uiux" id="toc-dps-job-uiux" class="nav-link active" data-scroll-target="#dps-job-uiux">DPS Job UI/UX:</a></li>
-  <li><a href="#i-think-a-job-is-failing" id="toc-i-think-a-job-is-failing" class="nav-link" data-scroll-target="#i-think-a-job-is-failing">I Think a Job is Failing:</a></li>
-  <li><a href="#gh-action-that-kicked-off-a-job" id="toc-gh-action-that-kicked-off-a-job" class="nav-link" data-scroll-target="#gh-action-that-kicked-off-a-job">GH Action That Kicked Off A Job</a></li>
-  <li><a href="#gh-action-alert-failed-dps-jobs" id="toc-gh-action-alert-failed-dps-jobs" class="nav-link" data-scroll-target="#gh-action-alert-failed-dps-jobs">GH Action Alert Failed DPS Jobs</a></li>
-  <li><a href="#go-to-dps-uiux-and-filter-for-job" id="toc-go-to-dps-uiux-and-filter-for-job" class="nav-link" data-scroll-target="#go-to-dps-uiux-and-filter-for-job">Go to DPS UI/UX And Filter For Job</a></li>
+  <li><a href="#running-feds-locally" id="toc-running-feds-locally" class="nav-link active" data-scroll-target="#running-feds-locally">Running FEDS locally</a>
+  <ul class="collapse">
+  <li><a href="#creek-fire-using-local-test-data" id="toc-creek-fire-using-local-test-data" class="nav-link" data-scroll-target="#creek-fire-using-local-test-data">1. Creek fire using local test data</a></li>
+  <li><a href="#conus-for-2025" id="toc-conus-for-2025" class="nav-link" data-scroll-target="#conus-for-2025">2. CONUS for 2025</a>
+  <ul class="collapse">
+  <li><a href="#required-downloads" id="toc-required-downloads" class="nav-link" data-scroll-target="#required-downloads">Required Downloads:</a></li>
+  </ul></li>
+  <li><a href="#conus-nrt" id="toc-conus-nrt" class="nav-link" data-scroll-target="#conus-nrt">3. CONUS NRT</a></li>
+  </ul></li>
   </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/playbook_dps_debug.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/run_local.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/playbook_dps_debug.html">DPS Debugging Playbook</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/run_local.html">How To Run FEDS Locally</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">DPS Debugging Playbook</h1>
+<h1 class="title">How To Run FEDS Locally</h1>
 </div>
 
 
@@ -283,10 +254,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Author</div>
     <div class="quarto-title-meta-contents">
-             <p>GC </p>
+             <p>Zeb Becker </p>
           </div>
   </div>
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 25, 2026</p>
+    </div>
+  </div>
   
     
   </div>
@@ -296,69 +273,71 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Here are a series of steps that can help find out where something is failing regardless of whether the job is <code>"completed"</code> or <code>"failed"</code> state from the DPS perspective.</p>
-<section id="dps-job-uiux" class="level3">
-<h3 class="anchored" data-anchor-id="dps-job-uiux">DPS Job UI/UX:</h3>
-<p>All resolution routes will eventually lead us to use the DPS Job UI/UX so let’s make sure we have this workspace set up in the ADE:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> </span><span class="fl">1.0.0</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">name</span><span class="kw">:</span><span class="at"> dps-job-management</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">editorFree</span><span class="kw">:</span><span class="at"> </span><span class="st">'true'</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">components</span><span class="kw">:</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">endpoints</span><span class="kw">:</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">type</span><span class="kw">:</span><span class="at"> ide</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">discoverable</span><span class="kw">:</span><span class="at"> </span><span class="st">'false'</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">path</span><span class="kw">:</span><span class="at"> /</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">protocol</span><span class="kw">:</span><span class="at"> http</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">public</span><span class="kw">:</span><span class="at"> </span><span class="st">'true'</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">name</span><span class="kw">:</span><span class="at"> jupyter</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">3100</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">    referenceContent</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      kind: List</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      items:</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        - apiVersion: v1</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>          kind: Pod</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>          metadata:</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>            name: ws</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>            labels:</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>              ssh: enabled</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>          spec:</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>            containers:</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>              - name: jupyter</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>                image: 'mas.dit.maap-project.org/root/maap-workspaces/hysds-proxy:ops'</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>                imagePullPolicy: Always</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>                resources:</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>                  limits:</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>                    memory: 8096Mi</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> kubernetes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<section id="running-feds-locally" class="level1">
+<h1>Running FEDS locally</h1>
+<p>This doc provides quick instructions for setting up the required file structure and computational environment to run FEDS on your local machine, without any need for MAAP S3 credentials at runtime.</p>
+<p>Start by cloning the fireatlas git repo and setting up the required conda environment by following the directions on the <a href="../docs/contributing.html">Contributing</a> page. If you are trying to test changes you’ve made on a specific branch, make sure that branch is checked out.</p>
+<p>Unless otherwise specified, all commands are intended to be run from the root fireatlas directory that you just cloned and all filepaths are relative to it. Note the <code>/data/</code> folder in this directory- this is both where we will need to download some input datasets to, and where your outputs will end up.</p>
+<section id="creek-fire-using-local-test-data" class="level2">
+<h2 class="anchored" data-anchor-id="creek-fire-using-local-test-data">1. Creek fire using local test data</h2>
+<p>First, create a file called <code>run_config.yaml</code>. FEDS looks for this file at the repo root. The quickest way to start is to copy the example config:</p>
+<pre><code>cp run_config.example.yaml run_config.yaml</code></pre>
+<p>The example file is already set up for this small example run of the Creek fire.</p>
+<pre><code># run_config.yaml  (in the repo root)
+settings:
+  READ_LOCATION: local
+  LOCAL_PATH: tests/data
+  FIRE_SOURCE: SNPP
+  FIRE_NRT: False
+  EPSG_CODE: 9311
+  FTYP_OPT: CA
+  CONT_OPT: CA
+  remove_static_sources: False</code></pre>
+<p>This will override the default settings in FireConsts.py for the specified values. In this example, we are going to read our input data from <code>fireatlas/tests/data</code>, which includes a small subset of input data for the Creek fire. This data is included in the tests/ folder because it is used in the automated test suite, so this is a nice way to test small changes without needing to download any additional data.</p>
+<p>Next, we are going to run FEDS from the command line. Make sure you have installed and activated the conda environment (again, see <a href="../docs/contributing.html">Contributing</a> for directions if you haven’t).</p>
+<pre><code>python fireatlas/FireRunDaskCoordinator.py --regnm=v3_test_data_for_Creek_SNPP \
+    --bbox="[-119.5,36.8,-118.9,37.7]" \
+    --tst="[2020,9,5,\"AM\"]" \
+    --ted="[2020,11,5,\"PM\"]" \
+    --no-veda-copy</code></pre>
 </section>
-<section id="i-think-a-job-is-failing" class="level3">
-<h3 class="anchored" data-anchor-id="i-think-a-job-is-failing">I Think a Job is Failing:</h3>
-<p>Step one, we need metadata about a job to find it in the DPS Job UI/UX above. Since GH Actions are the interface to kicking off all manual jobs or scheduled jobs then that’s where we’ll go to figure everything out.</p>
-<p>There are two paths to resolution here. Both are expanded on in the sections below:</p>
+<section id="conus-for-2025" class="level2">
+<h2 class="anchored" data-anchor-id="conus-for-2025">2. CONUS for 2025</h2>
+<p>If the Creek fire example worked, you may want to move on to other regions and time periods. However, we don’t have all possible input data checked into the repository. In order to access this data without being connected to MAAP S3 storage, we will have to download the required input data ourselves. For this example, we will run FEDS for CONUS for all of 2025, using NOAA20 monthly files. Following this model, you can use any date range, bbox, or satellite. Please reach out if you have issues accessing the required data.</p>
+<section id="required-downloads" class="level3">
+<h3 class="anchored" data-anchor-id="required-downloads">Required Downloads:</h3>
 <ol type="1">
-<li><p>find the GH Action that kicked off the job</p></li>
-<li><p>find any failing jobs that ended within the last hour using the GH Action <code>"schedule-alert-failed-dps-jobs"</code></p></li>
+<li>VIIRS active fire detections (standard product)- download from the UMD FTP server following the instructions in the notebook <code>fireatlas/notebooks/21_Download_VIIRS_SP_SFTP.ipynb</code></li>
+<li>Landcover from MAAP: Download landcover from <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif</code> to our local data folder <code>fireatlas/data/FEDSpreprocessed/nlcd_export_510m_simplified_latlon.tif</code>. You can use the ADE or MAAP Hub interfaces to do this manually.</li>
+<li>Static flaring sources: Download the static source filter from <code>s3://maap-ops-workspace/shared/gsfc_landslides/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv</code> to our local data folder at <code>fireatlas/data/FEDSinput/static_sources/VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv</code></li>
 </ol>
+<p>Once those are all downloaded, lets change a few of the settings in run_config.yaml. Paste this text into the existing file and don’t forget to hit save. You can also override any other settings from FireConsts.py that you would like. This yaml file will then serve as a neat encapsulation of the settings you use for a particular run.</p>
+<pre><code>settings:  
+  READ_LOCATION: local
+  # notice that we deleted the local path override from above! 
+  # it is now set to fireatlas/data by default, not fireatlas/tests/data
+  FIRE_SOURCE: NOAA20
+  FIRE_NRT: False # still using the standard product and monthly files
+  EPSG_CODE: 9311
+  FTYP_OPT: CA
+  CONT_OPT: CA</code></pre>
+<p>Finally, run this command to give it a try! Check <code>fireatlas/data/FEDSoutputs-v3</code> for results when you are finished.</p>
+<pre><code>python fireatlas/FireRunDaskCoordinator.py --regnm="example_CONUS2025" \
+    --bbox="[-126,24,-61,49]" \
+    --tst="[2025,1,1,\"AM\"]" \
+    --ted="[2025,12,31,\"PM\"]" \
+    --no-veda-copy</code></pre>
 </section>
-<section id="gh-action-that-kicked-off-a-job" class="level3">
-<h3 class="anchored" data-anchor-id="gh-action-that-kicked-off-a-job">GH Action That Kicked Off A Job</h3>
-<p>If used the <code>manual</code> GH Action to kick off a job or if the job was scheduled we can go find it in the <a href="https://github.com/Earth-Information-System/fireatlas/actions">GH Actions UI</a>. Note that you can filter for all job runs of the job you want to find by clicking the left-handed nav highlighted in red below: <img src="images/actionsoverview.png" class="img-fluid"></p>
-<p>Find the most recent scheduled job or the manual job you kicked off and then click through to see the job steps. The step that dumps out job metadata is called <code>"kick off DPS job"</code> as highlighted in red below. Also highlighted in red are the two most important pieces of metadata information to retrieve about the job: the algorithm name, algorithm version and the job id: <img src="images/metdata.png" class="img-fluid"></p>
 </section>
-<section id="gh-action-alert-failed-dps-jobs" class="level3">
-<h3 class="anchored" data-anchor-id="gh-action-alert-failed-dps-jobs">GH Action Alert Failed DPS Jobs</h3>
-<p>Click on the <code>"alert-failed-dps-jobs"</code> GH Action in the left-handed nav of actions to see most recent runs. This action runs every hour and sniffs for jobs that failed with an end time within the past hour. Actions that detect faild jobs should be red as opposed to green: <img src="images/alertoverview.png" class="img-fluid"></p>
-<p>Click on a red action and drill down to the step that dumps out job metadata is called <code>"filter DPS failed jobs and alert"</code> as highlighted in red below. Also highlighted in red are the two most important pieces of metadata information to retrieve about the job: the algorithm name, algorithm version and the job id: <img src="images/alertmetdata.png" class="img-fluid"></p>
-</section>
-<section id="go-to-dps-uiux-and-filter-for-job" class="level3">
-<h3 class="anchored" data-anchor-id="go-to-dps-uiux-and-filter-for-job">Go to DPS UI/UX And Filter For Job</h3>
-<p>The easiest way to find a job is using the algorithm name and version and then using the job id to verify its correct. Go to the DPS Job UI/UX and <img src="images/dpstagfilter.png" class="img-fluid"></p>
-<p>If a DPS job is in the <code>"failed"</code> state it should have a clear traceback listed in the job card. If it is in the <code>"completed"</code> state then you should be able to click through in the job card under <code>"View Job"</code> and look at the <code>_stderr.txt</code> and <code>running.log</code> in outputs for more information</p>
+<section id="conus-nrt" class="level2">
+<h2 class="anchored" data-anchor-id="conus-nrt">3. CONUS NRT</h2>
+<p>Ok, last example. Let’s try doing just a few days of NRT outputs for CONUS. If you want them to match the latest production FEDS NRT outputs, you’d have to start the annual run on January 1st. However, it would take a while to download all of that data one day at a time from the FIRMS API. If you need a longer range of NRT data, use their <a href="https://firms.modaps.eosdis.nasa.gov/download/">bulk download tool</a> and <code>fireatlas/notebooks/20_FIRMS_input_backfill</code>. For this example, we are going to just grab the past few days, so we will skip that part.</p>
+<p>Your turn to edit run_config.yaml- change FIRE_NRT to True, making sure to save when you are done. This will tell FEDS to use NRT data. With FIRE_NRT=True, FEDS will automatically try to download any missing input data, one day at a time, from the FIRMS API.</p>
+<p>Then, use the same command as above to run FireRunDaskCoordinator.py, but change the dates so that TST is a few days ago, and TED is today. The <code>fireatlas</code> package does not currently support time travel, so be sure not to set TED to “PM” if it is still currently “AM” in the region you are looking at.</p>
+<p>Once again, outputs for your run can be found at <code>fireatlas/data/FEDSoutputs-v3</code>. Good job!</p>
 
 
+</section>
 </section>
 
 </main> <!-- /main -->
@@ -790,7 +769,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/playbook_dps_debug.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/run_local.qmd" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>

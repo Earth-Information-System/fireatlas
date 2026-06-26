@@ -6,9 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="author" content="GC">
 
-<title>DPS Debugging Playbook – Wildfire Tracking Lab</title>
+<title>Bulk download VIIRS active fire detections monthly files – Wildfire Tracking Lab</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -113,7 +112,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="../docs/index.html">
+    <a class="navbar-brand" href="index.qmd">
     <span class="navbar-title">Wildfire Tracking Lab</span>
     </a>
   </div>
@@ -127,7 +126,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/playbook_dps_debug.html">DPS Debugging Playbook</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Bulk download VIIRS active fire detections monthly files</li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -141,7 +140,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <!-- sidebar -->
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
     <div class="pt-lg-2 mt-2 text-center sidebar-header">
-      <a href="../docs/index.html" class="sidebar-logo-link">
+      <a href="index.qmd" class="sidebar-logo-link">
       <img src="../docs/images/nasa.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
       </a>
       <div class="sidebar-tools-main">
@@ -238,7 +237,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../docs/playbook_dps_debug.html" class="sidebar-item-text sidebar-link active">
+  <a href="../docs/playbook_dps_debug.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">DPS Debugging Playbook</span></a>
   </div>
 </li>
@@ -255,37 +254,21 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active">
-    <h2 id="toc-title">On this page</h2>
-   
-  <ul>
-  <li><a href="#dps-job-uiux" id="toc-dps-job-uiux" class="nav-link active" data-scroll-target="#dps-job-uiux">DPS Job UI/UX:</a></li>
-  <li><a href="#i-think-a-job-is-failing" id="toc-i-think-a-job-is-failing" class="nav-link" data-scroll-target="#i-think-a-job-is-failing">I Think a Job is Failing:</a></li>
-  <li><a href="#gh-action-that-kicked-off-a-job" id="toc-gh-action-that-kicked-off-a-job" class="nav-link" data-scroll-target="#gh-action-that-kicked-off-a-job">GH Action That Kicked Off A Job</a></li>
-  <li><a href="#gh-action-alert-failed-dps-jobs" id="toc-gh-action-alert-failed-dps-jobs" class="nav-link" data-scroll-target="#gh-action-alert-failed-dps-jobs">GH Action Alert Failed DPS Jobs</a></li>
-  <li><a href="#go-to-dps-uiux-and-filter-for-job" id="toc-go-to-dps-uiux-and-filter-for-job" class="nav-link" data-scroll-target="#go-to-dps-uiux-and-filter-for-job">Go to DPS UI/UX And Filter For Job</a></li>
-  </ul>
-<div class="toc-actions"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/playbook_dps_debug.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></nav>
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../docs/fireatlas_core.html">Developer Documentation</a></li><li class="breadcrumb-item"><a href="../docs/playbook_dps_debug.html">DPS Debugging Playbook</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">DPS Debugging Playbook</h1>
+<h1 class="title">Bulk download VIIRS active fire detections monthly files</h1>
 </div>
 
 
 
 <div class="quarto-title-meta">
 
-    <div>
-    <div class="quarto-title-meta-heading">Author</div>
-    <div class="quarto-title-meta-contents">
-             <p>GC </p>
-          </div>
-  </div>
     
   
     
@@ -296,70 +279,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>Here are a series of steps that can help find out where something is failing regardless of whether the job is <code>"completed"</code> or <code>"failed"</code> state from the DPS perspective.</p>
-<section id="dps-job-uiux" class="level3">
-<h3 class="anchored" data-anchor-id="dps-job-uiux">DPS Job UI/UX:</h3>
-<p>All resolution routes will eventually lead us to use the DPS Job UI/UX so let’s make sure we have this workspace set up in the ADE:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">apiVersion</span><span class="kw">:</span><span class="at"> </span><span class="fl">1.0.0</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">metadata</span><span class="kw">:</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">name</span><span class="kw">:</span><span class="at"> dps-job-management</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">editorFree</span><span class="kw">:</span><span class="at"> </span><span class="st">'true'</span></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">components</span><span class="kw">:</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">endpoints</span><span class="kw">:</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">type</span><span class="kw">:</span><span class="at"> ide</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">discoverable</span><span class="kw">:</span><span class="at"> </span><span class="st">'false'</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">path</span><span class="kw">:</span><span class="at"> /</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">protocol</span><span class="kw">:</span><span class="at"> http</span></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">public</span><span class="kw">:</span><span class="at"> </span><span class="st">'true'</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">name</span><span class="kw">:</span><span class="at"> jupyter</span></span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">port</span><span class="kw">:</span><span class="at"> </span><span class="dv">3100</span></span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">    referenceContent</span><span class="kw">: </span><span class="ch">|</span></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      kind: List</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      items:</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>        - apiVersion: v1</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>          kind: Pod</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>          metadata:</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>            name: ws</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>            labels:</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>              ssh: enabled</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>          spec:</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>            containers:</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>              - name: jupyter</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>                image: 'mas.dit.maap-project.org/root/maap-workspaces/hysds-proxy:ops'</span>
-<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>                imagePullPolicy: Always</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>                resources:</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>                  limits:</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>                    memory: 8096Mi</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">type</span><span class="kw">:</span><span class="at"> kubernetes</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</section>
-<section id="i-think-a-job-is-failing" class="level3">
-<h3 class="anchored" data-anchor-id="i-think-a-job-is-failing">I Think a Job is Failing:</h3>
-<p>Step one, we need metadata about a job to find it in the DPS Job UI/UX above. Since GH Actions are the interface to kicking off all manual jobs or scheduled jobs then that’s where we’ll go to figure everything out.</p>
-<p>There are two paths to resolution here. Both are expanded on in the sections below:</p>
-<ol type="1">
-<li><p>find the GH Action that kicked off the job</p></li>
-<li><p>find any failing jobs that ended within the last hour using the GH Action <code>"schedule-alert-failed-dps-jobs"</code></p></li>
-</ol>
-</section>
-<section id="gh-action-that-kicked-off-a-job" class="level3">
-<h3 class="anchored" data-anchor-id="gh-action-that-kicked-off-a-job">GH Action That Kicked Off A Job</h3>
-<p>If used the <code>manual</code> GH Action to kick off a job or if the job was scheduled we can go find it in the <a href="https://github.com/Earth-Information-System/fireatlas/actions">GH Actions UI</a>. Note that you can filter for all job runs of the job you want to find by clicking the left-handed nav highlighted in red below: <img src="images/actionsoverview.png" class="img-fluid"></p>
-<p>Find the most recent scheduled job or the manual job you kicked off and then click through to see the job steps. The step that dumps out job metadata is called <code>"kick off DPS job"</code> as highlighted in red below. Also highlighted in red are the two most important pieces of metadata information to retrieve about the job: the algorithm name, algorithm version and the job id: <img src="images/metdata.png" class="img-fluid"></p>
-</section>
-<section id="gh-action-alert-failed-dps-jobs" class="level3">
-<h3 class="anchored" data-anchor-id="gh-action-alert-failed-dps-jobs">GH Action Alert Failed DPS Jobs</h3>
-<p>Click on the <code>"alert-failed-dps-jobs"</code> GH Action in the left-handed nav of actions to see most recent runs. This action runs every hour and sniffs for jobs that failed with an end time within the past hour. Actions that detect faild jobs should be red as opposed to green: <img src="images/alertoverview.png" class="img-fluid"></p>
-<p>Click on a red action and drill down to the step that dumps out job metadata is called <code>"filter DPS failed jobs and alert"</code> as highlighted in red below. Also highlighted in red are the two most important pieces of metadata information to retrieve about the job: the algorithm name, algorithm version and the job id: <img src="images/alertmetdata.png" class="img-fluid"></p>
-</section>
-<section id="go-to-dps-uiux-and-filter-for-job" class="level3">
-<h3 class="anchored" data-anchor-id="go-to-dps-uiux-and-filter-for-job">Go to DPS UI/UX And Filter For Job</h3>
-<p>The easiest way to find a job is using the algorithm name and version and then using the job id to verify its correct. Go to the DPS Job UI/UX and <img src="images/dpstagfilter.png" class="img-fluid"></p>
-<p>If a DPS job is in the <code>"failed"</code> state it should have a clear traceback listed in the job card. If it is in the <code>"completed"</code> state then you should be able to click through in the job card under <code>"View Job"</code> and look at the <code>_stderr.txt</code> and <code>running.log</code> in outputs for more information</p>
+<div id="075008b5" class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># required dependency</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">%</span>pip install paramiko <span class="op">-</span>q</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="f02da3ad" class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> fsspec </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> os </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> datetime</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> gzip </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> shutil</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="eca292df" class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># connect to UMD SFTP server </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>fs <span class="op">=</span> fsspec.filesystem(<span class="st">'sftp'</span>, host<span class="op">=</span><span class="st">"fuoco.geog.umd.edu"</span>, username<span class="op">=</span><span class="st">"fire"</span>, password<span class="op">=</span><span class="st">"burnt"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>noaa20 <span class="op">=</span> fs.ls(<span class="st">'/data/VIIRS/C2/VJ114IMGML/'</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># use /data/VIIRS/C2/VNP14IMGML/ for SNPP</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span><span class="bu">len</span>(noaa20)<span class="sc">}</span><span class="ss"> monthly files available.</span><span class="ch">\n</span><span class="sc">{</span>noaa20[<span class="dv">0</span>]<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span>noaa20[<span class="op">-</span><span class="dv">1</span>]<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>outdir_string <span class="op">=</span> <span class="st">"../data/FEDSinput/VIIRS/VJ114IMGML"</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>outdir <span class="op">=</span> os.makedirs(outdir_string, exist_ok<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>target_year <span class="op">=</span> <span class="dv">2025</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>filtered <span class="op">=</span> [f <span class="cf">for</span> f <span class="kw">in</span> noaa20 <span class="cf">if</span> datetime.strptime(f.split(<span class="st">"/"</span>)[<span class="op">-</span><span class="dv">1</span>].split(<span class="st">"."</span>)[<span class="dv">1</span>], <span class="st">"%Y%m"</span>).year <span class="op">==</span> target_year]</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"Downloading </span><span class="sc">{</span><span class="bu">len</span>(filtered)<span class="sc">}</span><span class="ss"> monthly files for </span><span class="sc">{</span>target_year<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Downloading 1 year took me just under 3 minutes, for reference</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>fs.get(filtered, outdir_string)</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> filename <span class="kw">in</span> os.listdir(outdir_string):</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> filename.endswith(<span class="st">'.csv.gz'</span>):</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        input_path <span class="op">=</span> os.path.join(outdir_string, filename)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        output_filename <span class="op">=</span> filename[:<span class="op">-</span><span class="dv">3</span>]  <span class="co"># remove the '.gz'</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>        output_path <span class="op">=</span> os.path.join(outdir_string, output_filename)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        <span class="cf">with</span> gzip.<span class="bu">open</span>(input_path, <span class="st">'rt'</span>) <span class="im">as</span> f_in, <span class="bu">open</span>(output_path, <span class="st">'wt'</span>) <span class="im">as</span> f_out:</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>            shutil.copyfileobj(f_in, f_out)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(<span class="ss">f"Extracted </span><span class="sc">{</span>filename<span class="sc">}</span><span class="ss"> to </span><span class="sc">{</span>output_path<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>        os.remove(input_path)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
@@ -790,7 +751,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     </div>   
     <div class="nav-footer-center">
       &nbsp;
-    <div class="toc-actions d-sm-block d-md-none"><ul><li><a href="https://github.com/Earth-Information-System/fireatlas/edit/main/docs/playbook_dps_debug.md" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
+    <div class="toc-actions"><ul><li><a href="https://github.dev/Earth-Information-System/fireatlas/blob/main/notebooks/21_Download_VIIRS_SP_SFTP.ipynb" class="toc-action"><i class="bi bi-github"></i>Edit this page</a></li><li><a href="https://github.com/Earth-Information-System/fireatlas/issues/new" class="toc-action"><i class="bi empty"></i>Report an issue</a></li></ul></div></div>
     <div class="nav-footer-right">
 <p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
 </div>
