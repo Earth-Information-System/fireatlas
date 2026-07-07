@@ -86,23 +86,17 @@ def set_ftype(fire, landcover):
             ftype = 0
             return ftype
 
-        # determine the fire type using the land cover type and stFM1000
+        # determine the fire type using the land cover type
         if LCTmax in [0, 11, 31]:  #'NoData', 'Water', 'Barren' -> 'Other'
             ftype = 0
         elif LCTmax in [23]:  # 'Urban' -> 'Urban'
             ftype = 1
         elif LCTmax in [82]:  # 'Agriculture' -> 'Agriculture'
             ftype = 6
-        elif LCTmax in [42]:  # 'Forest' ->
-            if fire.stFM1000 > 12:  # 'Forest manage'
-                ftype = 3
-            else:  # 'Forest wild'
-                ftype = 2
-        elif LCTmax in [52, 71]:  # 'Shrub', 'Grassland' ->
-            if fire.stFM1000 > 12:  # 'Shrub manage'
-                ftype = 5
-            else:  # 'Shrub wild'
-                ftype = 4
+        elif LCTmax in [42]:  # 'Forest' -> 'Forest wild'
+            ftype = 2
+        elif LCTmax in [52, 71]:  # 'Shrub', 'Grassland' -> 'Shrub wild'
+            ftype = 4
         else:
             logger.info(f"Unknown land cover type {LCTmax}. Setting ftype to 0.")
             ftype = 0

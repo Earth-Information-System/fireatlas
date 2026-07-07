@@ -72,15 +72,23 @@ class Allfires:
 
     def init_gdf(self):
 
+        dd = singlefire_getdd("all")
         gdf = gpd.GeoDataFrame(
             columns=[
-                *singlefire_getdd("all").keys(),
+                *dd.keys(),
                 "fireID",
                 "t",
             ],
             crs=f"epsg:{settings.EPSG_CODE}",
             geometry="hull",
         )
+        # Cast every declared geometry column (e.g. fline, nfp) to geometry dtype
+        # up front. Otherwise they stay object dtype while empty, and concatenating
+        # object + geometry in update_gdf downcasts them back to object (pandas 3.x),
+        # which breaks to_parquet since object-dtype shapely columns aren't WKB-encoded.
+        for col, tp in dd.items():
+            if tp == "geometry":
+                gdf[col] = gpd.GeoSeries(gdf[col], crs=gdf.crs)
         self.gdf = gdf.set_index(["fireID", "t"])
 
     @classmethod
@@ -168,9 +176,11 @@ class Allfires:
                 crs=self.gdf.crs
             ).set_index(["fireID", "t"])
 
-            # ensure/cast types once 
-            for k, tp in dd.items(): 
-                gdf_updates[k] = gdf_updates[k].astype(tp)
+            for k, tp in dd.items():
+                if tp == "geometry":
+                    gdf_updates[k] = gpd.GeoSeries(gdf_updates[k], crs=self.gdf.crs)
+                else:
+                    gdf_updates[k] = gdf_updates[k].astype(tp)
 
             # append updated rows to existing dataframe in one batch- much faster than looping through 
             self.gdf = pd.concat([self.gdf, gdf_updates], axis=0)
@@ -440,12 +450,6 @@ class Fire:
 
         # always set valid at initialization
         self.invalid = False
-
-        if settings.FTYP_OPT == "CA":
-            # TODO: get and record fm1000 value at ignition
-            # lon, lat = self.ignition_center_geo
-            # self.stFM1000 = FireIO.get_stFM1000(FireTime.t2d(t), lon=lon, lat=lat)
-            self.stFM1000 = 0
 
     def __repr__(self):
         return f"<Fire {self.fireID} at={self.t} with n_pixels={self.n_pixels}"
