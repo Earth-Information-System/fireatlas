@@ -1,14 +1,11 @@
-""" FireClustering
+"""FireClustering
 This module include all functions used for doing fire clustering
 """
 
 import rtree
 import numpy as np
-import math
-import itertools
 
 from sklearn.neighbors import BallTree
-from fireatlas import settings
 from fireatlas.utils import timed
 
 
@@ -139,57 +136,3 @@ def do_clustering(data, max_thresh_km):
     data["initial_cid"] = point_to_cluster_id
 
     return data
-
-
-def cal_distance(loc1, loc2):
-    """Calculate the distance between two points
-
-    Parameters
-    ----------
-    loc1 : list[lat,lon]
-        position of first point
-    loc2 : list[lat,lon]
-        position of second point
-
-    Returns
-    -------
-    distance : float
-        distance (km) between two points
-    """
-    lat1 = math.radians(loc1[0])
-    lon1 = math.radians(loc1[1])
-    lat2 = math.radians(loc2[0])
-    lon2 = math.radians(loc2[1])
-
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-
-    a = (
-        math.sin(dlat / 2) ** 2
-        + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
-    )
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-    distance = settings.EARTH_RADIUS_KM * c
-    return distance
-
-
-def cal_mindist(c1, c2):
-    """Calculate the minimum distance beween two clusters (may modify the algorithm to speed up this calculation)
-
-    Parameters
-    ----------
-    c1 : list of [lat,lon]
-        first cluster
-    c2 : list of [lat,lon]
-        second cluster
-
-    Returns
-    -------
-    mindist : float
-        the minimum distance (km) between c1 and c2
-    """
-
-    mindist = min([cal_distance(l1, l2) for l1, l2 in itertools.product(c1, c2)])
-
-    return mindist

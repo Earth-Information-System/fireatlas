@@ -150,7 +150,7 @@ def create_snapshot_data(
         data["geometry"] = allfires_gdf["fline"]
 
     data = data.set_geometry("geometry", crs=settings.EPSG_CODE)
-    data = data[data.geometry.notna() & ~data.geometry.is_empty]
+    data = data[~data.geometry.is_empty & data.geometry.notna()]
 
     if layer == "perimeter":
         # figure out the fire state given current t
@@ -289,7 +289,7 @@ def save_fire_layers(allfires_gdf_fid, region, fid, tst):
             data["geometry"] = allfires_gdf_fid["fline"]
 
         data = data.set_geometry("geometry", crs=settings.EPSG_CODE)
-        data = data[data.geometry.notna() & ~data.geometry.is_empty]
+        data = data[~data.geometry.is_empty & data.geometry.notna()]
 
         data.to_file(os.path.join(output_dir, f"{layer}.fgb"), driver="FlatGeobuf")
 
@@ -341,7 +341,15 @@ def fill_activefire_rows(allfires_gdf, ted):
             
     output = pd.concat([gdf, *all_new_rows]).sort_values(["t", "fireID"])
     for k, tp in dd.items():
-        output[k] = output[k].astype(tp)
+        if tp == "geometry":
+            # carry the CRS on every geometry column (.astype("geometry") yields
+            # crs=None) so we don't emit mismatched-CRS warnings downstream.
+            output[k] = gpd.GeoSeries(output[k], crs=gdf.crs)
+        else:
+            output[k] = output[k].astype(tp)
+
+    # Cast to gdf instead of plain pd.DataFrame
+    output = gpd.GeoDataFrame(output, geometry="hull", crs=gdf.crs)
     return output
 
 
@@ -364,6 +372,10 @@ def merge_rows(allfires_gdf_fid, fid: int | str):
             "t_ed": "max",
         },
     )
+    # dissolve's unary_union aggregation drops the CRS on the non-active geometry
+    # columns; restore it so later concats don't warn about missing CRS.
+    for col in ["fline", "nfp"]:
+        output[col] = gpd.GeoSeries(output[col], crs=allfires_gdf_fid.crs)
     t_diff = output["t_ed"] - output.index.min()
     output["duration"] = t_diff.dt.seconds / 24 / 3600 + t_diff.dt.days
     output["n_pixels"] = output.n_newpixels.cumsum()

@@ -20,7 +20,7 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ conda activate fire_env
 
     # install dev dependencies and editable install of fireatlas 
-    $ pip install -e '.[dev]'
+    $ python -m pip install -e '.[dev]'
     ```
 
 2.  Create a new branch and make your changes as needed. Name the branch {your initials}/{descriptive feature name}. Keep commits small and focused- one commit should contain only one logical set of related changes.
@@ -33,16 +33,16 @@ We follow a standard feature branch workflow, as described [here.](https://docs.
     $ git commit -m "Add NOAA21 inputs" 
     ```
 
-3.  Run tests from fireatlas root dir (requires optional dependencies) 
+3.  Run tests from fireatlas root dir (requires optional dev dependencies from step 1) 
 
     ```         
-    $ pytest -v tests/ 
+    $ python -m pytest -v tests/ 
     ```
 
 4.  OPTIONAL: run long-running (\~15mins) integration tests
 
     ```         
-    $ pytest -v --runslow tests/ 
+    $ python -m pytest -v --runslow tests/ 
     ```
 
 5.  Push to your branch on GitHub.
@@ -64,7 +64,7 @@ To use a Jupyter Notebook with the development environment:
 ```
 # First, create conda environment following directions in Step 1 above 
 # Then, from the fireatlasroot dir: 
-$ pip install '.[dev]'
+$ python -m pip install '.[dev]'
 $ python -m ipykernel install --user --name fire_env --display-name "Python - FEDS development environment"
 # wait 30 seconds or so, then launch a new notebook. You should see this environment as an option to choose from in the launcher. 
  
@@ -90,7 +90,7 @@ Regenerate and commit to git `env.lock.yml` whenever you change the dependencies
 conda remove -n fire_env -y # start clean
 conda env create -f env.yml 
 conda activate fire_env
-pip install -e '.[prod]' 
+python -m pip install -e '.[prod]' 
 
 # platform specific, only run on Linux (e.g. the MAAP Hub)
 # the grep drops fireatlas's own install line (see note below)
@@ -106,7 +106,7 @@ A looser/lightweight environment resolution is fine for development work and, un
 ```
 conda env create -f env.yml # set up env
 conda activate fire_env 
-pip install -e '.[dev]' 
+python -m pip install -e '.[dev]' 
 ```
 
 

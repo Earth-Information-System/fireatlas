@@ -11,9 +11,9 @@ readme = "README.md"
 # core runtime deps needed to use fireatlas as library
 dependencies = [
     # compiled- installed w conda in env.yml
-    "geopandas<1", 
+    "geopandas", 
     "numpy", 
-    "pandas<3", 
+    "pandas", 
     "pyarrow", 
     "pyogrio", 
     "pyproj", 
@@ -52,7 +52,8 @@ dev = [
     "ipykernel", 
     "folium", 
     "matplotlib", 
-    "mapclassify"
+    "mapclassify", 
+    "ruff" 
 ]
 
 

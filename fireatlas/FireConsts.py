@@ -1,4 +1,4 @@
-""" FireConsts
+"""FireConsts
 This is the module containing all constants used in this project as well as the
 running controls
 """
@@ -9,12 +9,12 @@ import warnings
 
 import fsspec
 from pydantic_settings import (
-    BaseSettings, 
+    BaseSettings,
     SettingsConfigDict,
-    PydanticBaseSettingsSource, 
+    PydanticBaseSettingsSource,
     YamlConfigSettingsSource,
 )
-from pydantic import Field, validator, field_validator
+from pydantic import Field, field_validator
 
 
 from fireatlas.FireTypes import Location
@@ -23,26 +23,26 @@ root_dir = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 DOTENV_ABS_PATH = os.path.join(os.path.dirname(__file__), ".env")
 YAML_FILENAME = "run_config.yaml"
-YAML_ABS_PATH = os.path.join(os.path.dirname(__file__), YAML_FILENAME)
+# run_config.yaml lives at the repo root (the outer fireatlas/ directory),
+# alongside this README and pyproject.toml - not inside the package.
+YAML_ABS_PATH = os.path.join(root_dir, YAML_FILENAME)
+
 
 class Settings(BaseSettings):
-
     if os.path.exists(YAML_ABS_PATH):
         model_config = SettingsConfigDict(
-            yaml_file=YAML_ABS_PATH, 
+            yaml_file=YAML_ABS_PATH,
             yaml_config_section="settings",
-            env_file=DOTENV_ABS_PATH, 
+            env_file=DOTENV_ABS_PATH,
             extra="ignore",
-            env_prefix="FEDS_" # note: expects env vars as FEDS_env_var_name
+            env_prefix="FEDS_",  # note: expects env vars as FEDS_env_var_name
         )
     else:
         model_config = SettingsConfigDict(
-            env_file=DOTENV_ABS_PATH, 
-            extra="ignore",
-            env_prefix="FEDS_"
+            env_file=DOTENV_ABS_PATH, extra="ignore", env_prefix="FEDS_"
         )
 
-    # Settings resolution order (in ascending order of priority): 
+    # Settings resolution order (in ascending order of priority):
     # 1. Starts with default field values provided in FireConsts.py
     # 2. Overrides with settings from run_config.yaml if available
     # 3. Overrides with environment variables from .env file if available
@@ -51,21 +51,19 @@ class Settings(BaseSettings):
     # Result: init > system env vars > .env file > yaml file > default values
     @classmethod
     def settings_customise_sources(
-        cls, 
+        cls,
         settings_cls: type[BaseSettings],
-        init_settings: PydanticBaseSettingsSource, 
-        env_settings: PydanticBaseSettingsSource, 
-        dotenv_settings: PydanticBaseSettingsSource, 
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
         return (
-            init_settings, 
-            env_settings, 
+            init_settings,
+            env_settings,
             dotenv_settings,
-            YamlConfigSettingsSource(settings_cls), 
-            )
-
-
+            YamlConfigSettingsSource(settings_cls),
+        )
 
     # ------------------------------------------------------------------------------
     # where data is stored
@@ -90,25 +88,25 @@ class Settings(BaseSettings):
     )
 
     REGIONS_DIR: str = Field(
-        "run_definitions",
-        description="directory where region definitions are stored." 
+        "run_definitions", description="directory where region definitions are stored."
     )
 
     READ_LOCATION: Location = Field(
         "s3",
-        description="Final storage place for written files. This is where everything reads from",
+        description="Final storage place for written files. This is where everything reads from. "
+        "Set to 'local' to run entirely on your machine with no s3 credentials required.",
     )
 
     LOG_FILEPATH: str = Field(
         os.path.join(root_dir, "running.log"),
-        description="Absolute path to the log file."
+        description="Absolute path to the log file.",
     )
 
     ENV_META_FILEPATH: str = Field(
         os.path.join(root_dir, "env_metadata.txt"),
-        description="Absolute path to the environment metadata file."
+        description="Absolute path to the environment metadata file.",
     )
-    
+
     # ------------------------------------------------------------------------------
     # spatiotemporal constraints of fire objects
     # ------------------------------------------------------------------------------
@@ -151,19 +149,17 @@ class Settings(BaseSettings):
     )
 
     # ------------------------------------------------------------------------------
-    # OPTIONAL: run parameters 
+    # OPTIONAL: run parameters
     # Can be passed from run_config.yaml if using FireRunArchiveCoordinator.py
     # or passed from the command line for all other scripts
     # ------------------------------------------------------------------------------
 
     TST: Optional[Tuple[int, int, int, Literal["AM", "PM"]]] = Field(
-        default=None, 
-        description="start time as [year, month, day, 'AM'/'PM']"
+        default=None, description="start time as [year, month, day, 'AM'/'PM']"
     )
 
     TED: Optional[Tuple[int, int, int, Literal["AM", "PM"]]] = Field(
-        default=None, 
-        description="end time as [year, month, day, 'AM'/'PM']"
+        default=None, description="end time as [year, month, day, 'AM'/'PM']"
     )
 
     @field_validator("TST", "TED", mode="after")
@@ -176,20 +172,18 @@ class Settings(BaseSettings):
 
     RUN_NAME: Optional[str] = Field(
         default=None,
-        description="Run name, e.g. 'ArchiveCONUS' or 'ArchiveCONUS_test'."
+        description="Run name, e.g. 'ArchiveCONUS' or 'ArchiveCONUS_test'.",
     )
 
     REGION_SHAPEFILE: Optional[str] = Field(
-        default=None, 
-        description="Name of the file that holds a shapefile that defiens this region. " 
-        "Assumes that this file is in the FEDSinput/run_definitions/RUN_NAME/ directory."
+        default=None,
+        description="Name of the file that holds a shapefile that defiens this region. "
+        "Assumes that this file is in the FEDSinput/run_definitions/RUN_NAME/ directory.",
     )
 
     REGION_BBOX: Optional[list[float]] = Field(
-        default=None,
-        description="Bounding box of the region, e.g. [-126,24,-61,49]."
+        default=None, description="Bounding box of the region, e.g. [-126,24,-61,49]."
     )
-
 
     # ------------------------------------------------------------------------------
     # shape parameters
@@ -217,7 +211,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------------------
     # fire data source parameters
     # ------------------------------------------------------------------------------
-    
+
     FIRE_SOURCE: Literal["SNPP", "NOAA20", "VIIRS", "BAMOD"] = Field(
         "NOAA20", description="fire source data"
     )
@@ -262,19 +256,18 @@ class Settings(BaseSettings):
     N_DASK_WORKERS: int = Field(6, description="How many dask workers to use for Run.")
 
     ARCHIVE_RUN_JOB_SIZE: int = Field(
-        10, 
-        description="How many days to run in each archive job chunk."
+        10, description="How many days to run in each archive job chunk."
     )
 
     # NIFC matching options
     DO_NIFC_MATCHING: bool = Field(
-        False, 
-        description="If True, reads from the NIFC incident database for current year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output."
+        False,
+        description="If True, reads from the NIFC incident database for current year and adds cols with info for matching fires to the combinedLargefire perimeter fgb output.",
     )
 
     NIFC_MATCHING_ACTIVE_ONLY: bool = Field(
-        False, 
-        description="If True, uses 'WFIGS Current' NIFC database. Else, uses 'WFIGS {current year} to date'."
+        False,
+        description="If True, uses 'WFIGS Current' NIFC database. Else, uses 'WFIGS {current year} to date'.",
     )
 
     # ------------------------------------------------------------------------------
@@ -289,14 +282,15 @@ class Settings(BaseSettings):
 
     # ------------------------------------------------------------------------------
 
-
-    @validator("LOCAL_PATH")
+    @field_validator("LOCAL_PATH")
+    @classmethod
     def local_path_must_not_end_with_slash(cls, v: str) -> str:
         if v.endswith("/"):
             v = v[:-1]
         return v
 
-    @validator("S3_PATH")
+    @field_validator("S3_PATH")
+    @classmethod
     def s3_path_must_start_with_s3(cls, v: str) -> str:
         if not v.startswith("s3://"):
             raise ValueError("S3_PATH must start with s3://")
@@ -362,13 +356,3 @@ CONT = {
         6: 1,
     },  # fire type dependent CONNECTIVITY_THRESHOLD_KM
 }
-
-FTYPCLR_CA = {
-    0: "grey",
-    1: "rosybrown",
-    2: "darkolivegreen",
-    3: "olive",
-    4: "saddlebrown",
-    5: "sandybrown",
-    6: "darkviolet",
-}  # colors used for each fire type

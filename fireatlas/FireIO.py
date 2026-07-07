@@ -936,19 +936,31 @@ def load_mcd64(year, xoff=0, yoff=0, xsize=None, ysize=None):
 def get_any_shp(filename):
     """get shapefile of any region given the input file name
 
+    Reprojects to geographic coordinate system (EPSG:4326) from input CRS.
+
     Parameters
     ----------
     filename : str
         the shapefile names saved in the directory dirextdata/shapefiles/
     """
-    # find the california shapefile
-    dirshape = os.path.join(settings.dirextdata, "shapefiles")
-    statefnm = os.path.join(dirshape, filename)
 
+    dirshape = os.path.join(settings.dirextdata, "Shapefiles")
+    filepath = os.path.join(dirshape, filename)
     # read the geometry
-    shp = gpd_read_file(statefnm).iloc[0].geometry
+    shp = gpd_read_file(filepath)
+    logger.info(f"Read region bounding shape from {filepath}")
+    logger.info(f"shp.crs = {shp.crs}")
+    
+    geo_dissolved = shp.dissolve()
+    logger.info(f"Dissolved shp bounds: {geo_dissolved.geometry.total_bounds}")
 
-    return shp
+    # convert to lat lon for df filtering in next step
+    logger.info("Converting to EPSG 4326")
+    geo_dissolved = geo_dissolved.to_crs("EPSG:4326") 
+    logger.info(f"After conversion, total bounds = {geo_dissolved.geometry.total_bounds}")
+    logger.info(f"CRS reads as: {geo_dissolved.crs}")
+    
+    return geo_dissolved.iloc[0].geometry
 
 
 def get_Cal_shp():
@@ -964,26 +976,6 @@ def get_Cal_shp():
 
     return shp_Cal
 
-
-def get_Cty_shp(ctr):
-    """get shapefile of a country
-
-    Parameters
-    ----------
-    ctr : str
-        country name
-    """
-    ctyfnm = os.path.join(settings.dirextdata, "World", "country.shp")
-
-    gdf_cty = gpd_read_file(ctyfnm)
-
-    if ctr in gdf_cty["CNTRY_NAME"].values:
-        g = gdf_cty[gdf_cty.CNTRY_NAME == ctr].iloc[0].geometry
-        return g
-    else:
-        return None
-
-
 def get_reg_shp(reg):
     """return the shape of a region, given an optional reg input
 
@@ -993,7 +985,7 @@ def get_reg_shp(reg):
         region definition, one of the following
          - a geometry
          - a four-element list showing the extent of the region [lonmin,latmin,lonmax,latmax]
-         - a country name
+          - the name of a file containing a region geometry in settings.direxdata/Shapefiles/
 
     Returns
     -------
@@ -1004,11 +996,11 @@ def get_reg_shp(reg):
     # read or form shape used for filtering active fires
     if isinstance(reg, shapely.geometry.base.BaseGeometry):
         shp_Reg = reg
-    elif isinstance(reg, str):
-        shp_Reg = get_Cty_shp(reg)
-        if shp_Reg is None:
-            print("Please input a valid Country name")
-            return None
+    elif isinstance(reg, str): 
+        logger.info(f'Running get_any_shp for {reg}')
+        shp_Reg = get_any_shp(reg)
+        if not shp_Reg: 
+            raise Exception('Specified input did not produce valid geometry.')
     elif isinstance(reg, list):
         shp_Reg = Polygon(
             [
@@ -1021,7 +1013,7 @@ def get_reg_shp(reg):
         )
     else:
         print(
-            "Please use geometry, country name (in str), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
+            "Please use geometry, region shapefile filename (as string), or [lonmin,latmin,lonmax,latmax] list for the parameter region"
         )
         return None
 
@@ -1155,41 +1147,6 @@ def get_LCT_Global(locs, landcover):
 
 #     return vLCT
 
-
-def get_FM1000(t, lon, lat):
-    """Get fm1000 for a point at t
-
-    Parameters
-    ----------
-    t : datetime date
-        date
-    lon : float
-        longitude value
-    lat : float
-        latitude value
-    Returns
-    -------
-    FM1000_loc : list of floats
-        fm1000 value for all input active fires
-    """
-    warnings.simplefilter("ignore")
-
-    # read annual fm1000 data
-    dirGridMET = os.path.join(settings.dirextdata, "GridMET") + "/"
-    fnm = dirGridMET + "fm1000_" + t.strftime("%Y") + ".zarr"
-    ds = xr.open_zarr(fnm)
-    FM1000_all = ds["dead_fuel_moisture_1000hr"]
-
-    # extract daily data at t
-    try:
-        FM1000_day = FM1000_all.sel(day=t.strftime("%Y-%m-%d"))
-    except:  # if data are not available, use the last available date
-        FM1000_day = FM1000_all.isel(day=-1)
-
-    # extract data near the given location
-    FM1000_loc = FM1000_day.sel(lon=lon, lat=lat, method="nearest").item()
-
-    return FM1000_loc
 
 
 # ------------------------------------------------------------------------------

@@ -8,6 +8,7 @@ FOUR LAYERS OF OBJECTS
     d. FirePixel: the class of an active fire pixel
 """
 
+import pandas as pd 
 import geopandas as gpd
 from datetime import date, timedelta
 from shapely.geometry import MultiLineString, MultiPoint
@@ -71,15 +72,23 @@ class Allfires:
 
     def init_gdf(self):
 
+        dd = singlefire_getdd("all")
         gdf = gpd.GeoDataFrame(
             columns=[
-                *singlefire_getdd("all").keys(),
+                *dd.keys(),
                 "fireID",
                 "t",
             ],
             crs=f"epsg:{settings.EPSG_CODE}",
             geometry="hull",
         )
+        # Cast every declared geometry column (e.g. fline, nfp) to geometry dtype
+        # up front. Otherwise they stay object dtype while empty, and concatenating
+        # object + geometry in update_gdf downcasts them back to object (pandas 3.x),
+        # which breaks to_parquet since object-dtype shapely columns aren't WKB-encoded.
+        for col, tp in dd.items():
+            if tp == "geometry":
+                gdf[col] = gpd.GeoSeries(gdf[col], crs=gdf.crs)
         self.gdf = gdf.set_index(["fireID", "t"])
 
     @classmethod
@@ -134,21 +143,47 @@ class Allfires:
 
     @timed
     def update_gdf(self):
+        """
+        The idea here is that we need to update self.gdf with the latest
+        attributes for each burning fire, as those may have changed 
+        as we progressed through the last timestep. 
+
+        But, instead of looping through those and writing each cell one at a 
+        time, like the original code did, here we are going to make a new dataframe 
+        with what each active row should be updated to, then drop the old versions 
+        of those rows and append the new versions so that we only mutate the dataframe once. 
+        """
         dd = singlefire_getdd("all")
         dt = t2dt(self.t)
 
+        new_rows = [] # collect row dicts for a batch update 
+
+        # all active fires need to be updated 
         for fid, f in self.burningfires.items():
             if (fid, dt) in self.gdf.index:
                 raise ValueError(f"Error writing gdf: {fid} already at {self.t}")
 
-            for k, tp in dd.items():
-                if tp == "datetime64[ns]":
-                    self.gdf.loc[(fid, dt), k] = t2dt(getattr(f, k))
-                else:
-                    self.gdf.loc[(fid, dt), k] = getattr(f, k)
+            row = {"fireID": fid, "t": dt} # get index levels  
+            for k, tp in dd.items(): 
+                val = getattr(f, k)
+                row[k] = t2dt(val) if tp == "datetime64[ns]" else val
+            new_rows.append(row)
+        if len(new_rows) > 0: 
+            # create a new gdf with updated rows 
+            gdf_updates = gpd.GeoDataFrame(
+                new_rows,
+                geometry="hull", 
+                crs=self.gdf.crs
+            ).set_index(["fireID", "t"])
 
-        for k, tp in dd.items():
-            self.gdf[k] = self.gdf[k].astype(tp)
+            for k, tp in dd.items():
+                if tp == "geometry":
+                    gdf_updates[k] = gpd.GeoSeries(gdf_updates[k], crs=self.gdf.crs)
+                else:
+                    gdf_updates[k] = gdf_updates[k].astype(tp)
+
+            # append updated rows to existing dataframe in one batch- much faster than looping through 
+            self.gdf = pd.concat([self.gdf, gdf_updates], axis=0)
 
         for h0, h1 in self.heritages:
             if h0 in self.gdf.index:
@@ -415,12 +450,6 @@ class Fire:
 
         # always set valid at initialization
         self.invalid = False
-
-        if settings.FTYP_OPT == "CA":
-            # TODO: get and record fm1000 value at ignition
-            # lon, lat = self.ignition_center_geo
-            # self.stFM1000 = FireIO.get_stFM1000(FireTime.t2d(t), lon=lon, lat=lat)
-            self.stFM1000 = 0
 
     def __repr__(self):
         return f"<Fire {self.fireID} at={self.t} with n_pixels={self.n_pixels}"

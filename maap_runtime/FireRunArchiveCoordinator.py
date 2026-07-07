@@ -164,12 +164,12 @@ def main(run_name, copy_to_veda=False):
         
         maap = MAAP(maap_host='api.maap-project.org')
         job = maap.submitJob(
-            identifier=f"job-eis-feds-archive:1.4.1",
-        algo_id="eis-feds-archive",
-        version="1.4.1",
-        username="zbecker", 
-        queue="maap-dps-eis-worker-128gb",
-        run_id=run_name
+            identifier=f"job-eis-feds-archive:1.5.1",
+            algo_id="eis-feds-archive",
+            version="1.5.1",
+            username="zbecker", 
+            queue="maap-dps-eis-worker-128gb",
+            run_id=run_name
         )
 
         logger.info(f"------------- Submitted next job to DPS. Submission status: {job.status} -------------")
@@ -177,7 +177,11 @@ def main(run_name, copy_to_veda=False):
     else:
         # all done with run: do postprocessing 
 
-        snapshot_futures = save_snapshots(allfires_gdf, region, t_saved, ted, client=client)
+        if t_saved is not None: 
+            snapshot_tst = t_saved
+        else: 
+            snapshot_tst = run_tst
+        snapshot_futures = save_snapshots(allfires_gdf, region, snapshot_tst, ted, client=client)
         large_fires = find_largefires(allfires_gdf)
         save_large_fires_nplist(allpixels, region, large_fires, tst)
         save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)

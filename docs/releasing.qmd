@@ -64,10 +64,10 @@ conda env create -f env.yml
 conda activate fire_env
 
 # install fireatlas plus dev/test extras
-pip install -e '.[dev]'
+python -m pip install -e '.[dev]'
 
 # make sure no conflicts
-pip check
+python -m pip check
 
 # run unit tests
 # Specify abs path to pytest executable in this conda env if needed,
