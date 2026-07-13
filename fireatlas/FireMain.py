@@ -253,7 +253,7 @@ def adjust_coincident_pixels(allpixels):
             duplicate_records = allpixels[(allpixels["y"] == y) & (allpixels["x"] == x)]
 
             for idx, row in duplicate_records.iterrows():
-                if "version" in row.columns:
+                if "version" in row.index:
                     logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
                 else: 
                     logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']}")
