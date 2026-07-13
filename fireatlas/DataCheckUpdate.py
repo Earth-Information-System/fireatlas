@@ -5,6 +5,7 @@ This module include functions used to check and update needed data files
 import os
 import time
 import pandas as pd
+import requests
 
 from datetime import date
 from typing import Literal
@@ -61,7 +62,7 @@ def update_FIRMS(
             logger.warning("Error message: Max retries exceeded.")
             return
 
-        resp = pd.read_json(status_url, typ="series")
+        resp = requests.get(status_url).json()
         count = resp["current_transactions"]
         limit = resp["transaction_limit"]
 
