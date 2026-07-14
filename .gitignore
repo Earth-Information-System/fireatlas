@@ -21,3 +21,6 @@ _site/
 
 /run_config.yaml
 .env
+
+.vscode/
+data/
