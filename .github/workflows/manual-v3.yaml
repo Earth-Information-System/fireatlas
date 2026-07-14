@@ -8,7 +8,7 @@ on:
         required: true
         default: 'eis-feds-dask-coordinator-v3'
       github_ref:
-        description: 'Branch name or version tag, e.g: 1.5.1'
+        description: 'Branch name or version tag, e.g: 1.5.2'
         required: true
       username:
         description: 'Your MAAP username'
@@ -22,7 +22,7 @@ on:
         required: false
         default: 'ubuntu'
       json_params:
-        description: 'JSON encoded params to pass to the job e.g.: {"regnm": "NewMexicoV3", "bbox": "[-125,31,-101,49]", "tst": "[2020,8,1,\"AM\"]", "ted": "[2020,10,1,\"PM\"]", "operation": "--coordinate-all"}'
+        description: 'JSON encoded params to pass to the job e.g.: {"regnm": "NewMexicoV3", "bbox": "[-125,31,-101,49]", "reg_shp": "", "tst": "[2020,8,1,\"AM\"]", "ted": "[2020,10,1,\"PM\"]", "operation": "--coordinate-all"}'
         required: true
 
 jobs:
