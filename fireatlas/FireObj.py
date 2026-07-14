@@ -82,13 +82,11 @@ class Allfires:
             crs=f"epsg:{settings.EPSG_CODE}",
             geometry="hull",
         )
-        # Cast every declared geometry column (e.g. fline, nfp) to geometry dtype
-        # up front. Otherwise they stay object dtype while empty, and concatenating
-        # object + geometry in update_gdf downcasts them back to object (pandas 3.x),
-        # which breaks to_parquet since object-dtype shapely columns aren't WKB-encoded.
         for col, tp in dd.items():
             if tp == "geometry":
                 gdf[col] = gpd.GeoSeries(gdf[col], crs=gdf.crs)
+            else:
+                gdf[col] = gdf[col].astype(tp)
         self.gdf = gdf.set_index(["fireID", "t"])
 
     @classmethod
