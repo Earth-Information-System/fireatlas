@@ -164,9 +164,9 @@ def main(run_name, copy_to_veda=False):
         
         maap = MAAP(maap_host='api.maap-project.org')
         job = maap.submitJob(
-            identifier=f"job-eis-feds-archive:1.5.1",
+            identifier=f"job-eis-feds-archive:1.5.2",
             algo_id="eis-feds-archive",
-            version="1.5.1",
+            version="1.5.2",
             username="zbecker", 
             queue="maap-dps-eis-worker-128gb",
             run_id=run_name

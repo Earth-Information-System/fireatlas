@@ -16,9 +16,11 @@ source activate fire_env
 
 # The lock pins every dependency but deliberately omits fireatlas itself, so
 # install the package from the repo checked out in this image. --no-deps
-# because the lock already provides dependencies
+# because the lock already provides dependencies. -e (editable) so that
+# root_dir in FireConsts.py still resolves to this checkout instead of a
+# copy under site-packages, which run_dps_cli.sh's log-copy step relies on.
 echo "Installing fireatlas..."
-pip install --no-deps "$basedir/.."
+pip install --no-deps -e "$basedir/.."
 
 # Fail loudly rather than discovering an inconsistent environment at
 # runtime on DPS.

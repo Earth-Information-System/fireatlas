@@ -149,23 +149,7 @@ def maybe_remove_static_sources(region: Region) -> Region:
         region = (region[0], geom)
         return region
     
-    # get source data geometry
-    global_flaring = pd.read_csv(os.path.join(settings.dirextdata, 'static_sources', settings.remove_static_sources_sourcefile))
-    global_flaring = global_flaring.drop_duplicates()
-    global_flaring = global_flaring[0:(len(global_flaring.id_key_2017) - 1)]
-
-    global_flaring = gpd.GeoDataFrame(
-        global_flaring, 
-        geometry=gpd.points_from_xy(global_flaring.Longitude, global_flaring.Latitude),
-        crs="EPSG:4326"
-    ) # Convert to point geometries
-
-    # Must buffer in projected CRS
-    global_flaring = global_flaring.to_crs(settings.EPSG_CODE)
-    global_flaring["buffer_geometry"] = global_flaring.buffer(settings.remove_static_sources_buffer)
-    global_flaring = global_flaring.set_geometry(col = "buffer_geometry")
-    # We expect this to be in geographic CRS, so project it back after done with geometric ops
-    global_flaring = global_flaring.to_crs("EPSG:4326") 
+    static_source_mask = FireIO.load_static_sources()
     
     # get region geometry
     reg = FireIO.get_reg_shp(region[1])
@@ -174,10 +158,10 @@ def maybe_remove_static_sources(region: Region) -> Region:
         crs="EPSG:4326"
     ) # Put geometry into dataframe for join
 
-    assert reg_df.crs == global_flaring.crs
+    assert reg_df.crs == static_source_mask.crs
     
     # Take the difference of points and region
-    diff = gpd.tools.overlay(reg_df, global_flaring, how='difference')
+    diff = gpd.tools.overlay(reg_df, static_source_mask, how='difference')
     
     region = (diff.name[0], diff.geometry[0])
     return region
@@ -269,7 +253,7 @@ def adjust_coincident_pixels(allpixels):
             duplicate_records = allpixels[(allpixels["y"] == y) & (allpixels["x"] == x)]
 
             for idx, row in duplicate_records.iterrows():
-                if "version" in row.columns:
+                if "version" in row.index:
                     logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']} | Version: {row['version']}")
                 else: 
                     logger.info(f"    Y: {row['y']:.8f} | X: {row['x']:.8f} | Sat: {row['Sat']} | DateTime: {row['datetime']}")
