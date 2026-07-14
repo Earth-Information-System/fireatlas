@@ -1147,6 +1147,51 @@ def get_LCT_Global(locs, landcover):
 
 #     return vLCT
 
+def load_static_sources():
+    """
+    Returns a gdf of static source areas in EPSG:4326.
+
+    Loads and cleans data source file and buffers if needed. 
+    There are two branches: one for the gas flare 
+    dataset (Elvidge et al. 2016, https://doi.org/10.3390/en9010014, 
+    downloaded 2022-12-09)
+    and one for Bryan Hernandez's (UCI/Randerson Lab)
+    ML-based 2km mask (personal communication, 2026). 
+    """
+
+    staticpath = os.path.join(
+        settings.dirextdata, 
+        'static_sources', 
+        settings.remove_static_sources_sourcefile
+    )
+
+    if settings.remove_static_sources_sourcefile == "Hernandez_2026_CONUS_Static_Mask_2km":
+        logger.info("Using Hernandez_2026 2km static mask...")
+        mask = gpd.read_file(staticpath)
+        assert mask.crs == "EPSG:4326"
+        return mask
+    elif settings.remove_static_sources_sourcefile == "VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv":
+        flares = pd.read_csv(staticpath)
+        flares = flares.drop_duplicates()
+        flares = flares[0:(len(flares.id_key_2017)-1)]
+        flares = gpd.GeoDataFrame(
+            flares, 
+            geometry=gpd.points_from_xy(flares.Longitude, flares.Latitude),
+            crs="EPSG:4326"
+        )
+        # must buffer in projected CRS 
+        flares = flares.to_crs(settings.EPSG_CODE)
+        flares["buffer_geometry"] = flares.buffer(settings.remove_static_sources_buffer)
+        mask = flares.set_geometry(col="buffer_geometry")
+        mask = mask.to_crs("EPSG:4326")
+        return mask
+    else: 
+        raise ValueError("settings.remove_static_sources_sourcefile " \
+        "not recognized as one of [VIIRS_Global_flaring_d.7_slope_0.029353_2017_web_v1.csv, " \
+        "Hernandez_2026_CONUS_Static_Mask_2km].\n" 
+        f"Current value: {settings.remove_static_sources_sourcefile}")
+
+
 
 
 # ------------------------------------------------------------------------------

@@ -51,8 +51,8 @@ trap restore_branch EXIT
 # ── Date derivation ───────────────────────────────────────────────────────────
 # NRT: yesterday-10d → yesterday
 YESTERDAY=$(date -u -d "yesterday" +"%Y-%m-%d" 2>/dev/null || date -u -v-1d +"%Y-%m-%d")
-NRT_TED_DATE=$(date -u -d "$YESTERDAY" +"%Y-%m-%d" 2>/dev/null || date -u -v-0d -d "$YESTERDAY" +"%Y-%m-%d")
-NRT_TST_DATE=$(date -u -d "$YESTERDAY - 10 days" +"%Y-%m-%d" 2>/dev/null || date -u -v-10d -d "$YESTERDAY" +"%Y-%m-%d")
+NRT_TED_DATE="$YESTERDAY"
+NRT_TST_DATE=$(date -u -d "$YESTERDAY - 10 days" +"%Y-%m-%d" 2>/dev/null || date -u -j -f "%Y-%m-%d" -v-10d "$YESTERDAY" +"%Y-%m-%d")
 
 NRT_TST_YEAR=$(echo $NRT_TST_DATE | cut -d'-' -f1)
 NRT_TST_MONTH=$(echo $NRT_TST_DATE | cut -d'-' -f2 | sed 's/^0//')
