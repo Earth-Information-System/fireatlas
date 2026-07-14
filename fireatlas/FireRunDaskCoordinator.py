@@ -25,7 +25,7 @@ from fireatlas.postprocess import (
     save_large_fires_nplist,
     read_allfires_gdf,
     read_allpixels,
-    combined_lf_perims_nifc_join
+    combined_lf_perims_nifc_join,
 )
 from fireatlas.preprocess import (
     check_preprocessed_file,
@@ -34,7 +34,7 @@ from fireatlas.preprocess import (
     preprocess_region,
     preprocessed_region_filename,
     preprocess_monthly_file,
-    preprocess_daily_file
+    preprocess_daily_file,
 )
 
 from fireatlas.DataCheckUpdate import update_FIRMS, get_FIRMS_data_availability
@@ -54,7 +54,7 @@ from fireatlas.FireLog import logger
 from fireatlas import settings
 import geopandas as gpd
 
-dask.config.set({'logging.distributed': 'error'})
+dask.config.set({"logging.distributed": "error"})
 
 
 # NOTE: this expects credentials to be resolvable globally
@@ -62,6 +62,7 @@ dask.config.set({'logging.distributed': 'error'})
 fs = s3fs.S3FileSystem(config_kwargs={"max_pool_connections": 10})
 
 logger.info(settings.model_dump())
+
 
 def validate_json(s):
     try:
@@ -74,8 +75,8 @@ def get_timesteps_needing_region_t_processing(
     tst: TimeStep,
     ted: TimeStep,
     region: Region,
-    sat = None,
-    force = False,
+    sat=None,
+    force=False,
 ):
     needs_processing = []
     for t in t_generator(tst, ted):
@@ -90,19 +91,36 @@ def get_timesteps_needing_region_t_processing(
         dtst = date(*ted[:-1]) - timedelta(days=1)
         dted = date(*ted[:-1])
         if dtst < dted:
-            needs_processing.extend([t for t in t_generator(d2t(dtst.year, dtst.month, dtst.day, 'AM'), ted)
-                                     if t not in needs_processing])
+            needs_processing.extend(
+                [
+                    t
+                    for t in t_generator(
+                        d2t(dtst.year, dtst.month, dtst.day, "AM"), ted
+                    )
+                    if t not in needs_processing
+                ]
+            )
     return needs_processing
 
 
-def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeStep, use_s3: bool):
-    logger.info(f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}")
+def job_fire_forward(
+    client: Client, region: Region, tst: TimeStep, ted: TimeStep, use_s3: bool
+):
+    logger.info(
+        f"Running FireForward code for {region[0]} from {tst} to {ted} with source {settings.FIRE_SOURCE}"
+    )
 
     try:
-        allfires, allpixels, t_saved = Fire_Forward(tst=tst, ted=ted, region=region, restart=False)
-        if use_s3: 
-            copy_from_local_to_s3(allpixels_filepath(tst, ted, region, location="local"), fs)
-            copy_from_local_to_s3(allfires_filepath(tst, ted, region, location="local"), fs)
+        allfires, allpixels, t_saved = Fire_Forward(
+            tst=tst, ted=ted, region=region, restart=False
+        )
+        if use_s3:
+            copy_from_local_to_s3(
+                allpixels_filepath(tst, ted, region, location="local"), fs
+            )
+            copy_from_local_to_s3(
+                allfires_filepath(tst, ted, region, location="local"), fs
+            )
         allfires_gdf = allfires.gdf
         if t_saved is None:
             # NOTE: this happens if we're running a region full-on
@@ -122,14 +140,16 @@ def job_fire_forward(client: Client, region: Region, tst: TimeStep, ted: TimeSte
     large_fires = find_largefires(allfires_gdf)
     save_large_fires_nplist(allpixels, region, large_fires, tst)
     save_large_fires_layers(allfires_gdf, region, large_fires, tst, ted, client=client)
-    
+
     client.gather(snapshot_futures)
 
 
 def job_preprocess_region_t(t: TimeStep, region: Region):
-    logger.info(f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}")
+    logger.info(
+        f"Running preprocess-region-t code for {region[0]} at {t=} with source {settings.FIRE_SOURCE}"
+    )
     filepath = preprocess_region_t(t, region=region)
-    if settings.READ_LOCATION == "s3": 
+    if settings.READ_LOCATION == "s3":
         copy_from_local_to_s3(filepath, fs)
 
 
@@ -138,18 +158,18 @@ def job_preprocess_region(region: Region):
     if settings.fs.exists(output_filepath):
         logger.info(f"Preprocessed region is already on {settings.READ_LOCATION}.")
         return
-    
+
     logger.info(f"Running preprocess-region JSON for {region[0]}")
     filepath = preprocess_region(region)
-    if settings.READ_LOCATION == "s3": 
+    if settings.READ_LOCATION == "s3":
         copy_from_local_to_s3(filepath, fs)
 
 
 def job_nrt_current_day_updates(client: Client):
     """hourly update the NRT files and prep
-    Updates files for today and the two previous days. Forces preprocessing regardless 
+    Updates files for today and the two previous days. Forces preprocessing regardless
     of if preprocessed files are already present for these days so that a partially
-    empty preprocessed file will not be cached as such. 
+    empty preprocessed file will not be cached as such.
     """
     futures, source, now = [], settings.FIRE_SOURCE, datetime.now()
 
@@ -157,37 +177,43 @@ def job_nrt_current_day_updates(client: Client):
         sats = ["SNPP", "NOAA20", "NOAA21"]
     else:
         sats = [source]
-        
-    download_futures = {} # (t, sat) -> dask future 
-    preprocess_tasks = {} # (t, sat) -> filepath 
-    
+
+    download_futures = {}  # (t, sat) -> dask future
+    preprocess_tasks = {}  # (t, sat) -> filepath
+
     for sat in sats:
-        for d in [now, now-timedelta(days=1), now-timedelta(days=2)]:
+        for d in [now, now - timedelta(days=1), now - timedelta(days=2)]:
             t = tuple(dt2t(d))
             d = d.date()
             download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
 
-    # finish all downloads before starting preprocessing 
-    # we only require one sensor to complete successfully- it is OK if some fail 
-    # when running with multiple as long as we get one. 
+    # finish all downloads before starting preprocessing
+    # we only require one sensor to complete successfully- it is OK if some fail
+    # when running with multiple as long as we get one.
     downloaded_paths = client.gather(download_futures, errors="skip")
 
     for (tk, satk), future in download_futures.items():
         if future.status == "error":
-            logger.warning(f"NRT download failed for {satk} for {tk}: {future.exception()}")
+            logger.warning(
+                f"NRT download failed for {satk} for {tk}: {future.exception()}"
+            )
             del downloaded_paths[(tk, satk)]
 
-    ok_sats = {satk for (tk, satk), f in download_futures.items() if f.status != "error"}
+    ok_sats = {
+        satk for (tk, satk), f in download_futures.items() if f.status != "error"
+    }
     if len(ok_sats) < 1:
         raise RuntimeError(f"NRT downloads failed for all sensors (sats={sats}).")
     preprocess_tasks.update(downloaded_paths)
 
-    # always force preprocessing for new downloads 
-    for (tk, satk), fp in preprocess_tasks.items(): 
+    # always force preprocessing for new downloads
+    for (tk, satk), fp in preprocess_tasks.items():
         if fp is None:
-            logger.info(f"Skipping preprocessing for {satk} for {tk}; no file saved at {fp} (dataframe likely was empty)") 
-            continue 
-        tk = list(tk) 
+            logger.info(
+                f"Skipping preprocessing for {satk} for {tk}; no file saved at {fp} (dataframe likely was empty)"
+            )
+            continue
+        tk = list(tk)
         futures.append(client.submit(preprocess_daily_file, fp, tk, satk))
 
     return futures
@@ -195,7 +221,7 @@ def job_nrt_current_day_updates(client: Client):
 
 def nrt_data_update_per_sat(client: Client, fs, sat, tst: TimeStep, ted: TimeStep):
     """Download any missing FIRMS input files for one satellite between tst and ted,
-    then schedule preprocessing of the new files. 
+    then schedule preprocessing of the new files.
 
     NOTE: blocks for downloads inside this function and returns only
     preprocessing futures.
@@ -232,7 +258,9 @@ def nrt_data_update_per_sat(client: Client, fs, sat, tst: TimeStep, ted: TimeSte
         d = dt.datetime(t[0], t[1], t[2])
 
         if d > nrt_end:
-            logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}: date out of range.")
+            logger.warning(
+                f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}: date out of range."
+            )
             continue
         elif d >= nrt_start:  # in NRT availability range
             fp = nrt_filepath_func(t)
@@ -242,7 +270,9 @@ def nrt_data_update_per_sat(client: Client, fs, sat, tst: TimeStep, ted: TimeSte
             # if we don't already have this input file, try to download from FIRMS
             else:
                 download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "NRT")
-        elif sp_start and d >= sp_start:  # check if sp_start because NOAA21 does not have yet
+        elif (
+            sp_start and d >= sp_start
+        ):  # check if sp_start because NOAA21 does not have yet
             # in standard product availability range
             fp = sp_filepath_func(t)
             if fs.exists(fp):
@@ -251,8 +281,10 @@ def nrt_data_update_per_sat(client: Client, fs, sat, tst: TimeStep, ted: TimeSte
                 download_futures[(t, sat)] = client.submit(update_FIRMS, d, sat, "SP")
         else:
             # warn but allow
-            logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
-                           "Date may be out of range.")
+            logger.warning(
+                f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
+                "Date may be out of range."
+            )
 
     # need to have these available to preprocess tst and ted, if possible
     prev_day = t_nd(tst, "previous")
@@ -262,7 +294,9 @@ def nrt_data_update_per_sat(client: Client, fs, sat, tst: TimeStep, ted: TimeSte
         d = dt.datetime(t[0], t[1], t[2])
 
         if d > nrt_end:
-            logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. Date out of range.")
+            logger.warning(
+                f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. Date out of range."
+            )
         elif d >= nrt_start:
             fp = nrt_filepath_func(t)
             if not fs.exists(fp):
@@ -272,8 +306,10 @@ def nrt_data_update_per_sat(client: Client, fs, sat, tst: TimeStep, ted: TimeSte
             if not fs.exists(fp):
                 update_FIRMS(d, sat, "SP")
         else:
-            logger.warning(f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
-                           "Date may be out of range.")
+            logger.warning(
+                f"No data available for {sat} on {t[0]}-{t[1]}-{t[2]}. "
+                "Date may be out of range."
+            )
 
     if len(download_futures) > 0:
         # block to finish downloads before starting any preprocessing
@@ -284,7 +320,9 @@ def nrt_data_update_per_sat(client: Client, fs, sat, tst: TimeStep, ted: TimeSte
     futures = []
     for (tk, satk), fp in preprocess_tasks.items():
         if fp is None:
-            logger.info(f"Skipping preprocessing for {satk} for {tk}; no input file was saved (dataframe likely was empty)")
+            logger.info(
+                f"Skipping preprocessing for {satk} for {tk}; no input file was saved (dataframe likely was empty)"
+            )
             continue
         tk = list(tk)
         futures.append(client.submit(preprocess_daily_file, fp, tk, satk))
@@ -300,8 +338,8 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
     input files (VNP14IMGML and VJ114IMGML).
     If settings.FIRE_NRT == True, tries to download any missing input data from FIRMS,
     then preprocess any unprocessed input files. Does not try to use monthly files,
-    but WILL use SP where available, if NRT is not available. 
-    
+    but WILL use SP where available, if NRT is not available.
+
     An error with a single sensor is logged as a
     warning and that sensor is skipped for this run; raises RuntimeError only if
     the update fails for every sensor.
@@ -336,15 +374,16 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
 
     for sat in sats:
         if not settings.FIRE_NRT:
-
             # look for already-downloaded monthly files
             if sat == "SNPP":
                 monthly_filepath_func = VNP14IMGML_filepath
             elif sat == "NOAA20":
                 monthly_filepath_func = VJ114IMGML_filepath
             elif sat == "NOAA21":
-                logger.warning("No standard products available for NOAA21. "
-                               "Did you mean to set FireConsts.FIRE_NRT = True?")
+                logger.warning(
+                    "No standard products available for NOAA21. "
+                    "Did you mean to set FireConsts.FIRE_NRT = True?"
+                )
                 continue
 
             # gives list of timesteps for which there is no preprocessed file available
@@ -366,11 +405,17 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             missing_indices = [i for i, f in enumerate(monthly_filepaths) if f is None]
 
             for i in missing_indices:
-                logger.warning(f"No monthly input file found for {timesteps[i]} for {sat}")
+                logger.warning(
+                    f"No monthly input file found for {timesteps[i]} for {sat}"
+                )
 
             existing_timesteps = [timesteps[i] for i in indices]
 
-            futures.extend(client.map(partial(preprocess_monthly_file, sat=sat), existing_timesteps))
+            futures.extend(
+                client.map(
+                    partial(preprocess_monthly_file, sat=sat), existing_timesteps
+                )
+            )
 
         elif settings.FIRE_NRT:
             # an error with one sensor should not take down the whole run as
@@ -378,13 +423,16 @@ def job_data_update_checker(client: Client, tst: TimeStep, ted: TimeStep):
             try:
                 futures.extend(nrt_data_update_per_sat(client, fs, sat, tst, ted))
             except Exception as e:
-                logger.warning(f"NRT data update failed for {sat}; skipping this sensor. Error message: {e}")
+                logger.warning(
+                    f"NRT data update failed for {sat}; skipping this sensor. Error message: {e}"
+                )
                 failed_sats.append(sat)
 
     if settings.FIRE_NRT and len(failed_sats) == len(sats):
         raise RuntimeError(f"NRT data update failed for all sensors ({sats}).")
 
     return futures
+
 
 @timed
 def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
@@ -395,35 +443,37 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
 
     ctime = datetime.now(tz=timezone.utc)
     if tst in (None, "", []):  # if no start is given, run from beginning of year
-        tst = [ctime.year, 1, 1, 'AM']
+        tst = [ctime.year, 1, 1, "AM"]
 
     if ted in (None, "", []):  # if no end time is given, set it as the most recent time
         if ctime.hour >= 18:
-            ampm = 'PM'
+            ampm = "PM"
         else:
-            ampm = 'AM'
+            ampm = "AM"
         ted = [ctime.year, ctime.month, ctime.day, ampm]
-    
+
     logger.info(f"------------- Starting full run from {tst=} to {ted=} -------------")
 
     client = Client(n_workers=settings.N_DASK_WORKERS)
     logger.info(f"dask workers = {len(client.cluster.workers)}")
- 
+
     # run the first two jobs in parallel
     data_update_futures = job_data_update_checker(client, tst, ted)
     region_future = client.submit(job_preprocess_region, region)
-    
+
     # block until data update is complete
     client.gather([*data_update_futures, region_future])
 
-    if use_s3: 
+    if use_s3:
         # uploads raw satellite files from `job_data_update_checker` in parallel
         data_upload_futures = client.map(
             partial(copy_from_local_to_s3, fs=fs),
-            glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt")
+            glob.glob(f"{settings.LOCAL_PATH}/{settings.PREPROCESSED_DIR}/*/*.txt"),
         )
         # block until half-day timesteps and region are on s3
-        timed(client.gather, text=f"Dask upload of {len(data_upload_futures)} files")(data_upload_futures)
+        timed(client.gather, text=f"Dask upload of {len(data_upload_futures)} files")(
+            data_upload_futures
+        )
 
     logger.info("------------- Done with preprocessing t -------------")
 
@@ -432,42 +482,55 @@ def Run(region: Region, tst: TimeStep, ted: TimeStep, copy_to_veda: bool):
         tst, ted, region, force=True
     )
     region_and_t_futures = client.map(
-        partial(job_preprocess_region_t, region=region),
-        timesteps_needing_processing
+        partial(job_preprocess_region_t, region=region), timesteps_needing_processing
     )
     # block until preprocessing is complete
     client.gather(region_and_t_futures)
-    
+
     logger.info("------------- Done with preprocessing region + t -------------")
-    
+
     # run fire forward algorithm (which cannot be run in parallel)
     job_fire_forward(region=region, tst=tst, ted=ted, client=client, use_s3=use_s3)
 
-    # If flag matching flat set, add overlaps with this year's NIFC incidents to 
-    # CombinedLargefire/lf_perimeter.fgb for ted only. 
+    # If flag matching flat set, add overlaps with this year's NIFC incidents to
+    # CombinedLargefire/lf_perimeter.fgb for ted only.
     if settings.DO_NIFC_MATCHING:
         logger.info("Started NIFC matching")
-        combined_lf_perims_nifc_join(tst, ted, region, active_only=settings.NIFC_MATCHING_ACTIVE_ONLY, time_filter=None)
+        combined_lf_perims_nifc_join(
+            tst,
+            ted,
+            region,
+            active_only=settings.NIFC_MATCHING_ACTIVE_ONLY,
+            time_filter=None,
+        )
         logger.info("Finished NIFC matching")
 
-    if use_s3: 
+    if use_s3:
         # take all fire forward output and upload all outputs in parallel
         data_dir = all_dir(tst, region, location="local")
         fgb_s3_upload_futures = client.map(
             partial(copy_from_local_to_s3, fs=fs),
-            glob.glob(os.path.join(data_dir, "*", "*", "*.fgb"))
+            glob.glob(os.path.join(data_dir, "*", "*", "*.fgb")),
         )
         # block until everything is uploaded
-        timed(client.gather, text=f"Dask upload of {len(fgb_s3_upload_futures)} files")(fgb_s3_upload_futures)
+        timed(client.gather, text=f"Dask upload of {len(fgb_s3_upload_futures)} files")(
+            fgb_s3_upload_futures
+        )
 
     if copy_to_veda:
         # take latest fire forward output and upload to VEDA S3 in parallel
         # after this upload is where the OGC API ingest starts on the VEDA side
         fgb_veda_upload_futures = client.map(
             partial(copy_from_local_to_veda_s3, fs=fs, regnm=region[0]),
-            glob.glob(os.path.join(data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"))
+            glob.glob(
+                os.path.join(
+                    data_dir, "*", f"{ted[0]}{ted[1]:02}{ted[2]:02}{ted[3]}", "*.fgb"
+                )
+            ),
         )
-        timed(client.gather, text=f"Dask upload of {len(fgb_veda_upload_futures)} files")(fgb_veda_upload_futures)
+        timed(
+            client.gather, text=f"Dask upload of {len(fgb_veda_upload_futures)} files"
+        )(fgb_veda_upload_futures)
 
     logger.info("------------- Done -------------")
 
@@ -552,13 +615,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--regnm", type=str)
     parser.add_argument("--bbox", type=validate_json)
-    parser.add_argument("--reg_shp", type=str, default="", 
-                        help="Optional shapefile in FEDSinput/Shapefiles to define run region. "
-                        "Overrides --bbox. Leave empty to use bounding box defined in --bbox.")
+    parser.add_argument(
+        "--reg_shp",
+        type=str,
+        default="",
+        help="Optional shapefile in FEDSinput/Shapefiles to define run region. "
+        "Overrides --bbox. Leave empty to use bounding box defined in --bbox.",
+    )
     parser.add_argument("--tst", type=validate_json)
     parser.add_argument("--ted", type=validate_json)
-    parser.add_argument('--no-veda-copy', dest='copy_to_veda', action='store_false', default=True,
-                        help="defaults to True but if passed will stop a copy to VEDA s3 bucket")
+    parser.add_argument(
+        "--no-veda-copy",
+        dest="copy_to_veda",
+        action="store_false",
+        default=True,
+        help="defaults to True but if passed will stop a copy to VEDA s3 bucket",
+    )
     args = parser.parse_args()
 
     if args.reg_shp:

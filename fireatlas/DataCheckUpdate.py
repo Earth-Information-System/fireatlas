@@ -23,9 +23,9 @@ def update_FIRMS(
     """
     Get 1 day of global active fire detections from the FIRMS API.
     If a file already exists for that day, it will be overwritten
-    by the new data. If no detections are downloaded (e.g., the 
+    by the new data. If no detections are downloaded (e.g., the
     first ~3 hours of the UTC day when NRT data is still lagging),
-    returns None. 
+    returns None.
 
     sat:
         satellite name e.g. "SNPP", "NOAA20", "NOAA21"
@@ -37,7 +37,7 @@ def update_FIRMS(
 
     Returns:
     --------
-    downloaded_filepath: str | None 
+    downloaded_filepath: str | None
         Location of downloaded data file or None if no data was written
     """
 
@@ -96,7 +96,7 @@ def update_FIRMS(
             f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
         )
         return None
-    else: 
+    else:
         daterange = pd.to_datetime(df["acq_date"])
         tst, ted = daterange.min(), daterange.max()
 
