@@ -14,7 +14,7 @@ from fireatlas import settings
 from fireatlas.FireLog import logger
 
 MAP_KEY = "3cb8ce1d0094e20f07f8697df832da3a"
-N_MAX_RETRIES = 30
+N_MAX_RETRIES = 10
 
 
 def update_FIRMS(
@@ -23,7 +23,9 @@ def update_FIRMS(
     """
     Get 1 day of global active fire detections from the FIRMS API.
     If a file already exists for that day, it will be overwritten
-    by the new data.
+    by the new data. If no detections are downloaded (e.g., the 
+    first ~3 hours of the UTC day when NRT data is still lagging),
+    returns None. 
 
     sat:
         satellite name e.g. "SNPP", "NOAA20", "NOAA21"
@@ -35,8 +37,8 @@ def update_FIRMS(
 
     Returns:
     --------
-    downloaded_filepath: str
-        Location of downloaded data file
+    downloaded_filepath: str | None 
+        Location of downloaded data file or None if no data was written
     """
 
     if (sat == "NOAA21") and (product == "SP"):
@@ -62,9 +64,16 @@ def update_FIRMS(
             logger.warning("Error message: Max retries exceeded.")
             return
 
-        resp = requests.get(status_url).json()
-        count = resp["current_transactions"]
-        limit = resp["transaction_limit"]
+        try:
+            resp = requests.get(status_url, timeout=60).json()
+            count = resp["current_transactions"]
+            limit = resp["transaction_limit"]
+        except Exception as e:
+            logger.warning(
+                f"Could not check FIRMS API transaction status: {e}. Retry #{retries}"
+            )
+            time.sleep(10)
+            continue
 
         if limit - count > limit * 0.1:
             try:
@@ -86,10 +95,10 @@ def update_FIRMS(
         logger.warning(
             f"{product} {sat} data is empty for {d}. This date may be outside range of data availability."
         )
-        return
-
-    daterange = pd.to_datetime(df["acq_date"])
-    tst, ted = daterange.min(), daterange.max()
+        return None
+    else: 
+        daterange = pd.to_datetime(df["acq_date"])
+        tst, ted = daterange.min(), daterange.max()
 
     if tst.date() != ted.date():
         raise ValueError(f"Unexpected date range for single day file: {tst} to {ted}")
