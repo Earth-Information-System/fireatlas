@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Zeb Becker">
-<meta name="dcterms.date" content="2026-07-07">
+<meta name="dcterms.date" content="2026-07-14">
 
 <title>Releasing – Wildfire Tracking Lab</title>
 <style>
@@ -314,7 +314,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 7, 2026</p>
+      <p class="date">July 14, 2026</p>
     </div>
   </div>
   
@@ -329,8 +329,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="overview" class="level1">
 <h1>Overview</h1>
 <p>To improve reproducibility and reliability, we use tagged releases in our GitHub repo to determine which version of the FEDS codebase our <a href="../docs/nrt.html">NRT data processing system</a> uses. The NRT system does <strong><em>not</em></strong> automatically incorporate changes pushed to the main branch of the GitHub repository. For your changes to be reflected in the production system, you need to release a new tagged version as described on this page, then edit the variable <code>feds_algo_version</code> on the Prefect orchestrator that submits NRT jobs to DPS for data processing.</p>
-<p>What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in <a href="https://github.com/Earth-Information-System/fireatlas/blob/main/.github/workflows/release.yaml">release.yaml</a>, which submits a job to DPS asking it to build a new image (“register an algorithm,” in MAAP parlance) within the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, <code>eis-feds-dask-coordinator-v3:1.5.1</code>. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job.</p>
-<p>Importantly, just making the new version of the algorithm <strong><em>available</em></strong> on DPS is not enough- we also need to make it so that our orchestrator requests that DPS use that version for new NRT jobs going forward. We do this by changing the Prefect variable <code>feds_algo_version</code> in our production job orchestrator (refer to the internal <a href="https://docs.google.com/document/d/1pdzz0KCEEME6ZIg-LTfIUQlqDexS5FWvrbN5j0GITkU/edit?usp=sharing">orchestration runbook</a> for more info). Conversely, this makes it easy to roll back to a previous version- if your release 1.5.1 has a bug, just change <code>feds_algo_version</code> back to 1.5.0 to go back to the previous version in production.</p>
+<p>What happens when we do this? At a high level, releasing a new tagged release on GitHub triggers the CI workflow defined in <a href="https://github.com/Earth-Information-System/fireatlas/blob/main/.github/workflows/release.yaml">release.yaml</a>, which submits a job to DPS asking it to build a new image (“register an algorithm,” in MAAP parlance) within the version of the code that the new tag refers to baked in. This will make a new algorithm version available on DPS- for example, <code>eis-feds-dask-coordinator-v3:1.5.2</code>. We can now submit jobs to DPS that reference this algorithm version, and it will use the image that is built during the release process to complete the job.</p>
+<p>Importantly, just making the new version of the algorithm <strong><em>available</em></strong> on DPS is not enough- we also need to make it so that our orchestrator requests that DPS use that version for new NRT jobs going forward. We do this by changing the Prefect variable <code>feds_algo_version</code> in our production job orchestrator (refer to the internal <a href="https://docs.google.com/document/d/1pdzz0KCEEME6ZIg-LTfIUQlqDexS5FWvrbN5j0GITkU/edit?usp=sharing">orchestration runbook</a> for more info). Conversely, this makes it easy to roll back to a previous version- if your release 1.5.2 has a bug, just change <code>feds_algo_version</code> back to 1.5.0 to go back to the previous version in production.</p>
 <p>The rest of this document describes acceptance testing and release procedures in more detail.</p>
 <section id="summaryrelease-checklist" class="level3">
 <h3 class="anchored" data-anchor-id="summaryrelease-checklist">Summary/release checklist</h3>
