@@ -82,7 +82,7 @@ def read_allpixels(
     location: Location = None,
 ):
     filepath = allpixels_filepath(tst, ted, region, location=location)
-    df = pd.read_csv(filepath, index_col="uuid")
+    df = pd.read_csv(filepath, index_col="uuid", low_memory=False)
     for col in ["t", "datetime", "ext_until"]:
         df[col] = pd.to_datetime(df[col], format='ISO8601')
 
