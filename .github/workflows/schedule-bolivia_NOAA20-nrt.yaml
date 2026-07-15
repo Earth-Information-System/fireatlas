@@ -35,7 +35,7 @@ jobs:
         uses: Earth-Information-System/fireatlas/.github/actions/run-dps-job-v3@main
         with:
           algo_name: eis-feds-dask-coordinator-v3
-          github_ref: 1.5.2
+          github_ref: 1.5.3
           username: mccabete
           queue: maap-dps-eis-worker-128gb
           maap_image_env: ubuntu
