@@ -165,6 +165,7 @@ def maybe_remove_static_sources(region: Region) -> Region:
     
     region = (diff.name[0], diff.geometry[0])
     return region
+    
 def flag_and_remove_duplicate_pixels(allpixels):
     """ Identify and correct duplicated VIIRS pixels due to identical points 
         being processed by multiple NRT algorithm versions. Dropping logic
@@ -238,7 +239,7 @@ def adjust_coincident_pixels(allpixels):
     duplicated_coords = coord_counts[coord_counts > 1] 
     
     if len(duplicated_coords)==0:
-        logger.info('No coincident points detected. Proceeding to next step with no action taken...')
+        logger.info('No coincident points detected. Proceeding to next step...')
         return allpixels
     
     if len(duplicated_coords)>0:
@@ -696,11 +697,12 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         allpixels = list_of_allpixels[0]
     else:
         allpixels = pd.concat(non_empty_dfs)
-    if settings.FIRE_NRT == True: # Check for rare case with dupliated NRT pixels exist. Flag and remove them if detected. 
+    if settings.FIRE_NRT == True: # Check for rare case where dupliated NRT pixels exist. Flag and remove them if detected. 
         allpixels = flag_and_remove_duplicate_pixels(allpixels)
 
-    # Look for also rare case where two satellites have the exact lat/lon pair at different times.
-    # This is for both NRT and archival runs
+    # Look for also rare case where two satellites have the exact lat/lon pair at different times. 
+    # This can throw an error with the hull calculation.
+    # Run this for both NRT and archival runs
     allpixels = adjust_coincident_pixels(allpixels)
 
     allpixels["fid"] = -1

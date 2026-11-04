@@ -12,6 +12,7 @@ from shapely.geometry import Polygon, MultiPoint, MultiLineString
 from scipy.spatial import Delaunay, ConvexHull
 
 from fireatlas import settings
+from fireatlas.FireLog import logger
 
 
 def doConcH(points, alpha):
@@ -95,8 +96,10 @@ def doConvH(locs):
         calculated hull shape
     """
     # calculate the convex hull using scipy.spatial.ConvexHull
-    qhull = ConvexHull(locs)
-
+    try: qhull = ConvexHull(locs)
+    except QhullError as e: # TODO: revisit geometry error handling
+        logger.warning(f'QHullError: {e}.\nOffending Locs: {locs}')
+                       
     # derive qhull object vertices
     verts = locs[qhull.vertices]
 
