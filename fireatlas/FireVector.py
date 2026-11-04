@@ -95,10 +95,13 @@ def doConvH(locs):
     hull : Polygon object
         calculated hull shape
     """
+
+    from scipy.spatial import QhullError
+    
     # calculate the convex hull using scipy.spatial.ConvexHull
     try: qhull = ConvexHull(locs)
     except QhullError as e: # TODO: revisit geometry error handling
-        logger.warning(f'QHullError: {e}.\nOffending Locs: {locs}')
+        logger.warning(f'QHullError: {e}.\nOffending Locs:\n{locs}')
                        
     # derive qhull object vertices
     verts = locs[qhull.vertices]
