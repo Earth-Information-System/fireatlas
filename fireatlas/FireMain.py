@@ -165,6 +165,7 @@ def maybe_remove_static_sources(region: Region) -> Region:
     
     region = (diff.name[0], diff.geometry[0])
     return region
+    
 def flag_and_remove_duplicate_pixels(allpixels):
     """ Identify and correct duplicated VIIRS pixels due to identical points 
         being processed by multiple NRT algorithm versions. Dropping logic
@@ -265,8 +266,8 @@ def adjust_coincident_pixels(allpixels):
             # Store original coordinates before applying jitter
             original_coords = allpixels.loc[duplicate_indices, ["y", "x"]].values
 
-            # Generate jitter for each duplicate record - note this value is on the order of 10^-6 units (should be meters). 
-            jitter = np.random.normal(0, 1e-6, (len(duplicate_indices), 2))
+            # Generate jitter for each duplicate record - note this value is on the order of 10^-3 units (should be meters). 
+            jitter = np.random.normal(0, 1e-3, (len(duplicate_indices), 2))
 
             # Apply jitter to y and x columns
             allpixels.loc[duplicate_indices, "y"] = allpixels.loc[duplicate_indices, "y"] + jitter[:, 0]
@@ -699,10 +700,6 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
     if settings.FIRE_NRT == True: # Check for rare case with dupliated NRT pixels exist. Flag and remove them if detected. 
         allpixels = flag_and_remove_duplicate_pixels(allpixels)
 
-    # Look for also rare case where two satellites have the exact lat/lon pair at different times.
-    # This is for both NRT and archival runs
-    allpixels = adjust_coincident_pixels(allpixels)
-
     allpixels["fid"] = -1
     allpixels["in_fline"] = None
     allpixels["ext_until"] = None
@@ -716,8 +713,13 @@ def Fire_Forward(tst: TimeStep, ted: TimeStep, restart=False, region=None, read_
         )
         for col in allpixels_saved.columns:
             allpixels[col] = allpixels[col].astype(allpixels_saved[col].dtype)    
-
+        
         allpixels = pd.concat([allpixels_saved, allpixels])
+
+        # Also look for rare case where two satellites have the exact lat/lon pair at different times.
+        # This can cause an error with the hull geometry calculation, so we just shift them by roughly 1mm. 
+        allpixels = adjust_coincident_pixels(allpixels)
+        
         allfires = Allfires.rehydrate(
             tst,
             t_saved,
